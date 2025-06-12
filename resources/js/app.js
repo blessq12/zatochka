@@ -4,9 +4,9 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
+import "@mdi/font/css/materialdesignicons.min.css";
 import { createApp } from "vue";
 import "./bootstrap";
-
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
