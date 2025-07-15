@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\OrderToolController;
 use App\Http\Controllers\Api\RepairController;
+use App\Http\Controllers\Api\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -18,3 +19,8 @@ Route::resource('notifications', NotificationController::class);
 Route::resource('feedbacks', FeedbackController::class);
 Route::resource('order-tools', OrderToolController::class);
 Route::resource('repairs', RepairController::class);
+
+// Telegram webhook
+Route::controller(TelegramWebhookController::class)->group(function () {
+    Route::post('/telegram/webhook', 'handleWebhook');
+});
