@@ -11,6 +11,7 @@ class OrderChart extends ChartWidget
 {
     protected static ?string $heading = 'Заказы';
     protected int | string | array $columnSpan = 2;
+    protected static ?int $sort = 3;
 
     protected function getData(): array
     {

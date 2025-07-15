@@ -11,6 +11,8 @@ class StatsOverview extends BaseWidget
 {
     protected int | string | array $columnSpan = 2;
 
+    protected static ?int $sort = 1;
+
     protected function getStats(): array
     {
         return [
