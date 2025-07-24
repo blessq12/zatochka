@@ -9,7 +9,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditFeedback extends EditRecord
 {
     protected static string $resource = FeedbackResource::class;
-
+    protected static ?string $title = 'Редактирование отзыва';
     protected function getHeaderActions(): array
     {
         return [

@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListRepairs extends ListRecords
 {
     protected static string $resource = RepairResource::class;
+    protected static ?string $title = 'Список ремонтов';
 
     protected function getHeaderActions(): array
     {

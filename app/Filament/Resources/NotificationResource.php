@@ -16,6 +16,7 @@ class NotificationResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-bell';
     // protected static ?string $navigationGroup = 'CRM';
     protected static ?string $navigationLabel = 'Уведомления';
+    protected static ?string $breadcrumb = 'Уведомления';
     protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form

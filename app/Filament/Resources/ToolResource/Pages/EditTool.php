@@ -9,6 +9,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditTool extends EditRecord
 {
     protected static string $resource = ToolResource::class;
+    protected static ?string $title = 'Редактирование инструмента';
 
     protected function getHeaderActions(): array
     {

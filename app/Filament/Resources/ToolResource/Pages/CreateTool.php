@@ -8,5 +8,7 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateTool extends CreateRecord
 {
+    protected static ?string $title = 'Создание нового инструмента';
+
     protected static string $resource = ToolResource::class;
 }

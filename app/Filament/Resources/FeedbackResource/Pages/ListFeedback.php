@@ -9,7 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListFeedback extends ListRecords
 {
     protected static string $resource = FeedbackResource::class;
-
+    protected static ?string $title = 'Список отзывов';
     protected function getHeaderActions(): array
     {
         return [

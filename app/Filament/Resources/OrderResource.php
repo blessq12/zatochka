@@ -20,6 +20,7 @@ class OrderResource extends Resource
     // protected static ?string $navigationGroup = 'CRM';
     protected static ?string $navigationLabel = 'Заказы';
     protected static ?int $navigationSort = 2;
+    protected static ?string $breadcrumb = 'Заказы';
 
     public static function form(Form $form): Form
     {

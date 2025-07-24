@@ -16,7 +16,10 @@ class FeedbackResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
     // protected static ?string $navigationGroup = 'CRM';
     protected static ?string $navigationLabel = 'Отзывы';
+    protected static ?string $breadcrumb = 'Отзывы';
     protected static ?int $navigationSort = 6;
+    protected static ?string $title = 'Custom Page Title';
+
 
     public static function form(Form $form): Form
     {

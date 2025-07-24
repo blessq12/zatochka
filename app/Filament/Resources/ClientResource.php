@@ -20,6 +20,7 @@ class ClientResource extends Resource
     // protected static ?string $navigationGroup = 'CRM';
     protected static ?string $navigationLabel = 'Клиенты';
     protected static ?int $navigationSort = 1;
+    protected static ?string $breadcrumb = 'Клиенты';
 
     public static function form(Form $form): Form
     {

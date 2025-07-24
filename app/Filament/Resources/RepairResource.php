@@ -16,6 +16,7 @@ class RepairResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
     // protected static ?string $navigationGroup = 'CRM';
     protected static ?string $navigationLabel = 'Ремонты';
+    protected static ?string $breadcrumb = 'Ремонты';
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form

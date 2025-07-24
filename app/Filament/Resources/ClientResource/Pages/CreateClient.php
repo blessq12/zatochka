@@ -9,4 +9,5 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateClient extends CreateRecord
 {
     protected static string $resource = ClientResource::class;
+    protected static ?string $title = 'Создание нового клиента';
 }

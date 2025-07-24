@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListTools extends ListRecords
 {
     protected static string $resource = ToolResource::class;
+    protected static ?string $title = 'Список инструментов';
 
     protected function getHeaderActions(): array
     {

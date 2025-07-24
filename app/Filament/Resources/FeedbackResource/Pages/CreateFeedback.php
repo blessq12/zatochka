@@ -9,4 +9,5 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateFeedback extends CreateRecord
 {
     protected static string $resource = FeedbackResource::class;
+    protected static ?string $title = 'Создание нового отзыва';
 }

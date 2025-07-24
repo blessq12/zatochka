@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListNotifications extends ListRecords
 {
     protected static string $resource = NotificationResource::class;
+    protected static ?string $title = 'Список уведомлений';
 
     protected function getHeaderActions(): array
     {
