@@ -27,7 +27,7 @@
     <div class="min-h-screen">
         @include('components.navigation')
 
-        <main>
+        <main id="app">
             {{ $slot }}
         </main>
 

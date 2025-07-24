@@ -17,7 +17,9 @@ export default defineConfig({
                 },
             },
         }),
-        tailwindcss(),
+        tailwindcss({
+            config: "./tailwind.config.js",
+        }),
     ],
     resolve: {
         alias: {
