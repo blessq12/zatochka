@@ -14,7 +14,7 @@ class RepairResource extends Resource
 {
     protected static ?string $model = Repair::class;
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
-    protected static ?string $navigationGroup = 'Управление';
+    // protected static ?string $navigationGroup = 'Управление';
     protected static ?string $navigationLabel = 'Ремонты';
     protected static ?string $breadcrumb = 'Ремонты';
     protected static ?int $navigationSort = 4;
