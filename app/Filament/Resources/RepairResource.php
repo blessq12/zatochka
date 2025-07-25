@@ -14,7 +14,7 @@ class RepairResource extends Resource
 {
     protected static ?string $model = Repair::class;
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
-    // protected static ?string $navigationGroup = 'CRM';
+    protected static ?string $navigationGroup = 'Управление';
     protected static ?string $navigationLabel = 'Ремонты';
     protected static ?string $breadcrumb = 'Ремонты';
     protected static ?int $navigationSort = 4;
@@ -25,6 +25,12 @@ class RepairResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Основная информация')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->label('Филиал')
+                            ->relationship('branch', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
                         Forms\Components\Select::make('order_id')
                             ->label('Заказ')
                             ->relationship('order', 'order_number')
@@ -42,6 +48,7 @@ class RepairResource extends Resource
                         Forms\Components\TextInput::make('cost')
                             ->label('Стоимость')
                             ->numeric()
+                            ->prefix('₽')
                             ->required(),
                         Forms\Components\Select::make('status')
                             ->label('Статус')
@@ -59,6 +66,10 @@ class RepairResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Филиал')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('order.order_number')
                     ->label('Номер заказа')
                     ->searchable(),
@@ -87,6 +98,11 @@ class RepairResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('branch')
+                    ->label('Филиал')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Статус')
                     ->options([

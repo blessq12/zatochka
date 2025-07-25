@@ -6,15 +6,20 @@
 
 
     <!-- Главный баннер -->
-    <section class="hero-section pattern-zatochka flex items-center">
+    <div class="hero-section pattern-zatochka flex items-center py-24 md:py-48">
         <div class="max-w-7xl mx-auto px-4">
             <div class="hero-card animate-fade-up max-w-3xl">
+                <h5 class="font-jost uppercase font-bold text-sm md:text-lg text-primary mb-1">
+                    Пора заточить инструменты
+                </h5>
                 <h1 class="font-jost font-black text-4xl md:text-6xl">
-                    <span class="hero-accent">Заточка ТСК</span> —<br>
-                    профессиональный уход<br>
-                    за вашими инструментами
+                    <span class="hero-accent">Заточка ТСК</span>
                 </h1>
-                <p class="font-jost font-bold text-xl md:text-3xl text-accent mt-6">Пора заточить инструменты</p>
+                <h2 class="text-xl md:text-2xl font-bold font-jost">профессиональный уход<br>
+                    за вашими инструментом
+                </h2>
+
+
                 <p class="font-jost text-lg md:text-xl mt-6 max-w-2xl text-gray-700">
                     Компания «Заточка ТСК» оказывает услуги по заточке инструментов
                     (маникюрных, парикмахерских, груминговых) для В2В сегмента. Более 20 000 заточенных
@@ -35,7 +40,7 @@
                 </path>
             </svg>
         </div>
-    </section>
+    </div>
 
     <!-- Миссия -->
     <section class="bg-white">

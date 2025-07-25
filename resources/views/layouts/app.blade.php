@@ -25,13 +25,11 @@
 
 <body class="font-sans antialiased bg-gray-100">
     <div class="min-h-screen">
-        @include('components.navigation')
-
         <main id="app">
+            @include('components.navigation')
             {{ $slot }}
+            @include('components.footer')
         </main>
-
-        @include('components.footer')
     </div>
 </body>
 

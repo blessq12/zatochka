@@ -14,11 +14,13 @@ return new class extends Migration
         Schema::create('repairs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->string('handle_number', 50)->nullable();
-            $table->text('handle_work_description')->nullable();
-            $table->string('control_unit_number', 50)->nullable();
-            $table->text('control_unit_work_description')->nullable();
+            $table->foreignId('branch_id')->constrained()->onDelete('cascade'); // Добавляем связь с филиалом
+            $table->string('handle_number')->nullable();
+            $table->text('description')->nullable();
+            $table->decimal('cost', 10, 2)->nullable();
+            $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
