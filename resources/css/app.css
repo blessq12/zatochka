@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;700;900&display=swap");
 @import "tailwindcss";
+@import "./animations.css";
 
 @theme {
     /* Цвета */
@@ -12,6 +13,11 @@
     --color-blue: #0288d1;
     --color-black: #000000;
     --color-white: #ffffff;
+
+    /* Добавляем классы для Tailwind */
+    --tw-text-primary: var(--color-primary);
+    --tw-text-accent: var(--color-accent);
+    --tw-bg-accent: var(--color-accent);
 
     /* Шрифты */
     --font-jost: "Jost", sans-serif;
@@ -172,10 +178,6 @@
     transition: transform 0.3s ease;
 }
 
-.hero-card:hover {
-    transform: translateY(-5px);
-}
-
 .feature-card {
     background: var(--color-white);
     border-radius: var(--radius-card);
@@ -221,6 +223,61 @@
     background-color: var(--color-accent-light);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(245, 0, 87, 0.3);
+}
+
+.btn-outline {
+    border: 2px solid var(--color-accent);
+    color: var(--color-accent);
+    padding: var(--spacing-ui-sm) var(--spacing-ui-lg);
+    border-radius: var(--radius-ui-lg);
+    font-family: var(--font-jost);
+    font-weight: var(--font-weight-bold);
+    transition: all 0.3s ease;
+    background-color: transparent;
+}
+
+.btn-outline:hover {
+    background-color: var(--color-accent);
+    color: var(--color-white);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245, 0, 87, 0.2);
+}
+
+.btn-white {
+    background-color: var(--color-white);
+    color: var(--color-accent);
+    padding: var(--spacing-ui-sm) var(--spacing-ui-lg);
+    border-radius: var(--radius-ui-lg);
+    font-family: var(--font-jost);
+    font-weight: var(--font-weight-bold);
+    transition: all 0.3s ease;
+}
+
+.btn-white:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+}
+
+.btn-outline-white {
+    border: 2px solid var(--color-white);
+    color: var(--color-white);
+    padding: var(--spacing-ui-sm) var(--spacing-ui-lg);
+    border-radius: var(--radius-ui-lg);
+    font-family: var(--font-jost);
+    font-weight: var(--font-weight-bold);
+    transition: all 0.3s ease;
+    background-color: transparent;
+}
+
+.btn-outline-white:hover {
+    background-color: var(--color-white);
+    color: var(--color-accent);
+    transform: translateY(-2px);
+}
+
+.pl-10 {
+    padding-left: 32px !important;
 }
 
 .value-icon {
@@ -310,6 +367,10 @@
 
 .nav-link:hover::after {
     transform: scaleX(1);
+}
+
+.shadow-t-b {
+    box-shadow: 30px 0 30px 0 rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Мобильное меню */

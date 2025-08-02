@@ -9,6 +9,26 @@ class MainController extends Controller
 {
     public function index()
     {
-        return view('index');
+        return view('pages.index');
+    }
+
+    public function sharpening()
+    {
+        return view('pages.sharpening');
+    }
+
+    public function repair()
+    {
+        return view('pages.repair');
+    }
+
+    public function delivery()
+    {
+        return view('pages.delivery');
+    }
+
+    public function contacts()
+    {
+        return view('pages.contacts');
     }
 }
