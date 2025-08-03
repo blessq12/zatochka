@@ -38,24 +38,25 @@ class CompanySeeder extends Seeder
                 ],
             );
 
-            Branch::firstOrCreate(
-                [
-                    'company_id' => $company->id,
-                    'code' => 'main',
-                ],
-                [
-                    'name' => 'Главный филиал',
-                    'address' => 'г. Томск, Ленина проспект, д. 44, пом 24-83',
-                    'phone' => '+7 (3822) 977-977',
-                    'email' => 'info@zatochka.org',
-                    'working_hours' => 'Пн-Пт: 10:00-19:00, Сб: 11:00-16:00',
-                    'description' => 'Главный филиал компании',
-                    'is_active' => true,
-                    'additional_data' => json_encode([
-                        'is_main' => true,
-                    ]),
-                ]
-            );
+            Branch::where(['code' => 'main'])->exists() ?:
+                Branch::firstOrCreate(
+                    [
+                        'company_id' => $company->id,
+                        'code' => 'main',
+                    ],
+                    [
+                        'name' => 'Главный филиал',
+                        'address' => 'г. Томск, Ленина проспект, д. 44, пом 24-83',
+                        'phone' => '+7 (3822) 977-977',
+                        'email' => 'info@zatochka.org',
+                        'working_hours' => 'Пн-Пт: 10:00-19:00, Сб: 11:00-16:00',
+                        'description' => 'Главный филиал компании',
+                        'is_active' => true,
+                        'additional_data' => json_encode([
+                            'is_main' => true,
+                        ]),
+                    ]
+                );
 
             DB::commit();
         } catch (\Exception $e) {
