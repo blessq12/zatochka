@@ -1,7 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use App\Contracts\Reviews\IReviewFactory;
 
 
-// schedule a command to run
+Schedule::call(function () {
+    $reviewFactory = app(IReviewFactory::class);
+    $services = $reviewFactory->callAllServices();
+
+    foreach ($services as $service) {
+        $service->getReviews();
+    }
+})->everyFiveSeconds();
