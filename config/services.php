@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'reviews' => [
+        'services' => [
+            'two_gis' => [
+                'api_key' => env('TWO_GIS_API_KEY'),
+            ],
+            'yandex' => [
+                'api_key' => env('YANDEX_API_KEY'),
+            ],
+        ],
+    ],
 ];

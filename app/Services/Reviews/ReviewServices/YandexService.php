@@ -8,9 +8,19 @@ use App\Services\Reviews\ReviewServices\BaseReviewService;
 
 class YandexService extends BaseReviewService implements IReviewService
 {
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     public function getReviews(): array
     {
-        \Log::info('YandexService called from console');
-        return [];
+        return [
+            'reviews' => [
+                'review1' => 'review1',
+                'review2' => 'review2',
+                'review3' => 'review3',
+            ],
+        ];
     }
 }

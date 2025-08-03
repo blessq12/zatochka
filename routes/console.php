@@ -1,14 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Schedule;
-use App\Contracts\Reviews\IReviewFactory;
 
-
-Schedule::call(function () {
-    $reviewFactory = app(IReviewFactory::class);
-    $services = $reviewFactory->callAllServices();
-
-    foreach ($services as $service) {
-        $service->getReviews();
-    }
-})->everyFiveSeconds();
+// fetch reviews from api services every day
+Schedule::command('reviews:fetch')->daily();
+Schedule::command('queue:check-n-restart')->everyFifteenMinutes();

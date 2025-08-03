@@ -7,9 +7,20 @@ use App\Services\Reviews\ReviewServices\BaseReviewService;
 
 class TwoGisService extends BaseReviewService implements IReviewService
 {
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     public function getReviews(): array
     {
-        \Log::info('TwoGisService called from console');
-        return [];
+        return [
+            'reviews' => [
+                'review1' => 'review1',
+                'review2' => 'review2',
+                'review3' => 'review3',
+            ],
+        ];
     }
 }
