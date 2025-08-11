@@ -1,61 +1,225 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Zatochka - Система управления заточкой инструментов
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://img.shields.io/badge/Laravel-10.x-red.svg" alt="Laravel Version">
+  <img src="https://img.shields.io/badge/PHP-8.1+-blue.svg" alt="PHP Version">
+  <img src="https://img.shields.io/badge/Filament-3.x-purple.svg" alt="Filament Version">
+  <img src="https://img.shields.io/badge/Vue.js-3.x-green.svg" alt="Vue.js Version">
 </p>
 
-## About Laravel
+## 📋 Описание проекта
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Zatochka - это современная CRM система для управления заточкой и ремонтом инструментов. Система предназначена для автоматизации процессов приема заказов, управления мастерскими и взаимодействия с клиентами.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Основные возможности
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🏢 CRM Панель управления
 
-## Learning Laravel
+-   **Управление заказами** - создание, редактирование, отслеживание статусов
+-   **База клиентов** - хранение информации о клиентах и истории заказов
+-   **Управление филиалами** - многопользовательская система
+-   **Отчеты и аналитика** - статистика по заказам, выручке, прибыли
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🔧 POS Панель мастера
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+-   **Интерактивный интерфейс** - Livewire + Vue.js
+-   **Управление заказами** - смена статусов одним кликом
+-   **Учет расходных материалов** - автоматический расчет себестоимости
+-   **Система скидок** - с яркой подсветкой для предотвращения забывчивости
+-   **История клиентов** - просмотр предыдущих заказов
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 📱 Веб-интерфейс
 
-## Laravel Sponsors
+-   **Адаптивный дизайн** - работает на всех устройствах
+-   **FAQ система** - интерактивные вопросы и ответы
+-   **Форма обратной связи** - связь с клиентами
+-   **Современный UI** - минималистичный дизайн в стиле Tailwind
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🚀 Быстрый старт
 
-### Premium Partners
+### Требования
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+-   PHP 8.1+
+-   Laravel 10.x
+-   MySQL/PostgreSQL
+-   Node.js 16+
 
-## Contributing
+### Установка
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Клонирование репозитория**
 
-## Code of Conduct
+```bash
+git clone https://github.com/your-username/zatochka.git
+cd zatochka
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+2. **Установка зависимостей**
 
-## Security Vulnerabilities
+```bash
+composer install
+npm install
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+3. **Настройка окружения**
 
-## License
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+4. **Настройка базы данных**
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+5. **Сборка фронтенда**
+
+```bash
+npm run build
+```
+
+6. **Запуск сервера**
+
+```bash
+php artisan serve
+```
+
+## 📁 Структура проекта
+
+### Основные компоненты
+
+```
+zatochka/
+├── app/
+│   ├── Filament/           # CRM панель Filament
+│   │   ├── Pages/         # Кастомные страницы
+│   │   │   └── MasterDashboard.php  # POS панель мастера
+│   │   ├── Resources/     # Ресурсы (заказы, клиенты, etc.)
+│   │   └── Widgets/       # Виджеты дашборда
+│   ├── Http/Controllers/  # API контроллеры
+│   ├── Models/           # Eloquent модели
+│   └── Services/         # Бизнес-логика
+├── resources/
+│   ├── js/components/    # Vue.js компоненты
+│   └── views/           # Blade шаблоны
+└── database/
+    └── migrations/      # Миграции БД
+```
+
+### Ключевые файлы
+
+-   **`app/Filament/Pages/MasterDashboard.php`** - POS панель мастера
+-   **`resources/views/filament/pages/master-dashboard.blade.php`** - шаблон панели
+-   **`app/Filament/Widgets/QuickActions.php`** - быстрые действия
+-   **`resources/js/components/Faq.vue`** - интерактивный FAQ
+
+## 🎨 Дизайн и UI
+
+### Принципы дизайна
+
+-   **Минимализм** - чистый интерфейс без лишних элементов
+-   **Адаптивность** - работает на всех устройствах
+-   **Интуитивность** - понятный интерфейс для пользователей
+-   **Производительность** - быстрая загрузка и отзывчивость
+
+### Цветовая схема
+
+-   Основной фон: темная тема
+-   Кнопки: белый с прозрачностью (rgba(255, 255, 255, 0.1))
+-   Акценты: синий, зеленый, желтый, фиолетовый
+-   Текст: темно-серый для читаемости
+
+## 🔧 Технические особенности
+
+### Backend
+
+-   **Laravel 10** - основной фреймворк
+-   **Filament 3** - CRM панель
+-   **Livewire** - интерактивные компоненты
+-   **Eloquent ORM** - работа с базой данных
+
+### Frontend
+
+-   **Vue.js 3** - реактивные компоненты
+-   **Tailwind CSS** - стилизация
+-   **Alpine.js** - легкая интерактивность
+-   **Axios** - HTTP запросы
+
+### База данных
+
+-   **Миграции** - версионирование схемы
+-   **Seeders** - тестовые данные
+-   **Relationships** - связи между моделями
+
+## 📊 Функциональность
+
+### Статусы заказов
+
+1. **Новый** - заказ создан
+2. **Принят мастером** - заказ в работе у мастера
+3. **В работе** - мастер выполняет работу
+4. **Готов** - работа завершена
+5. **Передан курьеру** - готов к доставке
+6. **Оплата получена** - заказ закрыт
+
+### Типы услуг
+
+-   **Заточка** - восстановление режущих кромок
+-   **Ремонт** - восстановление функциональности
+-   **Консультация** - техническая поддержка
+
+## 🛠️ Разработка
+
+### Добавление новых функций
+
+1. Создать миграцию для новых полей
+2. Обновить модель с новыми отношениями
+3. Создать/обновить Filament ресурс
+4. Добавить валидацию и бизнес-логику
+5. Протестировать функциональность
+
+### Стилизация
+
+-   Используйте Tailwind CSS классы
+-   Для кастомных стилей создавайте CSS в `<style>` блоках
+-   Следуйте принципам минималистичного дизайна
+
+## 📈 Мониторинг и аналитика
+
+### Встроенная аналитика
+
+-   Количество заказов по периодам
+-   Выручка и прибыль
+-   Популярные услуги
+-   Статистика по филиалам
+
+### Отчеты
+
+-   Ежедневные/месячные отчеты
+-   Анализ эффективности мастеров
+-   Статистика клиентов
+
+## 🔒 Безопасность
+
+-   Аутентификация через Filament
+-   Авторизация на уровне ресурсов
+-   Валидация всех входных данных
+-   Защита от CSRF атак
+
+## 📞 Поддержка
+
+Для получения поддержки:
+
+-   Создайте Issue в GitHub
+-   Опишите проблему подробно
+-   Приложите скриншоты если необходимо
+
+## 📄 Лицензия
+
+Проект распространяется под лицензией MIT. См. файл `LICENSE` для подробностей.
+
+---
+
+**Разработано с ❤️ для автоматизации заточки инструментов**
