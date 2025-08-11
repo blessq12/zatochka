@@ -4,18 +4,25 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 use Filament\Actions\Action;
 
-class EditOrder extends EditRecord
+class ViewOrder extends ViewRecord
 {
     protected static string $resource = OrderResource::class;
-    protected static ?string $title = 'Редактирование заказа';
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\EditAction::make()
+                ->label('Редактировать'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            // Можно добавить виджеты если нужно
         ];
     }
 

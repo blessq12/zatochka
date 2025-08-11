@@ -56,7 +56,7 @@ class ClientController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource in storage.
      */
     public function destroy(string $id)
     {

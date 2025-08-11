@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\Order;
+use App\Models\Client;
 use App\Models\OrderTool;
 use App\Models\Repair;
 use Filament\Pages\Page;
@@ -45,22 +46,63 @@ class Reports extends Page
         $this->data['average_check'] = $this->data['total_orders'] > 0
             ? $this->data['total_revenue'] / $this->data['total_orders']
             : 0;
+        $this->data['average_margin'] = $this->data['total_revenue'] > 0
+            ? ($this->data['total_profit'] / $this->data['total_revenue']) * 100
+            : 0;
 
-        // Популярные инструменты
-        $this->data['popular_tools'] = OrderTool::select('tools.name', DB::raw('COUNT(*) as count'))
-            ->join('tools', 'order_tools.tool_id', '=', 'tools.id')
-            ->where('order_tools.created_at', '>=', $query)
-            ->groupBy('tools.name')
+        // Статистика по услугам
+        $this->data['services_stats'] = Order::select('service_type')
+            ->selectRaw('COUNT(*) as count')
+            ->selectRaw('SUM(total_amount) as revenue')
+            ->selectRaw('SUM(profit) as profit')
+            ->selectRaw('AVG(profit / total_amount * 100) as margin')
+            ->where('created_at', '>=', $query)
+            ->groupBy('service_type')
             ->orderByDesc('count')
-            ->limit(5)
             ->get();
 
-        // Популярные виды ремонта
-        $this->data['popular_repairs'] = Repair::select('description', DB::raw('COUNT(*) as count'))
+        // Статистика по инструментам
+        $this->data['tools_stats'] = Order::select('tool_type')
+            ->selectRaw('COUNT(*) as count')
+            ->selectRaw('SUM(total_amount) as revenue')
+            ->selectRaw('SUM(profit) as profit')
+            ->selectRaw('AVG(profit / total_amount * 100) as margin')
             ->where('created_at', '>=', $query)
-            ->groupBy('description')
+            ->groupBy('tool_type')
             ->orderByDesc('count')
-            ->limit(5)
+            ->limit(10)
+            ->get();
+
+        // Частота посещений клиентов
+        $this->data['client_frequency'] = Client::select('clients.full_name', 'clients.phone')
+            ->selectRaw('COUNT(orders.id) as orders_count')
+            ->selectRaw('SUM(orders.total_amount) as total_spent')
+            ->selectRaw('AVG(orders.total_amount) as avg_order')
+            ->leftJoin('orders', 'clients.id', '=', 'orders.client_id')
+            ->where('orders.created_at', '>=', $query)
+            ->groupBy('clients.id', 'clients.full_name', 'clients.phone')
+            ->having('orders_count', '>=', 2)
+            ->orderByDesc('orders_count')
+            ->limit(20)
+            ->get();
+
+        // Статистика по статусам
+        $this->data['status_stats'] = Order::select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->where('created_at', '>=', $query)
+            ->groupBy('status')
+            ->orderByDesc('count')
+            ->get();
+
+        // Ежемесячная статистика
+        $this->data['monthly_stats'] = Order::selectRaw('YEAR(created_at) as year, MONTH(created_at) as month')
+            ->selectRaw('COUNT(*) as orders')
+            ->selectRaw('SUM(total_amount) as revenue')
+            ->selectRaw('SUM(profit) as profit')
+            ->where('created_at', '>=', now()->subYear())
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
             ->get();
     }
 

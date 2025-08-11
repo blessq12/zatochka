@@ -50,13 +50,7 @@ class OrderResource extends Resource
                             ->required(),
                         Forms\Components\Select::make('status')
                             ->label('Статус')
-                            ->options([
-                                'new' => 'Новый',
-                                'in_progress' => 'В работе',
-                                'ready' => 'Готов',
-                                'delivered' => 'Доставлен',
-                                'cancelled' => 'Отменен',
-                            ])
+                            ->options(Order::getStatusOptions())
                             ->required(),
                     ])->columns(3),
 
@@ -83,49 +77,154 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')
-                    ->label('Номер заказа')
+                    ->label('№ заказа')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+                Tables\Columns\TextColumn::make('client.full_name')
+                    ->label('ФИО клиента')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('client.full_name')
-                    ->label('Клиент')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Статус')
+                Tables\Columns\TextColumn::make('client.phone')
+                    ->label('Телефон')
+                    ->searchable()
+                    ->copyable(),
+                Tables\Columns\TextColumn::make('client.telegram')
+                    ->label('Telegram')
+                    ->searchable()
+                    ->copyable()
+                    ->placeholder('—'),
+                Tables\Columns\TextColumn::make('service_type')
+                    ->label('Услуга')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
-                        'new' => 'gray',
-                        'in_progress' => 'warning',
-                        'ready' => 'success',
-                        'delivered' => 'info',
-                        'cancelled' => 'danger',
+                        'repair' => 'danger',
+                        'maintenance' => 'warning',
+                        'consultation' => 'info',
+                        'other' => 'gray',
+                    })
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'repair' => 'Ремонт',
+                        'maintenance' => 'Заточка',
+                        'consultation' => 'Консультация',
+                        'other' => 'Другое',
                     }),
+                Tables\Columns\TextColumn::make('tool_type')
+                    ->label('Инструмент')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('total_tools_count')
+                    ->label('Кол-во')
+                    ->sortable()
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('client.delivery_address')
+                    ->label('Адрес доставки')
+                    ->searchable()
+                    ->limit(30)
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('total_amount')
                     ->label('Сумма')
                     ->money('RUB')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('cost_price')
-                    ->label('Себестоимость')
-                    ->money('RUB')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('profit')
-                    ->label('Прибыль')
-                    ->money('RUB')
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold'),
+                Tables\Columns\TextColumn::make('is_paid')
+                    ->label('Оплата')
+                    ->badge()
+                    ->color(fn(bool $state): string => $state ? 'success' : 'danger')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Оплачен' : 'Не оплачен'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Статус')
+                    ->badge()
+                    ->color(fn(Order $record): string => $record->getStatusColor())
+                    ->formatStateUsing(fn(string $state): string => Order::getStatusOptions()[$state] ?? $state),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')
-                    ->dateTime()
+                    ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Статус')
+                    ->options(Order::getStatusOptions()),
+                Tables\Filters\TernaryFilter::make('is_paid')
+                    ->label('Оплата')
+                    ->placeholder('Все')
+                    ->trueLabel('Оплаченные')
+                    ->falseLabel('Неоплаченные'),
+                Tables\Filters\SelectFilter::make('service_type')
+                    ->label('Тип услуги')
                     ->options([
-                        'new' => 'Новый',
-                        'in_progress' => 'В работе',
-                        'ready' => 'Готов',
-                        'delivered' => 'Доставлен',
-                        'cancelled' => 'Отменен',
+                        'repair' => 'Ремонт',
+                        'maintenance' => 'Заточка/Обслуживание',
+                        'consultation' => 'Консультация',
+                        'other' => 'Другое',
                     ]),
+                Tables\Filters\SelectFilter::make('tool_type')
+                    ->label('Тип инструмента')
+                    ->options([
+                        'drill' => 'Дрель',
+                        'screwdriver' => 'Шуруповерт',
+                        'grinder' => 'Болгарка',
+                        'saw' => 'Пила',
+                        'hammer' => 'Перфоратор',
+                        'jigsaw' => 'Лобзик',
+                        'planer' => 'Рубанок',
+                        'other' => 'Другое',
+                    ]),
+                Tables\Filters\Filter::make('client_frequency')
+                    ->label('Частота обращений клиента')
+                    ->form([
+                        \Filament\Forms\Components\Select::make('frequency')
+                            ->label('Количество заказов в месяц')
+                            ->options([
+                                '1' => '1 раз в месяц',
+                                '2' => '2 раза в месяц',
+                                '3' => '3 раза в месяц',
+                                '4+' => '4+ раза в месяц',
+                            ])
+                            ->required(),
+                    ])
+                    ->query(function ($query, array $data) {
+                        if (!empty($data['frequency'])) {
+                            $frequency = $data['frequency'];
+                            $monthStart = now()->startOfMonth();
+                            $monthEnd = now()->endOfMonth();
+
+                            if ($frequency === '4+') {
+                                return $query->whereHas('client', function ($q) use ($monthStart, $monthEnd) {
+                                    $q->whereHas('orders', function ($orderQuery) use ($monthStart, $monthEnd) {
+                                        $orderQuery->whereBetween('created_at', [$monthStart, $monthEnd]);
+                                    }, '>=', 4);
+                                });
+                            } else {
+                                return $query->whereHas('client', function ($q) use ($monthStart, $monthEnd, $frequency) {
+                                    $q->whereHas('orders', function ($orderQuery) use ($monthStart, $monthEnd) {
+                                        $orderQuery->whereBetween('created_at', [$monthStart, $monthEnd]);
+                                    }, '=', (int)$frequency);
+                                });
+                            }
+                        }
+                        return $query;
+                    }),
+                Tables\Filters\Filter::make('date_range')
+                    ->label('Дата обращения')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('created_from')
+                            ->label('От'),
+                        \Filament\Forms\Components\DatePicker::make('created_until')
+                            ->label('До'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn($query, $date) => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn($query, $date) => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
                 Tables\Filters\SelectFilter::make('client')
                     ->label('Клиент')
                     ->relationship('client', 'full_name')
@@ -133,8 +232,110 @@ class OrderResource extends Resource
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Просмотр'),
+                Tables\Actions\EditAction::make()
+                    ->label('Редактировать'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('confirm')
+                        ->label('Подтвердить')
+                        ->icon('heroicon-m-check-circle')
+                        ->color('success')
+                        ->visible(fn(Order $record): bool => $record->status === 'new')
+                        ->action(function (Order $record): void {
+                            $record->confirm();
+                        }),
+                    Tables\Actions\Action::make('assign_courier')
+                        ->label('Передать курьеру')
+                        ->icon('heroicon-m-truck')
+                        ->color('warning')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['new', 'confirmed']))
+                        ->action(function (Order $record): void {
+                            $record->assignToCourier();
+                        }),
+                    Tables\Actions\Action::make('assign_master')
+                        ->label('Передать мастеру')
+                        ->icon('heroicon-m-wrench-screwdriver')
+                        ->color('warning')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['confirmed', 'courier_pickup']))
+                        ->action(function (Order $record): void {
+                            $record->assignToMaster();
+                        }),
+                    Tables\Actions\Action::make('start_work')
+                        ->label('Начать работу')
+                        ->icon('heroicon-m-play')
+                        ->color('warning')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['master_received', 'confirmed']))
+                        ->action(function (Order $record): void {
+                            $record->startWork();
+                        }),
+                    Tables\Actions\Action::make('complete_work')
+                        ->label('Завершить работу')
+                        ->icon('heroicon-m-check')
+                        ->color('success')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['in_progress', 'master_received']))
+                        ->action(function (Order $record): void {
+                            $record->completeWork();
+                        }),
+                    Tables\Actions\Action::make('mark_ready')
+                        ->label('Готов к выдаче')
+                        ->icon('heroicon-m-gift')
+                        ->color('success')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['work_completed', 'in_progress']))
+                        ->action(function (Order $record): void {
+                            $record->markAsReady();
+                        }),
+                    Tables\Actions\Action::make('assign_delivery')
+                        ->label('Передать на доставку')
+                        ->icon('heroicon-m-truck')
+                        ->color('warning')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['work_completed', 'ready_for_pickup']))
+                        ->action(function (Order $record): void {
+                            $record->assignToDeliveryCourier();
+                        }),
+                    Tables\Actions\Action::make('mark_delivered')
+                        ->label('Доставлен')
+                        ->icon('heroicon-m-home')
+                        ->color('info')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['courier_delivery', 'ready_for_pickup']))
+                        ->action(function (Order $record): void {
+                            $record->markAsDelivered();
+                        }),
+                    Tables\Actions\Action::make('receive_payment')
+                        ->label('Получена оплата')
+                        ->icon('heroicon-m-banknotes')
+                        ->color('success')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['delivered', 'ready_for_pickup']))
+                        ->action(function (Order $record): void {
+                            $record->receivePayment();
+                        }),
+                    Tables\Actions\Action::make('close')
+                        ->label('Закрыть заказ')
+                        ->icon('heroicon-m-lock-closed')
+                        ->color('success')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['payment_received', 'delivered']))
+                        ->action(function (Order $record): void {
+                            $record->close();
+                        }),
+                    Tables\Actions\Action::make('request_feedback')
+                        ->label('Запросить отзыв')
+                        ->icon('heroicon-m-chat-bubble-left-right')
+                        ->color('info')
+                        ->visible(fn(Order $record): bool => in_array($record->status, ['closed', 'payment_received']))
+                        ->action(function (Order $record): void {
+                            $record->requestFeedback();
+                        }),
+                    Tables\Actions\Action::make('cancel')
+                        ->label('Отменить')
+                        ->icon('heroicon-m-x-circle')
+                        ->color('danger')
+                        ->visible(fn(Order $record): bool => !in_array($record->status, ['closed', 'cancelled', 'feedback_requested']))
+                        ->action(function (Order $record): void {
+                            $record->cancel();
+                        }),
+                ])
+                    ->label('Действия')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

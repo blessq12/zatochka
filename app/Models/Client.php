@@ -8,6 +8,10 @@ class Client extends Model
 {
     protected $fillable = ['full_name', 'phone', 'telegram', 'birth_date', 'delivery_address'];
 
+    protected $casts = [
+        'birth_date' => 'date',
+    ];
+
     public function orders()
     {
         return $this->hasMany(Order::class);
