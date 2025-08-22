@@ -56,11 +56,11 @@ export default {
             <div class="flex-1 md:max-w-md">
                 <div class="sticky top-24">
                     <h2
-                        class="section-title text-3xl font-bold text-center mb-12"
+                        class="section-title text-3xl font-bold text-center mb-12 dark:text-white"
                     >
                         Частые вопросы
                     </h2>
-                    <p class="text-start text-lg">
+                    <p class="text-start text-lg dark:text-gray-300">
                         Мы собрали самые частые вопросы, которые нам задают.
                         Если у вас остались вопросы, вы можете задать их
                         руководителю.
@@ -89,7 +89,7 @@ export default {
                         @click="toggleFaq(faq.id)"
                     >
                         <h3
-                            class="flex items-center cursor-pointer font-medium"
+                            class="flex items-center cursor-pointer font-medium dark:text-white"
                             style="margin-bottom: 0 !important"
                         >
                             <i
@@ -103,7 +103,10 @@ export default {
                         class="faq-answer border-0"
                         :class="{ 'is-open': faq.isOpen }"
                     >
-                        <p v-html="faq.answer" class="text-gray-500"></p>
+                        <p
+                            v-html="faq.answer"
+                            class="text-gray-500 dark:text-gray-400"
+                        ></p>
                     </div>
                 </div>
             </div>
@@ -127,10 +130,21 @@ export default {
     position: relative;
     background-color: white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.dark .faq-question {
+    border-color: #374151;
+    background-color: #1f2937;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .faq-question:hover {
     border-color: #d1d5db;
+}
+
+.dark .faq-question:hover {
+    border-color: #4b5563;
 }
 
 .is-open-faq {
@@ -138,6 +152,10 @@ export default {
     border-bottom-right-radius: 0;
     border-bottom: none;
     background-color: #f9fafb;
+}
+
+.dark .is-open-faq {
+    background-color: #374151;
 }
 
 .faq-icon {
@@ -155,6 +173,11 @@ export default {
     position: absolute;
     background-color: #6b7280;
     transition: all 0.3s ease;
+}
+
+.dark .faq-icon:before,
+.dark .faq-icon:after {
+    background-color: #9ca3af;
 }
 
 .faq-icon:before {
@@ -202,5 +225,13 @@ export default {
     opacity: 1;
     background-color: white;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .is-open {
+    border-left: 1px solid #374151;
+    border-right: 1px solid #374151;
+    border-bottom: 1px solid #374151;
+    background-color: #1f2937;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 </style>

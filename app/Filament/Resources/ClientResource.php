@@ -100,7 +100,7 @@ class ClientResource extends Resource
     {
         return [
             RelationManagers\OrdersRelationManager::class,
-            RelationManagers\FeedbackRelationManager::class,
+
             RelationManagers\NotificationsRelationManager::class,
         ];
     }

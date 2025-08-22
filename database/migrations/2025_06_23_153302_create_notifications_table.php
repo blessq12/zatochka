@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('client_id')->constrained()->onDelete('cascade');
-            $table->enum('type', ['ready', 'reminder', 'feedback']);
+            $table->enum('type', ['ready', 'reminder']);
             $table->text('message_text');
             $table->timestamp('sent_at')->nullable();
             $table->timestamps();

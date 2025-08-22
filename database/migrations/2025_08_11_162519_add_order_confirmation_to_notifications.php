@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('notifications', function (Blueprint $table) {
-            $table->enum('type', ['ready', 'reminder', 'feedback', 'order_confirmation'])->change();
+            $table->enum('type', ['ready', 'reminder', 'order_confirmation'])->change();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('notifications', function (Blueprint $table) {
-            $table->enum('type', ['ready', 'reminder', 'feedback'])->change();
+            $table->enum('type', ['ready', 'reminder'])->change();
         });
     }
 };

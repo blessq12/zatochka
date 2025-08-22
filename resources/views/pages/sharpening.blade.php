@@ -1,32 +1,41 @@
 <x-app-layout title="Заточка инструментов">
+    <!-- Hero секция -->
+    <x-page-hero 
+        title="Заточка <span class='text-accent'>инструментов</span>"
+        description="Профессиональная заточка маникюрных, парикмахерских и грумерских инструментов. Восстанавливаем остроту и работоспособность ваших инструментов."
+        :breadcrumbs="[
+            ['name' => 'Заточка инструментов', 'href' => route('sharpening')]
+        ]"
+    />
+
     <!-- Прайс -->
-    <section class="py-24">
+    <section class="py-24 dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4">
-            <h1 class="text-4xl font-bold mb-12">Прайс на заточку</h1>
+            <h1 class="text-4xl font-bold mb-12 dark:text-white">Прайс на заточку</h1>
 
             <!-- Маникюрные инструменты -->
             <div class="mb-12">
-                <h2 class="text-2xl font-bold mb-6">Маникюрные инструменты</h2>
+                <h2 class="text-2xl font-bold mb-6 dark:text-white">Маникюрные инструменты</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead>
                             <tr>
-                                <th class="text-left py-4">Услуга</th>
-                                <th class="text-right py-4">Цена</th>
+                                <th class="text-left py-4 dark:text-white">Услуга</th>
+                                <th class="text-right py-4 dark:text-white">Цена</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="py-2">Кусачки</td>
-                                <td class="text-right">от 500 ₽</td>
+                                <td class="py-2 dark:text-gray-300">Кусачки</td>
+                                <td class="text-right dark:text-gray-300">от 500 ₽</td>
                             </tr>
                             <tr>
-                                <td class="py-2">Ножницы</td>
-                                <td class="text-right">от 600 ₽</td>
+                                <td class="py-2 dark:text-gray-300">Ножницы</td>
+                                <td class="text-right dark:text-gray-300">от 600 ₽</td>
                             </tr>
                             <tr>
-                                <td class="py-2">Щипчики</td>
-                                <td class="text-right">от 400 ₽</td>
+                                <td class="py-2 dark:text-gray-300">Щипчики</td>
+                                <td class="text-right dark:text-gray-300">от 400 ₽</td>
                             </tr>
                         </tbody>
                     </table>

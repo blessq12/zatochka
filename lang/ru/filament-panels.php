@@ -24,10 +24,7 @@ return [
             'label' => 'Ремонт',
             'plural_label' => 'Ремонты',
         ],
-        'Feedback' => [
-            'label' => 'Отзыв',
-            'plural_label' => 'Отзывы',
-        ],
+
         'Notification' => [
             'label' => 'Уведомление',
             'plural_label' => 'Уведомления',

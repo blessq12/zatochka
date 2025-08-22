@@ -317,19 +317,12 @@ class OrderResource extends Resource
                         ->action(function (Order $record): void {
                             $record->close();
                         }),
-                    Tables\Actions\Action::make('request_feedback')
-                        ->label('Запросить отзыв')
-                        ->icon('heroicon-m-chat-bubble-left-right')
-                        ->color('info')
-                        ->visible(fn(Order $record): bool => in_array($record->status, ['closed', 'payment_received']))
-                        ->action(function (Order $record): void {
-                            $record->requestFeedback();
-                        }),
+
                     Tables\Actions\Action::make('cancel')
                         ->label('Отменить')
                         ->icon('heroicon-m-x-circle')
                         ->color('danger')
-                        ->visible(fn(Order $record): bool => !in_array($record->status, ['closed', 'cancelled', 'feedback_requested']))
+                        ->visible(fn(Order $record): bool => !in_array($record->status, ['closed', 'cancelled']))
                         ->action(function (Order $record): void {
                             $record->cancel();
                         }),
@@ -350,7 +343,7 @@ class OrderResource extends Resource
             RelationManagers\OrderToolsRelationManager::class,
             RelationManagers\RepairsRelationManager::class,
             RelationManagers\NotificationsRelationManager::class,
-            RelationManagers\FeedbackRelationManager::class,
+
         ];
     }
 

@@ -23,6 +23,11 @@
             transition: all 0.3s ease;
         }
 
+        .dark .quick-action-btn {
+            border: 1px solid #374151;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
 
         .quick-action-btn:hover {
             transform: translateY(-2px);
@@ -35,7 +40,7 @@
         }
     </style>
 
-    <p class="text-sm text-gray-500 mb-4">
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
         Быстрые действия
     </p>
 

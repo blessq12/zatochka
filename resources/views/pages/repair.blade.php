@@ -1,4 +1,13 @@
 <x-app-layout title="Ремонт оборудования">
+    <!-- Hero секция -->
+    <x-page-hero 
+        title="Ремонт <span class='text-accent'>оборудования</span>"
+        description="Профессиональный ремонт маникюрного, парикмахерского и грумерского оборудования. Диагностика, ремонт и обслуживание вашей техники."
+        :breadcrumbs="[
+            ['name' => 'Ремонт оборудования', 'href' => route('repair')]
+        ]"
+    />
+
     <!-- Прайс -->
     <section class="py-24">
         <div class="max-w-7xl mx-auto px-4">

@@ -97,7 +97,7 @@ export default {
     <div>
         <button
             @click="toggleMenu"
-            class="mobile-menu-btn md:hidden fixed top-4 right-4 z-50 bg-white p-2 rounded-lg shadow-lg"
+            class="mobile-menu-btn md:hidden fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
         >
             <svg
                 class="w-6 h-6"
@@ -116,21 +116,23 @@ export default {
 
         <div
             ref="menu"
-            class="fixed top-0 right-0 h-screen bg-white shadow-xl z-40 w-full md:w-[40%] transform"
+            class="fixed top-0 right-0 h-screen bg-white dark:bg-gray-900 shadow-xl z-40 w-full md:w-[40%] transform"
         >
-            <div class="flex items-center justify-between p-4 border-b">
+            <div
+                class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
+            >
                 <a href="/" class="block">
                     <img src="/logo.png" alt="Logo" class="nav-logo" />
                 </a>
             </div>
 
-            <div class="p-6 border-b">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <div ref="links" class="space-y-4">
                     <a
                         v-for="(item, index) in navigation"
                         :key="index"
-                        @click="handleNavigation(item.url)"
-                        class="block text-lg font-medium hover:text-primary-600 transition-colors cursor-pointer"
+                        @click="handleNavigation(item.href)"
+                        class="block text-lg font-medium hover:text-primary-600 transition-colors cursor-pointer dark:text-white dark:hover:text-accent"
                     >
                         {{ item.name }}
                     </a>
@@ -139,12 +141,14 @@ export default {
 
             <!-- Контакты -->
             <div class="p-6">
-                <h3 class="text-lg font-semibold mb-4">Контакты</h3>
+                <h3 class="text-lg font-semibold mb-4 dark:text-white">
+                    Контакты
+                </h3>
                 <div ref="contacts" class="space-y-4">
                     <a
                         v-if="contacts.phone"
                         :href="'tel:' + contacts.phone"
-                        class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 transition-colors"
+                        class="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-accent transition-colors"
                     >
                         <svg
                             class="w-5 h-5"
@@ -164,7 +168,7 @@ export default {
                     <a
                         v-if="contacts.email"
                         :href="'mailto:' + contacts.email"
-                        class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 transition-colors"
+                        class="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-accent transition-colors"
                     >
                         <svg
                             class="w-5 h-5"
@@ -183,7 +187,7 @@ export default {
                     </a>
                     <div
                         v-if="contacts.address"
-                        class="flex items-center space-x-3 text-gray-600"
+                        class="flex items-center space-x-3 text-gray-600 dark:text-gray-400"
                     >
                         <svg
                             class="w-5 h-5"
@@ -208,7 +212,7 @@ export default {
                     </div>
                     <div
                         v-if="contacts.schedule"
-                        class="flex items-center space-x-3 text-gray-600"
+                        class="flex items-center space-x-3 text-gray-600 dark:text-gray-400"
                     >
                         <svg
                             class="w-5 h-5"

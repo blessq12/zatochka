@@ -15,7 +15,6 @@ return new class extends Migration
             $table->enum('type', [
                 'ready',
                 'reminder',
-                'feedback',
                 'order_confirmation',
                 'status_update',
                 'payment_required',
@@ -35,7 +34,6 @@ return new class extends Migration
             $table->enum('type', [
                 'ready',
                 'reminder',
-                'feedback',
                 'order_confirmation'
             ])->change();
         });

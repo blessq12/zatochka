@@ -7,6 +7,24 @@
 import "@mdi/font/css/materialdesignicons.min.css";
 import { createApp } from "vue";
 import "./bootstrap";
+import modalService from "./services/modalService";
+
+// Инициализация темы
+function initTheme() {
+    const savedTheme = localStorage.getItem("theme");
+    const systemPrefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+    ).matches;
+
+    if (savedTheme === "dark" || (!savedTheme && systemPrefersDark)) {
+        document.documentElement.classList.add("dark");
+    } else {
+        document.documentElement.classList.remove("dark");
+    }
+}
+
+// Запускаем инициализацию темы
+initTheme();
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
@@ -14,6 +32,12 @@ import "./bootstrap";
  */
 
 const app = createApp({});
+
+// Регистрируем глобальные сервисы
+app.config.globalProperties.$modalService = modalService;
+
+// Добавляем в window для глобального доступа
+window.modalService = modalService;
 
 /**
  * The following block of code may be used to automatically register your

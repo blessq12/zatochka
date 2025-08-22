@@ -26,11 +26,7 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->runInBackground();
 
-        // Ежедневно в 14:00 - запрос обратной связи (через 3 дня после доставки)
-        $schedule->command('orders:request-feedback')
-            ->dailyAt('14:00')
-            ->withoutOverlapping()
-            ->runInBackground();
+
 
         // Еженедельно по пятницам в 11:00 - запрос отзывов в 2ГИС (через 7 дней после доставки)
         $schedule->command('orders:request-2gis-review')

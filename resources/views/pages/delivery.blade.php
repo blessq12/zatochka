@@ -1,17 +1,12 @@
 <x-app-layout title="Условия доставки">
-    <!-- Заголовок страницы -->
-    <section class="pattern-zatochka py-20 relative">
-        <div class="max-w-7xl mx-auto px-4 relative z-10">
-            <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-black mb-6">
-                    Условия <span class="hero-accent">доставки</span>
-                </h1>
-                <p class="text-xl text-gray-700 max-w-3xl mx-auto">
-                    Мы предлагаем удобную доставку ваших инструментов для заточки и ремонта
-                </p>
-            </div>
-        </div>
-    </section>
+    <!-- Hero секция -->
+    <x-page-hero 
+        title="Условия <span class='text-accent'>доставки</span>"
+        description="Удобная доставка ваших инструментов для заточки и ремонта. Бесплатная доставка при заказе от определенного количества инструментов."
+        :breadcrumbs="[
+            ['name' => 'Условия доставки', 'href' => route('delivery')]
+        ]"
+    />
 
     <!-- Основные условия -->
     <section class="py-16 bg-white">

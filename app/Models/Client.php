@@ -21,9 +21,4 @@ class Client extends Model
     {
         return $this->hasMany(Notification::class);
     }
-
-    public function feedback()
-    {
-        return $this->hasMany(Feedback::class);
-    }
 }

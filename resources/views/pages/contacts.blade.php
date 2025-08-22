@@ -1,42 +1,36 @@
 <x-app-layout title="Контакты">
-    <!-- Заголовок страницы -->
-    <section class="pattern-zatochka py-20 relative">
-        <div class="max-w-7xl mx-auto px-4 relative z-10">
-            <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-black mb-6">
-                    Наши <span class="hero-accent">контакты</span>
-                </h1>
-                <p class="text-xl text-gray-700 max-w-3xl mx-auto">
-                    Мы всегда рады помочь вам с заточкой и ремонтом инструментов. Свяжитесь с нами любым удобным
-                    способом.
-                </p>
-            </div>
-        </div>
-    </section>
+    <!-- Hero секция -->
+    <x-page-hero 
+        title="Наши <span class='text-accent'>контакты</span>"
+        description="Мы всегда рады помочь вам с заточкой и ремонтом инструментов. Свяжитесь с нами любым удобным способом."
+        :breadcrumbs="[
+            ['name' => 'Контакты', 'href' => route('contacts')]
+        ]"
+    />
 
     <!-- Основная информация -->
-    <section class="py-16 bg-white">
+    <section class="py-16 bg-white dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="contact-card hover:shadow-xl transition-all">
                     <div class="contact-icon">
                         <i class="mdi mdi-phone text-2xl"></i>
                     </div>
-                    <h3 class="font-bold text-xl mb-4">Телефон</h3>
+                    <h3 class="font-bold text-xl mb-4 dark:text-white">Телефон</h3>
                     <p class="text-lg mb-2">
                         <a href="tel:+79832335907" class="contact-link flex items-center justify-center">
                             <i class="mdi mdi-phone-in-talk mr-2"></i>
                             +7 (983) 233-59-07
                         </a>
                     </p>
-                    <p class="text-gray-600 text-center">Максим</p>
+                    <p class="text-gray-600 dark:text-gray-400 text-center">Максим</p>
                 </div>
 
                 <div class="contact-card hover:shadow-xl transition-all">
                     <div class="contact-icon">
                         <i class="mdi mdi-email text-2xl"></i>
                     </div>
-                    <h3 class="font-bold text-xl mb-4">Email</h3>
+                    <h3 class="font-bold text-xl mb-4 dark:text-white">Email</h3>
                     <p class="text-lg">
                         <a href="mailto:zatochka.tsk@yandex.ru" class="contact-link flex items-center justify-center">
                             <i class="mdi mdi-email-outline mr-2"></i>
@@ -49,8 +43,8 @@
                     <div class="contact-icon">
                         <i class="mdi mdi-map-marker text-2xl"></i>
                     </div>
-                    <h3 class="font-bold text-xl mb-4">Адрес</h3>
-                    <p class="text-gray-600 text-center">
+                    <h3 class="font-bold text-xl mb-4 dark:text-white">Адрес</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-center">
                         <i class="mdi mdi-map-marker-radius mb-2 text-accent text-2xl"></i><br>
                         Пр. Ленина 169/пер. Карповский 12<br>
                         Вход со стороны Ленина<br>
@@ -62,37 +56,38 @@
     </section>
 
     <!-- Карта и фото -->
-    <section class="py-16 bg-gray-50">
+    <section class="py-16 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-7xl mx-auto px-4">
-            <h2 class="section-title text-3xl font-bold text-center mb-12">Как нас найти</h2>
+            <h2 class="section-title text-3xl font-bold text-center mb-12 dark:text-white">Как нас найти</h2>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <!-- Карта -->
                 <div class="map-container shadow-lg">
                     <div class="w-full h-full rounded-lg overflow-hidden">
                         <!-- Здесь будет карта 2GIS -->
-                        <div class="w-full h-full flex flex-col items-center justify-center bg-gray-100">
+                        <div
+                            class="w-full h-full flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700">
                             <i class="mdi mdi-map text-6xl text-accent mb-4"></i>
-                            <p class="text-gray-600">Интерактивная карта будет добавлена позже</p>
+                            <p class="text-gray-600 dark:text-gray-400">Интерактивная карта будет добавлена позже</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Фото -->
                 <div class="space-y-6">
-                    <h3 class="font-bold text-2xl flex items-center">
+                    <h3 class="font-bold text-2xl flex items-center dark:text-white">
                         <i class="mdi mdi-directions mr-3 text-accent"></i>
                         Как добраться
                     </h3>
                     <div class="feature-card p-6">
-                        <p class="text-gray-700 mb-6 text-lg">
+                        <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">
                             От остановки «Центральный рынок» идите направо до вывески. Мы находимся в здании с магазином
                             «Тайга».
                         </p>
                         <div
-                            class="bg-gray-100 rounded-xl h-[300px] flex flex-col items-center justify-center shadow-inner">
+                            class="bg-gray-100 dark:bg-gray-700 rounded-xl h-[300px] flex flex-col items-center justify-center shadow-inner">
                             <i class="mdi mdi-storefront text-6xl text-accent mb-4"></i>
-                            <p class="text-gray-600">Фото вывески будет добавлено позже</p>
+                            <p class="text-gray-600 dark:text-gray-400">Фото вывески будет добавлено позже</p>
                         </div>
                     </div>
                 </div>

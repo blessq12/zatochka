@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\HasReviews;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    use HasReviews;
     protected $fillable = [
         'client_id',
         'order_number',
@@ -36,8 +38,7 @@ class Order extends Model
         'work_completed_at',
         'courier_delivery_at',
         'payment_received_at',
-        'closed_at',
-        'feedback_requested_at'
+        'closed_at'
     ];
 
     protected $casts = [
@@ -62,7 +63,6 @@ class Order extends Model
         'courier_delivery_at' => 'datetime',
         'payment_received_at' => 'datetime',
         'closed_at' => 'datetime',
-        'feedback_requested_at' => 'datetime',
     ];
 
     public function client()
@@ -85,10 +85,12 @@ class Order extends Model
         return $this->hasMany(Notification::class);
     }
 
-    public function feedback()
+    public function reviews()
     {
-        return $this->hasMany(Feedback::class);
+        return $this->hasMany(Review::class);
     }
+
+
 
     // Методы для работы с фото инструментов
     public function addToolPhoto($photoPath)
@@ -211,7 +213,6 @@ class Order extends Model
             'delivered' => 'Доставлен',
             'payment_received' => 'Оплачен',
             'closed' => 'Закрыт',
-            'feedback_requested' => 'Запрошена обратная связь',
             'cancelled' => 'Отменен',
         ];
     }
@@ -333,17 +334,7 @@ class Order extends Model
         return false;
     }
 
-    public function requestFeedback(): bool
-    {
-        if (in_array($this->status, ['closed', 'payment_received'])) {
-            $this->update([
-                'status' => 'feedback_requested',
-                'feedback_requested_at' => now()
-            ]);
-            return true;
-        }
-        return false;
-    }
+
 
     public function cancel(): bool
     {
@@ -367,9 +358,8 @@ class Order extends Model
             'courier_delivery' => ['delivered', 'cancelled'],
             'ready_for_pickup' => ['delivered', 'courier_delivery', 'cancelled'],
             'delivered' => ['payment_received', 'closed', 'cancelled'],
-            'payment_received' => ['closed', 'feedback_requested', 'cancelled'],
-            'closed' => ['feedback_requested'],
-            'feedback_requested' => [],
+            'payment_received' => ['closed', 'cancelled'],
+            'closed' => [],
             'cancelled' => [],
             default => [],
         };
@@ -390,7 +380,6 @@ class Order extends Model
             'delivered' => 'info',
             'payment_received' => 'success',
             'closed' => 'success',
-            'feedback_requested' => 'info',
             'cancelled' => 'danger',
             default => 'gray',
         };

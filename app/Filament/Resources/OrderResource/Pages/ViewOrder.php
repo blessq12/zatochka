@@ -141,23 +141,14 @@ class ViewOrder extends ViewRecord
                     $this->notify('success', 'Заказ закрыт');
                 }),
 
-            // Запросить отзыв
-            Action::make('request_feedback')
-                ->label('Запросить отзыв')
-                ->icon('heroicon-m-chat-bubble-left-right')
-                ->color('info')
-                ->visible(fn(): bool => in_array($order->status, ['closed', 'payment_received']))
-                ->action(function () {
-                    $this->getRecord()->requestFeedback();
-                    $this->notify('success', 'Запрошен отзыв');
-                }),
+
 
             // Отменить заказ
             Action::make('cancel')
                 ->label('Отменить заказ')
                 ->icon('heroicon-m-x-circle')
                 ->color('danger')
-                ->visible(fn(): bool => !in_array($order->status, ['closed', 'cancelled', 'feedback_requested']))
+                ->visible(fn(): bool => !in_array($order->status, ['closed', 'cancelled']))
                 ->requiresConfirmation()
                 ->modalHeading('Отменить заказ?')
                 ->modalDescription('Вы уверены, что хотите отменить этот заказ? Это действие нельзя отменить.')
