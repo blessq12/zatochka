@@ -16,12 +16,12 @@
     "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DhbTjJ66.css",
+    "file": "assets/app-txuD1nVL.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-X2oDEkhs.js",
+    "file": "assets/app-BBKV0xm5.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

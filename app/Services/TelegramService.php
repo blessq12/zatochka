@@ -45,4 +45,23 @@ class TelegramService implements TelegramServiceContract
 
         return $this->sendMessage($telegramUsername, $message);
     }
+
+    public function sendVerificationCode(string $telegramUsername, string $code): bool
+    {
+        $message = "🔐 <b>Код верификации для аккаунта Заточка ТСК</b>\n\n";
+        $message .= "Ваш код: <b>{$code}</b>\n\n";
+        $message .= "Код действителен 10 минут.\n";
+        $message .= "Если вы не запрашивали верификацию, проигнорируйте это сообщение.";
+
+        return $this->sendMessage($telegramUsername, $message);
+    }
+
+    public function sendVerificationSuccess(string $telegramUsername): bool
+    {
+        $message = "✅ <b>Telegram успешно верифицирован!</b>\n\n";
+        $message .= "Ваш аккаунт в системе Заточка ТСК теперь подтвержден.\n";
+        $message .= "Вы можете использовать все функции приложения.";
+
+        return $this->sendMessage($telegramUsername, $message);
+    }
 }

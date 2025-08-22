@@ -20,6 +20,11 @@
             'route' => 'contacts',
             'href' => '/contacts',
         ],
+        [
+            'name' => 'Личный кабинет',
+            'route' => 'client-dashboard',
+            'href' => '/dashboard',
+        ],
     ],
 ])
 

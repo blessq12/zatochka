@@ -12,3 +12,13 @@ Route::controller(MainController::class)
         Route::get('/delivery', 'delivery')->name('delivery');
         Route::get('/contacts', 'contacts')->name('contacts');
     });
+
+// Тестовая страница аутентификации клиентов
+Route::get('/client-auth-test', function () {
+    return view('pages.client-auth-test');
+})->name('client-auth-test');
+
+// Личный кабинет клиента
+Route::get('/dashboard', function () {
+    return view('pages.client-dashboard');
+})->name('client-dashboard');
