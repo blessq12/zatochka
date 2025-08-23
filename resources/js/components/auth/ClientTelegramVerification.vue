@@ -34,6 +34,51 @@
                 </div>
             </div>
 
+            <!-- Инструкция по началу диалога с ботом -->
+            <div
+                class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800"
+            >
+                <div class="flex items-start">
+                    <i
+                        class="mdi mdi-information text-blue-500 text-lg mr-3 mt-0.5"
+                    ></i>
+                    <div>
+                        <h4
+                            class="font-medium text-blue-900 dark:text-blue-100 mb-2"
+                        >
+                            Для получения кода верификации:
+                        </h4>
+                        <ol
+                            class="text-sm text-blue-800 dark:text-blue-200 space-y-1"
+                        >
+                            <li>1. Откройте Telegram</li>
+                            <li>
+                                2. Найдите бота
+                                <strong>@zatochka_tsk_bot</strong>
+                            </li>
+                            <li>
+                                3. Отправьте команду
+                                <code
+                                    class="bg-blue-100 dark:bg-blue-800 px-1 rounded"
+                                    >/start</code
+                                >
+                            </li>
+                            <li>
+                                4. Отправьте ваш номер телефона в формате
+                                <code
+                                    class="bg-blue-100 dark:bg-blue-800 px-1 rounded"
+                                    >+79991234567</code
+                                >
+                            </li>
+                            <li>
+                                5. Вернитесь сюда и нажмите "Отправить код
+                                верификации"
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
             <!-- Кнопка отправки кода -->
             <div v-if="!codeSent" class="text-center">
                 <button
@@ -460,8 +505,11 @@ export default {
                 // Если ошибка авторизации, не показываем ошибку пользователю
                 if (error.message === "Пользователь не авторизован") {
                     this.error = "Сессия истекла. Войдите в систему заново.";
+                } else if (error.message.includes("начали диалог с ботом")) {
+                    this.error = error.message;
                 } else {
-                    this.error = error.message || "Ошибка отправки кода";
+                    this.error =
+                        "Ошибка отправки кода. Убедитесь, что вы начали диалог с ботом @zatochka_tsk_bot";
                 }
 
                 this.$nextTick(() => {

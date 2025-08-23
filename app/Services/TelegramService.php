@@ -64,21 +64,11 @@ class TelegramService implements TelegramServiceContract
 
     public function sendVerificationCode(string $telegramUsername, string $code): bool
     {
-        Log::info('Attempting to send verification code', [
-            'username' => $telegramUsername,
-            'code' => $code
-        ]);
-
         $chatId = $this->getChatIdByUsername($telegramUsername);
         if (!$chatId) {
             Log::error('Chat ID not found for username', ['username' => $telegramUsername]);
             return false;
         }
-
-        Log::info('Found chat ID for username', [
-            'username' => $telegramUsername,
-            'chat_id' => $chatId
-        ]);
 
         $message = "🔐 <b>Код верификации для аккаунта Заточка ТСК</b>\n\n";
         $message .= "Ваш код: <b>{$code}</b>\n\n";
@@ -110,17 +100,11 @@ class TelegramService implements TelegramServiceContract
     {
         // Убираем @ если есть
         $username = ltrim($username, '@');
-        
-        Log::info('Looking for chat by username', ['username' => $username]);
-        
+
         // Ищем в базе данных
         $chat = TelegramChat::where('username', $username)->first();
-        
+
         if ($chat) {
-            Log::info('Chat found in database', [
-                'username' => $username,
-                'chat_id' => $chat->chat_id
-            ]);
             return $chat->chat_id;
         }
 

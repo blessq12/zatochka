@@ -19,14 +19,14 @@
                             <span
                                 class="bg-white/20 px-2 py-1 rounded-full text-xs backdrop-blur-sm"
                             >
-                                @zatochkatsk_bot
+                                @zatochka_tsk_bot
                             </span>
                         </div>
                     </div>
                 </div>
                 <div>
                     <a
-                        href="https://t.me/zatochkatsk_bot"
+                        href="https://t.me/zatochka_tsk_bot"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transform hover:scale-105 transition-all duration-200 shadow-md"

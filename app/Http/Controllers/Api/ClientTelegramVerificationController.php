@@ -59,7 +59,7 @@ class ClientTelegramVerificationController extends Controller
         // Отправляем код через Telegram
         try {
             $result = $this->telegramService->sendVerificationCode($client->telegram, $verificationCode);
-            
+
             if (!$result) {
                 Cache::forget($cacheKey);
                 throw ValidationException::withMessages([
