@@ -1,25 +1,15 @@
 <template>
-    <div class="client-telegram-verification">
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                Верификация Telegram
-            </h2>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Подтвердите ваш Telegram аккаунт для полного доступа к системе
-            </p>
-        </div>
-
+    <div class="hero-card rounded-2xl shadow-lg p-8" ref="formContainer">
         <!-- Статус верификации -->
         <div
-            v-if="verificationStatus"
-            class="mb-6 p-4 rounded-lg"
-            :class="statusClasses"
+            :class="['p-4 rounded-xl border-l-4 mb-6', statusClasses]"
+            ref="statusCard"
         >
             <div class="flex items-center">
-                <i :class="statusIcon" class="mr-3"></i>
+                <i :class="[statusIcon, 'text-2xl mr-3']"></i>
                 <div>
-                    <h3 class="font-medium">{{ statusTitle }}</h3>
-                    <p class="text-sm">{{ statusMessage }}</p>
+                    <h3 class="font-semibold text-lg">{{ statusTitle }}</h3>
+                    <p class="text-sm mt-1">{{ statusMessage }}</p>
                 </div>
             </div>
         </div>
@@ -27,7 +17,10 @@
         <!-- Форма верификации -->
         <div v-if="!verificationStatus?.is_verified" class="space-y-6">
             <!-- Информация о Telegram -->
-            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <div
+                class="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700"
+                ref="telegramInfo"
+            >
                 <div class="flex items-center">
                     <i class="mdi mdi-telegram text-blue-500 text-xl mr-3"></i>
                     <div>
@@ -42,109 +35,159 @@
             </div>
 
             <!-- Кнопка отправки кода -->
-            <div v-if="!codeSent">
+            <div v-if="!codeSent" class="text-center">
                 <button
                     @click="sendVerificationCode"
                     :disabled="loading || !client?.telegram"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                    ref="sendCodeButton"
                 >
-                    <span v-if="loading" class="flex items-center">
-                        <i class="mdi mdi-loading mdi-spin mr-2"></i>
-                        Отправка...
-                    </span>
-                    <span v-else class="flex items-center">
-                        <i class="mdi mdi-telegram mr-2"></i>
-                        Отправить код верификации
-                    </span>
+                    <i v-if="loading" class="mdi mdi-loading mdi-spin mr-2"></i>
+                    <i v-else class="mdi mdi-telegram mr-2"></i>
+                    {{
+                        loading
+                            ? "Отправляем..."
+                            : !client?.telegram
+                            ? "Telegram не указан"
+                            : "Отправить код верификации"
+                    }}
                 </button>
 
-                <p v-if="!client?.telegram" class="mt-2 text-sm text-red-600">
-                    Для верификации необходимо указать Telegram аккаунт в
-                    профиле
-                </p>
+                <!-- Сообщение если Telegram не указан -->
+                <div
+                    v-if="!client?.telegram"
+                    class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
+                >
+                    <div class="flex items-center">
+                        <i
+                            class="mdi mdi-alert-circle text-yellow-600 dark:text-yellow-400 text-lg mr-2"
+                        ></i>
+                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                            Для верификации необходимо указать Telegram аккаунт
+                            в профиле
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <!-- Форма ввода кода -->
-            <div v-if="codeSent" class="space-y-4">
-                <div>
-                    <label
-                        for="verification_code"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                        Код верификации
-                    </label>
-                    <input
-                        id="verification_code"
-                        v-model="verificationCode"
-                        type="text"
-                        maxlength="6"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white text-center text-lg tracking-widest"
-                        placeholder="000000"
-                        :disabled="verifying"
-                    />
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Введите 6-значный код, отправленный в Telegram
+            <div v-if="codeSent" class="space-y-4" ref="codeForm">
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Код отправлен в Telegram. Введите его ниже:
                     </p>
+                </div>
+
+                <div class="space-y-2">
+                    <label
+                        class="block text-sm font-semibold text-gray-700 dark:text-white"
+                        >Код верификации</label
+                    >
+                    <div class="relative">
+                        <input
+                            type="text"
+                            class="w-full px-4 py-3 pl-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                            v-model="verificationCode"
+                            placeholder="Введите код"
+                            maxlength="6"
+                            :class="{
+                                'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                    errors.verificationCode,
+                            }"
+                            @focus="handleFieldFocus"
+                            @blur="handleFieldBlur"
+                            ref="codeInput"
+                        />
+                        <i
+                            class="mdi mdi-key absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                        ></i>
+                    </div>
+                    <span
+                        v-if="errors.verificationCode"
+                        class="text-red-500 text-sm font-medium"
+                        ref="errorVerificationCode"
+                        >{{ errors.verificationCode }}</span
+                    >
                 </div>
 
                 <div class="flex space-x-3">
                     <button
                         @click="verifyCode"
-                        :disabled="verifying || verificationCode.length !== 6"
-                        class="flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        :disabled="verifying || !verificationCode"
+                        class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                        ref="verifyButton"
                     >
-                        <span v-if="verifying" class="flex items-center">
-                            <i class="mdi mdi-loading mdi-spin mr-2"></i>
-                            Проверка...
-                        </span>
-                        <span v-else>Подтвердить</span>
+                        <i
+                            v-if="verifying"
+                            class="mdi mdi-loading mdi-spin mr-2"
+                        ></i>
+                        <i v-else class="mdi mdi-check mr-2"></i>
+                        {{ verifying ? "Проверяем..." : "Подтвердить" }}
                     </button>
 
                     <button
                         @click="resendCode"
-                        :disabled="resending"
-                        class="flex-1 flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        :disabled="resending || countdown > 0"
+                        class="px-4 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        ref="resendButton"
                     >
-                        <span v-if="resending" class="flex items-center">
-                            <i class="mdi mdi-loading mdi-spin mr-2"></i>
-                            Отправка...
-                        </span>
-                        <span v-else>Отправить снова</span>
+                        <i
+                            v-if="resending"
+                            class="mdi mdi-loading mdi-spin mr-2"
+                        ></i>
+                        <i v-else class="mdi mdi-refresh mr-2"></i>
+                        {{
+                            countdown > 0 ? `${countdown}с` : "Отправить снова"
+                        }}
                     </button>
-                </div>
-
-                <div
-                    v-if="countdown > 0"
-                    class="text-center text-sm text-gray-500 dark:text-gray-400"
-                >
-                    Повторная отправка через {{ countdown }} сек
                 </div>
             </div>
         </div>
 
-        <!-- Успешная верификация -->
-        <div v-else class="text-center">
-            <div class="mb-4">
-                <i class="mdi mdi-check-circle text-green-500 text-6xl"></i>
+        <!-- Успешное сообщение -->
+        <div
+            v-if="success"
+            class="mt-6 p-4 bg-green-100 dark:bg-green-900/20 border border-green-500 rounded-lg"
+            ref="successMessage"
+        >
+            <div class="flex items-center">
+                <i
+                    class="mdi mdi-check-circle text-green-600 dark:text-green-400 text-2xl mr-3"
+                ></i>
+                <div>
+                    <p class="font-bold text-green-800 dark:text-green-200">
+                        Верификация успешна!
+                    </p>
+                    <p class="text-green-700 dark:text-green-300">
+                        Ваш аккаунт полностью подтвержден
+                    </p>
+                </div>
             </div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Telegram верифицирован!
-            </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Ваш аккаунт полностью подтвержден. Теперь вы можете использовать
-                все функции системы.
-            </p>
-            <button
-                @click="$emit('verification-complete')"
-                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-accent hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-colors duration-200"
-            >
-                Продолжить
-            </button>
+        </div>
+
+        <!-- Ошибка -->
+        <div
+            v-if="error"
+            class="mt-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-500 rounded-lg"
+            ref="errorMessage"
+        >
+            <div class="flex items-center">
+                <i
+                    class="mdi mdi-alert-circle text-red-600 dark:text-red-400 text-2xl mr-3"
+                ></i>
+                <div>
+                    <p class="font-bold text-red-800 dark:text-red-200">
+                        Ошибка!
+                    </p>
+                    <p class="text-red-700 dark:text-red-300">{{ error }}</p>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
+import { gsap } from "gsap";
 import clientAuthService from "../../services/clientAuthService.js";
 
 export default {
@@ -152,7 +195,8 @@ export default {
     props: {
         client: {
             type: Object,
-            required: true,
+            required: false,
+            default: null,
         },
     },
     emits: ["verification-complete"],
@@ -166,6 +210,9 @@ export default {
             resending: false,
             countdown: 0,
             countdownInterval: null,
+            success: false,
+            error: null,
+            errors: {},
         };
     },
     computed: {
@@ -173,10 +220,10 @@ export default {
             if (!this.verificationStatus) return "";
 
             if (this.verificationStatus.is_verified) {
-                return "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800";
+                return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
             }
 
-            return "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800";
+            return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800";
         },
         statusIcon() {
             if (!this.verificationStatus) return "";
@@ -206,8 +253,22 @@ export default {
             return "Подтвердите Telegram для полного доступа к системе";
         },
     },
+    watch: {
+        // Следим за изменениями клиента
+        client: {
+            handler(newClient) {
+                if (newClient && !this.verificationStatus) {
+                    this.checkVerificationStatus();
+                }
+            },
+            immediate: true,
+        },
+    },
     async mounted() {
-        await this.checkVerificationStatus();
+        // Анимация появления компонента
+        this.$nextTick(() => {
+            this.animateComponentEnter();
+        });
     },
     beforeUnmount() {
         if (this.countdownInterval) {
@@ -215,80 +276,246 @@ export default {
         }
     },
     methods: {
+        // Анимация появления компонента
+        animateComponentEnter() {
+            gsap.fromTo(
+                this.$refs.formContainer,
+                {
+                    opacity: 0,
+                    y: 30,
+                    scale: 0.95,
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.6,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация ошибки поля - тряска
+        animateFieldError(field) {
+            gsap.to(field, {
+                x: [-8, 8, -8, 8, -4, 4, 0],
+                duration: 0.6,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация подсветки поля с ошибкой
+        highlightErrorField(field) {
+            gsap.to(field, {
+                borderColor: "#ef4444",
+                boxShadow: "0 0 0 3px rgba(239, 68, 68, 0.2)",
+                duration: 0.3,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация появления текста ошибки
+        showErrorText(errorElement) {
+            gsap.fromTo(
+                errorElement,
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                    y: -10,
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 0.4,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация фокуса на поле
+        animateFieldFocus(field) {
+            gsap.to(field, {
+                scale: 1.02,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация потери фокуса
+        animateFieldBlur(field) {
+            gsap.to(field, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация успешного сообщения
+        animateSuccess() {
+            gsap.fromTo(
+                this.$refs.successMessage,
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                    y: 20,
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 0.5,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация ошибки
+        animateError() {
+            gsap.fromTo(
+                this.$refs.errorMessage,
+                {
+                    opacity: 0,
+                    y: -30,
+                    scale: 0.9,
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.5,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        handleFieldFocus(event) {
+            this.animateFieldFocus(event.target);
+        },
+
+        handleFieldBlur(event) {
+            this.animateFieldBlur(event.target);
+        },
+
         async checkVerificationStatus() {
             try {
-                const response = await clientAuthService.getTelegramStatus(
-                    this.client.phone
-                );
+                const response =
+                    await clientAuthService.checkVerificationStatus();
                 this.verificationStatus = response.data;
             } catch (error) {
-                console.error("Error checking verification status:", error);
+                console.error("Verification status check error:", error);
+
+                // Если ошибка авторизации, не показываем ошибку пользователю
+                if (error.message === "Пользователь не авторизован") {
+                    this.verificationStatus = null;
+                    return;
+                }
+
+                // Для других ошибок показываем сообщение
+                this.error = error.message || "Ошибка проверки статуса";
+                this.$nextTick(() => {
+                    this.animateError();
+                });
             }
         },
 
         async sendVerificationCode() {
+            // Проверяем, есть ли у клиента Telegram
+            if (!this.client?.telegram) {
+                this.error =
+                    "Telegram аккаунт не указан. Укажите его в профиле.";
+                this.$nextTick(() => {
+                    this.animateError();
+                });
+                return;
+            }
+
             this.loading = true;
+            this.error = null;
 
             try {
-                await clientAuthService.sendTelegramCode(this.client.phone);
+                await clientAuthService.sendVerificationCode();
                 this.codeSent = true;
                 this.startCountdown();
 
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Код отправлен",
-                        "Код верификации отправлен в ваш Telegram",
-                        "info"
+                // Анимация появления формы кода
+                this.$nextTick(() => {
+                    gsap.fromTo(
+                        this.$refs.codeForm,
+                        {
+                            opacity: 0,
+                            y: 20,
+                            scale: 0.95,
+                        },
+                        {
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            duration: 0.5,
+                            ease: "back.out(1.7)",
+                        }
                     );
-                }
+                });
             } catch (error) {
-                console.error("Error sending verification code:", error);
-
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Ошибка",
-                        error.message || "Не удалось отправить код",
-                        "error"
-                    );
+                // Если ошибка авторизации, не показываем ошибку пользователю
+                if (error.message === "Пользователь не авторизован") {
+                    this.error = "Сессия истекла. Войдите в систему заново.";
+                } else {
+                    this.error = error.message || "Ошибка отправки кода";
                 }
+
+                this.$nextTick(() => {
+                    this.animateError();
+                });
             } finally {
                 this.loading = false;
             }
         },
 
         async verifyCode() {
-            if (this.verificationCode.length !== 6) return;
+            if (!this.verificationCode) {
+                this.errors.verificationCode = "Введите код верификации";
+                this.$nextTick(() => {
+                    this.animateFieldError(this.$refs.codeInput);
+                    this.highlightErrorField(this.$refs.codeInput);
+                    this.showErrorText(this.$refs.errorVerificationCode);
+                });
+                return;
+            }
 
             this.verifying = true;
+            this.error = null;
+            this.errors = {};
 
             try {
-                await clientAuthService.verifyTelegramCode(
-                    this.client.phone,
+                const response = await clientAuthService.verifyCode(
                     this.verificationCode
                 );
+                this.success = true;
+                this.verificationStatus = { is_verified: true };
 
-                // Обновляем статус
-                await this.checkVerificationStatus();
-
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Успех",
-                        "Telegram успешно верифицирован!",
-                        "success"
-                    );
+                // Обновляем данные клиента если они пришли в ответе
+                if (response.data?.client) {
+                    this.$emit("verification-complete", response.data.client);
+                } else {
+                    this.$emit("verification-complete");
                 }
 
-                this.$emit("verification-complete");
+                // Анимация успешного сообщения
+                this.$nextTick(() => {
+                    this.animateSuccess();
+                });
             } catch (error) {
-                console.error("Error verifying code:", error);
-
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Ошибка",
-                        error.message || "Неверный код верификации",
-                        "error"
-                    );
+                // Если ошибка авторизации, не показываем ошибку пользователю
+                if (error.message === "Пользователь не авторизован") {
+                    this.error = "Сессия истекла. Войдите в систему заново.";
+                } else {
+                    this.error = error.message || "Неверный код верификации";
                 }
+
+                this.$nextTick(() => {
+                    this.animateError();
+                });
             } finally {
                 this.verifying = false;
             }
@@ -296,28 +523,16 @@ export default {
 
         async resendCode() {
             this.resending = true;
+            this.error = null;
 
             try {
-                await clientAuthService.sendTelegramCode(this.client.phone);
+                await clientAuthService.sendVerificationCode();
                 this.startCountdown();
-
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Код отправлен",
-                        "Новый код верификации отправлен",
-                        "info"
-                    );
-                }
             } catch (error) {
-                console.error("Error resending code:", error);
-
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Ошибка",
-                        error.message || "Не удалось отправить код",
-                        "error"
-                    );
-                }
+                this.error = error.message || "Ошибка отправки кода";
+                this.$nextTick(() => {
+                    this.animateError();
+                });
             } finally {
                 this.resending = false;
             }
@@ -325,20 +540,20 @@ export default {
 
         startCountdown() {
             this.countdown = 60;
-
-            if (this.countdownInterval) {
-                clearInterval(this.countdownInterval);
-            }
-
             this.countdownInterval = setInterval(() => {
                 this.countdown--;
-
                 if (this.countdown <= 0) {
                     clearInterval(this.countdownInterval);
-                    this.countdownInterval = null;
                 }
             }, 1000);
         },
     },
 };
 </script>
+
+<style scoped>
+/* Только базовые стили для анимаций */
+input {
+    transition: all 0.3s ease;
+}
+</style>

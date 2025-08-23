@@ -26,12 +26,6 @@ Route::post('client/login', [ClientAuthController::class, 'login']);
 Route::post('client/forgot-password', [ClientPasswordResetController::class, 'sendResetLink']);
 Route::post('client/reset-password', [ClientPasswordResetController::class, 'reset']);
 
-// Маршруты для Telegram верификации
-Route::post('client/telegram/send-code', [ClientTelegramVerificationController::class, 'sendVerificationCode']);
-Route::post('client/telegram/verify-code', [ClientTelegramVerificationController::class, 'verifyCode']);
-Route::get('client/telegram/status', [ClientTelegramVerificationController::class, 'checkVerificationStatus']);
-Route::put('client/telegram/update', [ClientTelegramVerificationController::class, 'updateTelegram']);
-
 // Защищенные маршруты (требуют аутентификации)
 Route::middleware('auth:sanctum')->group(function () {
     // Аутентификация клиентов
@@ -40,6 +34,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('client/profile', [ClientAuthController::class, 'updateProfile']);
     Route::put('client/change-password', [ClientAuthController::class, 'changePassword']);
     Route::get('client/check-token', [ClientAuthController::class, 'checkToken']);
+
+    // Маршруты для Telegram верификации
+    Route::post('client/telegram/send-code', [ClientTelegramVerificationController::class, 'sendVerificationCode']);
+    Route::post('client/telegram/verify-code', [ClientTelegramVerificationController::class, 'verifyCode']);
+    Route::get('client/telegram/status', [ClientTelegramVerificationController::class, 'checkVerificationStatus']);
+    Route::put('client/telegram/update', [ClientTelegramVerificationController::class, 'updateTelegram']);
 
     // Маршруты, требующие верификации Telegram
     Route::middleware('client.telegram.verified')->group(function () {

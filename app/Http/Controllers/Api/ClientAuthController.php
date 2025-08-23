@@ -178,7 +178,9 @@ class ClientAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Токен действителен',
-            'data' => new ClientResource($request->user()),
+            'data' => [
+                'client' => new ClientResource($request->user()),
+            ],
         ]);
     }
 }

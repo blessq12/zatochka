@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Contracts\TelegramWebhookServiceContract;
 use App\Models\Client;
+use App\Models\TelegramChat;
+use App\Models\TelegramMessage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Api;
@@ -52,6 +54,7 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
         $firstName = $message->getFrom()->getFirstName();
         $lastName = $message->getFrom()->getLastName();
         $text = $message->getText();
+        $messageId = $message->getMessageId();
 
         Log::info('Telegram message received', [
             'chat_id' => $chatId,
@@ -59,9 +62,43 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
             'text' => $text
         ]);
 
+        // Находим или создаем чат
+        $chat = TelegramChat::findByChatId($chatId);
+        if (!$chat && $username) {
+            $chat = TelegramChat::createOrUpdate([
+                'username' => $username,
+                'chat_id' => $chatId,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'is_active' => true,
+                'last_activity_at' => now(),
+            ]);
+        }
+
+        // Сохраняем входящее сообщение (только для обычных сообщений, не команд)
+        if ($chat && !str_starts_with($text, '/')) {
+            $client = Client::where('telegram', $username)->first();
+
+            TelegramMessage::createIncoming([
+                'telegram_chat_id' => $chat->id,
+                'client_id' => $client?->id,
+                'message_id' => $messageId,
+                'type' => 'text',
+                'content' => $text,
+                'metadata' => [
+                    'username' => $username,
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                ],
+            ]);
+
+            // Обновляем время последней активности чата
+            $chat->updateLastActivity();
+        }
+
         // Обрабатываем команды
         if (str_starts_with($text, '/')) {
-            $this->handleCommand($chatId, $username, $firstName, $lastName, $text);
+            $this->handleCommand($chatId, $username, $firstName, $lastName, $text, $messageId);
             return;
         }
 
@@ -94,25 +131,25 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     /**
      * Обработать команду
      */
-    protected function handleCommand(int $chatId, ?string $username, ?string $firstName, ?string $lastName, string $text): void
+    protected function handleCommand(int $chatId, ?string $username, ?string $firstName, ?string $lastName, string $text, int $messageId = 0): void
     {
         $command = strtolower(trim($text));
 
         switch ($command) {
             case '/start':
-                $this->handleStartCommand($chatId, $username, $firstName, $lastName);
+                $this->handleStartCommand($chatId, $username, $firstName, $lastName, $messageId);
                 break;
             case '/help':
-                $this->handleHelpCommand($chatId);
+                $this->handleHelpCommand($chatId, $messageId);
                 break;
             case '/status':
-                $this->handleStatusCommand($chatId, $username);
+                $this->handleStatusCommand($chatId, $username, $messageId);
                 break;
             case '/verify':
-                $this->handleVerifyCommand($chatId, $username);
+                $this->handleVerifyCommand($chatId, $username, $messageId);
                 break;
             default:
-                $this->handleUnknownCommand($chatId);
+                $this->handleUnknownCommand($chatId, $messageId);
                 break;
         }
     }
@@ -161,12 +198,38 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     /**
      * Обработать команду /start
      */
-    protected function handleStartCommand(int $chatId, ?string $username, ?string $firstName, ?string $lastName): void
+    protected function handleStartCommand(int $chatId, ?string $username, ?string $firstName, ?string $lastName, int $messageId = 0): void
     {
         if (!$username) {
             $this->sendMessage($chatId, "❌ Для работы с ботом необходимо указать username в Telegram");
             return;
         }
+
+        // Сохраняем или обновляем информацию о чате
+        $chat = \App\Models\TelegramChat::createOrUpdate([
+            'username' => $username,
+            'chat_id' => $chatId,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'is_active' => true,
+            'last_activity_at' => now(),
+        ]);
+
+        // Сохраняем входящее сообщение команды /start
+        $client = Client::where('telegram', $username)->first();
+        TelegramMessage::createIncoming([
+            'telegram_chat_id' => $chat->id,
+            'client_id' => $client?->id,
+            'message_id' => $messageId,
+            'type' => 'command',
+            'content' => '/start',
+            'metadata' => [
+                'username' => $username,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'command' => 'start',
+            ],
+        ]);
 
         $message = "👋 <b>Добро пожаловать в бот Заточка ТСК!</b>\n\n";
         $message .= "🔧 Мы предоставляем услуги заточки и ремонта инструментов.\n\n";
@@ -182,8 +245,25 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     /**
      * Обработать команду /help
      */
-    protected function handleHelpCommand(int $chatId): void
+    protected function handleHelpCommand(int $chatId, int $messageId = 0): void
     {
+        // Находим чат
+        $chat = TelegramChat::findByChatId($chatId);
+        if ($chat) {
+            // Сохраняем входящее сообщение команды /help
+            $client = $chat->client;
+            TelegramMessage::createIncoming([
+                'telegram_chat_id' => $chat->id,
+                'client_id' => $client?->id,
+                'message_id' => $messageId,
+                'type' => 'command',
+                'content' => '/help',
+                'metadata' => [
+                    'command' => 'help',
+                ],
+            ]);
+        }
+
         $message = "🤖 <b>Команды бота Заточка ТСК:</b>\n\n";
         $message .= "/start - Начать работу с ботом\n";
         $message .= "/help - Показать эту справку\n";
@@ -200,11 +280,28 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     /**
      * Обработать команду /status
      */
-    protected function handleStatusCommand(int $chatId, ?string $username): void
+    protected function handleStatusCommand(int $chatId, ?string $username, int $messageId = 0): void
     {
         if (!$username) {
             $this->sendMessage($chatId, "❌ Username не указан");
             return;
+        }
+
+        // Находим чат и сохраняем входящее сообщение команды /status
+        $chat = TelegramChat::findByChatId($chatId);
+        if ($chat) {
+            $client = $chat->client;
+            TelegramMessage::createIncoming([
+                'telegram_chat_id' => $chat->id,
+                'client_id' => $client?->id,
+                'message_id' => $messageId,
+                'type' => 'command',
+                'content' => '/status',
+                'metadata' => [
+                    'username' => $username,
+                    'command' => 'status',
+                ],
+            ]);
         }
 
         $client = Client::where('telegram', $username)->first();
@@ -232,11 +329,28 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     /**
      * Обработать команду /verify
      */
-    protected function handleVerifyCommand(int $chatId, ?string $username): void
+    protected function handleVerifyCommand(int $chatId, ?string $username, int $messageId = 0): void
     {
         if (!$username) {
             $this->sendMessage($chatId, "❌ Username не указан");
             return;
+        }
+
+        // Находим чат и сохраняем входящее сообщение команды /verify
+        $chat = TelegramChat::findByChatId($chatId);
+        if ($chat) {
+            $client = $chat->client;
+            TelegramMessage::createIncoming([
+                'telegram_chat_id' => $chat->id,
+                'client_id' => $client?->id,
+                'message_id' => $messageId,
+                'type' => 'command',
+                'content' => '/verify',
+                'metadata' => [
+                    'username' => $username,
+                    'command' => 'verify',
+                ],
+            ]);
         }
 
         $client = Client::where('telegram', $username)->first();
@@ -367,8 +481,24 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     /**
      * Обработать неизвестную команду
      */
-    protected function handleUnknownCommand(int $chatId): void
+    protected function handleUnknownCommand(int $chatId, int $messageId = 0): void
     {
+        // Находим чат и сохраняем входящее сообщение неизвестной команды
+        $chat = TelegramChat::findByChatId($chatId);
+        if ($chat) {
+            $client = $chat->client;
+            TelegramMessage::createIncoming([
+                'telegram_chat_id' => $chat->id,
+                'client_id' => $client?->id,
+                'message_id' => $messageId,
+                'type' => 'command',
+                'content' => 'unknown_command',
+                'metadata' => [
+                    'command' => 'unknown',
+                ],
+            ]);
+        }
+
         $message = "❓ Неизвестная команда.\n\n";
         $message .= "Используйте /help для просмотра доступных команд.";
 
@@ -381,11 +511,28 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     protected function sendMessage(int $chatId, string $text): void
     {
         try {
-            $this->telegram->sendMessage([
+            $response = $this->telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => $text,
                 'parse_mode' => 'HTML'
             ]);
+
+            // Сохраняем исходящее сообщение
+            $chat = TelegramChat::findByChatId($chatId);
+            if ($chat) {
+                $client = $chat->client;
+
+                TelegramMessage::createOutgoing([
+                    'telegram_chat_id' => $chat->id,
+                    'client_id' => $client?->id,
+                    'message_id' => $response->getMessageId(),
+                    'type' => 'text',
+                    'content' => $text,
+                    'metadata' => [
+                        'response' => $response->toArray(),
+                    ],
+                ]);
+            }
         } catch (\Exception $e) {
             Log::error('Failed to send Telegram message', [
                 'chat_id' => $chatId,

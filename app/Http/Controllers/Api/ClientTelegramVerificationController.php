@@ -25,16 +25,19 @@ class ClientTelegramVerificationController extends Controller
      */
     public function sendVerificationCode(Request $request): JsonResponse
     {
-        $request->validate([
-            'phone' => 'required|string|exists:clients,phone',
-        ]);
+        $client = $request->user();
 
-        $client = Client::where('phone', $request->phone)->first();
+        if (!$client) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Пользователь не авторизован',
+            ], 401);
+        }
 
         // Проверяем, есть ли у клиента Telegram
         if (!$client->telegram) {
             throw ValidationException::withMessages([
-                'telegram' => ['У клиента не указан Telegram аккаунт'],
+                'telegram' => ['У вас не указан Telegram аккаунт'],
             ]);
         }
 
@@ -74,11 +77,18 @@ class ClientTelegramVerificationController extends Controller
     public function verifyCode(Request $request): JsonResponse
     {
         $request->validate([
-            'phone' => 'required|string|exists:clients,phone',
             'code' => 'required|string|size:6',
         ]);
 
-        $client = Client::where('phone', $request->phone)->first();
+        $client = $request->user();
+
+        if (!$client) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Пользователь не авторизован',
+            ], 401);
+        }
+
         $cacheKey = "telegram_verification_{$client->phone}";
         $storedCode = Cache::get($cacheKey);
 
@@ -121,11 +131,14 @@ class ClientTelegramVerificationController extends Controller
      */
     public function checkVerificationStatus(Request $request): JsonResponse
     {
-        $request->validate([
-            'phone' => 'required|string|exists:clients,phone',
-        ]);
+        $client = $request->user();
 
-        $client = Client::where('phone', $request->phone)->first();
+        if (!$client) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Пользователь не авторизован',
+            ], 401);
+        }
 
         return response()->json([
             'success' => true,
@@ -143,11 +156,17 @@ class ClientTelegramVerificationController extends Controller
     public function updateTelegram(Request $request): JsonResponse
     {
         $request->validate([
-            'phone' => 'required|string|exists:clients,phone',
             'telegram' => 'required|string|max:50',
         ]);
 
-        $client = Client::where('phone', $request->phone)->first();
+        $client = $request->user();
+
+        if (!$client) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Пользователь не авторизован',
+            ], 401);
+        }
 
         // Если Telegram уже верифицирован и меняется на другой, сбрасываем верификацию
         if ($client->isTelegramVerified() && $client->telegram !== $request->telegram) {

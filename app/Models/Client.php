@@ -49,6 +49,22 @@ class Client extends Authenticatable
     }
 
     /**
+     * Отношение к Telegram сообщениям
+     */
+    public function telegramMessages()
+    {
+        return $this->hasMany(TelegramMessage::class);
+    }
+
+    /**
+     * Отношение к Telegram чату
+     */
+    public function telegramChat()
+    {
+        return $this->hasOne(TelegramChat::class, 'username', 'telegram');
+    }
+
+    /**
      * Получить имя пользователя для аутентификации
      */
     public function getAuthIdentifierName()

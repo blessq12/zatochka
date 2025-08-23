@@ -1,6 +1,6 @@
 <template>
-    <div class="client-login-form">
-        <form @submit.prevent="handleSubmit" class="space-y-6">
+    <div class="hero-card rounded-2xl shadow-lg p-8" ref="formContainer">
+        <form @submit.prevent="handleSubmit" class="space-y-6" ref="form">
             <!-- Заголовок -->
             <div class="text-center">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -12,49 +12,66 @@
             </div>
 
             <!-- Номер телефона -->
-            <div>
+            <div class="space-y-2">
                 <label
-                    for="phone"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >Номер телефона</label
                 >
-                    Номер телефона
-                </label>
-                <input
-                    id="phone"
-                    v-model="form.phone"
-                    type="tel"
-                    required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
-                    placeholder="+7 (999) 123-45-67"
-                    :disabled="loading"
-                />
-                <div v-if="errors.phone" class="mt-1 text-sm text-red-600">
-                    {{ errors.phone }}
+                <div class="relative">
+                    <input
+                        type="tel"
+                        class="w-full px-4 py-3 pl-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                        v-model="form.phone"
+                        v-maska
+                        data-maska="+7 (###) ###-##-##"
+                        placeholder="+7 (___) ___-__-__"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.phone,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                        required
+                    />
+                    <i
+                        class="mdi mdi-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                    ></i>
                 </div>
+                <span
+                    v-if="errors.phone"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorPhone"
+                    >{{ errors.phone }}</span
+                >
             </div>
 
             <!-- Пароль -->
-            <div>
+            <div class="space-y-2">
                 <label
-                    for="password"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >Пароль</label
                 >
-                    Пароль
-                </label>
                 <div class="relative">
                     <input
-                        id="password"
-                        v-model="form.password"
                         :type="showPassword ? 'text' : 'password'"
-                        required
-                        class="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
+                        class="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                        v-model="form.password"
                         placeholder="Введите пароль"
-                        :disabled="loading"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.password,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                        required
                     />
+                    <i
+                        class="mdi mdi-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                    ></i>
                     <button
                         type="button"
                         @click="showPassword = !showPassword"
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     >
                         <i
                             :class="
@@ -63,49 +80,46 @@
                         ></i>
                     </button>
                 </div>
-                <div v-if="errors.password" class="mt-1 text-sm text-red-600">
-                    {{ errors.password }}
-                </div>
+                <span
+                    v-if="errors.password"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorPassword"
+                    >{{ errors.password }}</span
+                >
             </div>
 
             <!-- Запомнить меня -->
             <div class="flex items-center justify-between">
-                <div class="flex items-center">
+                <div class="flex items-center gap-2">
                     <input
-                        id="remember"
-                        v-model="form.remember"
                         type="checkbox"
-                        class="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
-                        :disabled="loading"
+                        class="w-5 h-5 text-accent accent-accent"
+                        v-model="form.remember"
                     />
-                    <label
-                        for="remember"
-                        class="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                    <label class="dark:text-white text-sm"
+                        >Запомнить меня</label
                     >
-                        Запомнить меня
-                    </label>
                 </div>
                 <button
                     type="button"
                     @click="$emit('forgot-password')"
-                    class="text-sm text-accent hover:text-accent/80 dark:text-accent-light dark:hover:text-accent-light/80"
+                    class="text-sm text-accent hover:text-accent/80 dark:text-accent-light dark:hover:text-accent-light/80 font-medium"
                     :disabled="loading"
                 >
                     Забыли пароль?
                 </button>
             </div>
 
-            <!-- Кнопка входа -->
+            <!-- Кнопка отправки -->
             <button
                 type="submit"
+                class="w-full bg-gradient-to-r from-accent to-pink-600 text-white font-semibold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 :disabled="loading"
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-accent hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                ref="submitButton"
             >
-                <span v-if="loading" class="flex items-center">
-                    <i class="mdi mdi-loading mdi-spin mr-2"></i>
-                    Вход...
-                </span>
-                <span v-else>Войти</span>
+                <i v-if="loading" class="mdi mdi-loading mdi-spin mr-2"></i>
+                <i v-else class="mdi mdi-login mr-2"></i>
+                {{ loading ? "Входим..." : "Войти" }}
             </button>
 
             <!-- Ссылка на регистрацию -->
@@ -123,11 +137,53 @@
                 </p>
             </div>
         </form>
+
+        <!-- Успешное сообщение -->
+        <div
+            v-if="success"
+            class="mt-6 p-4 bg-green-100 dark:bg-green-900/20 border border-green-500 rounded-lg"
+            ref="successMessage"
+        >
+            <div class="flex items-center">
+                <i
+                    class="mdi mdi-check-circle text-green-600 dark:text-green-400 text-2xl mr-3"
+                ></i>
+                <div>
+                    <p class="font-bold text-green-800 dark:text-green-200">
+                        Успешный вход!
+                    </p>
+                    <p class="text-green-700 dark:text-green-300">
+                        Добро пожаловать в систему
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ошибка -->
+        <div
+            v-if="error"
+            class="mt-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-500 rounded-lg"
+            ref="errorMessage"
+        >
+            <div class="flex items-center">
+                <i
+                    class="mdi mdi-alert-circle text-red-600 dark:text-red-400 text-2xl mr-3"
+                ></i>
+                <div>
+                    <p class="font-bold text-red-800 dark:text-red-200">
+                        Ошибка!
+                    </p>
+                    <p class="text-red-700 dark:text-red-300">{{ error }}</p>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
+import { gsap } from "gsap";
 import clientAuthService from "../../services/clientAuthService.js";
+import { loginFormSchema, validateForm } from "../../validation/schemas.js";
 
 export default {
     name: "ClientLoginForm",
@@ -141,18 +197,216 @@ export default {
             },
             errors: {},
             loading: false,
+            success: false,
+            error: null,
             showPassword: false,
         };
     },
+    mounted() {
+        // Анимация появления формы
+        this.$nextTick(() => {
+            this.animateFormEnter();
+        });
+    },
     methods: {
+        // Анимация появления формы
+        animateFormEnter() {
+            gsap.fromTo(
+                this.$refs.formContainer,
+                {
+                    opacity: 0,
+                    y: 30,
+                    scale: 0.95,
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.6,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация ошибки поля - тряска
+        animateFieldError(field) {
+            gsap.to(field, {
+                x: [-8, 8, -8, 8, -4, 4, 0],
+                duration: 0.6,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация подсветки поля с ошибкой
+        highlightErrorField(field) {
+            gsap.to(field, {
+                borderColor: "#ef4444",
+                boxShadow: "0 0 0 3px rgba(239, 68, 68, 0.2)",
+                duration: 0.3,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация появления текста ошибки
+        showErrorText(errorElement) {
+            gsap.fromTo(
+                errorElement,
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                    y: -10,
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 0.4,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация фокуса на поле
+        animateFieldFocus(field) {
+            gsap.to(field, {
+                scale: 1.02,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация потери фокуса
+        animateFieldBlur(field) {
+            gsap.to(field, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация кнопки загрузки
+        animateButtonLoading() {
+            gsap.to(this.$refs.submitButton, {
+                scale: 0.95,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация сброса кнопки
+        animateButtonReset() {
+            gsap.to(this.$refs.submitButton, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация успешного сообщения
+        animateSuccess() {
+            gsap.fromTo(
+                this.$refs.successMessage,
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                    y: 20,
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 0.5,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация ошибки
+        animateError() {
+            gsap.fromTo(
+                this.$refs.errorMessage,
+                {
+                    opacity: 0,
+                    y: -30,
+                    scale: 0.9,
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.5,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        handleFieldFocus(event) {
+            this.animateFieldFocus(event.target);
+        },
+
+        handleFieldBlur(event) {
+            this.animateFieldBlur(event.target);
+        },
+
         async handleSubmit() {
+            // Валидация при сабмите
+            const result = await validateForm(loginFormSchema, this.form);
+
+            if (!result.isValid) {
+                this.errors = result.errors;
+
+                // Анимация всех полей с ошибками
+                Object.keys(this.errors).forEach((fieldName, index) => {
+                    const field = this.$el.querySelector(
+                        `[v-model="form.${fieldName}"]`
+                    );
+                    if (field) {
+                        // Задержка для последовательной анимации
+                        gsap.delayedCall(index * 0.1, () => {
+                            this.animateFieldError(field);
+                            this.highlightErrorField(field);
+                        });
+                    }
+                });
+
+                // Анимация текстов ошибок
+                this.$nextTick(() => {
+                    Object.keys(this.errors).forEach((fieldName, index) => {
+                        const errorElement =
+                            this.$refs[
+                                `error${
+                                    fieldName.charAt(0).toUpperCase() +
+                                    fieldName.slice(1)
+                                }`
+                            ];
+                        if (errorElement) {
+                            gsap.delayedCall(index * 0.1 + 0.3, () => {
+                                this.showErrorText(errorElement);
+                            });
+                        }
+                    });
+                });
+
+                return;
+            }
+
             this.loading = true;
-            this.errors = {};
+            this.error = null;
+            this.success = false;
+
+            // Анимация кнопки загрузки
+            this.animateButtonLoading();
 
             try {
                 const response = await clientAuthService.login(this.form);
 
-                this.$emit("login-success", response.data);
+                this.success = true;
+                this.$emit("login-success", response);
+
+                // Анимация успешного сообщения
+                this.$nextTick(() => {
+                    this.animateSuccess();
+                });
 
                 // Показываем уведомление об успешном входе
                 if (window.modalService) {
@@ -169,15 +423,35 @@ export default {
                 if (
                     error.message.includes("Неверный номер телефона или пароль")
                 ) {
-                    this.errors.phone = "Неверный номер телефона или пароль";
+                    this.error = "Неверный номер телефона или пароль";
                 } else {
-                    this.errors.general =
-                        error.message || "Произошла ошибка при входе";
+                    this.error = error.message || "Произошла ошибка при входе";
                 }
+
+                // Анимация ошибки
+                this.$nextTick(() => {
+                    this.animateError();
+                });
             } finally {
                 this.loading = false;
+                this.animateButtonReset();
             }
         },
     },
 };
 </script>
+
+<style scoped>
+/* Только базовые стили для анимаций */
+input,
+select,
+textarea {
+    transition: all 0.3s ease;
+}
+
+/* Анимация для чекбокса */
+input[type="checkbox"]:checked {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+</style>

@@ -194,23 +194,23 @@ class ClientAuthService {
     }
 
     // Сброс пароля - отправка ссылки
-    async forgotPassword(phone) {
+    async forgotPassword(data) {
         try {
             const response = await fetch(`${this.baseUrl}/forgot-password`, {
                 method: "POST",
                 headers: this.getHeaders(),
-                body: JSON.stringify({ phone }),
+                body: JSON.stringify(data),
             });
 
-            const data = await response.json();
+            const responseData = await response.json();
 
             if (!response.ok) {
                 throw new Error(
-                    data.message || "Ошибка отправки ссылки для сброса"
+                    responseData.message || "Ошибка отправки ссылки для сброса"
                 );
             }
 
-            return data;
+            return responseData;
         } catch (error) {
             throw error;
         }
@@ -238,12 +238,11 @@ class ClientAuthService {
     }
 
     // Telegram верификация - отправка кода
-    async sendTelegramCode(phone) {
+    async sendVerificationCode() {
         try {
             const response = await fetch(`${this.baseUrl}/telegram/send-code`, {
                 method: "POST",
                 headers: this.getHeaders(),
-                body: JSON.stringify({ phone }),
             });
 
             const data = await response.json();
@@ -259,14 +258,14 @@ class ClientAuthService {
     }
 
     // Telegram верификация - проверка кода
-    async verifyTelegramCode(phone, code) {
+    async verifyCode(code) {
         try {
             const response = await fetch(
                 `${this.baseUrl}/telegram/verify-code`,
                 {
                     method: "POST",
                     headers: this.getHeaders(),
-                    body: JSON.stringify({ phone, code }),
+                    body: JSON.stringify({ code }),
                 }
             );
 
@@ -283,15 +282,12 @@ class ClientAuthService {
     }
 
     // Telegram верификация - статус
-    async getTelegramStatus(phone) {
+    async checkVerificationStatus() {
         try {
-            const response = await fetch(
-                `${this.baseUrl}/telegram/status?phone=${phone}`,
-                {
-                    method: "GET",
-                    headers: this.getHeaders(),
-                }
-            );
+            const response = await fetch(`${this.baseUrl}/telegram/status`, {
+                method: "GET",
+                headers: this.getHeaders(),
+            });
 
             const data = await response.json();
 
@@ -306,12 +302,12 @@ class ClientAuthService {
     }
 
     // Telegram верификация - обновление аккаунта
-    async updateTelegram(phone, telegram) {
+    async updateTelegram(telegram) {
         try {
             const response = await fetch(`${this.baseUrl}/telegram/update`, {
                 method: "PUT",
                 headers: this.getHeaders(),
-                body: JSON.stringify({ phone, telegram }),
+                body: JSON.stringify({ telegram }),
             });
 
             const data = await response.json();

@@ -1,6 +1,6 @@
 <template>
-    <div class="client-register-form">
-        <form @submit.prevent="handleSubmit" class="space-y-6">
+    <div class="hero-card rounded-2xl shadow-lg p-8" ref="formContainer">
+        <form @submit.prevent="handleSubmit" class="space-y-6" ref="form">
             <!-- Заголовок -->
             <div class="text-center">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -12,139 +12,98 @@
             </div>
 
             <!-- ФИО -->
-            <div>
+            <div class="space-y-2">
                 <label
-                    for="full_name"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >ФИО *</label
                 >
-                    ФИО *
-                </label>
-                <input
-                    id="full_name"
-                    v-model="form.full_name"
-                    type="text"
-                    required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
-                    placeholder="Иванов Иван Иванович"
-                    :disabled="loading"
-                />
-                <div v-if="errors.full_name" class="mt-1 text-sm text-red-600">
-                    {{ errors.full_name }}
+                <div class="relative">
+                    <input
+                        type="text"
+                        class="w-full px-4 py-3 pl-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                        v-model="form.full_name"
+                        placeholder="Иванов Иван Иванович"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.full_name,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                        required
+                    />
+                    <i
+                        class="mdi mdi-account absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                    ></i>
                 </div>
+                <span
+                    v-if="errors.full_name"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorFullName"
+                    >{{ errors.full_name }}</span
+                >
             </div>
 
             <!-- Номер телефона -->
-            <div>
+            <div class="space-y-2">
                 <label
-                    for="phone"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >Номер телефона *</label
                 >
-                    Номер телефона *
-                </label>
-                <input
-                    id="phone"
-                    v-model="form.phone"
-                    type="tel"
-                    required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
-                    placeholder="+7 (999) 123-45-67"
-                    :disabled="loading"
-                />
-                <div v-if="errors.phone" class="mt-1 text-sm text-red-600">
-                    {{ errors.phone }}
+                <div class="relative">
+                    <input
+                        type="tel"
+                        class="w-full px-4 py-3 pl-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                        v-model="form.phone"
+                        v-maska
+                        data-maska="+7 (###) ###-##-##"
+                        placeholder="+7 (___) ___-__-__"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.phone,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                        required
+                    />
+                    <i
+                        class="mdi mdi-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                    ></i>
                 </div>
-            </div>
-
-            <!-- Telegram -->
-            <div>
-                <label
-                    for="telegram"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                <span
+                    v-if="errors.phone"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorPhone"
+                    >{{ errors.phone }}</span
                 >
-                    Telegram аккаунт
-                </label>
-                <input
-                    id="telegram"
-                    v-model="form.telegram"
-                    type="text"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
-                    placeholder="@username или номер телефона"
-                    :disabled="loading"
-                />
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Для получения уведомлений и верификации аккаунта
-                </p>
-                <div v-if="errors.telegram" class="mt-1 text-sm text-red-600">
-                    {{ errors.telegram }}
-                </div>
-            </div>
-
-            <!-- Дата рождения -->
-            <div>
-                <label
-                    for="birth_date"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                    Дата рождения
-                </label>
-                <input
-                    id="birth_date"
-                    v-model="form.birth_date"
-                    type="date"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
-                    :disabled="loading"
-                />
-                <div v-if="errors.birth_date" class="mt-1 text-sm text-red-600">
-                    {{ errors.birth_date }}
-                </div>
-            </div>
-
-            <!-- Адрес доставки -->
-            <div>
-                <label
-                    for="delivery_address"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                    Адрес доставки
-                </label>
-                <textarea
-                    id="delivery_address"
-                    v-model="form.delivery_address"
-                    rows="3"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
-                    placeholder="Улица, дом, квартира"
-                    :disabled="loading"
-                ></textarea>
-                <div
-                    v-if="errors.delivery_address"
-                    class="mt-1 text-sm text-red-600"
-                >
-                    {{ errors.delivery_address }}
-                </div>
             </div>
 
             <!-- Пароль -->
-            <div>
+            <div class="space-y-2">
                 <label
-                    for="password"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >Пароль *</label
                 >
-                    Пароль *
-                </label>
                 <div class="relative">
                     <input
-                        id="password"
-                        v-model="form.password"
                         :type="showPassword ? 'text' : 'password'"
-                        required
-                        class="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
+                        class="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                        v-model="form.password"
                         placeholder="Минимум 6 символов"
-                        :disabled="loading"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.password,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                        required
                     />
+                    <i
+                        class="mdi mdi-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                    ></i>
                     <button
                         type="button"
                         @click="showPassword = !showPassword"
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     >
                         <i
                             :class="
@@ -153,35 +112,43 @@
                         ></i>
                     </button>
                 </div>
-                <div v-if="errors.password" class="mt-1 text-sm text-red-600">
-                    {{ errors.password }}
-                </div>
+                <span
+                    v-if="errors.password"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorPassword"
+                    >{{ errors.password }}</span
+                >
             </div>
 
             <!-- Подтверждение пароля -->
-            <div>
+            <div class="space-y-2">
                 <label
-                    for="password_confirmation"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >Подтверждение пароля *</label
                 >
-                    Подтверждение пароля *
-                </label>
                 <div class="relative">
                     <input
-                        id="password_confirmation"
-                        v-model="form.password_confirmation"
                         :type="showPasswordConfirmation ? 'text' : 'password'"
-                        required
-                        class="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white"
+                        class="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                        v-model="form.password_confirmation"
                         placeholder="Повторите пароль"
-                        :disabled="loading"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.password_confirmation,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                        required
                     />
+                    <i
+                        class="mdi mdi-lock-check absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                    ></i>
                     <button
                         type="button"
                         @click="
                             showPasswordConfirmation = !showPasswordConfirmation
                         "
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     >
                         <i
                             :class="
@@ -192,25 +159,116 @@
                         ></i>
                     </button>
                 </div>
-                <div
+                <span
                     v-if="errors.password_confirmation"
-                    class="mt-1 text-sm text-red-600"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorPasswordConfirmation"
+                    >{{ errors.password_confirmation }}</span
                 >
-                    {{ errors.password_confirmation }}
-                </div>
             </div>
 
-            <!-- Кнопка регистрации -->
+            <!-- Telegram username -->
+            <div class="space-y-2">
+                <label
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >Telegram username</label
+                >
+                <div class="relative">
+                    <input
+                        type="text"
+                        class="w-full px-4 py-3 pl-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                        v-model="form.telegram"
+                        placeholder="@username"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.telegram,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                    />
+                    <i
+                        class="mdi mdi-telegram absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                    ></i>
+                </div>
+                <span
+                    v-if="errors.telegram"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorTelegram"
+                    >{{ errors.telegram }}</span
+                >
+            </div>
+
+            <!-- Дата рождения -->
+            <div class="space-y-2">
+                <label
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >Дата рождения</label
+                >
+                <div class="relative">
+                    <input
+                        type="date"
+                        class="w-full px-4 py-3 pl-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300"
+                        v-model="form.birth_date"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.birth_date,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                    />
+                    <i
+                        class="mdi mdi-calendar absolute left-3 top-1/2 transform -translate-y-1/2 text-accent text-lg"
+                    ></i>
+                </div>
+                <span
+                    v-if="errors.birth_date"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorBirthDate"
+                    >{{ errors.birth_date }}</span
+                >
+            </div>
+
+            <!-- Адрес доставки -->
+            <div class="space-y-2">
+                <label
+                    class="block text-sm font-semibold text-gray-700 dark:text-white"
+                    >Адрес доставки</label
+                >
+                <div class="relative">
+                    <textarea
+                        class="w-full px-4 py-3 pl-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300 resize-y min-h-[80px]"
+                        rows="3"
+                        placeholder="Укажите адрес для доставки"
+                        v-model="form.delivery_address"
+                        :class="{
+                            'border-red-500 focus:border-red-500 focus:ring-red-500/20':
+                                errors.delivery_address,
+                        }"
+                        @focus="handleFieldFocus"
+                        @blur="handleFieldBlur"
+                    ></textarea>
+                    <i
+                        class="mdi mdi-map-marker absolute left-3 top-4 text-accent text-lg"
+                    ></i>
+                </div>
+                <span
+                    v-if="errors.delivery_address"
+                    class="text-red-500 text-sm font-medium"
+                    ref="errorDeliveryAddress"
+                    >{{ errors.delivery_address }}</span
+                >
+            </div>
+
+            <!-- Кнопка отправки -->
             <button
                 type="submit"
+                class="w-full bg-gradient-to-r from-accent to-pink-600 text-white font-semibold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                 :disabled="loading"
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-accent hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                ref="submitButton"
             >
-                <span v-if="loading" class="flex items-center">
-                    <i class="mdi mdi-loading mdi-spin mr-2"></i>
-                    Регистрация...
-                </span>
-                <span v-else>Зарегистрироваться</span>
+                <i v-if="loading" class="mdi mdi-loading mdi-spin mr-2"></i>
+                <i v-else class="mdi mdi-account-plus mr-2"></i>
+                {{ loading ? "Регистрируем..." : "Зарегистрироваться" }}
             </button>
 
             <!-- Ссылка на вход -->
@@ -228,11 +286,53 @@
                 </p>
             </div>
         </form>
+
+        <!-- Успешное сообщение -->
+        <div
+            v-if="success"
+            class="mt-6 p-4 bg-green-100 dark:bg-green-900/20 border border-green-500 rounded-lg"
+            ref="successMessage"
+        >
+            <div class="flex items-center">
+                <i
+                    class="mdi mdi-check-circle text-green-600 dark:text-green-400 text-2xl mr-3"
+                ></i>
+                <div>
+                    <p class="font-bold text-green-800 dark:text-green-200">
+                        Регистрация успешна!
+                    </p>
+                    <p class="text-green-700 dark:text-green-300">
+                        Добро пожаловать в систему
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ошибка -->
+        <div
+            v-if="error"
+            class="mt-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-500 rounded-lg"
+            ref="errorMessage"
+        >
+            <div class="flex items-center">
+                <i
+                    class="mdi mdi-alert-circle text-red-600 dark:text-red-400 text-2xl mr-3"
+                ></i>
+                <div>
+                    <p class="font-bold text-red-800 dark:text-red-200">
+                        Ошибка!
+                    </p>
+                    <p class="text-red-700 dark:text-red-300">{{ error }}</p>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
+import { gsap } from "gsap";
 import clientAuthService from "../../services/clientAuthService.js";
+import { registerFormSchema, validateForm } from "../../validation/schemas.js";
 
 export default {
     name: "ClientRegisterForm",
@@ -242,33 +342,231 @@ export default {
             form: {
                 full_name: "",
                 phone: "",
+                password: "",
+                password_confirmation: "",
                 telegram: "",
                 birth_date: "",
                 delivery_address: "",
-                password: "",
-                password_confirmation: "",
             },
             errors: {},
             loading: false,
+            success: false,
+            error: null,
             showPassword: false,
             showPasswordConfirmation: false,
         };
     },
+    mounted() {
+        // Анимация появления формы
+        this.$nextTick(() => {
+            this.animateFormEnter();
+        });
+    },
     methods: {
+        // Анимация появления формы
+        animateFormEnter() {
+            gsap.fromTo(
+                this.$refs.formContainer,
+                {
+                    opacity: 0,
+                    y: 30,
+                    scale: 0.95,
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.6,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация ошибки поля - тряска
+        animateFieldError(field) {
+            gsap.to(field, {
+                x: [-8, 8, -8, 8, -4, 4, 0],
+                duration: 0.6,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация подсветки поля с ошибкой
+        highlightErrorField(field) {
+            gsap.to(field, {
+                borderColor: "#ef4444",
+                boxShadow: "0 0 0 3px rgba(239, 68, 68, 0.2)",
+                duration: 0.3,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация появления текста ошибки
+        showErrorText(errorElement) {
+            gsap.fromTo(
+                errorElement,
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                    y: -10,
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 0.4,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация фокуса на поле
+        animateFieldFocus(field) {
+            gsap.to(field, {
+                scale: 1.02,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация потери фокуса
+        animateFieldBlur(field) {
+            gsap.to(field, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация кнопки загрузки
+        animateButtonLoading() {
+            gsap.to(this.$refs.submitButton, {
+                scale: 0.95,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация сброса кнопки
+        animateButtonReset() {
+            gsap.to(this.$refs.submitButton, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        },
+
+        // Анимация успешного сообщения
+        animateSuccess() {
+            gsap.fromTo(
+                this.$refs.successMessage,
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                    y: 20,
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 0.5,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        // Анимация ошибки
+        animateError() {
+            gsap.fromTo(
+                this.$refs.errorMessage,
+                {
+                    opacity: 0,
+                    y: -30,
+                    scale: 0.9,
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.5,
+                    ease: "back.out(1.7)",
+                }
+            );
+        },
+
+        handleFieldFocus(event) {
+            this.animateFieldFocus(event.target);
+        },
+
+        handleFieldBlur(event) {
+            this.animateFieldBlur(event.target);
+        },
+
         async handleSubmit() {
+            // Валидация при сабмите
+            const result = await validateForm(registerFormSchema, this.form);
+
+            if (!result.isValid) {
+                this.errors = result.errors;
+
+                // Анимация всех полей с ошибками
+                Object.keys(this.errors).forEach((fieldName, index) => {
+                    const field = this.$el.querySelector(
+                        `[v-model="form.${fieldName}"]`
+                    );
+                    if (field) {
+                        // Задержка для последовательной анимации
+                        gsap.delayedCall(index * 0.1, () => {
+                            this.animateFieldError(field);
+                            this.highlightErrorField(field);
+                        });
+                    }
+                });
+
+                // Анимация текстов ошибок
+                this.$nextTick(() => {
+                    Object.keys(this.errors).forEach((fieldName, index) => {
+                        const errorElement =
+                            this.$refs[
+                                `error${
+                                    fieldName.charAt(0).toUpperCase() +
+                                    fieldName.slice(1)
+                                }`
+                            ];
+                        if (errorElement) {
+                            gsap.delayedCall(index * 0.1 + 0.3, () => {
+                                this.showErrorText(errorElement);
+                            });
+                        }
+                    });
+                });
+
+                return;
+            }
+
             this.loading = true;
-            this.errors = {};
+            this.error = null;
+            this.success = false;
+
+            // Анимация кнопки загрузки
+            this.animateButtonLoading();
 
             try {
                 const response = await clientAuthService.register(this.form);
 
-                this.$emit("register-success", response.data);
+                this.success = true;
+                this.$emit("register-success", response);
+
+                // Анимация успешного сообщения
+                this.$nextTick(() => {
+                    this.animateSuccess();
+                });
 
                 // Показываем уведомление об успешной регистрации
                 if (window.modalService) {
                     window.modalService.alert(
                         "Успешная регистрация",
-                        "Аккаунт создан! Добро пожаловать в систему!",
+                        "Аккаунт создан успешно!",
                         "success"
                     );
                 }
@@ -276,18 +574,37 @@ export default {
                 console.error("Register error:", error);
 
                 // Обрабатываем ошибки валидации
-                if (error.message.includes("validation")) {
-                    // Здесь можно парсить ошибки валидации из ответа сервера
-                    this.errors.general =
-                        "Проверьте правильность заполнения полей";
+                if (error.response?.data?.errors) {
+                    this.errors = error.response.data.errors;
                 } else {
-                    this.errors.general =
+                    this.error =
                         error.message || "Произошла ошибка при регистрации";
                 }
+
+                // Анимация ошибки
+                this.$nextTick(() => {
+                    this.animateError();
+                });
             } finally {
                 this.loading = false;
+                this.animateButtonReset();
             }
         },
     },
 };
 </script>
+
+<style scoped>
+/* Только базовые стили для анимаций */
+input,
+select,
+textarea {
+    transition: all 0.3s ease;
+}
+
+/* Анимация для чекбокса */
+input[type="checkbox"]:checked {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+</style>

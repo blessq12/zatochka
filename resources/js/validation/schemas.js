@@ -102,3 +102,71 @@ export const validateForm = async (schema, data) => {
         return { isValid: false, errors };
     }
 };
+
+// Схема валидации для формы входа клиента
+export const loginFormSchema = yup.object({
+    phone: yup
+        .string()
+        .required("Укажите номер телефона")
+        .matches(
+            /^\+7\s\(\d{3}\)\s\d{3}-\d{2}-\d{2}$/,
+            "Укажите корректный номер телефона в формате +7 (XXX) XXX-XX-XX"
+        ),
+
+    password: yup
+        .string()
+        .required("Укажите пароль")
+        .min(6, "Пароль должен содержать минимум 6 символов"),
+
+    remember: yup.boolean(),
+});
+
+// Схема валидации для формы регистрации клиента
+export const registerFormSchema = yup.object({
+    full_name: yup
+        .string()
+        .required("Укажите ФИО")
+        .min(2, "ФИО должно содержать минимум 2 символа")
+        .max(100, "ФИО не должно превышать 100 символов")
+        .matches(
+            /^[а-яёa-z\s-]+$/i,
+            "ФИО может содержать только буквы, пробелы и дефисы"
+        ),
+
+    phone: yup
+        .string()
+        .required("Укажите номер телефона")
+        .matches(
+            /^\+7\s\(\d{3}\)\s\d{3}-\d{2}-\d{2}$/,
+            "Укажите корректный номер телефона в формате +7 (XXX) XXX-XX-XX"
+        ),
+
+    password: yup
+        .string()
+        .required("Укажите пароль")
+        .min(6, "Пароль должен содержать минимум 6 символов")
+        .max(50, "Пароль не должен превышать 50 символов"),
+
+    password_confirmation: yup
+        .string()
+        .required("Подтвердите пароль")
+        .oneOf([yup.ref("password"), null], "Пароли не совпадают"),
+
+    telegram: yup
+        .string()
+        .nullable()
+        .matches(
+            /^@?[a-zA-Z0-9_]{5,32}$/,
+            "Укажите корректный username Telegram"
+        ),
+
+    birth_date: yup
+        .date()
+        .nullable()
+        .max(new Date(), "Дата рождения не может быть в будущем"),
+
+    delivery_address: yup
+        .string()
+        .nullable()
+        .max(200, "Адрес не должен превышать 200 символов"),
+});
