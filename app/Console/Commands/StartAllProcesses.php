@@ -4,35 +4,35 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-class CheckQueueStatus extends Command
+class StartAllProcesses extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'queue:check-n-restart';
+    protected $signature = 'processes:start-all';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Проверяем статус очереди и перезапускаем если необходимо';
+    protected $description = 'Запускает все необходимые процессы artisan';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $queueProcesses = shell_exec('ps aux | grep "artisan queue:work" | grep -v grep | wc -l');
-        $queueProcesses = (int) trim($queueProcesses);
-
-        $scheduleProcesses = shell_exec('ps aux | grep "artisan schedule:run" | grep -v grep | wc -l');
-        $scheduleProcesses = (int) trim($scheduleProcesses);
+        $this->info('Запускаем все процессы...');
 
         $php_path = trim(shell_exec('which php'));
         $artisan_path = base_path('artisan');
+
+        // Проверяем и запускаем queue:work
+        $queueProcesses = shell_exec('ps aux | grep "artisan queue:work" | grep -v grep | wc -l');
+        $queueProcesses = (int) trim($queueProcesses);
 
         if ($queueProcesses == 0) {
             $this->info('Запуск очереди...');
@@ -42,6 +42,10 @@ class CheckQueueStatus extends Command
             $this->info("Очередь уже запущена ({$queueProcesses} процессов).");
         }
 
+        // Проверяем и запускаем schedule:run
+        $scheduleProcesses = shell_exec('ps aux | grep "artisan schedule:run" | grep -v grep | wc -l');
+        $scheduleProcesses = (int) trim($scheduleProcesses);
+
         if ($scheduleProcesses == 0) {
             $this->info('Запуск планировщика...');
             shell_exec("nohup {$php_path} {$artisan_path} schedule:run > /dev/null 2>&1 &");
@@ -49,5 +53,7 @@ class CheckQueueStatus extends Command
         } else {
             $this->info("Планировщик уже запущен ({$scheduleProcesses} процессов).");
         }
+
+        $this->info('Все процессы запущены.');
     }
 }
