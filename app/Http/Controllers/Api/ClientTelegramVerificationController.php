@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class ClientTelegramVerificationController extends Controller
 {
@@ -57,11 +58,22 @@ class ClientTelegramVerificationController extends Controller
 
         // Отправляем код через Telegram
         try {
-            $this->telegramService->sendVerificationCode($client->telegram, $verificationCode);
+            $result = $this->telegramService->sendVerificationCode($client->telegram, $verificationCode);
+            
+            if (!$result) {
+                Cache::forget($cacheKey);
+                throw ValidationException::withMessages([
+                    'telegram' => ['Не удалось отправить код. Убедитесь, что вы начали диалог с ботом @zatochka_tsk_bot'],
+                ]);
+            }
         } catch (\Exception $e) {
             Cache::forget($cacheKey);
+            Log::error('Telegram verification code sending failed', [
+                'username' => $client->telegram,
+                'error' => $e->getMessage()
+            ]);
             throw ValidationException::withMessages([
-                'telegram' => ['Не удалось отправить код. Проверьте правильность Telegram аккаунта.'],
+                'telegram' => ['Не удалось отправить код. Убедитесь, что вы начали диалог с ботом @zatochka_tsk_bot'],
             ]);
         }
 
@@ -114,6 +126,10 @@ class ClientTelegramVerificationController extends Controller
         try {
             $this->telegramService->sendVerificationSuccess($client->telegram);
         } catch (\Exception $e) {
+            Log::error('Telegram verification success notification failed', [
+                'username' => $client->telegram,
+                'error' => $e->getMessage()
+            ]);
             // Игнорируем ошибку отправки уведомления
         }
 
