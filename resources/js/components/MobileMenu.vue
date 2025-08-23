@@ -122,7 +122,7 @@ export default {
                 class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
             >
                 <a href="/" class="block">
-                    <img src="/logo.png" alt="Logo" class="nav-logo" />
+                    <img src="/logo.svg" alt="Logo" class="nav-logo" />
                 </a>
             </div>
 

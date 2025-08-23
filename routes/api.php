@@ -55,8 +55,8 @@ Route::resource('notifications', NotificationController::class);
 Route::resource('order-tools', OrderToolController::class);
 Route::resource('repairs', RepairController::class);
 Route::resource('faqs', FaqController::class);
-Route::resource('reviews', ReviewController::class)->only(['index', 'store', 'show']);
 Route::get('reviews/stats', [ReviewController::class, 'stats']);
+Route::resource('reviews', ReviewController::class)->only(['index', 'store', 'show']);
 
 // Telegram webhook
 Route::controller(TelegramWebhookController::class)->group(function () {

@@ -11,6 +11,9 @@ Route::controller(MainController::class)
         Route::get('/repair', 'repair')->name('repair');
         Route::get('/delivery', 'delivery')->name('delivery');
         Route::get('/contacts', 'contacts')->name('contacts');
+        Route::get('/privacy-policy', 'privacyPolicy')->name('privacy-policy');
+        Route::get('/terms-of-service', 'termsOfService')->name('terms-of-service');
+        Route::get('/help', 'help')->name('help');
     });
 
 // Тестовая страница аутентификации клиентов

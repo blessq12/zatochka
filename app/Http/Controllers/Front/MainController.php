@@ -31,4 +31,19 @@ class MainController extends Controller
     {
         return view('pages.contacts');
     }
+
+    public function privacyPolicy()
+    {
+        return view('pages.privacy-policy');
+    }
+
+    public function termsOfService()
+    {
+        return view('pages.terms-of-service');
+    }
+
+    public function help()
+    {
+        return view('pages.help');
+    }
 }

@@ -19,7 +19,7 @@
     <section
         class="py-16 bg-gray-50 dark:bg-gray-800 [box-shadow:inset_0_0_30px_0_rgba(0,0,0,0.1)] dark:[box-shadow:inset_0_0_30px_0_rgba(255,255,255,0.05)]">
         <div class="max-w-7xl mx-auto px-4 py-24">
-            <h2 class="section-title text-3xl font-bold text-center mb-12 dark:text-white">Навигация</h2>
+            <h2 class="section-title text-3xl font-bold text-center mb-12 dark:text-white font-jost">Навигация</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <a href="{{ route('sharpening') }}" class="feature-card hover:shadow-lg transition-all">
                     <div class="flex justify-center mb-4">
@@ -27,7 +27,7 @@
                             <i class="mdi mdi-knife text-3xl text-accent"></i>
                         </div>
                     </div>
-                    <h3 class="font-bold text-xl text-center mb-2 dark:text-white">Заточка</h3>
+                    <h3 class="font-bold text-xl text-center mb-2 dark:text-white font-jost">Заточка</h3>
                     <p class="text-gray-600 dark:text-gray-400 text-center">Прайс на заточку инструментов</p>
                 </a>
                 <a href="{{ route('repair') }}" class="feature-card hover:shadow-lg transition-all">
@@ -36,7 +36,7 @@
                             <i class="mdi mdi-tools text-3xl text-accent"></i>
                         </div>
                     </div>
-                    <h3 class="font-bold text-xl text-center mb-2 dark:text-white">Ремонт</h3>
+                    <h3 class="font-bold text-xl text-center mb-2 dark:text-white font-jost">Ремонт</h3>
                     <p class="text-gray-600 dark:text-gray-400 text-center">Прайс на ремонт оборудования</p>
                 </a>
                 <a href="{{ route('delivery') }}" class="feature-card hover:shadow-lg transition-all">
@@ -45,7 +45,7 @@
                             <i class="mdi mdi-truck-delivery text-3xl text-accent"></i>
                         </div>
                     </div>
-                    <h3 class="font-bold text-xl text-center mb-2 dark:text-white">Доставка</h3>
+                    <h3 class="font-bold text-xl text-center mb-2 dark:text-white font-jost">Доставка</h3>
                     <p class="text-gray-600 dark:text-gray-400 text-center">Условия доставки</p>
                 </a>
                 <a href="{{ route('contacts') }}" class="feature-card hover:shadow-lg transition-all">
@@ -54,7 +54,7 @@
                             <i class="mdi mdi-map-marker text-3xl text-accent"></i>
                         </div>
                     </div>
-                    <h3 class="font-bold text-xl text-center mb-2 dark:text-white">Куда везти</h3>
+                    <h3 class="font-bold text-xl text-center mb-2 dark:text-white font-jost">Куда везти</h3>
                     <p class="text-gray-600 dark:text-gray-400 text-center">Адрес и контакты</p>
                 </a>
             </div>
@@ -65,14 +65,15 @@
     <section class="py-0 dark:bg-gray-900">
         <div class="py-24">
             <div class="max-w-7xl mx-auto px-4 ">
-                <h2 class="section-title text-3xl font-bold text-center mb-12 dark:text-white">Наши услуги</h2>
+                <h2 class="section-title text-3xl font-bold text-center mb-12 dark:text-white font-jost">Наши услуги
+                </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="feature-card hover:shadow-lg transition-all">
                         <div class="flex items-center mb-6">
                             <div class="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mr-4">
                                 <i class="mdi mdi-knife text-2xl text-accent"></i>
                             </div>
-                            <h3 class="text-xl font-bold dark:text-white">Заточка инструментов</h3>
+                            <h3 class="text-xl font-bold dark:text-white font-jost">Заточка инструментов</h3>
                         </div>
                         <ul class="space-y-3">
                             <li class="flex items-start">
@@ -102,7 +103,7 @@
                             <div class="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mr-4">
                                 <i class="mdi mdi-tools text-2xl text-accent"></i>
                             </div>
-                            <h3 class="text-xl font-bold dark:text-white">Ремонт оборудования</h3>
+                            <h3 class="text-xl font-bold dark:text-white font-jost">Ремонт оборудования</h3>
                         </div>
                         <ul class="space-y-3">
                             <li class="flex items-start">
@@ -128,7 +129,8 @@
 
         <div class="py-24">
             <div class="max-w-7xl mx-auto px-4">
-                <h2 class="section-title text-3xl font-bold text-center mb-12 dark:text-white">Как мы работаем</h2>
+                <h2 class="section-title text-3xl font-bold text-center mb-12 dark:text-white font-jost">Как мы работаем
+                </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <div class="process-step">
                         <div class="process-number">1</div>
@@ -136,7 +138,7 @@
                             <div class="flex justify-center mb-4">
                                 <i class="mdi mdi-magnify text-4xl text-accent"></i>
                             </div>
-                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white">Диагностика</h3>
+                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white font-jost">Диагностика</h3>
                             <p class="text-gray-600 dark:text-gray-400 text-center">Осмотр инструментов, сбор жалоб,
                                 определение работ</p>
                         </div>
@@ -147,7 +149,7 @@
                             <div class="flex justify-center mb-4">
                                 <i class="mdi mdi-handshake text-4xl text-accent"></i>
                             </div>
-                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white">Согласование</h3>
+                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white font-jost">Согласование</h3>
                             <p class="text-gray-600 dark:text-gray-400 text-center">Согласование ремонта аппаратов</p>
                         </div>
                     </div>
@@ -157,7 +159,7 @@
                             <div class="flex justify-center mb-4">
                                 <i class="mdi mdi-tools text-4xl text-accent"></i>
                             </div>
-                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white">Выполнение</h3>
+                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white font-jost">Выполнение</h3>
                             <p class="text-gray-600 dark:text-gray-400 text-center">Работа по современным протоколам с
                                 профессиональным
                                 оборудованием</p>
@@ -169,7 +171,8 @@
                             <div class="flex justify-center mb-4">
                                 <i class="mdi mdi-check-decagram text-4xl text-accent"></i>
                             </div>
-                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white">Контроль качества</h3>
+                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white font-jost">Контроль качества
+                            </h3>
                             <p class="text-gray-600 dark:text-gray-400 text-center">Тестирование заточки (претензии в
                                 течение 3 дней),
                                 прокатка аппарата на холостом ходу</p>
@@ -181,7 +184,7 @@
                             <div class="flex justify-center mb-4">
                                 <i class="mdi mdi-package-variant-closed text-4xl text-accent"></i>
                             </div>
-                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white">Упаковка</h3>
+                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white font-jost">Упаковка</h3>
                             <p class="text-gray-600 dark:text-gray-400 text-center">Тщательная упаковка для сохранности
                                 при
                                 транспортировке
@@ -194,7 +197,7 @@
                             <div class="flex justify-center mb-4">
                                 <i class="mdi mdi-truck-delivery text-4xl text-accent"></i>
                             </div>
-                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white">Доставка</h3>
+                            <h3 class="font-bold text-xl mb-3 text-center dark:text-white font-jost">Доставка</h3>
                             <p class="text-gray-600 dark:text-gray-400 text-center">Бережная доставка, курьер
                                 проинструктирован</p>
                         </div>

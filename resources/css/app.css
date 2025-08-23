@@ -51,7 +51,37 @@
     --radius-card: 16px;
 }
 
-/* Утилиты для шрифтов */
+/* Глобальные стили для шрифтов */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-jost);
+}
+
+/* Навигация и кнопки */
+nav,
+.btn-primary,
+.btn-outline,
+.btn-white,
+.btn-outline-white {
+    font-family: var(--font-jost);
+}
+
+/* Заголовки секций */
+.section-title {
+    font-family: var(--font-jost);
+}
+
+/* Формы */
+.form-label,
+.form-input,
+.form-select {
+    font-family: var(--font-jost);
+}
+
 .font-jost {
     font-family: var(--font-jost);
 }

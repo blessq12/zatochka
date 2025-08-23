@@ -28,8 +28,11 @@
     <div class="min-h-screen">
         <main id="app">
             @include('components.navigation')
-            {{ $slot }}
+            <div class="pt-20">
+                {{ $slot }}
+            </div>
             @include('components.footer')
+            {{-- <decorative-logo></decorative-logo> --}}
         </main>
     </div>
 </body>

@@ -43,8 +43,9 @@ export default {
         async loadReviews() {
             this.loading = true;
             try {
+                const entityType = encodeURIComponent(this.entityType);
                 const response = await fetch(
-                    `/api/reviews?type=${this.type}&entity_type=${this.entityType}&entity_id=${this.entityId}&page=${this.page}`
+                    `/api/reviews?type=${this.type}&entity_type=${entityType}&entity_id=${this.entityId}&page=${this.page}`
                 );
                 const data = await response.json();
 
@@ -66,8 +67,9 @@ export default {
 
         async loadStats() {
             try {
+                const entityType = encodeURIComponent(this.entityType);
                 const response = await fetch(
-                    `/api/reviews/stats?type=${this.type}&entity_type=${this.entityType}&entity_id=${this.entityId}`
+                    `/api/reviews/stats?type=${this.type}&entity_type=${entityType}&entity_id=${this.entityId}`
                 );
                 const data = await response.json();
 

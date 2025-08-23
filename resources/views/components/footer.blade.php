@@ -4,12 +4,12 @@
     'copyright' => '',
 ])
 
-<footer class="bg-gray-900 text-white">
+<footer class="bg-gray-900 text-white font-jost">
     <div class="max-w-7xl mx-auto px-4 py-16">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <!-- О компании -->
             <div>
-                <img src="/logo.png" alt="Заточка ТСК" class="h-12 w-auto mb-6">
+                <img src="/logo.svg" alt="Заточка ТСК" class="h-12 w-auto mb-6">
                 <p class="text-gray-300 mb-6 leading-relaxed">
                     Профессиональная заточка инструментов для мастеров маникюра,
                     парикмахеров и грумеров. Более 5 лет опыта и тысячи довольных клиентов.
@@ -60,13 +60,14 @@
             <div>
                 <h3 class="text-lg font-bold mb-6 text-white">Информация</h3>
                 <nav class="space-y-3">
-                    <a href="#" class="block text-gray-300 hover:text-white transition-colors duration-300">О
+                    <a href="{{ route('home') }}"
+                        class="block text-gray-300 hover:text-white transition-colors duration-300">О
                         компании</a>
                     <a href="{{ route('sharpening') }}"
                         class="block text-gray-300 hover:text-white transition-colors duration-300">Цены</a>
                     <a href="{{ route('delivery') }}"
                         class="block text-gray-300 hover:text-white transition-colors duration-300">Доставка</a>
-                    <a href="#"
+                    <a href="{{ route('help') }}"
                         class="block text-gray-300 hover:text-white transition-colors duration-300">Гарантия</a>
                     <a href="{{ route('contacts') }}"
                         class="block text-gray-300 hover:text-white transition-colors duration-300">Контакты</a>
@@ -112,11 +113,14 @@
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <p class="text-gray-400 text-sm">&copy; 2024 Заточка ТСК. Все права защищены.</p>
                 <div class="mt-4 md:mt-0 flex space-x-6 text-sm">
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Политика
+                    <a href="{{ route('privacy-policy') }}"
+                        class="text-gray-400 hover:text-white transition-colors duration-300">Политика
                         конфиденциальности</a>
-                    <a href="#"
+                    <a href="{{ route('terms-of-service') }}"
                         class="text-gray-400 hover:text-white transition-colors duration-300">Пользовательское
                         соглашение</a>
+                    <a href="{{ route('help') }}"
+                        class="text-gray-400 hover:text-white transition-colors duration-300">Помощь</a>
                 </div>
             </div>
         </div>
