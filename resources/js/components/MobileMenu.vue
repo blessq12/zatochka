@@ -97,7 +97,7 @@ export default {
     <div>
         <button
             @click="toggleMenu"
-            class="mobile-menu-btn md:hidden fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+            class="mobile-menu-btn relative z-50 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
             <svg
                 class="w-6 h-6"

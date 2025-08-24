@@ -73,6 +73,10 @@
                 @endforeach
 
                 <theme-toggle></theme-toggle>
+            </div>
+
+            <!-- Мобильное меню -->
+            <div class="md:hidden">
                 <mobile-menu :navigation='@json($navigation)' :contacts='@json($contacts ?? [])'>
                 </mobile-menu>
             </div>
