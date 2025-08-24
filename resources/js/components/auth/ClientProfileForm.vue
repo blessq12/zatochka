@@ -108,7 +108,7 @@
 </template>
 
 <script>
-import clientAuthService from "../../services/clientAuthService.js";
+import { useAuthStore } from "../../stores/auth.js";
 
 export default {
     name: "ClientProfileForm",
@@ -128,8 +128,15 @@ export default {
                 delivery_address: "",
             },
             errors: {},
-            loading: false,
         };
+    },
+    computed: {
+        authStore() {
+            return useAuthStore();
+        },
+        loading() {
+            return this.authStore.getLoading;
+        },
     },
     mounted() {
         this.initializeForm();
@@ -145,35 +152,24 @@ export default {
         },
 
         async handleSubmit() {
-            this.loading = true;
             this.errors = {};
 
             try {
-                const response = await clientAuthService.updateProfile(this.form);
-                
+                const response = await this.authStore.updateProfile(this.form);
+
                 this.$emit("profile-updated", response.data.client);
-                
-                // Показываем уведомление об успешном обновлении
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Профиль обновлен",
-                        "Ваши данные успешно сохранены",
-                        "success"
-                    );
-                }
             } catch (error) {
                 console.error("Profile update error:", error);
-                
+
                 // Обрабатываем ошибки валидации
                 if (error.message.includes("validation")) {
                     this.errors.general =
                         "Проверьте правильность заполнения полей";
                 } else {
                     this.errors.general =
-                        error.message || "Произошла ошибка при обновлении профиля";
+                        error.message ||
+                        "Произошла ошибка при обновлении профиля";
                 }
-            } finally {
-                this.loading = false;
             }
         },
     },

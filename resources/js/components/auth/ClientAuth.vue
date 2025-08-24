@@ -1,6 +1,5 @@
 <template>
     <div class="client-auth" ref="container">
-        <!-- Загрузка -->
         <div
             v-if="loading"
             class="flex items-center justify-center py-12"
@@ -73,15 +72,128 @@
             class="space-y-6"
             ref="verificationContainer"
         >
-            <client-telegram-verification
-                :client="client"
-                @verification-complete="handleVerificationComplete"
-            />
+            <!-- Режим редактирования -->
+            <div v-if="isEditing" class="space-y-6">
+                <client-profile-edit
+                    :client="client"
+                    @profile-updated="handleProfileUpdated"
+                    @cancel="isEditing = false"
+                />
+            </div>
+
+            <!-- Обычный режим просмотра -->
+            <div v-else class="space-y-6">
+                <!-- Информация о клиенте -->
+                <div
+                    class="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md"
+                >
+                    <h3
+                        class="text-lg font-medium text-gray-900 dark:text-white mb-4"
+                    >
+                        Информация об аккаунте
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >ФИО:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{ client.full_name }}</span
+                            >
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Телефон:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{ client.phone }}</span
+                            >
+                        </div>
+                        <div
+                            v-if="client.telegram"
+                            class="flex justify-between"
+                        >
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Telegram:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{ client.telegram }}</span
+                            >
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Статус:</span
+                            >
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                            >
+                                <i class="mdi mdi-alert-circle mr-1"></i>
+                                Требуется верификация
+                            </span>
+                        </div>
+                        <div
+                            v-if="client.created_at"
+                            class="flex justify-between"
+                        >
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Дата регистрации:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{ formatDate(client.created_at) }}</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Верификация Telegram -->
+                <div
+                    class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800"
+                >
+                    <h4
+                        class="font-medium text-blue-900 dark:text-blue-100 mb-2"
+                    >
+                        Верификация Telegram
+                    </h4>
+                    <p class="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                        Для полного доступа к системе необходимо подтвердить
+                        Telegram аккаунт
+                    </p>
+                    <button
+                        @click="showTelegramVerification = true"
+                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                    >
+                        <i class="mdi mdi-telegram mr-2"></i>
+                        Пройти верификацию
+                    </button>
+                </div>
+
+                <!-- Действия -->
+                <div class="flex space-x-3">
+                    <button
+                        @click="handleLogout"
+                        class="flex-1 flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all duration-200 transform hover:scale-105"
+                    >
+                        <i class="mdi mdi-logout mr-2"></i>
+                        Выйти
+                    </button>
+                    <button
+                        @click="handleEditProfile"
+                        class="flex-1 flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-gradient-to-r from-accent to-pink-600 hover:from-accent/90 hover:to-pink-600/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all duration-200 transform hover:scale-105"
+                    >
+                        <i class="mdi mdi-account-edit mr-2"></i>
+                        Редактировать профиль
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Авторизован, но данные еще загружаются -->
         <div
-            v-else-if="clientAuthService.isAuthenticated() && !client"
+            v-else-if="isAuthenticated && !client"
             class="flex items-center justify-center py-12"
         >
             <div class="text-center">
@@ -100,94 +212,130 @@
             class="space-y-6"
             ref="authenticatedContainer"
         >
-            <div class="text-center">
-                <div class="mb-4">
-                    <i
-                        class="mdi mdi-account-check text-green-500 text-6xl"
-                    ></i>
+            <!-- Режим редактирования -->
+            <div v-if="isEditing" class="space-y-6">
+                <client-profile-edit
+                    :client="client"
+                    @profile-updated="handleProfileUpdated"
+                    @cancel="isEditing = false"
+                />
+            </div>
+
+            <!-- Обычный режим просмотра -->
+            <div v-else class="space-y-6">
+                <div class="text-center">
+                    <div class="mb-4">
+                        <i
+                            class="mdi mdi-account-check text-green-500 text-6xl"
+                        ></i>
+                    </div>
+                    <h2
+                        class="text-2xl font-bold text-gray-900 dark:text-white mb-2"
+                    >
+                        Добро пожаловать!
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Ваш аккаунт полностью подтвержден
+                    </p>
                 </div>
-                <h2
-                    class="text-2xl font-bold text-gray-900 dark:text-white mb-2"
-                >
-                    Добро пожаловать!
-                </h2>
-                <p class="text-gray-600 dark:text-gray-400 mb-6">
-                    Ваш аккаунт полностью подтвержден
-                </p>
-            </div>
 
-            <!-- Информация о клиенте -->
-            <div
-                class="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md"
-            >
-                <h3
-                    class="text-lg font-medium text-gray-900 dark:text-white mb-4"
+                <!-- Информация о клиенте -->
+                <div
+                    class="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md"
                 >
-                    Информация об аккаунте
-                </h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >ФИО:</span
+                    <h3
+                        class="text-lg font-medium text-gray-900 dark:text-white mb-4"
+                    >
+                        Информация об аккаунте
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >ФИО:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{ client.full_name }}</span
+                            >
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Телефон:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{ client.phone }}</span
+                            >
+                        </div>
+                        <div
+                            v-if="client.telegram"
+                            class="flex justify-between"
                         >
-                        <span
-                            class="font-medium text-gray-900 dark:text-white"
-                            >{{ client.full_name }}</span
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Telegram:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{ client.telegram }}</span
+                            >
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Статус:</span
+                            >
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            >
+                                <i class="mdi mdi-check-circle mr-1"></i>
+                                Подтвержден
+                            </span>
+                        </div>
+                        <div
+                            v-if="client.created_at"
+                            class="flex justify-between"
                         >
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >Телефон:</span
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Дата регистрации:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{ formatDate(client.created_at) }}</span
+                            >
+                        </div>
+                        <div
+                            v-if="client.telegram_verified_at"
+                            class="flex justify-between"
                         >
-                        <span
-                            class="font-medium text-gray-900 dark:text-white"
-                            >{{ client.phone }}</span
-                        >
-                    </div>
-                    <div v-if="client.telegram" class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >Telegram:</span
-                        >
-                        <span
-                            class="font-medium text-gray-900 dark:text-white"
-                            >{{ client.telegram }}</span
-                        >
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >Статус:</span
-                        >
-                        <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                        >
-                            <i class="mdi mdi-check-circle mr-1"></i>
-                            Подтвержден
-                        </span>
+                            <span class="text-gray-600 dark:text-gray-400"
+                                >Верифицирован:</span
+                            >
+                            <span
+                                class="font-medium text-gray-900 dark:text-white"
+                                >{{
+                                    formatDate(client.telegram_verified_at)
+                                }}</span
+                            >
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Информация о Telegram боте -->
-            <div class="mt-6">
-                <telegram-bot-info />
-            </div>
-
-            <!-- Действия -->
-            <div class="flex space-x-3 mt-6">
-                <button
-                    @click="handleLogout"
-                    class="flex-1 flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all duration-200 transform hover:scale-105"
-                >
-                    <i class="mdi mdi-logout mr-2"></i>
-                    Выйти
-                </button>
-                <button
-                    @click="handleEditProfile"
-                    class="flex-1 flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-gradient-to-r from-accent to-pink-600 hover:from-accent/90 hover:to-pink-600/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all duration-200 transform hover:scale-105"
-                >
-                    <i class="mdi mdi-account-edit mr-2"></i>
-                    Редактировать профиль
-                </button>
+                <!-- Действия -->
+                <div class="flex space-x-3 mt-6">
+                    <button
+                        @click="handleLogout"
+                        class="flex-1 flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all duration-200 transform hover:scale-105"
+                    >
+                        <i class="mdi mdi-logout mr-2"></i>
+                        Выйти
+                    </button>
+                    <button
+                        @click="handleEditProfile"
+                        class="flex-1 flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-gradient-to-r from-accent to-pink-600 hover:from-accent/90 hover:to-pink-600/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all duration-200 transform hover:scale-105"
+                    >
+                        <i class="mdi mdi-account-edit mr-2"></i>
+                        Редактировать профиль
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -234,44 +382,72 @@
                 </div>
             </div>
         </modal>
+
+        <!-- Модальное окно верификации Telegram -->
+        <TelegramVerificationModal
+            :show="showTelegramVerification"
+            :client="client"
+            @close="showTelegramVerification = false"
+            @verification-complete="handleVerificationComplete"
+        />
     </div>
 </template>
 
 <script>
 import { gsap } from "gsap";
-import clientAuthService from "../../services/clientAuthService.js";
+import { useAuthStore } from "../../stores/auth.js";
 import Modal from "../Modal.vue";
+import TelegramVerificationModal from "../modals/TelegramVerificationModal.vue";
 import TelegramBotInfo from "../TelegramBotInfo.vue";
 import ClientLoginForm from "./ClientLoginForm.vue";
+import ClientProfileEdit from "./ClientProfileEdit.vue";
 import ClientRegisterForm from "./ClientRegisterForm.vue";
-import ClientTelegramVerification from "./ClientTelegramVerification.vue";
 
 export default {
     name: "ClientAuth",
     components: {
         ClientLoginForm,
         ClientRegisterForm,
-        ClientTelegramVerification,
+        TelegramVerificationModal,
         Modal,
         TelegramBotInfo,
+        ClientProfileEdit,
     },
     data() {
         return {
-            loading: true,
             currentForm: "login",
-            client: null,
             showForgotPassword: false,
             resetPhone: "",
             resettingPassword: false,
+            isEditing: false,
+            showTelegramVerification: false,
         };
     },
     computed: {
+        authStore() {
+            return useAuthStore();
+        },
+        loading() {
+            return this.authStore.getLoading;
+        },
+        client() {
+            return this.authStore.getUser;
+        },
         isAuthenticated() {
-            return clientAuthService.isAuthenticated() && this.client;
+            const authenticated = this.authStore.isAuthenticated;
+            console.log("🔍 ClientAuth isAuthenticated:", {
+                storeAuthenticated: this.authStore.isAuthenticated,
+                storeUser: this.authStore.getUser,
+                result: authenticated,
+            });
+            return authenticated;
         },
     },
     async mounted() {
-        await this.checkAuthStatus();
+        // Инициализируем стор если нужно
+        if (this.authStore.isAuthenticated && !this.authStore.getUser) {
+            await this.checkAuthStatus();
+        }
 
         // Анимация появления компонента
         this.$nextTick(() => {
@@ -281,7 +457,7 @@ export default {
     methods: {
         // Анимация появления компонента
         animateComponentEnter() {
-            if (this.loading) {
+            if (this.loading && this.$refs.loadingState) {
                 gsap.fromTo(
                     this.$refs.loadingState,
                     {
@@ -295,17 +471,25 @@ export default {
                         ease: "back.out(1.7)",
                     }
                 );
-            } else if (!this.isAuthenticated) {
+            } else if (!this.isAuthenticated && this.$refs.authForms) {
                 this.animateAuthForms();
-            } else if (!this.client?.is_telegram_verified) {
+            } else if (
+                !this.client?.is_telegram_verified &&
+                this.$refs.verificationContainer
+            ) {
                 this.animateVerification();
-            } else {
+            } else if (
+                this.client?.is_telegram_verified &&
+                this.$refs.authenticatedContainer
+            ) {
                 this.animateAuthenticated();
             }
         },
 
         // Анимация форм авторизации
         animateAuthForms() {
+            if (!this.$refs.authForms) return;
+
             gsap.fromTo(
                 this.$refs.authForms,
                 {
@@ -323,24 +507,28 @@ export default {
             );
 
             // Анимация табов
-            gsap.fromTo(
-                this.$refs.formTabs,
-                {
-                    opacity: 0,
-                    y: -20,
-                },
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.4,
-                    ease: "back.out(1.7)",
-                    delay: 0.2,
-                }
-            );
+            if (this.$refs.formTabs) {
+                gsap.fromTo(
+                    this.$refs.formTabs,
+                    {
+                        opacity: 0,
+                        y: -20,
+                    },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.4,
+                        ease: "back.out(1.7)",
+                        delay: 0.2,
+                    }
+                );
+            }
         },
 
         // Анимация верификации
         animateVerification() {
+            if (!this.$refs.verificationContainer) return;
+
             gsap.fromTo(
                 this.$refs.verificationContainer,
                 {
@@ -360,6 +548,8 @@ export default {
 
         // Анимация авторизованного состояния
         animateAuthenticated() {
+            if (!this.$refs.authenticatedContainer) return;
+
             gsap.fromTo(
                 this.$refs.authenticatedContainer,
                 {
@@ -446,67 +636,86 @@ export default {
         },
 
         async checkAuthStatus() {
+            console.log("🔍 checkAuthStatus called");
+            console.log("🔍 Current auth state:", {
+                isAuthenticated: this.authStore.isAuthenticated,
+                token: this.authStore.token,
+                user: this.authStore.getUser,
+            });
+
             try {
                 // Если есть токен, проверяем его валидность
-                if (clientAuthService.isAuthenticated()) {
-                    const response = await clientAuthService.checkToken();
-                    this.client = response.data.client;
+                if (this.authStore.isAuthenticated) {
+                    console.log("🔍 Token exists, checking...");
+                    await this.authStore.checkToken();
+                    console.log("🔍 After checkToken:", {
+                        isAuthenticated: this.authStore.isAuthenticated,
+                        user: this.authStore.getUser,
+                    });
+                } else {
+                    console.log("🔍 No token found");
                 }
             } catch (error) {
-                console.error("Auth check error:", error);
-                // Если токен недействителен, удаляем его
-                clientAuthService.removeToken();
-                this.client = null;
-            } finally {
-                this.loading = false;
+                console.error("🔍 checkAuthStatus error:", error);
+                // Если токен недействителен, он уже удален в сторе
             }
         },
 
         async handleLoginSuccess(data) {
-            // Обновляем данные клиента
-            this.client = data.data.client;
+            console.log("🎯 handleLoginSuccess called with:", data);
+            console.log("🔍 Current auth state:", {
+                isAuthenticated: this.isAuthenticated,
+                client: this.client,
+                loading: this.loading,
+            });
 
-            // Обновляем токен в сервисе
-            if (data.data.token) {
-                clientAuthService.setToken(data.data.token);
-            }
+            // Обновляем данные клиента из стора
+            await this.checkAuthStatus();
 
-            // Небольшая задержка для показа успешного сообщения
-            setTimeout(() => {
-                this.$emit("auth-success", data);
-            }, 1500);
+            // Ждем следующего тика для обновления DOM
+            await this.$nextTick();
+
+            console.log("🔍 After checkAuthStatus:", {
+                isAuthenticated: this.isAuthenticated,
+                client: this.client,
+                loading: this.loading,
+            });
+
+            // Эмитим событие
+            this.$emit("auth-success", data);
         },
 
         async handleRegisterSuccess(data) {
-            // Обновляем данные клиента
-            this.client = data.data.client;
+            // Обновляем данные клиента из стора
+            await this.checkAuthStatus();
 
-            // Обновляем токен в сервисе
-            if (data.data.token) {
-                clientAuthService.setToken(data.data.token);
-            }
+            // Ждем следующего тика для обновления DOM
+            await this.$nextTick();
 
-            // Небольшая задержка для показа успешного сообщения
-            setTimeout(() => {
-                this.$emit("auth-success", data);
-            }, 1500);
+            // Эмитим событие
+            this.$emit("auth-success", data);
         },
 
         async handleVerificationComplete(clientData = null) {
-            if (clientData) {
-                // Если переданы обновленные данные клиента, используем их
-                this.client = clientData;
-            } else {
-                // Иначе обновляем данные клиента через API
+            if (!clientData) {
+                // Обновляем данные клиента через API
                 await this.checkAuthStatus();
             }
+
             this.$emit("verification-complete");
         },
 
         async handleLogout() {
             try {
-                await clientAuthService.logout();
-                this.client = null;
+                await this.authStore.logout();
+
+                // Эмитим событие об изменении статуса авторизации
+                window.dispatchEvent(
+                    new CustomEvent("auth-status-changed", {
+                        detail: { isAuthenticated: false, client: null },
+                    })
+                );
+
                 this.$emit("logout");
             } catch (error) {
                 console.error("Logout error:", error);
@@ -514,7 +723,21 @@ export default {
         },
 
         handleEditProfile() {
-            this.$emit("edit-profile");
+            this.isEditing = true;
+        },
+
+        handleProfileUpdated(updatedClient) {
+            this.client = updatedClient;
+            this.isEditing = false;
+
+            // Эмитим событие об изменении статуса авторизации
+            window.dispatchEvent(
+                new CustomEvent("auth-status-changed", {
+                    detail: { isAuthenticated: true, client: this.client },
+                })
+            );
+
+            this.$emit("profile-updated", updatedClient);
         },
 
         async handleForgotPassword() {
@@ -525,32 +748,28 @@ export default {
             this.resettingPassword = true;
 
             try {
-                await clientAuthService.forgotPassword({
+                await this.authStore.forgotPassword({
                     phone: this.resetPhone,
                 });
                 this.showForgotPassword = false;
                 this.resetPhone = "";
-
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Пароль сброшен",
-                        "Новый пароль отправлен в SMS",
-                        "success"
-                    );
-                }
             } catch (error) {
                 console.error("Forgot password error:", error);
-
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Ошибка",
-                        error.message || "Не удалось сбросить пароль",
-                        "error"
-                    );
-                }
             } finally {
                 this.resettingPassword = false;
             }
+        },
+
+        formatDate(timestamp) {
+            if (!timestamp) return "Неизвестно";
+            const date = new Date(timestamp);
+            return date.toLocaleDateString("ru-RU", {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "numeric",
+                minute: "numeric",
+            });
         },
     },
 };

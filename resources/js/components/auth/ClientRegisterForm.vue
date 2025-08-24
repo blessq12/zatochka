@@ -331,7 +331,7 @@
 
 <script>
 import { gsap } from "gsap";
-import clientAuthService from "../../services/clientAuthService.js";
+import { useAuthStore } from "../../stores/auth.js";
 import { registerFormSchema, validateForm } from "../../validation/schemas.js";
 
 export default {
@@ -349,12 +349,21 @@ export default {
                 delivery_address: "",
             },
             errors: {},
-            loading: false,
             success: false,
-            error: null,
             showPassword: false,
             showPasswordConfirmation: false,
         };
+    },
+    computed: {
+        authStore() {
+            return useAuthStore();
+        },
+        loading() {
+            return this.authStore.getLoading;
+        },
+        error() {
+            return this.authStore.getError;
+        },
     },
     mounted() {
         // Анимация появления формы
@@ -365,6 +374,8 @@ export default {
     methods: {
         // Анимация появления формы
         animateFormEnter() {
+            if (!this.$refs.formContainer) return;
+
             gsap.fromTo(
                 this.$refs.formContainer,
                 {
@@ -384,6 +395,8 @@ export default {
 
         // Анимация ошибки поля - тряска
         animateFieldError(field) {
+            if (!field) return;
+
             gsap.to(field, {
                 x: [-8, 8, -8, 8, -4, 4, 0],
                 duration: 0.6,
@@ -393,6 +406,8 @@ export default {
 
         // Анимация подсветки поля с ошибкой
         highlightErrorField(field) {
+            if (!field) return;
+
             gsap.to(field, {
                 borderColor: "#ef4444",
                 boxShadow: "0 0 0 3px rgba(239, 68, 68, 0.2)",
@@ -403,6 +418,8 @@ export default {
 
         // Анимация появления текста ошибки
         showErrorText(errorElement) {
+            if (!errorElement) return;
+
             gsap.fromTo(
                 errorElement,
                 {
@@ -422,6 +439,8 @@ export default {
 
         // Анимация фокуса на поле
         animateFieldFocus(field) {
+            if (!field) return;
+
             gsap.to(field, {
                 scale: 1.02,
                 duration: 0.2,
@@ -431,6 +450,8 @@ export default {
 
         // Анимация потери фокуса
         animateFieldBlur(field) {
+            if (!field) return;
+
             gsap.to(field, {
                 scale: 1,
                 duration: 0.2,
@@ -440,6 +461,8 @@ export default {
 
         // Анимация кнопки загрузки
         animateButtonLoading() {
+            if (!this.$refs.submitButton) return;
+
             gsap.to(this.$refs.submitButton, {
                 scale: 0.95,
                 duration: 0.2,
@@ -449,6 +472,8 @@ export default {
 
         // Анимация сброса кнопки
         animateButtonReset() {
+            if (!this.$refs.submitButton) return;
+
             gsap.to(this.$refs.submitButton, {
                 scale: 1,
                 duration: 0.2,
@@ -458,6 +483,8 @@ export default {
 
         // Анимация успешного сообщения
         animateSuccess() {
+            if (!this.$refs.successMessage) return;
+
             gsap.fromTo(
                 this.$refs.successMessage,
                 {
@@ -477,6 +504,8 @@ export default {
 
         // Анимация ошибки
         animateError() {
+            if (!this.$refs.errorMessage) return;
+
             gsap.fromTo(
                 this.$refs.errorMessage,
                 {
@@ -544,15 +573,13 @@ export default {
                 return;
             }
 
-            this.loading = true;
-            this.error = null;
             this.success = false;
 
             // Анимация кнопки загрузки
             this.animateButtonLoading();
 
             try {
-                const response = await clientAuthService.register(this.form);
+                const response = await this.authStore.register(this.form);
 
                 this.success = true;
                 this.$emit("register-success", response);

@@ -1,5 +1,5 @@
 <template>
-    <div class="hero-card rounded-2xl shadow-lg p-8" ref="formContainer">
+    <div class="space-y-6" ref="formContainer">
         <form @submit.prevent="submitForm" class="space-y-6" ref="form">
             <!-- Количество инструментов -->
             <div class="space-y-2">
@@ -71,7 +71,6 @@
                 >
             </div>
 
-            <!-- Имя и телефон -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-2">
                     <label
@@ -86,7 +85,10 @@
                             :class="{
                                 'border-red-500 focus:border-red-500 focus:ring-red-500/20':
                                     errors.name,
+                                'bg-gray-100 dark:bg-gray-600 cursor-not-allowed':
+                                    authStore?.isAuthenticated,
                             }"
+                            :readonly="authStore?.isAuthenticated"
                             @focus="handleFieldFocus"
                             @blur="handleFieldBlur"
                             required
@@ -101,6 +103,13 @@
                         ref="errorName"
                         >{{ errors.name }}</span
                     >
+                    <span
+                        v-else-if="authStore?.isAuthenticated"
+                        class="text-green-600 dark:text-green-400 text-sm"
+                    >
+                        <i class="mdi mdi-check-circle mr-1"></i>
+                        Заполнено автоматически
+                    </span>
                 </div>
 
                 <div class="space-y-2">
@@ -119,7 +128,10 @@
                             :class="{
                                 'border-red-500 focus:border-red-500 focus:ring-red-500/20':
                                     errors.phone,
+                                'bg-gray-100 dark:bg-gray-600 cursor-not-allowed':
+                                    authStore?.isAuthenticated,
                             }"
+                            :readonly="authStore?.isAuthenticated"
                             @focus="handleFieldFocus"
                             @blur="handleFieldBlur"
                             required
@@ -134,6 +146,13 @@
                         ref="errorPhone"
                         >{{ errors.phone }}</span
                     >
+                    <span
+                        v-else-if="authStore?.isAuthenticated"
+                        class="text-green-600 dark:text-green-400 text-sm"
+                    >
+                        <i class="mdi mdi-check-circle mr-1"></i>
+                        Заполнено автоматически
+                    </span>
                 </div>
             </div>
 
@@ -175,7 +194,13 @@
                         required
                     />
                     <label class="dark:text-white text-sm"
-                        >Я ознакомлен с <a href="/delivery" target="_blank" class="text-accent hover:underline">условиями доставки</a></label
+                        >Я ознакомлен с
+                        <a
+                            href="/delivery"
+                            target="_blank"
+                            class="text-accent hover:underline"
+                            >условиями доставки</a
+                        ></label
                     >
                 </div>
                 <span
@@ -194,7 +219,13 @@
                         required
                     />
                     <label class="dark:text-white text-sm"
-                        >Даю согласие на <a href="/privacy-policy" target="_blank" class="text-accent hover:underline">обработку персональных данных</a></label
+                        >Даю согласие на
+                        <a
+                            href="/privacy-policy"
+                            target="_blank"
+                            class="text-accent hover:underline"
+                            >обработку персональных данных</a
+                        ></label
                     >
                 </div>
                 <span
@@ -262,6 +293,7 @@
 
 <script>
 import { gsap } from "gsap";
+import { useAuthStore } from "../../stores/auth.js";
 import {
     sharpeningFormSchema,
     validateForm,
@@ -284,15 +316,35 @@ export default {
             loading: false,
             success: false,
             error: null,
+            authStore: null,
         };
     },
     mounted() {
+        // Инициализируем store
+        this.authStore = useAuthStore();
+
+        // Заполняем данные клиента если авторизован
+        this.fillClientData();
+
         // Анимация появления формы
         this.$nextTick(() => {
             this.animateFormEnter();
         });
     },
     methods: {
+        // Заполнение данных клиента
+        fillClientData() {
+            if (
+                this.authStore &&
+                this.authStore.isAuthenticated &&
+                this.authStore.user
+            ) {
+                const user = this.authStore.user;
+                this.form.name = user.full_name || "";
+                this.form.phone = user.phone || "";
+            }
+        },
+
         // Анимация появления формы
         animateFormEnter() {
             gsap.fromTo(
@@ -481,16 +533,24 @@ export default {
             this.animateButtonLoading();
 
             try {
+                const token = localStorage.getItem("client_token");
+                const headers = {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                };
+
+                // Добавляем токен авторизации если есть
+                if (token) {
+                    headers["Authorization"] = `Bearer ${token}`;
+                }
+
                 const response = await fetch("/api/orders", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content"),
-                    },
+                    headers,
                     body: JSON.stringify({
-                        service_type: "sharpening",
+                        service_type: "maintenance", // Используем правильный тип услуги
                         tool_type: this.form.tool_type,
                         total_tools_count: this.form.tools_count,
                         problem_description: this.form.comment,
@@ -507,6 +567,9 @@ export default {
                     this.$nextTick(() => {
                         this.animateSuccess();
                     });
+
+                    // Эмитим событие о создании заказа
+                    this.$emit("order-created");
                 } else {
                     const data = await response.json();
                     this.error =

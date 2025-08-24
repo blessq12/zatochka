@@ -6,9 +6,9 @@
 
 import "@mdi/font/css/materialdesignicons.min.css";
 import { vMaska } from "maska/vue";
+import { createPinia } from "pinia";
 import { createApp } from "vue";
 import "./bootstrap";
-import modalService from "./services/modalService";
 
 // Инициализация темы
 function initTheme() {
@@ -34,13 +34,18 @@ initTheme();
  */
 
 const app = createApp({});
+const pinia = createPinia();
 
-// Регистрируем глобальные сервисы
-app.config.globalProperties.$modalService = modalService;
+// Подключаем Pinia
+app.use(pinia);
+
+// Делаем store доступным глобально для отладки
+import { useAuthStore } from "./stores/auth.js";
+const authStore = useAuthStore();
+window.authStore = authStore;
+
+// Регистрируем директивы
 app.directive("maska", vMaska);
-
-// Добавляем в window для глобального доступа
-window.modalService = modalService;
 
 /**
  * The following block of code may be used to automatically register your

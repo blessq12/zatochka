@@ -41,10 +41,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('client/telegram/status', [ClientTelegramVerificationController::class, 'checkVerificationStatus']);
     Route::put('client/telegram/update', [ClientTelegramVerificationController::class, 'updateTelegram']);
 
+    // Заказы клиента
+    Route::get('client/orders', [ClientController::class, 'orders']);
+
     // Маршруты, требующие верификации Telegram
     Route::middleware('client.telegram.verified')->group(function () {
-        // Здесь будут маршруты, требующие верификации
-        // Например: создание заказов, доступ к премиум функциям и т.д.
+        // Тестовый роут для проверки middleware
+        Route::get('client/verified-test', function () {
+            return response()->json([
+                'success' => true,
+                'message' => 'Доступ разрешен - Telegram верифицирован'
+            ]);
+        });
     });
 });
 

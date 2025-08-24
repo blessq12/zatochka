@@ -56,12 +56,6 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
         $text = $message->getText();
         $messageId = $message->getMessageId();
 
-        Log::info('Telegram message received', [
-            'chat_id' => $chatId,
-            'username' => $username,
-            'text' => $text
-        ]);
-
         // Находим или создаем чат
         $chat = TelegramChat::findByChatId($chatId);
         if (!$chat && $username) {
@@ -113,11 +107,6 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     {
         $chatId = $callbackQuery->getMessage()->getChat()->getId();
         $data = $callbackQuery->getData();
-
-        Log::info('Telegram callback query received', [
-            'chat_id' => $chatId,
-            'data' => $data
-        ]);
 
         // Обрабатываем callback данные
         $this->handleCallbackData($chatId, $data);
@@ -192,7 +181,6 @@ class TelegramWebhookService implements TelegramWebhookServiceContract
     protected function handleCallbackData(int $chatId, string $data): void
     {
         // Здесь можно обрабатывать нажатия на inline кнопки
-        Log::info('Callback data received', ['data' => $data]);
     }
 
     /**

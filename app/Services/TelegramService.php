@@ -27,16 +27,7 @@ class TelegramService implements TelegramServiceContract
                 'parse_mode' => 'HTML'
             ]);
 
-            if (!$response->successful()) {
-                Log::error('Telegram message sending failed', [
-                    'chat_id' => $chatId,
-                    'response' => $response->json(),
-                    'status' => $response->status()
-                ]);
-                return false;
-            }
-
-            return true;
+            return $response->successful();
         } catch (\Exception $e) {
             Log::error('Telegram message sending failed', [
                 'chat_id' => $chatId,
@@ -50,7 +41,6 @@ class TelegramService implements TelegramServiceContract
     {
         $chatId = $this->getChatIdByUsername($telegramUsername);
         if (!$chatId) {
-            Log::error('Chat ID not found for username', ['username' => $telegramUsername]);
             return false;
         }
 
@@ -66,7 +56,6 @@ class TelegramService implements TelegramServiceContract
     {
         $chatId = $this->getChatIdByUsername($telegramUsername);
         if (!$chatId) {
-            Log::error('Chat ID not found for username', ['username' => $telegramUsername]);
             return false;
         }
 
@@ -82,7 +71,6 @@ class TelegramService implements TelegramServiceContract
     {
         $chatId = $this->getChatIdByUsername($telegramUsername);
         if (!$chatId) {
-            Log::error('Chat ID not found for username', ['username' => $telegramUsername]);
             return false;
         }
 
@@ -104,11 +92,6 @@ class TelegramService implements TelegramServiceContract
         // Ищем в базе данных
         $chat = TelegramChat::where('username', $username)->first();
 
-        if ($chat) {
-            return $chat->chat_id;
-        }
-
-        Log::warning('Chat not found in database', ['username' => $username]);
-        return null;
+        return $chat?->chat_id;
     }
 }

@@ -68,10 +68,6 @@ class ClientTelegramVerificationController extends Controller
             }
         } catch (\Exception $e) {
             Cache::forget($cacheKey);
-            Log::error('Telegram verification code sending failed', [
-                'username' => $client->telegram,
-                'error' => $e->getMessage()
-            ]);
             throw ValidationException::withMessages([
                 'telegram' => ['Не удалось отправить код. Убедитесь, что вы начали диалог с ботом @zatochka_tsk_bot'],
             ]);
@@ -126,10 +122,6 @@ class ClientTelegramVerificationController extends Controller
         try {
             $this->telegramService->sendVerificationSuccess($client->telegram);
         } catch (\Exception $e) {
-            Log::error('Telegram verification success notification failed', [
-                'username' => $client->telegram,
-                'error' => $e->getMessage()
-            ]);
             // Игнорируем ошибку отправки уведомления
         }
 
@@ -161,7 +153,7 @@ class ClientTelegramVerificationController extends Controller
             'data' => [
                 'is_verified' => $client->isTelegramVerified(),
                 'telegram' => $client->telegram,
-                'telegram_verified_at' => $client->telegram_verified_at?->toISOString(),
+                'telegram_verified_at' => $client->telegram_verified_at,
             ]
         ]);
     }

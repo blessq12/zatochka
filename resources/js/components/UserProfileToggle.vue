@@ -3,7 +3,7 @@
         :href="href"
         class="relative w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent dark:hover:border-accent-light transition-all duration-300 ease-out hover:scale-110 focus:outline-none focus:ring-4 focus:ring-accent/20 dark:focus:ring-accent-light/20"
         :class="{ 'border-accent dark:border-accent-light': isActive }"
-        :title="isAuthenticated ? 'Профиль пользователя' : 'Войти в систему'"
+        :title="getTooltipText()"
         ref="profileLink"
     >
         <!-- Иконка профиля -->
@@ -60,6 +60,8 @@
 </template>
 
 <script>
+import { useAuthStore } from "../stores/auth.js";
+
 export default {
     name: "user-profile-toggle",
     props: {
@@ -71,10 +73,6 @@ export default {
             type: Boolean,
             default: false,
         },
-        isAuthenticated: {
-            type: Boolean,
-            default: false,
-        },
     },
     data() {
         return {
@@ -82,19 +80,44 @@ export default {
         };
     },
     computed: {
+        authStore() {
+            return useAuthStore();
+        },
+        isAuthenticated() {
+            return this.authStore.isAuthenticated;
+        },
+        client() {
+            return this.authStore.getUser;
+        },
         statusClasses() {
             return this.isAuthenticated
                 ? "bg-green-500 dark:bg-green-400"
                 : "bg-gray-400 dark:bg-gray-500";
         },
     },
-    mounted() {
+    async mounted() {
+        // Проверяем статус авторизации при загрузке
+        await this.checkAuthStatus();
+
         // Добавляем анимацию при первом рендере
         this.$nextTick(() => {
             this.animateInitialLoad();
         });
     },
+    beforeDestroy() {
+        // Убираем слушатели событий если есть
+    },
     methods: {
+        async checkAuthStatus() {
+            try {
+                if (this.authStore.isAuthenticated) {
+                    await this.authStore.checkToken();
+                }
+            } catch (error) {
+                // Ошибка уже обработана в сторе
+            }
+        },
+
         animateClick() {
             // Анимация нажатия
             const link = this.$refs.profileLink;
@@ -119,6 +142,14 @@ export default {
                     link.style.opacity = "1";
                     link.style.transform = "scale(1) rotate(0deg)";
                 }, 100);
+            }
+        },
+
+        getTooltipText() {
+            if (this.isAuthenticated && this.client) {
+                return `Профиль: ${this.client.full_name || "Пользователь"}`;
+            } else {
+                return "Войти в систему";
             }
         },
     },

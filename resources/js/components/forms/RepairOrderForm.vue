@@ -1,5 +1,5 @@
 <template>
-    <div class="hero-card rounded-2xl shadow-lg p-8" ref="formContainer">
+    <div class="space-y-6" ref="formContainer">
         <!-- Уведомление о бесплатной доставке -->
         <div
             class="bg-yellow-100 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 mb-8 rounded-r-lg"
@@ -142,7 +142,10 @@
                             :class="{
                                 'border-red-500 focus:border-red-500 focus:ring-red-500/20':
                                     errors.name,
+                                'bg-gray-100 dark:bg-gray-600 cursor-not-allowed':
+                                    authStore?.isAuthenticated,
                             }"
+                            :readonly="authStore?.isAuthenticated"
                             @focus="handleFieldFocus"
                             @blur="handleFieldBlur"
                             required
@@ -157,6 +160,13 @@
                         ref="errorName"
                         >{{ errors.name }}</span
                     >
+                    <span
+                        v-else-if="authStore?.isAuthenticated"
+                        class="text-green-600 dark:text-green-400 text-sm"
+                    >
+                        <i class="mdi mdi-check-circle mr-1"></i>
+                        Заполнено автоматически
+                    </span>
                 </div>
 
                 <div class="space-y-2">
@@ -175,7 +185,10 @@
                             :class="{
                                 'border-red-500 focus:border-red-500 focus:ring-red-500/20':
                                     errors.phone,
+                                'bg-gray-100 dark:bg-gray-600 cursor-not-allowed':
+                                    authStore?.isAuthenticated,
                             }"
+                            :readonly="authStore?.isAuthenticated"
                             @focus="handleFieldFocus"
                             @blur="handleFieldBlur"
                             required
@@ -190,6 +203,13 @@
                         ref="errorPhone"
                         >{{ errors.phone }}</span
                     >
+                    <span
+                        v-else-if="authStore?.isAuthenticated"
+                        class="text-green-600 dark:text-green-400 text-sm"
+                    >
+                        <i class="mdi mdi-check-circle mr-1"></i>
+                        Заполнено автоматически
+                    </span>
                 </div>
             </div>
 
@@ -362,6 +382,7 @@
 
 <script>
 import { gsap } from "gsap";
+import { useAuthStore } from "../../stores/auth.js";
 import { repairFormSchema, validateForm } from "../../validation/schemas.js";
 
 export default {
@@ -382,9 +403,16 @@ export default {
             loading: false,
             success: false,
             error: null,
+            authStore: null,
         };
     },
     mounted() {
+        // Инициализируем store
+        this.authStore = useAuthStore();
+
+        // Заполняем данные клиента если авторизован
+        this.fillClientData();
+
         // Анимация появления формы
         this.$nextTick(() => {
             this.animateFormEnter();
@@ -392,6 +420,19 @@ export default {
         });
     },
     methods: {
+        // Заполнение данных клиента
+        fillClientData() {
+            if (
+                this.authStore &&
+                this.authStore.isAuthenticated &&
+                this.authStore.user
+            ) {
+                const user = this.authStore.user;
+                this.form.name = user.full_name || "";
+                this.form.phone = user.phone || "";
+            }
+        },
+
         // Анимация появления формы
         animateFormEnter() {
             gsap.fromTo(
@@ -599,14 +640,23 @@ export default {
             this.animateButtonLoading();
 
             try {
+                // Получаем токен из localStorage для авторизованных пользователей
+                const token = localStorage.getItem("client_token");
+                const headers = {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                };
+
+                // Добавляем токен авторизации если есть
+                if (token) {
+                    headers["Authorization"] = `Bearer ${token}`;
+                }
+
                 const response = await fetch("/api/orders", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content"),
-                    },
+                    headers,
                     body: JSON.stringify({
                         service_type: "repair",
                         tool_type: this.form.equipment_type,
@@ -628,6 +678,9 @@ export default {
                     this.$nextTick(() => {
                         this.animateSuccess();
                     });
+
+                    // Эмитим событие о создании заказа
+                    this.$emit("order-created");
                 } else {
                     const data = await response.json();
                     this.error =

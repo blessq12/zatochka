@@ -170,3 +170,42 @@ export const registerFormSchema = yup.object({
         .nullable()
         .max(200, "Адрес не должен превышать 200 символов"),
 });
+
+// Схема валидации для редактирования профиля клиента
+export const profileEditSchema = yup.object({
+    full_name: yup
+        .string()
+        .required("Укажите ФИО")
+        .min(2, "ФИО должно содержать минимум 2 символа")
+        .max(100, "ФИО не должно превышать 100 символов")
+        .matches(
+            /^[а-яёa-z\s-]+$/i,
+            "ФИО может содержать только буквы, пробелы и дефисы"
+        ),
+
+    phone: yup
+        .string()
+        .required("Укажите номер телефона")
+        .matches(
+            /^\+7\s\(\d{3}\)\s\d{3}-\d{2}-\d{2}$/,
+            "Укажите корректный номер телефона в формате +7 (XXX) XXX-XX-XX"
+        ),
+
+    telegram: yup
+        .string()
+        .nullable()
+        .matches(
+            /^@?[a-zA-Z0-9_]{5,32}$/,
+            "Укажите корректный username Telegram"
+        ),
+
+    birth_date: yup
+        .date()
+        .nullable()
+        .max(new Date(), "Дата рождения не может быть в будущем"),
+
+    delivery_address: yup
+        .string()
+        .nullable()
+        .max(200, "Адрес не должен превышать 200 символов"),
+});

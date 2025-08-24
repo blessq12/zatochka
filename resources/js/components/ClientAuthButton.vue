@@ -134,7 +134,7 @@
 </template>
 
 <script>
-import clientAuthService from "../services/clientAuthService.js";
+import { useAuthStore } from "../stores/auth.js";
 import Modal from "./Modal.vue";
 import ClientAuth from "./auth/ClientAuth.vue";
 import ClientProfileForm from "./auth/ClientProfileForm.vue";
@@ -148,15 +148,26 @@ export default {
     },
     data() {
         return {
-            client: null,
             showAuthModal: false,
             showProfileModal: false,
             showProfileDropdown: false,
         };
     },
     computed: {
+        authStore() {
+            return useAuthStore();
+        },
         isAuthenticated() {
-            return clientAuthService.isAuthenticated() && this.client;
+            const authenticated = this.authStore.isAuthenticated;
+            console.log("🔍 ClientAuthButton isAuthenticated:", {
+                storeAuthenticated: this.authStore.isAuthenticated,
+                storeUser: this.authStore.getUser,
+                result: authenticated,
+            });
+            return authenticated;
+        },
+        client() {
+            return this.authStore.getUser;
         },
     },
     async mounted() {
@@ -171,13 +182,11 @@ export default {
     methods: {
         async checkAuthStatus() {
             try {
-                if (clientAuthService.isAuthenticated()) {
-                    const response = await clientAuthService.checkToken();
-                    this.client = response.data.client;
+                if (this.authStore.isAuthenticated) {
+                    await this.authStore.checkToken();
                 }
             } catch (error) {
                 console.error("Auth check error:", error);
-                clientAuthService.removeToken();
             }
         },
 
@@ -188,22 +197,19 @@ export default {
         },
 
         async handleAuthSuccess(data) {
-            this.client = data.client;
             this.showAuthModal = false;
             this.$emit("auth-success", data);
         },
 
         async handleLogout() {
             try {
-                await clientAuthService.logout();
-                this.client = null;
+                await this.authStore.logout();
                 this.showAuthModal = false;
                 this.showProfileModal = false;
                 this.showProfileDropdown = false;
                 this.$emit("logout");
             } catch (error) {
                 console.error("Logout error:", error);
-                this.client = null;
                 this.$emit("logout");
             }
         },
@@ -219,7 +225,6 @@ export default {
         },
 
         async handleProfileUpdated(updatedClient) {
-            this.client = updatedClient;
             this.showProfileModal = false;
             this.$emit("profile-updated", updatedClient);
         },

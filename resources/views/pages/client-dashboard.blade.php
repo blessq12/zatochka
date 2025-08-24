@@ -31,15 +31,7 @@
                         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                             Мои заказы
                         </h2>
-                        <div class="text-center py-8">
-                            <i class="mdi mdi-clipboard-list text-4xl text-gray-400 mb-4"></i>
-                            <p class="text-gray-600 dark:text-gray-400">
-                                Здесь будут отображаться ваши заказы
-                            </p>
-                            <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">
-                                Функция находится в разработке
-                            </p>
-                        </div>
+                        <client-orders></client-orders>
                     </div>
                 </div>
 

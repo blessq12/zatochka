@@ -114,30 +114,55 @@ class ClientAuthController extends Controller
     }
 
     /**
-     * Обновить профиль клиента
+     * Обновление профиля клиента
      */
     public function updateProfile(Request $request): JsonResponse
     {
         $client = $request->user();
 
+        if (!$client) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Пользователь не авторизован'
+            ], 401);
+        }
+
         $validated = $request->validate([
-            'full_name' => 'sometimes|string|max:255',
-            'telegram' => 'sometimes|nullable|string|max:50',
-            'birth_date' => 'sometimes|nullable|date|before:today',
-            'delivery_address' => 'sometimes|nullable|string|max:1000',
+            'full_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'telegram' => 'nullable|string|max:100',
+            'birth_date' => 'nullable|date|before:today',
+            'delivery_address' => 'nullable|string|max:500',
         ]);
 
+        // Проверяем, не занят ли телефон другим пользователем
+        if ($validated['phone'] !== $client->phone) {
+            $existingClient = Client::where('phone', $validated['phone'])
+                ->where('id', '!=', $client->id)
+                ->first();
+
+            if ($existingClient) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Этот номер телефона уже используется'
+                ], 422);
+            }
+        }
+
+        // Обновляем данные клиента
         $client->update($validated);
 
         return response()->json([
             'success' => true,
-            'message' => 'Профиль обновлен',
-            'data' => new ClientResource($client),
+            'message' => 'Профиль успешно обновлен',
+            'data' => [
+                'client' => new ClientResource($client)
+            ]
         ]);
     }
 
     /**
-     * Изменить пароль
+     * Изменение пароля
      */
     public function changePassword(Request $request): JsonResponse
     {

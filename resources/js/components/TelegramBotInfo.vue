@@ -1,103 +1,146 @@
 <template>
-    <div class="telegram-bot-info" ref="container">
+    <div class="telegram-bot-info space-y-4" ref="container">
         <!-- Основная карточка -->
         <div
             class="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-xl p-6 text-white shadow-lg"
             ref="mainCard"
         >
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-white/20 rounded-full p-3 backdrop-blur-sm">
-                        <i class="mdi mdi-robot text-2xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold">Telegram Бот</h3>
-                        <p class="text-blue-100 text-sm">
-                            Получайте уведомления и управляйте заказами
-                        </p>
-                        <div class="mt-2">
-                            <span
-                                class="bg-white/20 px-2 py-1 rounded-full text-xs backdrop-blur-sm"
-                            >
-                                @zatochka_tsk_bot
-                            </span>
-                        </div>
-                    </div>
+            <div class="text-center">
+                <div
+                    class="bg-white/20 rounded-full p-4 backdrop-blur-sm inline-block mb-4"
+                >
+                    <i class="mdi mdi-robot text-3xl"></i>
                 </div>
-                <div>
-                    <a
-                        href="https://t.me/zatochka_tsk_bot"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transform hover:scale-105 transition-all duration-200 shadow-md"
-                        ref="startChatButton"
+                <h3 class="text-xl font-semibold mb-2">Telegram Бот</h3>
+                <p class="text-blue-100 text-sm mb-4">
+                    Получайте уведомления и управляйте заказами
+                </p>
+                <div class="mb-4">
+                    <span
+                        class="bg-white/20 px-3 py-2 rounded-full text-sm backdrop-blur-sm"
                     >
-                        <i class="mdi mdi-telegram mr-2"></i>
-                        Начать чат
-                    </a>
+                        @zatochka_tsk_bot
+                    </span>
                 </div>
+                <a
+                    href="https://t.me/zatochka_tsk_bot"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transform hover:scale-105 transition-all duration-200 shadow-md"
+                    ref="startChatButton"
+                >
+                    <i class="mdi mdi-telegram mr-2"></i>
+                    Начать чат
+                </a>
             </div>
         </div>
 
         <!-- Возможности -->
         <div
-            class="mt-4 bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-md"
+            class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-md"
             ref="featuresCard"
         >
-            <h4 class="font-medium text-gray-900 dark:text-white mb-3">
+            <h4
+                class="font-semibold text-gray-900 dark:text-white mb-4 text-center"
+            >
                 Что умеет бот:
             </h4>
-            <div class="space-y-2">
-                <div
-                    class="flex items-center text-sm text-gray-600 dark:text-gray-400"
+            <ul class="space-y-2">
+                <li
+                    class="flex items-center text-sm text-gray-600 dark:text-gray-400 p-2 rounded-lg"
                     ref="feature1"
                 >
-                    <i class="mdi mdi-check-circle text-green-500 mr-2"></i>
-                    Уведомления о статусе заказов
-                </div>
-                <div
-                    class="flex items-center text-sm text-gray-600 dark:text-gray-400"
+                    <i
+                        class="mdi mdi-check-circle text-green-500 mr-3 text-lg"
+                    ></i>
+                    <span>Уведомления о статусе заказов</span>
+                </li>
+                <li
+                    class="flex items-center text-sm text-gray-600 dark:text-gray-400 p-2 rounded-lg"
                     ref="feature2"
                 >
-                    <i class="mdi mdi-check-circle text-green-500 mr-2"></i>
-                    Верификация аккаунта
-                </div>
-                <div
-                    class="flex items-center text-sm text-gray-600 dark:text-gray-400"
+                    <i
+                        class="mdi mdi-check-circle text-green-500 mr-3 text-lg"
+                    ></i>
+                    <span>Верификация аккаунта</span>
+                </li>
+                <li
+                    class="flex items-center text-sm text-gray-600 dark:text-gray-400 p-2 rounded-lg"
                     ref="feature3"
                 >
-                    <i class="mdi mdi-check-circle text-green-500 mr-2"></i>
-                    Информация о ценах и услугах
-                </div>
-                <div
-                    class="flex items-center text-sm text-gray-600 dark:text-gray-400"
+                    <i
+                        class="mdi mdi-check-circle text-green-500 mr-3 text-lg"
+                    ></i>
+                    <span>Информация о ценах и услугах</span>
+                </li>
+                <li
+                    class="flex items-center text-sm text-gray-600 dark:text-gray-400 p-2 rounded-lg"
                     ref="feature4"
                 >
-                    <i class="mdi mdi-check-circle text-green-500 mr-2"></i>
-                    Поддержка и консультации
-                </div>
-            </div>
+                    <i
+                        class="mdi mdi-check-circle text-green-500 mr-3 text-lg"
+                    ></i>
+                    <span>Поддержка и консультации</span>
+                </li>
+            </ul>
         </div>
 
         <!-- Инструкция -->
         <div
-            class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4"
+            class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6"
             ref="instructionCard"
         >
-            <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-2">
+            <h4
+                class="font-semibold text-blue-900 dark:text-blue-100 mb-4 text-center"
+            >
                 Как подключиться:
             </h4>
-            <ol class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                <li ref="step1">1. Нажмите "Начать чат" выше</li>
-                <li ref="step2">
-                    2. Отправьте команду
-                    <code class="bg-blue-200 dark:bg-blue-800 px-1 rounded"
-                        >/start</code
+            <div class="space-y-3">
+                <div class="flex items-start" ref="step1">
+                    <div
+                        class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5"
                     >
-                </li>
-                <li ref="step3">3. Укажите номер телефона для привязки</li>
-                <li ref="step4">4. Получайте уведомления автоматически</li>
-            </ol>
+                        1
+                    </div>
+                    <span class="text-sm text-blue-800 dark:text-blue-200"
+                        >Нажмите "Начать чат" выше</span
+                    >
+                </div>
+                <div class="flex items-start" ref="step2">
+                    <div
+                        class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5"
+                    >
+                        2
+                    </div>
+                    <span class="text-sm text-blue-800 dark:text-blue-200">
+                        Отправьте команду
+                        <code
+                            class="bg-blue-200 dark:bg-blue-800 px-2 py-1 rounded ml-1 font-mono"
+                            >/start</code
+                        >
+                    </span>
+                </div>
+                <div class="flex items-start" ref="step3">
+                    <div
+                        class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5"
+                    >
+                        3
+                    </div>
+                    <span class="text-sm text-blue-800 dark:text-blue-200"
+                        >Укажите номер телефона для привязки</span
+                    >
+                </div>
+                <div class="flex items-start" ref="step4">
+                    <div
+                        class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5"
+                    >
+                        4
+                    </div>
+                    <span class="text-sm text-blue-800 dark:text-blue-200"
+                        >Получайте уведомления автоматически</span
+                    >
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -268,5 +311,11 @@ a:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
+}
+
+/* Стили для номеров шагов */
+.bg-blue-500 {
+    min-width: 24px;
+    min-height: 24px;
 }
 </style>
