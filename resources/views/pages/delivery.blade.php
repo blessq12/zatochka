@@ -123,7 +123,7 @@
     <section class="py-16 bg-white dark:bg-gray-900">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-12 dark:text-white">Заказать доставку</h2>
-            <delivery-order-form></delivery-order-form>
+            <universal-order-form :initial-service-type="'sharpening'"></universal-order-form>
         </div>
     </section>
 

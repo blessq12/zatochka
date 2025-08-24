@@ -48,4 +48,9 @@ return [
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
     ],
+
+    'sms' => [
+        'api_key' => env('SMS_API_KEY', ''),
+        'api_url' => env('SMS_API_URL', ''),
+    ],
 ];

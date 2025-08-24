@@ -151,7 +151,7 @@
     <section class="py-24 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-3xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-8 text-center dark:text-white">Заказать заточку</h2>
-            <sharpening-order-form></sharpening-order-form>
+            <universal-order-form :initial-service-type="'sharpening'"></universal-order-form>
         </div>
     </section>
 </x-app-layout>

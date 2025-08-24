@@ -8,6 +8,8 @@ import "@mdi/font/css/materialdesignicons.min.css";
 import { vMaska } from "maska/vue";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 import "./bootstrap";
 
 // Инициализация темы
@@ -39,10 +41,37 @@ const pinia = createPinia();
 // Подключаем Pinia
 app.use(pinia);
 
-// Делаем store доступным глобально для отладки
-import { useAuthStore } from "./stores/auth.js";
-const authStore = useAuthStore();
-window.authStore = authStore;
+// Конфигурация Toast
+const toastOptions = {
+    position: "top-right",
+    timeout: 5000,
+    closeOnClick: true,
+    pauseOnFocusLoss: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+    hideProgressBar: false,
+    closeButton: "button",
+    icon: true,
+    rtl: false,
+    transition: "Vue-Toastification__bounce",
+    maxToasts: 20,
+    newestOnTop: true,
+    filterBeforeCreate: (toast, toasts) => {
+        if (toasts.filter((t) => t.type === toast.type).length !== 0) {
+            return false;
+        }
+        return toast;
+    },
+    toastClassName: "custom-toast",
+    bodyClassName: "custom-toast-body",
+    containerClassName: "custom-toast-container",
+};
+
+app.use(Toast, toastOptions);
+
+import "./services/toastService.js";
 
 // Регистрируем директивы
 app.directive("maska", vMaska);

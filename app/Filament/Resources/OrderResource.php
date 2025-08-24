@@ -99,15 +99,19 @@ class OrderResource extends Resource
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'repair' => 'danger',
+                        'sharpening' => 'warning',
                         'maintenance' => 'warning',
                         'consultation' => 'info',
                         'other' => 'gray',
+                        default => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'repair' => 'Ремонт',
+                        'sharpening' => 'Заточка',
                         'maintenance' => 'Заточка',
                         'consultation' => 'Консультация',
                         'other' => 'Другое',
+                        default => $state,
                     }),
                 Tables\Columns\TextColumn::make('tool_type')
                     ->label('Инструмент')
@@ -155,6 +159,7 @@ class OrderResource extends Resource
                     ->label('Тип услуги')
                     ->options([
                         'repair' => 'Ремонт',
+                        'sharpening' => 'Заточка',
                         'maintenance' => 'Заточка/Обслуживание',
                         'consultation' => 'Консультация',
                         'other' => 'Другое',

@@ -1,6 +1,119 @@
 import * as yup from "yup";
 
-// Схема валидации для формы ремонта
+// Схема валидации для универсальной формы
+export const universalFormSchema = yup.object({
+    // Общие поля
+    name: yup
+        .string()
+        .required("Укажите ваше имя")
+        .min(2, "Имя должно содержать минимум 2 символа")
+        .max(50, "Имя не должно превышать 50 символов")
+        .matches(
+            /^[а-яёa-z\s-]+$/i,
+            "Имя может содержать только буквы, пробелы и дефисы"
+        ),
+
+    phone: yup
+        .string()
+        .required("Укажите номер телефона")
+        .matches(
+            /^\+7\s\(\d{3}\)\s\d{3}-\d{2}-\d{2}$/,
+            "Укажите корректный номер телефона в формате +7 (XXX) XXX-XX-XX"
+        ),
+
+    comment: yup
+        .string()
+        .nullable()
+        .max(1000, "Комментарий не должен превышать 1000 символов"),
+
+    agreement: yup.boolean().oneOf([true], "Необходимо согласие с условиями"),
+
+    privacy_agreement: yup
+        .boolean()
+        .oneOf([true], "Необходимо согласие на обработку персональных данных"),
+
+    // Поля для заточки
+    tools_count: yup.number().when("serviceType", {
+        is: "sharpening",
+        then: (schema) =>
+            schema
+                .required("Укажите количество инструментов")
+                .min(1, "Количество должно быть не менее 1")
+                .max(50, "Количество не должно превышать 50")
+                .integer("Количество должно быть целым числом")
+                .transform((value) => (isNaN(value) ? undefined : value)),
+        otherwise: (schema) => schema.nullable().transform(() => undefined),
+    }),
+
+    tool_type: yup.string().when("serviceType", {
+        is: "sharpening",
+        then: (schema) =>
+            schema
+                .required("Выберите тип инструментов")
+                .min(2, "Тип инструментов должен содержать минимум 2 символа")
+                .max(100, "Тип инструментов не должен превышать 100 символов"),
+        otherwise: (schema) => schema.nullable().transform(() => undefined),
+    }),
+
+    needs_delivery: yup.boolean(),
+
+    delivery_address: yup.string().when("needs_delivery", {
+        is: true,
+        then: (schema) =>
+            schema
+                .required("Укажите адрес доставки")
+                .min(10, "Адрес должен содержать минимум 10 символов")
+                .max(500, "Адрес не должен превышать 500 символов"),
+        otherwise: (schema) => schema.nullable(),
+    }),
+
+    // Поля для ремонта
+    equipment_name: yup.string().when("serviceType", {
+        is: "repair",
+        then: (schema) =>
+            schema
+                .required("Укажите наименование аппарата")
+                .min(3, "Наименование должно содержать минимум 3 символа")
+                .max(100, "Наименование не должно превышать 100 символов"),
+        otherwise: (schema) => schema.nullable(),
+    }),
+
+    equipment_type: yup.string().when("serviceType", {
+        is: "repair",
+        then: (schema) =>
+            schema
+                .required("Выберите тип оборудования")
+                .min(2, "Тип оборудования должен содержать минимум 2 символа")
+                .max(100, "Тип оборудования не должен превышать 100 символов"),
+        otherwise: (schema) => schema.nullable(),
+    }),
+
+    problem_description: yup.string().when("serviceType", {
+        is: "repair",
+        then: (schema) =>
+            schema
+                .required("Опишите проблему")
+                .min(10, "Описание должно содержать минимум 10 символов")
+                .max(1000, "Описание не должно превышать 1000 символов"),
+        otherwise: (schema) => schema.nullable(),
+    }),
+
+    urgency: yup.string().when("serviceType", {
+        is: "repair",
+        then: (schema) =>
+            schema
+                .required("Выберите срочность ремонта")
+                .oneOf(["normal", "urgent"], "Неверное значение срочности"),
+        otherwise: (schema) => schema.nullable(),
+    }),
+
+    // Общие поля
+    comment: yup
+        .string()
+        .max(300, "Комментарий не должен превышать 300 символов"),
+});
+
+// Схема валидации для формы ремонта (для обратной совместимости)
 export const repairFormSchema = yup.object({
     equipment_name: yup
         .string()

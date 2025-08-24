@@ -100,7 +100,7 @@
     <section class="py-24 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-3xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-8 text-center dark:text-white">Заказать ремонт</h2>
-            <repair-order-form></repair-order-form>
+            <universal-order-form :initial-service-type="'repair'"></universal-order-form>
         </div>
     </section>
 </x-app-layout>

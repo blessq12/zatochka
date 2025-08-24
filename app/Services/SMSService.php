@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Log;
 
 class SMSService implements SMSServiceContract
 {
-    private string $apiKey;
-    private string $apiUrl;
+    private ?string $apiKey;
+    private ?string $apiUrl;
 
     public function __construct()
     {
-        $this->apiKey = config('services.sms.api_key');
-        $this->apiUrl = config('services.sms.api_url');
+        $this->apiKey = config('services.sms.api_key') ?: '';
+        $this->apiUrl = config('services.sms.api_url') ?: '';
     }
 
     public function sendSMS(string $phone, string $message): bool

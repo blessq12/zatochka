@@ -1018,3 +1018,64 @@ h3 {
         gap: var(--spacing-ui-sm);
     }
 }
+
+/* Кастомные стили для Toast уведомлений */
+.custom-toast {
+    font-family: var(--font-jost) !important;
+    border-radius: var(--radius-ui-md) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.custom-toast-body {
+    font-family: var(--font-jost) !important;
+    font-weight: var(--font-weight-regular) !important;
+    padding: var(--spacing-ui-sm) var(--spacing-ui-md) !important;
+}
+
+.custom-toast-container {
+    z-index: 9999 !important;
+}
+
+/* Темная тема для тостов */
+.dark .custom-toast {
+    background: rgba(31, 41, 55, 0.95) !important;
+    color: var(--color-white) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Анимации для тостов */
+.Vue-Toastification__toast {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.Vue-Toastification__toast--enter-active {
+    animation: toastSlideIn 0.3s ease-out !important;
+}
+
+.Vue-Toastification__toast--leave-active {
+    animation: toastSlideOut 0.3s ease-in !important;
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(100%) scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%) scale(0.8);
+        opacity: 0;
+    }
+}

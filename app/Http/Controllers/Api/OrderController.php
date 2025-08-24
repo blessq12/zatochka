@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
@@ -32,18 +33,40 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('=== ORDER CREATION REQUEST START ===');
+        Log::info('Raw request data:', $request->all());
+        Log::info('Request keys:', array_keys($request->all()));
+        Log::info('Request values:', array_values($request->all()));
+        Log::info('Service type:', ['service_type' => $request->service_type]);
+        Log::info('Client name:', ['client_name' => $request->client_name]);
+        Log::info('Client phone:', ['client_phone' => $request->client_phone]);
+
         $validator = Validator::make($request->all(), [
             'service_type' => 'required|in:sharpening,repair',
-            'tool_type' => 'required|string|max:255',
-            'total_tools_count' => 'required_if:service_type,sharpening|integer|min:1',
-            'problem_description' => 'required|string|min:10',
             'client_name' => 'required|string|min:2|max:255',
             'client_phone' => 'required|string|min:10|max:20',
+            'agreement' => 'required|boolean',
+            'privacy_agreement' => 'required|boolean',
+
+            // Поля для заточки
+            'tool_type' => 'required_if:service_type,sharpening|string|max:255',
+            'total_tools_count' => 'required_if:service_type,sharpening|integer|min:1',
+            'needs_delivery' => 'sometimes|boolean',
+            'delivery_address' => 'required_if:needs_delivery,true|string|min:10|max:500',
+
+            // Поля для ремонта
             'equipment_name' => 'required_if:service_type,repair|string|max:255',
+            'equipment_type' => 'required_if:service_type,repair|string|max:255',
+            'problem_description' => 'required_if:service_type,repair|string|min:10|max:1000',
             'urgency' => 'sometimes|in:normal,urgent',
         ]);
 
         if ($validator->fails()) {
+            Log::error('=== VALIDATION FAILED ===');
+            Log::error('Validation errors:', $validator->errors()->toArray());
+            Log::error('Request data that failed validation:', $request->all());
+            Log::error('=== VALIDATION FAILED END ===');
+
             return response()->json([
                 'success' => false,
                 'message' => 'Ошибка валидации',
@@ -51,7 +74,12 @@ class OrderController extends Controller
             ], 422);
         }
 
+        Log::info('=== VALIDATION PASSED ===');
+        Log::info('Validated data:', $request->all());
+
         try {
+            Log::info('Starting order creation process');
+
             // Находим или создаем клиента
             $client = Client::firstOrCreate(
                 ['phone' => $request->client_phone],
@@ -61,18 +89,57 @@ class OrderController extends Controller
                 ]
             );
 
+            Log::info('Client found/created:', ['client_id' => $client->id, 'client_name' => $client->full_name]);
+
             // Создаем заказ
-            $order = Order::create([
+            $orderData = [
                 'client_id' => $client->id,
                 'order_number' => 'Z' . date('Ymd') . '-' . Str::random(6),
                 'service_type' => $request->service_type,
-                'tool_type' => $request->tool_type,
-                'problem_description' => $request->problem_description,
-                'total_tools_count' => $request->total_tools_count ?? 1,
                 'status' => 'new',
                 'total_amount' => $this->calculatePrice($request),
-                'work_description' => $request->service_type === 'repair' ? 'Ремонт: ' . $request->equipment_name : null,
-            ]);
+            ];
+
+            // Добавляем специфичные поля в зависимости от типа услуги
+            if ($request->service_type === 'sharpening') {
+                $orderData['tool_type'] = $request->tool_type;
+                $orderData['total_tools_count'] = $request->total_tools_count ?? 1;
+                $orderData['problem_description'] = $request->problem_description ?? '';
+                $orderData['needs_delivery'] = $request->needs_delivery ?? false;
+                if ($request->needs_delivery) {
+                    $orderData['delivery_address'] = $request->delivery_address;
+                }
+            } else if ($request->service_type === 'repair') {
+                $orderData['equipment_name'] = $request->equipment_name;
+                $orderData['tool_type'] = $request->equipment_type; // Сохраняем тип оборудования в tool_type
+                $orderData['problem_description'] = $request->problem_description;
+                $orderData['urgency'] = $request->urgency ?? 'normal';
+                $orderData['work_description'] = 'Ремонт: ' . $request->equipment_name;
+                $orderData['total_tools_count'] = 1; // Для ремонта всегда 1
+                $orderData['needs_delivery'] = $request->needs_delivery ?? false;
+                if ($request->needs_delivery) {
+                    $orderData['delivery_address'] = $request->delivery_address;
+                }
+            }
+
+            Log::info('=== ORDER DATA PREPARED ===');
+            Log::info('Order data:', $orderData);
+            Log::info('Order data keys:', array_keys($orderData));
+            Log::info('Order data values:', array_values($orderData));
+            Log::info('=== ORDER DATA PREPARED END ===');
+
+            try {
+                $order = Order::create($orderData);
+                Log::info('Order created successfully');
+            } catch (\Exception $createError) {
+                Log::error('Order creation failed:', [
+                    'error' => $createError->getMessage(),
+                    'orderData' => $orderData
+                ]);
+                throw $createError;
+            }
+
+            Log::info('Order created successfully:', ['order_id' => $order->id, 'order_number' => $order->order_number]);
 
             return response()->json([
                 'success' => true,
@@ -84,6 +151,11 @@ class OrderController extends Controller
                 ]
             ], 201);
         } catch (\Exception $e) {
+            Log::error('Order creation failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Произошла ошибка при создании заявки',
@@ -149,7 +221,7 @@ class OrderController extends Controller
             $totalPrice = $basePrice * ($request->total_tools_count ?? 1);
         } else {
             // Ремонт
-            switch ($request->tool_type) {
+            switch ($request->equipment_type) {
                 case 'clipper':
                     $basePrice = 1000;
                     break;

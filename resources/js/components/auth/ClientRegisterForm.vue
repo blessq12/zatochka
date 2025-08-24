@@ -590,12 +590,8 @@ export default {
                 });
 
                 // Показываем уведомление об успешной регистрации
-                if (window.modalService) {
-                    window.modalService.alert(
-                        "Успешная регистрация",
-                        "Аккаунт создан успешно!",
-                        "success"
-                    );
+                if (window.toastService) {
+                    window.toastService.success("Аккаунт создан успешно!");
                 }
             } catch (error) {
                 console.error("Register error:", error);

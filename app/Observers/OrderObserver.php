@@ -4,19 +4,19 @@ namespace App\Observers;
 
 use App\Models\Order;
 use App\Services\TelegramService;
-use App\Services\SMSService;
+// use App\Services\SMSService;
 use App\Services\BonusService;
 
 class OrderObserver
 {
     private TelegramService $telegramService;
-    private SMSService $smsService;
+    // private SMSService $smsService;
     private BonusService $bonusService;
 
-    public function __construct(TelegramService $telegramService, SMSService $smsService, BonusService $bonusService)
+    public function __construct(TelegramService $telegramService, BonusService $bonusService)
     {
         $this->telegramService = $telegramService;
-        $this->smsService = $smsService;
+        // $this->smsService = $smsService;
         $this->bonusService = $bonusService;
     }
 
@@ -151,10 +151,10 @@ class OrderObserver
             $this->telegramService->sendMessage($order->client->telegram, $message);
         }
 
-        // Отправляем SMS
-        if ($order->client->phone) {
-            $this->smsService->sendSMS($order->client->phone, $message);
-        }
+        // SMS отключен - используем только Telegram
+        // if ($order->client->phone) {
+        //     $this->smsService->sendSMS($order->client->phone, $message);
+        // }
     }
 
     /**

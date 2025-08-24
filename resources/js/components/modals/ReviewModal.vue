@@ -205,8 +205,25 @@ export default {
         },
 
         showNotification(message, type = "info") {
-            // Простое уведомление через alert, можно заменить на более красивое
-            alert(message);
+            // Используем глобальный сервис тостов
+            if (window.toastService) {
+                switch (type) {
+                    case "success":
+                        window.toastService.success(message);
+                        break;
+                    case "error":
+                        window.toastService.error(message);
+                        break;
+                    case "warning":
+                        window.toastService.warning(message);
+                        break;
+                    default:
+                        window.toastService.info(message);
+                }
+            } else {
+                // Fallback на alert если сервис недоступен
+                alert(message);
+            }
         },
     },
 };

@@ -162,32 +162,18 @@
             </div>
         </div>
 
-        <!-- Модальное окно для формы заточки -->
+        <!-- Модальное окно для формы заявки -->
         <Modal
-            :show="showSharpeningForm"
-            title="Заявка на заточку"
+            :show="showOrderForm"
+            :title="modalTitle"
             size="xl"
-            @close="showSharpeningForm = false"
+            @close="showOrderForm = false"
         >
             <div class="max-h-[70vh] overflow-y-auto">
-                <sharpening-order-form
+                <universal-order-form
+                    :initial-service-type="selectedServiceType"
                     @order-created="handleOrderCreated"
-                    @close="showSharpeningForm = false"
-                />
-            </div>
-        </Modal>
-
-        <!-- Модальное окно для формы ремонта -->
-        <Modal
-            :show="showRepairForm"
-            title="Заявка на ремонт"
-            size="xl"
-            @close="showRepairForm = false"
-        >
-            <div class="max-h-[70vh] overflow-y-auto">
-                <repair-order-form
-                    @order-created="handleOrderCreated"
-                    @close="showRepairForm = false"
+                    @close="showOrderForm = false"
                 />
             </div>
         </Modal>
@@ -205,8 +191,8 @@ export default {
             loading: true,
             orders: [],
             authStore: null,
-            showSharpeningForm: false,
-            showRepairForm: false,
+            showOrderForm: false,
+            selectedServiceType: "sharpening",
         };
     },
 
@@ -217,6 +203,12 @@ export default {
 
         hasOrders() {
             return this.orders.length > 0;
+        },
+
+        modalTitle() {
+            return this.selectedServiceType === "sharpening"
+                ? "Заявка на заточку"
+                : "Заявка на ремонт";
         },
     },
 
@@ -327,9 +319,8 @@ export default {
         },
 
         async handleOrderCreated() {
-            // Закрываем модальные окна
-            this.showSharpeningForm = false;
-            this.showRepairForm = false;
+            // Закрываем модальное окно
+            this.showOrderForm = false;
 
             // Перезагружаем заказы
             await this.loadOrders();
