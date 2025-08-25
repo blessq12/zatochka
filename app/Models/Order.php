@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\HasReviews;
+use App\Events\OrderCreated;
+use App\Events\OrderStatusChanged;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Order extends Model
 {
@@ -44,6 +47,25 @@ class Order extends Model
         'payment_received_at',
         'closed_at'
     ];
+
+    protected static function booted()
+    {
+        static::created(function ($order) {
+            Log::info("Order created event dispatched", ['order_id' => $order->id]);
+            event(new OrderCreated($order));
+        });
+
+        static::updated(function ($order) {
+            if ($order->wasChanged('status')) {
+                Log::info("Order status changed event dispatched", [
+                    'order_id' => $order->id,
+                    'old_status' => $order->getOriginal('status'),
+                    'new_status' => $order->status
+                ]);
+                event(new OrderStatusChanged($order, $order->getOriginal('status'), $order->status));
+            }
+        });
+    }
 
     protected $casts = [
         'tools_photos' => 'array',

@@ -26,15 +26,12 @@ class TelegramWebhookController extends Controller
             // Получаем данные из webhook
             $data = $request->all();
 
-            Log::info('Telegram webhook received', [
-                'data' => $data
-            ]);
+
 
             // Обрабатываем webhook
             $this->webhookService->handleWebhook($data);
 
             return response()->json(['ok' => true]);
-
         } catch (\Exception $e) {
             Log::error('Telegram webhook error', [
                 'error' => $e->getMessage(),
@@ -52,7 +49,7 @@ class TelegramWebhookController extends Controller
     {
         try {
             $webhookUrl = $request->input('webhook_url');
-            
+
             if (!$webhookUrl) {
                 return response()->json(['error' => 'Webhook URL is required'], 400);
             }
@@ -64,7 +61,6 @@ class TelegramWebhookController extends Controller
             } else {
                 return response()->json($result, 400);
             }
-
         } catch (\Exception $e) {
             Log::error('Telegram webhook setup error', [
                 'error' => $e->getMessage()
@@ -90,7 +86,6 @@ class TelegramWebhookController extends Controller
             } else {
                 return response()->json($result, 500);
             }
-
         } catch (\Exception $e) {
             Log::error('Telegram webhook info error', [
                 'error' => $e->getMessage()
@@ -116,7 +111,6 @@ class TelegramWebhookController extends Controller
             } else {
                 return response()->json($result, 400);
             }
-
         } catch (\Exception $e) {
             Log::error('Telegram webhook delete error', [
                 'error' => $e->getMessage()
@@ -156,7 +150,6 @@ class TelegramWebhookController extends Controller
                     'message' => 'Ошибка отправки тестового сообщения'
                 ], 500);
             }
-
         } catch (\Exception $e) {
             Log::error('Telegram test message error', [
                 'error' => $e->getMessage()

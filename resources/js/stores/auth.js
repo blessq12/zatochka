@@ -13,6 +13,12 @@ export const useAuthStore = defineStore("auth", {
         getUser: (state) => state.user,
         getError: (state) => state.error,
         getLoading: (state) => state.isLoading,
+        isTelegramVerified: (state) => {
+            if (!state.user || !state.user.telegram_verified_at) {
+                return false;
+            }
+            return !!state.user.telegram_verified_at;
+        },
     },
 
     actions: {

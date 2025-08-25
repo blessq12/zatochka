@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'client.auth' => \App\Http\Middleware\ClientAuthMiddleware::class,
             'client.telegram.verified' => \App\Http\Middleware\ClientTelegramVerifiedMiddleware::class,
+            'rate.limit' => \App\Http\Middleware\RateLimitingMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

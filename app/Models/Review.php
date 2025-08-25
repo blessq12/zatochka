@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use App\Events\ReviewCreated;
 
 class Review extends Model
 {
@@ -28,6 +29,13 @@ class Review extends Model
         'rating' => 'integer',
         'metadata' => 'array',
     ];
+
+    protected static function booted()
+    {
+        static::created(function ($review) {
+            event(new ReviewCreated($review));
+        });
+    }
 
     // Связи
     public function user(): BelongsTo

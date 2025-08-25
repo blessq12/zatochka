@@ -68,7 +68,7 @@
 
         <!-- Авторизован, но не верифицирован -->
         <div
-            v-else-if="client && !client?.is_telegram_verified"
+            v-else-if="client && !authStore.isTelegramVerified"
             class="space-y-6"
             ref="verificationContainer"
         >
@@ -208,7 +208,7 @@
 
         <!-- Полностью авторизован -->
         <div
-            v-else-if="client && client?.is_telegram_verified"
+            v-else-if="client && authStore.isTelegramVerified"
             class="space-y-6"
             ref="authenticatedContainer"
         >

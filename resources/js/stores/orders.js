@@ -94,7 +94,7 @@ export const useOrdersStore = defineStore("orders", {
 
                 if (response.ok) {
                     const data = await response.json();
-                    this.orders = data.orders || [];
+                    this.orders = data.data || [];
                 } else {
                     throw new Error("Ошибка загрузки заказов");
                 }

@@ -17,7 +17,20 @@ class OrderController extends Controller
      */
     public function index()
     {
-        //
+        $orders = Order::with(['client'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return response()->json([
+            'success' => true,
+            'data' => $orders->items(),
+            'pagination' => [
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+                'per_page' => $orders->perPage(),
+                'total' => $orders->total(),
+            ]
+        ]);
     }
 
     /**
@@ -33,13 +46,6 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info('=== ORDER CREATION REQUEST START ===');
-        Log::info('Raw request data:', $request->all());
-        Log::info('Request keys:', array_keys($request->all()));
-        Log::info('Request values:', array_values($request->all()));
-        Log::info('Service type:', ['service_type' => $request->service_type]);
-        Log::info('Client name:', ['client_name' => $request->client_name]);
-        Log::info('Client phone:', ['client_phone' => $request->client_phone]);
 
         $validator = Validator::make($request->all(), [
             'service_type' => 'required|in:sharpening,repair',
@@ -62,11 +68,6 @@ class OrderController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('=== VALIDATION FAILED ===');
-            Log::error('Validation errors:', $validator->errors()->toArray());
-            Log::error('Request data that failed validation:', $request->all());
-            Log::error('=== VALIDATION FAILED END ===');
-
             return response()->json([
                 'success' => false,
                 'message' => 'Ошибка валидации',
@@ -74,11 +75,7 @@ class OrderController extends Controller
             ], 422);
         }
 
-        Log::info('=== VALIDATION PASSED ===');
-        Log::info('Validated data:', $request->all());
-
         try {
-            Log::info('Starting order creation process');
 
             // Находим или создаем клиента
             $client = Client::firstOrCreate(
@@ -88,8 +85,6 @@ class OrderController extends Controller
                     'phone' => $request->client_phone,
                 ]
             );
-
-            Log::info('Client found/created:', ['client_id' => $client->id, 'client_name' => $client->full_name]);
 
             // Создаем заказ
             $orderData = [
@@ -122,24 +117,11 @@ class OrderController extends Controller
                 }
             }
 
-            Log::info('=== ORDER DATA PREPARED ===');
-            Log::info('Order data:', $orderData);
-            Log::info('Order data keys:', array_keys($orderData));
-            Log::info('Order data values:', array_values($orderData));
-            Log::info('=== ORDER DATA PREPARED END ===');
-
             try {
                 $order = Order::create($orderData);
-                Log::info('Order created successfully');
             } catch (\Exception $createError) {
-                Log::error('Order creation failed:', [
-                    'error' => $createError->getMessage(),
-                    'orderData' => $orderData
-                ]);
                 throw $createError;
             }
-
-            Log::info('Order created successfully:', ['order_id' => $order->id, 'order_number' => $order->order_number]);
 
             return response()->json([
                 'success' => true,

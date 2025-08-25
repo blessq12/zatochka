@@ -21,17 +21,27 @@ class TelegramService implements TelegramServiceContract
     public function sendMessage(string $chatId, string $message): bool
     {
         try {
-            $response = Http::post("{$this->apiUrl}/sendMessage", [
+            $response = Http::timeout(10)->post("{$this->apiUrl}/sendMessage", [
                 'chat_id' => $chatId,
                 'text' => $message,
                 'parse_mode' => 'HTML'
             ]);
 
-            return $response->successful();
+            if (!$response->successful()) {
+                Log::error('Telegram API error', [
+                    'chat_id' => $chatId,
+                    'status' => $response->status(),
+                    'response' => $response->json()
+                ]);
+                return false;
+            }
+
+            return true;
         } catch (\Exception $e) {
             Log::error('Telegram message sending failed', [
                 'chat_id' => $chatId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return false;
         }
@@ -86,12 +96,64 @@ class TelegramService implements TelegramServiceContract
      */
     private function getChatIdByUsername(string $username): ?int
     {
-        // Убираем @ если есть
-        $username = ltrim($username, '@');
+        try {
+            // Убираем @ если есть
+            $username = ltrim($username, '@');
 
-        // Ищем в базе данных
-        $chat = TelegramChat::where('username', $username)->first();
+            // Ищем в базе данных
+            $chat = TelegramChat::where('username', $username)->first();
 
-        return $chat?->chat_id;
+            if (!$chat) {
+                Log::warning('Telegram chat not found', [
+                    'username' => $username
+                ]);
+                return null;
+            }
+
+            return $chat->chat_id;
+        } catch (\Exception $e) {
+            Log::error('Error getting chat_id by username', [
+                'username' => $username,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Проверить доступность бота
+     */
+    public function checkBotHealth(): bool
+    {
+        try {
+            $response = Http::timeout(5)->get("{$this->apiUrl}/getMe");
+            return $response->successful();
+        } catch (\Exception $e) {
+            Log::error('Telegram bot health check failed', [
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Получить информацию о боте
+     */
+    public function getBotInfo(): ?array
+    {
+        try {
+            $response = Http::timeout(5)->get("{$this->apiUrl}/getMe");
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Failed to get bot info', [
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 }

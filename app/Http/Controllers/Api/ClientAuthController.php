@@ -39,11 +39,8 @@ class ClientAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Клиент успешно зарегистрирован',
-            'data' => [
-                'client' => new ClientResource($client),
-                'token' => $token,
-                'token_type' => 'Bearer',
-            ]
+            'client' => new ClientResource($client),
+            'token' => $token,
         ], 201);
     }
 
@@ -59,9 +56,10 @@ class ClientAuthController extends Controller
 
         // Проверяем пароль
         if (!$client || !Hash::check($validated['password'], $client->password)) {
-            throw ValidationException::withMessages([
-                'phone' => ['Неверный номер телефона или пароль'],
-            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Неверные учетные данные'
+            ], 401);
         }
 
         // Удаляем старые токены
@@ -78,11 +76,8 @@ class ClientAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Успешный вход',
-            'data' => [
-                'client' => new ClientResource($client),
-                'token' => $token,
-                'token_type' => 'Bearer',
-            ]
+            'client' => new ClientResource($client),
+            'token' => $token,
         ]);
     }
 
@@ -96,7 +91,7 @@ class ClientAuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Успешный выход',
+            'message' => 'Успешный выход из системы',
         ]);
     }
 
@@ -128,15 +123,15 @@ class ClientAuthController extends Controller
         }
 
         $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
+            'full_name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|string|max:20',
             'telegram' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date|before:today',
             'delivery_address' => 'nullable|string|max:500',
         ]);
 
         // Проверяем, не занят ли телефон другим пользователем
-        if ($validated['phone'] !== $client->phone) {
+        if (isset($validated['phone']) && $validated['phone'] !== $client->phone) {
             $existingClient = Client::where('phone', $validated['phone'])
                 ->where('id', '!=', $client->id)
                 ->first();
@@ -155,9 +150,7 @@ class ClientAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Профиль успешно обновлен',
-            'data' => [
-                'client' => new ClientResource($client)
-            ]
+            'client' => new ClientResource($client)
         ]);
     }
 
@@ -170,8 +163,8 @@ class ClientAuthController extends Controller
 
         $validated = $request->validate([
             'current_password' => 'required|string',
-            'password' => 'required|string|min:6|confirmed',
-            'password_confirmation' => 'required|string|min:6',
+            'new_password' => 'required|string|min:6|confirmed',
+            'new_password_confirmation' => 'required|string|min:6',
         ]);
 
         // Проверяем текущий пароль
@@ -183,7 +176,7 @@ class ClientAuthController extends Controller
 
         // Обновляем пароль
         $client->update([
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make($validated['new_password']),
         ]);
 
         // Удаляем все токены (принудительный выход)
@@ -191,7 +184,7 @@ class ClientAuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Пароль изменен. Необходимо войти заново.',
+            'message' => 'Пароль успешно изменен',
         ]);
     }
 
@@ -202,10 +195,7 @@ class ClientAuthController extends Controller
     {
         return response()->json([
             'success' => true,
-            'message' => 'Токен действителен',
-            'data' => [
-                'client' => new ClientResource($request->user()),
-            ],
+            'valid' => true,
         ]);
     }
 }
