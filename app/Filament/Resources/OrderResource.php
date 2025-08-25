@@ -32,13 +32,13 @@ class OrderResource extends Resource
                             ->label('Номер заказа')
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->disabled(),
+                            ->disabled(fn($livewire) => $livewire instanceof \App\Filament\Resources\OrderResource\Pages\EditOrder),
                         Forms\Components\Select::make('client_id')
                             ->label('Клиент')
                             ->relationship('client', 'full_name')
                             ->searchable()
                             ->preload()
-                            ->disabled()
+                            ->disabled(fn($livewire) => $livewire instanceof \App\Filament\Resources\OrderResource\Pages\EditOrder)
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('full_name')
                                     ->label('ФИО')
