@@ -15,10 +15,13 @@ export default {
         async getFaqs() {
             try {
                 const response = await axios.get("/api/faqs");
-                this.faqs = response.data.map((faq) => ({
-                    ...faq,
-                    isOpen: false,
-                }));
+                // API теперь возвращает { success: true, data: [...], message: "..." }
+                this.faqs = (response.data.data || response.data).map(
+                    (faq) => ({
+                        ...faq,
+                        isOpen: false,
+                    })
+                );
                 this.loading = false;
             } catch (error) {
                 console.log(error);

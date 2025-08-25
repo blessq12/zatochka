@@ -39,8 +39,10 @@ class ClientAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Клиент успешно зарегистрирован',
-            'client' => new ClientResource($client),
-            'token' => $token,
+            'data' => [
+                'user' => new ClientResource($client),
+                'token' => $token,
+            ],
         ], 201);
     }
 
@@ -76,8 +78,10 @@ class ClientAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Успешный вход',
-            'client' => new ClientResource($client),
-            'token' => $token,
+            'data' => [
+                'user' => new ClientResource($client),
+                'token' => $token,
+            ],
         ]);
     }
 
@@ -105,6 +109,7 @@ class ClientAuthController extends Controller
         return response()->json([
             'success' => true,
             'data' => new ClientResource($client->load('orders')),
+            'message' => 'Профиль успешно загружен'
         ]);
     }
 
@@ -150,7 +155,9 @@ class ClientAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Профиль успешно обновлен',
-            'client' => new ClientResource($client)
+            'data' => [
+                'user' => new ClientResource($client)
+            ]
         ]);
     }
 
@@ -193,9 +200,15 @@ class ClientAuthController extends Controller
      */
     public function checkToken(Request $request): JsonResponse
     {
+        $client = $request->user();
+
         return response()->json([
             'success' => true,
             'valid' => true,
+            'data' => [
+                'user' => new ClientResource($client)
+            ],
+            'message' => 'Токен валиден'
         ]);
     }
 }

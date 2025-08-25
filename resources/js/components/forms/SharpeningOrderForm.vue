@@ -550,7 +550,7 @@ export default {
                     method: "POST",
                     headers,
                     body: JSON.stringify({
-                        service_type: "maintenance", // Используем правильный тип услуги
+                        service_type: "sharpening", // Исправляем тип услуги
                         tool_type: this.form.tool_type,
                         total_tools_count: this.form.tools_count,
                         problem_description: this.form.comment,

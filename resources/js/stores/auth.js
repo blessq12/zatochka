@@ -53,15 +53,6 @@ export const useAuthStore = defineStore("auth", {
             this.isLoading = true;
             this.error = null;
 
-            // Показываем тост загрузки
-            const loadingToast = window.toastService?.info(
-                "Регистрируемся...",
-                {
-                    timeout: false,
-                    closeButton: false,
-                }
-            );
-
             try {
                 const response = await fetch("/api/client/register", {
                     method: "POST",
@@ -109,13 +100,8 @@ export const useAuthStore = defineStore("auth", {
                     }
                 }
 
-                // Закрываем loading тост и показываем успех
-                if (window.toastService && loadingToast) {
-                    window.toastService.dismiss(loadingToast);
-                    window.toastService.success(
-                        "Аккаунт создан успешно! Добро пожаловать!"
-                    );
-                } else if (window.toastService) {
+                // Показываем успех
+                if (window.toastService) {
                     window.toastService.success(
                         "Аккаунт создан успешно! Добро пожаловать!"
                     );
@@ -125,10 +111,7 @@ export const useAuthStore = defineStore("auth", {
             } catch (error) {
                 this.error = error.message;
 
-                if (window.toastService && loadingToast) {
-                    window.toastService.dismiss(loadingToast);
-                    window.toastService.error(error.message);
-                } else if (window.toastService) {
+                if (window.toastService) {
                     window.toastService.error(error.message);
                 }
 
@@ -142,15 +125,6 @@ export const useAuthStore = defineStore("auth", {
         async login(credentials) {
             this.isLoading = true;
             this.error = null;
-
-            // Показываем тост загрузки
-            const loadingToast = window.toastService?.info(
-                "Входим в систему...",
-                {
-                    timeout: false,
-                    closeButton: false,
-                }
-            );
 
             try {
                 const response = await fetch("/api/client/login", {
@@ -182,11 +156,8 @@ export const useAuthStore = defineStore("auth", {
                     }
                 }
 
-                // Закрываем loading тост и показываем успех
-                if (window.toastService && loadingToast) {
-                    window.toastService.dismiss(loadingToast);
-                    window.toastService.success("Вход выполнен успешно!");
-                } else if (window.toastService) {
+                // Показываем успех
+                if (window.toastService) {
                     window.toastService.success("Вход выполнен успешно!");
                 }
 
@@ -195,11 +166,7 @@ export const useAuthStore = defineStore("auth", {
                 console.error("❌ Login error:", error);
                 this.error = error.message;
 
-                // Закрываем loading тост и показываем ошибку
-                if (window.toastService && loadingToast) {
-                    window.toastService.dismiss(loadingToast);
-                    window.toastService.error(error.message);
-                } else if (window.toastService) {
+                if (window.toastService) {
                     window.toastService.error(error.message);
                 }
 
@@ -213,15 +180,6 @@ export const useAuthStore = defineStore("auth", {
         async logout() {
             this.isLoading = true;
 
-            // Показываем тост загрузки
-            const loadingToast = window.toastService?.info(
-                "Выходим из системы...",
-                {
-                    timeout: false,
-                    closeButton: false,
-                }
-            );
-
             try {
                 const response = await fetch("/api/client/logout", {
                     method: "POST",
@@ -230,11 +188,8 @@ export const useAuthStore = defineStore("auth", {
 
                 this.removeToken();
 
-                // Закрываем loading тост и показываем успех
-                if (window.toastService && loadingToast) {
-                    window.toastService.dismiss(loadingToast);
-                    window.toastService.success("Выход выполнен успешно!");
-                } else if (window.toastService) {
+                // Показываем успех
+                if (window.toastService) {
                     window.toastService.success("Выход выполнен успешно!");
                 }
 
@@ -242,13 +197,8 @@ export const useAuthStore = defineStore("auth", {
             } catch (error) {
                 this.removeToken();
 
-                // Закрываем loading тост и показываем предупреждение
-                if (window.toastService && loadingToast) {
-                    window.toastService.dismiss(loadingToast);
-                    window.toastService.warning(
-                        "Выход выполнен (возможны проблемы с сервером)"
-                    );
-                } else if (window.toastService) {
+                // Показываем предупреждение
+                if (window.toastService) {
                     window.toastService.warning(
                         "Выход выполнен (возможны проблемы с сервером)"
                     );
