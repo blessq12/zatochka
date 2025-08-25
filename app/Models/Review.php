@@ -15,6 +15,7 @@ class Review extends Model
         'entity_id',
         'entity_type',
         'rating',
+        'is_approved',
         'comment',
         'source',
         'status',
@@ -26,6 +27,7 @@ class Review extends Model
 
     protected $casts = [
         'rating' => 'integer',
+        'is_approved' => 'boolean',
         'metadata' => 'array',
     ];
 

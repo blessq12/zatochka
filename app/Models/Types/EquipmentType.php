@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Types;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class PaymentType extends Model
+class EquipmentType extends Model
 {
     protected $fillable = [
         'name',
@@ -25,11 +25,11 @@ class PaymentType extends Model
      */
     public function orders(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(\App\Models\Order::class);
     }
 
     /**
-     * Получить только активные типы платежей
+     * Получить только активные типы оборудования
      */
     public function scopeActive($query)
     {
@@ -45,7 +45,7 @@ class PaymentType extends Model
     }
 
     /**
-     * Получить тип платежа по slug
+     * Получить тип оборудования по slug
      */
     public static function findBySlug(string $slug): ?self
     {

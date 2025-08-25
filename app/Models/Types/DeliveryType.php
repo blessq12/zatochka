@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Types;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,13 +11,11 @@ class DeliveryType extends Model
         'name',
         'slug',
         'description',
-        'price',
         'is_active',
         'sort_order'
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
         'is_active' => 'boolean',
         'sort_order' => 'integer'
     ];
@@ -27,7 +25,7 @@ class DeliveryType extends Model
      */
     public function orders(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(\App\Models\Order::class);
     }
 
     /**

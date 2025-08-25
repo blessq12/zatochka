@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\TelegramServiceContract;
 use App\Models\TelegramChat;
+use App\Models\Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -163,7 +164,7 @@ class TelegramService implements TelegramServiceContract
     public function getClientChatId(int $clientId): ?int
     {
         try {
-            $client = \App\Models\Client::find($clientId);
+            $client = Client::find($clientId);
 
             if (!$client || !$client->telegram) {
                 return null;

@@ -18,9 +18,7 @@ class NotificationService
             'client_id' => $data['client_id'],
             'order_id' => $data['order_id'] ?? null,
             'type' => $data['type'],
-            'title' => $data['title'],
-            'message' => $data['message'],
-            'is_read' => false,
+            'message_text' => $data['message_text'],
         ]);
     }
 
@@ -32,9 +30,8 @@ class NotificationService
         $this->createNotification([
             'client_id' => $order->client_id,
             'order_id' => $order->id,
-            'type' => 'order_created',
-            'title' => 'Заявка создана',
-            'message' => "Ваша заявка №{$order->order_number} успешно создана. Мы свяжемся с вами в ближайшее время.",
+            'type' => 'order_confirmation',
+            'message_text' => "Ваша заявка №{$order->order_number} успешно создана. Мы свяжемся с вами в ближайшее время.",
         ]);
     }
 
@@ -54,9 +51,8 @@ class NotificationService
         $this->createNotification([
             'client_id' => $order->client_id,
             'order_id' => $order->id,
-            'type' => 'status_changed',
-            'title' => 'Статус заказа изменен',
-            'message' => $message,
+            'type' => 'status_update',
+            'message_text' => $message,
         ]);
     }
 

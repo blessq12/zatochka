@@ -29,23 +29,20 @@ class Order extends Model
         'is_ready_for_pickup',
         'quality_survey_sent',
         'review_request_sent',
+        'telegram_notification_sent',
+        'telegram_notification_sent_at',
         'ready_at',
         'paid_at',
         'status',
+        'payment_type',
+        'delivery_type',
         'total_amount',
         'cost_price',
         'profit',
         'discount_percent',
         'discount_amount',
         'final_price',
-        'used_materials',
-        'confirmed_at',
-        'courier_pickup_at',
-        'master_received_at',
-        'work_completed_at',
-        'courier_delivery_at',
-        'payment_received_at',
-        'closed_at'
+        'used_materials'
     ];
 
     protected $casts = [
@@ -59,18 +56,13 @@ class Order extends Model
         'is_ready_for_pickup' => 'boolean',
         'quality_survey_sent' => 'boolean',
         'review_request_sent' => 'boolean',
+        'telegram_notification_sent' => 'boolean',
         'discount_percent' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'final_price' => 'decimal:2',
         'ready_at' => 'datetime',
         'paid_at' => 'datetime',
-        'confirmed_at' => 'datetime',
-        'courier_pickup_at' => 'datetime',
-        'master_received_at' => 'datetime',
-        'work_completed_at' => 'datetime',
-        'courier_delivery_at' => 'datetime',
-        'payment_received_at' => 'datetime',
-        'closed_at' => 'datetime',
+        'telegram_notification_sent_at' => 'datetime',
     ];
 
 
@@ -107,6 +99,29 @@ class Order extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Отношения к типам
+     */
+    public function serviceType()
+    {
+        return $this->belongsTo(\App\Models\Types\ServiceType::class, 'service_type', 'slug');
+    }
+
+    public function paymentType()
+    {
+        return $this->belongsTo(\App\Models\Types\PaymentType::class, 'payment_type', 'slug');
+    }
+
+    public function deliveryType()
+    {
+        return $this->belongsTo(\App\Models\Types\DeliveryType::class, 'delivery_type', 'slug');
+    }
+
+    public function orderStatus()
+    {
+        return $this->belongsTo(\App\Models\Types\OrderStatus::class, 'status', 'slug');
     }
 
 
@@ -215,8 +230,7 @@ class Order extends Model
     {
         if (in_array($this->status, ['confirmed', 'new'])) {
             $this->update([
-                'status' => 'courier_pickup',
-                'courier_pickup_at' => now()
+                'status' => 'courier_pickup'
             ]);
             return true;
         }
@@ -227,8 +241,7 @@ class Order extends Model
     {
         if (in_array($this->status, ['courier_pickup', 'confirmed'])) {
             $this->update([
-                'status' => 'master_received',
-                'master_received_at' => now()
+                'status' => 'master_received'
             ]);
             return true;
         }
@@ -248,8 +261,7 @@ class Order extends Model
     {
         if (in_array($this->status, ['in_progress', 'master_received'])) {
             $this->update([
-                'status' => 'work_completed',
-                'work_completed_at' => now()
+                'status' => 'work_completed'
             ]);
             return true;
         }
@@ -260,8 +272,7 @@ class Order extends Model
     {
         if (in_array($this->status, ['work_completed', 'ready_for_pickup'])) {
             $this->update([
-                'status' => 'courier_delivery',
-                'courier_delivery_at' => now()
+                'status' => 'courier_delivery'
             ]);
             return true;
         }
@@ -295,8 +306,7 @@ class Order extends Model
             $this->update([
                 'status' => 'payment_received',
                 'is_paid' => true,
-                'paid_at' => now(),
-                'payment_received_at' => now()
+                'paid_at' => now()
             ]);
             return true;
         }
@@ -307,8 +317,7 @@ class Order extends Model
     {
         if (in_array($this->status, ['payment_received', 'delivered'])) {
             $this->update([
-                'status' => 'closed',
-                'closed_at' => now()
+                'status' => 'closed'
             ]);
             return true;
         }
@@ -364,5 +373,48 @@ class Order extends Model
             'cancelled' => 'danger',
             default => 'gray',
         };
+    }
+
+    // Методы для получения опций типов
+    public static function getServiceTypeOptions(): array
+    {
+        return [
+            'repair' => 'Ремонт',
+            'maintenance' => 'Обслуживание',
+            'diagnostic' => 'Диагностика',
+            'consultation' => 'Консультация',
+            'parts_replacement' => 'Замена запчастей',
+        ];
+    }
+
+    public static function getPaymentTypeOptions(): array
+    {
+        return [
+            'cash' => 'Наличные',
+            'card' => 'Карта',
+            'online' => 'Онлайн',
+            'bank_transfer' => 'Банковский перевод',
+        ];
+    }
+
+    public static function getDeliveryTypeOptions(): array
+    {
+        return [
+            'pickup' => 'Самовывоз',
+            'courier' => 'Курьер',
+            'post' => 'Почта',
+        ];
+    }
+
+    public static function getEquipmentTypeOptions(): array
+    {
+        return [
+            'phone' => 'Телефон',
+            'laptop' => 'Ноутбук',
+            'desktop' => 'Компьютер',
+            'tablet' => 'Планшет',
+            'console' => 'Игровая приставка',
+            'other' => 'Другое',
+        ];
     }
 }

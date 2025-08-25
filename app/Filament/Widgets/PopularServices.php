@@ -19,62 +19,20 @@ class PopularServices extends BaseWidget
 
     public function table(Table $table): Table
     {
-        $monthStart = Carbon::now()->startOfMonth();
-        $monthEnd = Carbon::now()->endOfMonth();
-
         return $table
-            ->query(
-                Order::select('service_type', 'tool_type')
-                    ->selectRaw('COUNT(*) as total_orders')
-                    ->selectRaw('SUM(total_amount) as total_revenue')
-                    ->selectRaw('SUM(profit) as total_profit')
-                    ->selectRaw('AVG(profit / total_amount * 100) as avg_margin')
-                    ->whereBetween('created_at', [$monthStart, $monthEnd])
-                    ->groupBy('service_type', 'tool_type')
-                    ->orderByDesc('total_orders')
-                    ->limit(10)
-            )
+            ->query(Order::latest()->limit(5))
             ->columns([
                 Tables\Columns\TextColumn::make('service_type')
                     ->label('Услуга')
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        'repair' => 'Ремонт',
-                        'maintenance' => 'Заточка',
-                        'consultation' => 'Консультация',
-                        'other' => 'Другое',
-                    })
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'repair' => 'danger',
-                        'maintenance' => 'warning',
-                        'consultation' => 'info',
-                        'other' => 'gray',
-                    }),
-                Tables\Columns\TextColumn::make('tool_type')
-                    ->label('Инструмент')
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        'drill' => 'Дрель',
-                        'screwdriver' => 'Шуруповерт',
-                        'grinder' => 'Болгарка',
-                        'saw' => 'Пила',
-                        'hammer' => 'Перфоратор',
-                        'jigsaw' => 'Лобзик',
-                        'planer' => 'Рубанок',
-                        'other' => 'Другое',
-                    }),
-                Tables\Columns\TextColumn::make('total_orders')
-                    ->label('Заказов')
-                    ->sortable()
-                    ->alignCenter(),
-                Tables\Columns\TextColumn::make('total_revenue')
-                    ->label('Выручка')
-                    ->money('RUB')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('avg_margin')
-                    ->label('Маржинальность')
-                    ->formatStateUsing(fn($state): string => number_format($state, 1) . '%')
-                    ->sortable()
-                    ->alignCenter(),
+                    ->formatStateUsing(fn(string $state): string => \App\Models\Order::getServiceTypeOptions()[$state] ?? $state)
+                    ->badge(),
+                Tables\Columns\TextColumn::make('equipment_type')
+                    ->label('Оборудование')
+                    ->formatStateUsing(fn(string $state): string => \App\Models\Order::getEquipmentTypeOptions()[$state] ?? $state)
+                    ->badge(),
+                Tables\Columns\TextColumn::make('total_amount')
+                    ->label('Сумма')
+                    ->money('RUB'),
             ])
             ->paginated(false);
     }

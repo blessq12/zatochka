@@ -52,7 +52,42 @@ class OrderResource extends Resource
                             ->label('Статус')
                             ->options(Order::getStatusOptions())
                             ->required(),
+                        Forms\Components\Select::make('service_type')
+                            ->label('Тип услуги')
+                            ->options(Order::getServiceTypeOptions())
+                            ->required(),
+                        Forms\Components\Select::make('equipment_type')
+                            ->label('Тип оборудования')
+                            ->options(Order::getEquipmentTypeOptions())
+                            ->required(),
+                        Forms\Components\TextInput::make('equipment_name')
+                            ->label('Название оборудования')
+                            ->maxLength(255),
                     ])->columns(3),
+
+                Forms\Components\Section::make('Детали заказа')
+                    ->schema([
+                        Forms\Components\Textarea::make('problem_description')
+                            ->label('Описание проблемы')
+                            ->rows(3),
+                        Forms\Components\Textarea::make('work_description')
+                            ->label('Описание работ')
+                            ->rows(3),
+                        Forms\Components\TextInput::make('total_tools_count')
+                            ->label('Количество инструментов')
+                            ->numeric()
+                            ->default(1),
+                        Forms\Components\Toggle::make('needs_consultation')
+                            ->label('Нужна консультация')
+                            ->default(false),
+                        Forms\Components\Toggle::make('needs_delivery')
+                            ->label('Нужна доставка')
+                            ->default(false),
+                        Forms\Components\Textarea::make('delivery_address')
+                            ->label('Адрес доставки')
+                            ->rows(2)
+                            ->visible(fn($get) => $get('needs_delivery')),
+                    ])->columns(2),
 
                 Forms\Components\Section::make('Финансы')
                     ->schema([
@@ -68,6 +103,16 @@ class OrderResource extends Resource
                             ->label('Прибыль')
                             ->numeric()
                             ->required(),
+                        Forms\Components\Select::make('payment_type')
+                            ->label('Тип оплаты')
+                            ->options(Order::getPaymentTypeOptions()),
+                        Forms\Components\Select::make('delivery_type')
+                            ->label('Тип доставки')
+                            ->options(Order::getDeliveryTypeOptions()),
+                        Forms\Components\TextInput::make('discount_percent')
+                            ->label('Скидка (%)')
+                            ->numeric()
+                            ->default(0),
                     ])->columns(3),
             ]);
     }
@@ -99,26 +144,23 @@ class OrderResource extends Resource
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'repair' => 'danger',
-                        'sharpening' => 'warning',
                         'maintenance' => 'warning',
+                        'diagnostic' => 'info',
                         'consultation' => 'info',
-                        'other' => 'gray',
+                        'parts_replacement' => 'warning',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        'repair' => 'Ремонт',
-                        'sharpening' => 'Заточка',
-                        'maintenance' => 'Заточка',
-                        'consultation' => 'Консультация',
-                        'other' => 'Другое',
-                        default => $state,
-                    }),
-                Tables\Columns\TextColumn::make('tool_type')
-                    ->label('Инструмент')
+                    ->formatStateUsing(fn(string $state): string => Order::getServiceTypeOptions()[$state] ?? $state),
+                Tables\Columns\TextColumn::make('equipment_type')
+                    ->label('Оборудование')
+                    ->badge()
+                    ->formatStateUsing(fn(string $state): string => Order::getEquipmentTypeOptions()[$state] ?? $state),
+                Tables\Columns\TextColumn::make('equipment_name')
+                    ->label('Название оборудования')
                     ->searchable()
-                    ->sortable(),
+                    ->limit(20),
                 Tables\Columns\TextColumn::make('total_tools_count')
-                    ->label('Кол-во')
+                    ->label('Кол-во инструментов')
                     ->sortable()
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('client.delivery_address')
@@ -157,25 +199,16 @@ class OrderResource extends Resource
                     ->falseLabel('Неоплаченные'),
                 Tables\Filters\SelectFilter::make('service_type')
                     ->label('Тип услуги')
-                    ->options([
-                        'repair' => 'Ремонт',
-                        'sharpening' => 'Заточка',
-                        'maintenance' => 'Заточка/Обслуживание',
-                        'consultation' => 'Консультация',
-                        'other' => 'Другое',
-                    ]),
-                Tables\Filters\SelectFilter::make('tool_type')
-                    ->label('Тип инструмента')
-                    ->options([
-                        'drill' => 'Дрель',
-                        'screwdriver' => 'Шуруповерт',
-                        'grinder' => 'Болгарка',
-                        'saw' => 'Пила',
-                        'hammer' => 'Перфоратор',
-                        'jigsaw' => 'Лобзик',
-                        'planer' => 'Рубанок',
-                        'other' => 'Другое',
-                    ]),
+                    ->options(Order::getServiceTypeOptions()),
+                Tables\Filters\SelectFilter::make('equipment_type')
+                    ->label('Тип оборудования')
+                    ->options(Order::getEquipmentTypeOptions()),
+                Tables\Filters\SelectFilter::make('payment_type')
+                    ->label('Тип оплаты')
+                    ->options(Order::getPaymentTypeOptions()),
+                Tables\Filters\SelectFilter::make('delivery_type')
+                    ->label('Тип доставки')
+                    ->options(Order::getDeliveryTypeOptions()),
                 Tables\Filters\Filter::make('client_frequency')
                     ->label('Частота обращений клиента')
                     ->form([

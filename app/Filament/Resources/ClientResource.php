@@ -100,8 +100,8 @@ class ClientResource extends Resource
     {
         return [
             RelationManagers\OrdersRelationManager::class,
-
             RelationManagers\NotificationsRelationManager::class,
+            RelationManagers\TelegramChatRelationManager::class,
         ];
     }
 

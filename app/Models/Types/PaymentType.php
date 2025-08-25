@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Types;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class EquipmentType extends Model
+class PaymentType extends Model
 {
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'is_active',
         'sort_order'
@@ -24,11 +25,11 @@ class EquipmentType extends Model
      */
     public function orders(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(\App\Models\Order::class);
     }
 
     /**
-     * Получить только активные типы оборудования
+     * Получить только активные типы платежей
      */
     public function scopeActive($query)
     {
@@ -41,5 +42,13 @@ class EquipmentType extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order')->orderBy('name');
+    }
+
+    /**
+     * Получить тип платежа по slug
+     */
+    public static function findBySlug(string $slug): ?self
+    {
+        return static::where('slug', $slug)->first();
     }
 }

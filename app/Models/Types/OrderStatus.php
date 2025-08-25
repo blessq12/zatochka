@@ -1,23 +1,22 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Types;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ServiceType extends Model
+class OrderStatus extends Model
 {
     protected $fillable = [
         'name',
         'slug',
         'description',
-        'base_price',
+        'color',
         'is_active',
         'sort_order'
     ];
 
     protected $casts = [
-        'base_price' => 'decimal:2',
         'is_active' => 'boolean',
         'sort_order' => 'integer'
     ];
@@ -27,11 +26,11 @@ class ServiceType extends Model
      */
     public function orders(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(\App\Models\Order::class);
     }
 
     /**
-     * Получить только активные типы сервисов
+     * Получить только активные статусы
      */
     public function scopeActive($query)
     {
@@ -47,7 +46,7 @@ class ServiceType extends Model
     }
 
     /**
-     * Получить тип сервиса по slug
+     * Получить статус по slug
      */
     public static function findBySlug(string $slug): ?self
     {
