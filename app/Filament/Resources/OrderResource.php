@@ -31,12 +31,14 @@ class OrderResource extends Resource
                         Forms\Components\TextInput::make('order_number')
                             ->label('Номер заказа')
                             ->required()
-                            ->unique(ignoreRecord: true),
+                            ->unique(ignoreRecord: true)
+                            ->disabled(),
                         Forms\Components\Select::make('client_id')
                             ->label('Клиент')
                             ->relationship('client', 'full_name')
                             ->searchable()
                             ->preload()
+                            ->disabled()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('full_name')
                                     ->label('ФИО')
