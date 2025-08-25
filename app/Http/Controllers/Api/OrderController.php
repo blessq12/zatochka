@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Client;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +13,12 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
+    protected OrderService $orderService;
+
+    public function __construct(OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -76,23 +83,11 @@ class OrderController extends Controller
         }
 
         try {
-
-            // Находим или создаем клиента
-            $client = Client::firstOrCreate(
-                ['phone' => $request->client_phone],
-                [
-                    'full_name' => $request->client_name,
-                    'phone' => $request->client_phone,
-                ]
-            );
-
-            // Создаем заказ
+            // Подготавливаем данные для сервиса
             $orderData = [
-                'client_id' => $client->id,
-                'order_number' => 'Z' . date('Ymd') . '-' . Str::random(6),
+                'client_name' => $request->client_name,
+                'client_phone' => $request->client_phone,
                 'service_type' => $request->service_type,
-                'status' => 'new',
-                'total_amount' => $this->calculatePrice($request),
             ];
 
             // Добавляем специфичные поля в зависимости от типа услуги
@@ -106,22 +101,16 @@ class OrderController extends Controller
                 }
             } else if ($request->service_type === 'repair') {
                 $orderData['equipment_name'] = $request->equipment_name;
-                $orderData['tool_type'] = $request->equipment_type; // Сохраняем тип оборудования в tool_type
+                $orderData['tool_type'] = $request->equipment_type;
                 $orderData['problem_description'] = $request->problem_description;
                 $orderData['urgency'] = $request->urgency ?? 'normal';
-                $orderData['work_description'] = 'Ремонт: ' . $request->equipment_name;
-                $orderData['total_tools_count'] = 1; // Для ремонта всегда 1
                 $orderData['needs_delivery'] = $request->needs_delivery ?? false;
                 if ($request->needs_delivery) {
                     $orderData['delivery_address'] = $request->delivery_address;
                 }
             }
 
-            try {
-                $order = Order::create($orderData);
-            } catch (\Exception $createError) {
-                throw $createError;
-            }
+            $order = $this->orderService->createOrder($orderData);
 
             return response()->json([
                 'success' => true,

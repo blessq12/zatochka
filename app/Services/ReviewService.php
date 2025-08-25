@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Review;
 use App\Models\Order;
 use App\Models\Client;
+use App\Events\Review\ReviewCreated;
+use App\Events\Review\ReviewStatusChanged;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,13 +17,21 @@ class ReviewService
      */
     public function createReview(array $data): Review
     {
-        return Review::create([
+        $review = Review::create([
             'order_id' => $data['order_id'],
             'user_id' => $data['user_id'],
             'rating' => $data['rating'],
             'comment' => $data['comment'] ?? null,
+            'type' => $data['type'] ?? 'feedback',
+            'source' => $data['source'] ?? 'api',
+            'status' => $data['status'] ?? 'pending',
             'is_approved' => false,
         ]);
+
+        // Вызываем событие создания отзыва
+        event(new ReviewCreated($review));
+
+        return $review;
     }
 
     /**
@@ -81,7 +91,15 @@ class ReviewService
      */
     public function approveReview(Review $review): bool
     {
-        return $review->update(['is_approved' => true]);
+        $oldStatus = $review->is_approved ? 'approved' : 'pending';
+        $result = $review->update(['is_approved' => true]);
+
+        if ($result) {
+            // Вызываем событие смены статуса отзыва
+            event(new ReviewStatusChanged($review, $oldStatus, 'approved'));
+        }
+
+        return $result;
     }
 
     /**
@@ -89,7 +107,15 @@ class ReviewService
      */
     public function rejectReview(Review $review): bool
     {
-        return $review->update(['is_approved' => false]);
+        $oldStatus = $review->is_approved ? 'approved' : 'pending';
+        $result = $review->update(['is_approved' => false]);
+
+        if ($result) {
+            // Вызываем событие смены статуса отзыва
+            event(new ReviewStatusChanged($review, $oldStatus, 'rejected'));
+        }
+
+        return $result;
     }
 
     /**

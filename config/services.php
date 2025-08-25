@@ -47,6 +47,7 @@ return [
     ],
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'main_chat_id' => env('TELEGRAM_MAIN_CHAT_ID'),
     ],
 
     'sms' => [

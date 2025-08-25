@@ -27,22 +27,8 @@ class TelegramService implements TelegramServiceContract
                 'parse_mode' => 'HTML'
             ]);
 
-            if (!$response->successful()) {
-                Log::error('Telegram API error', [
-                    'chat_id' => $chatId,
-                    'status' => $response->status(),
-                    'response' => $response->json()
-                ]);
-                return false;
-            }
-
-            return true;
+            return $response->successful();
         } catch (\Exception $e) {
-            Log::error('Telegram message sending failed', [
-                'chat_id' => $chatId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return false;
         }
     }
@@ -92,32 +78,115 @@ class TelegramService implements TelegramServiceContract
     }
 
     /**
+     * Отправить уведомление о новом заказе
+     */
+    public function sendNewOrderNotification(string $chatId, array $orderData): bool
+    {
+        $message = "🆕 <b>Новый заказ!</b>\n\n";
+        $message .= "📋 Номер: <b>{$orderData['order_number']}</b>\n";
+        $message .= "👤 Клиент: <b>{$orderData['client_name']}</b>\n";
+        $message .= "📞 Телефон: <b>{$orderData['client_phone']}</b>\n";
+        $message .= "🔧 Тип услуги: <b>{$orderData['service_type']}</b>\n";
+        $message .= "💰 Сумма: <b>{$orderData['total_amount']} ₽</b>\n";
+        $message .= "📅 Создан: <b>{$orderData['created_at']}</b>";
+
+        return $this->sendMessage($chatId, $message);
+    }
+
+    /**
+     * Отправить уведомление об изменении статуса заказа
+     */
+    public function sendOrderStatusChangeNotification(string $chatId, array $orderData): bool
+    {
+        $message = "🔄 <b>Статус заказа изменен</b>\n\n";
+        $message .= "📋 Номер: <b>{$orderData['order_number']}</b>\n";
+        $message .= "👤 Клиент: <b>{$orderData['client_name']}</b>\n";
+        $message .= "📞 Телефон: <b>{$orderData['client_phone']}</b>\n";
+        $message .= "🔄 Статус: <b>{$orderData['old_status']}</b> → <b>{$orderData['new_status']}</b>\n";
+        $message .= "📅 Изменен: <b>{$orderData['changed_at']}</b>";
+
+        return $this->sendMessage($chatId, $message);
+    }
+
+    /**
+     * Отправить уведомление о новом отзыве
+     */
+    public function sendNewReviewNotification(string $chatId, array $reviewData): bool
+    {
+        $message = "⭐ <b>Новый отзыв!</b>\n\n";
+        $message .= "📋 Заказ: <b>{$reviewData['order_number']}</b>\n";
+        $message .= "👤 Клиент: <b>{$reviewData['client_name']}</b>\n";
+        $message .= "⭐ Рейтинг: <b>{$reviewData['rating']}/5</b>\n";
+        $message .= "💬 Комментарий: <b>{$reviewData['comment']}</b>\n";
+        $message .= "📅 Создан: <b>{$reviewData['created_at']}</b>";
+
+        return $this->sendMessage($chatId, $message);
+    }
+
+    /**
+     * Отправить уведомление об изменении статуса отзыва
+     */
+    public function sendReviewStatusChangeNotification(string $chatId, array $reviewData): bool
+    {
+        $message = "🔄 <b>Статус отзыва изменен</b>\n\n";
+        $message .= "📋 Заказ: <b>{$reviewData['order_number']}</b>\n";
+        $message .= "👤 Клиент: <b>{$reviewData['client_name']}</b>\n";
+        $message .= "⭐ Рейтинг: <b>{$reviewData['rating']}/5</b>\n";
+        $message .= "🔄 Статус: <b>{$reviewData['old_status']}</b> → <b>{$reviewData['new_status']}</b>\n";
+        $message .= "📅 Изменен: <b>{$reviewData['changed_at']}</b>";
+
+        return $this->sendMessage($chatId, $message);
+    }
+
+    /**
      * Получить chat_id по username
      */
     private function getChatIdByUsername(string $username): ?int
     {
         try {
-            // Убираем @ если есть
             $username = ltrim($username, '@');
-
-            // Ищем в базе данных
             $chat = TelegramChat::where('username', $username)->first();
 
             if (!$chat) {
-                Log::warning('Telegram chat not found', [
-                    'username' => $username
-                ]);
                 return null;
             }
 
             return $chat->chat_id;
         } catch (\Exception $e) {
-            Log::error('Error getting chat_id by username', [
-                'username' => $username,
-                'error' => $e->getMessage()
-            ]);
             return null;
         }
+    }
+
+    /**
+     * Получить chat_id клиента по его ID
+     */
+    public function getClientChatId(int $clientId): ?int
+    {
+        try {
+            $client = \App\Models\Client::find($clientId);
+
+            if (!$client || !$client->telegram) {
+                return null;
+            }
+
+            return $this->getChatIdByUsername($client->telegram);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Отправить сообщение клиенту по его ID
+     */
+    public function sendMessageToClient(int $clientId, string $message): bool
+    {
+        $chatId = $this->getClientChatId($clientId);
+
+        if (!$chatId) {
+            return false;
+        }
+
+        return $this->sendMessage($chatId, $message);
     }
 
     /**
@@ -129,9 +198,6 @@ class TelegramService implements TelegramServiceContract
             $response = Http::timeout(5)->get("{$this->apiUrl}/getMe");
             return $response->successful();
         } catch (\Exception $e) {
-            Log::error('Telegram bot health check failed', [
-                'error' => $e->getMessage()
-            ]);
             return false;
         }
     }
@@ -150,9 +216,6 @@ class TelegramService implements TelegramServiceContract
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Failed to get bot info', [
-                'error' => $e->getMessage()
-            ]);
             return null;
         }
     }

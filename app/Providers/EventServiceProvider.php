@@ -2,16 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
-use App\Events\OrderCreated;
-use App\Events\OrderStatusChanged;
-use App\Events\ReviewCreated;
-use App\Listeners\SendOrderCreatedNotification;
-use App\Listeners\SendOrderStatusChangedNotification;
-use App\Listeners\SendReviewCreatedNotification;
+use App\Events\Order\OrderCreated;
+use App\Events\Order\OrderStatusChanged;
+use App\Listeners\Order\HandleOrderCreated;
+use App\Listeners\Order\HandleOrderStatusChanged;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -21,18 +16,12 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
         OrderCreated::class => [
-            SendOrderCreatedNotification::class,
+            [HandleOrderCreated::class, 'handle'],
         ],
         OrderStatusChanged::class => [
-            SendOrderStatusChangedNotification::class,
-        ],
-        ReviewCreated::class => [
-            SendReviewCreatedNotification::class,
-        ],
+            [HandleOrderStatusChanged::class, 'handle'],
+        ]
     ];
 
     /**

@@ -45,7 +45,7 @@ class BonusService
 
         // Сохраняем уведомление
         $client->notifications()->create([
-            'type' => 'bonus_awarded',
+            'type' => 'bonus',
             'message_text' => $message,
             'sent_at' => now(),
         ]);

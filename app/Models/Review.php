@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use App\Events\ReviewCreated;
 
 class Review extends Model
 {
@@ -32,9 +31,7 @@ class Review extends Model
 
     protected static function booted()
     {
-        static::created(function ($review) {
-            event(new ReviewCreated($review));
-        });
+        // События удалены
     }
 
     // Связи
@@ -69,15 +66,7 @@ class Review extends Model
         return $query->where('status', 'approved');
     }
 
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
-    }
 
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 'rejected');
-    }
 
     public function scopeOfSource($query, string $source)
     {

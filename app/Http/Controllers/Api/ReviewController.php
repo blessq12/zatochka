@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
+use App\Services\ReviewService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class ReviewController extends Controller
 {
+    protected ReviewService $reviewService;
+
+    public function __construct(ReviewService $reviewService)
+    {
+        $this->reviewService = $reviewService;
+    }
     /**
      * Создать новый отзыв
      */
@@ -39,8 +46,8 @@ class ReviewController extends Controller
         $metadata['created_via'] = 'api';
         $validated['metadata'] = $metadata;
 
-        // Создаем отзыв
-        $review = Review::create($validated);
+        // Создаем отзыв через сервис (событие сработает автоматически)
+        $review = $this->reviewService->createReview($validated);
 
         return response()->json([
             'success' => true,

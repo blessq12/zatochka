@@ -4,11 +4,10 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Client;
-use App\Models\ServiceType;
-use App\Models\OrderStatus;
-use Illuminate\Http\Request;
+use App\Events\Order\OrderStatusChanged;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Facades\Log;
 
 class OrderService
@@ -19,7 +18,6 @@ class OrderService
     public function createOrder(array $data): Order
     {
         return DB::transaction(function () use ($data) {
-            // Находим или создаем клиента
             $client = Client::firstOrCreate(
                 ['phone' => $data['client_phone']],
                 [
@@ -28,26 +26,19 @@ class OrderService
                 ]
             );
 
-            // Получаем статус "новый"
-            $newStatus = OrderStatus::findBySlug('new');
-            if (!$newStatus) {
-                throw new \Exception('Статус "новый" не найден');
-            }
-
-            // Подготавливаем данные заказа
             $orderData = [
                 'client_id' => $client->id,
                 'order_number' => $this->generateOrderNumber(),
                 'service_type' => $data['service_type'],
-                'status' => $newStatus->id,
+                'status' => 'new',
                 'total_amount' => $this->calculatePrice($data),
             ];
 
-            // Добавляем поля в зависимости от типа сервиса
             if ($data['service_type'] === 'sharpening') {
                 $orderData['tool_type'] = $data['tool_type'];
                 $orderData['total_tools_count'] = $data['total_tools_count'];
             } else {
+                $orderData['tool_type'] = $data['tool_type'] ?? 'manicure';
                 $orderData['equipment_name'] = $data['equipment_name'];
                 $orderData['problem_description'] = $data['problem_description'];
                 $orderData['total_tools_count'] = 1;
@@ -59,11 +50,10 @@ class OrderService
                 $orderData['delivery_address'] = $data['delivery_address'];
             }
 
-            // Создаем заказ
             $order = Order::create($orderData);
 
             return $order;
-        });
+        }, 1);
     }
 
     /**
@@ -71,12 +61,18 @@ class OrderService
      */
     public function updateStatus(Order $order, string $statusSlug): bool
     {
-        $status = OrderStatus::findBySlug($statusSlug);
-        if (!$status) {
+        // Проверяем что статус валидный
+        $validStatuses = ['new', 'in_progress', 'completed', 'cancelled'];
+        if (!in_array($statusSlug, $validStatuses)) {
             return false;
         }
 
-        $order->update(['status' => $status->id]);
+        $oldStatus = $order->status;
+        $order->update(['status' => $statusSlug]);
+
+        // Вызываем событие смены статуса
+        event(new OrderStatusChanged($order, $oldStatus, $statusSlug));
+
         return true;
     }
 

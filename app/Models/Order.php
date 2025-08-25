@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use App\HasReviews;
-use App\Events\OrderCreated;
-use App\Events\OrderStatusChanged;
+use App\Events\Order\OrderCreated;
+use App\Events\Order\OrderStatusChanged;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 
 class Order extends Model
 {
     use HasReviews;
+
     protected $fillable = [
         'client_id',
         'order_number',
@@ -48,25 +48,6 @@ class Order extends Model
         'closed_at'
     ];
 
-    protected static function booted()
-    {
-        static::created(function ($order) {
-            Log::info("Order created event dispatched", ['order_id' => $order->id]);
-            event(new OrderCreated($order));
-        });
-
-        static::updated(function ($order) {
-            if ($order->wasChanged('status')) {
-                Log::info("Order status changed event dispatched", [
-                    'order_id' => $order->id,
-                    'old_status' => $order->getOriginal('status'),
-                    'new_status' => $order->status
-                ]);
-                event(new OrderStatusChanged($order, $order->getOriginal('status'), $order->status));
-            }
-        });
-    }
-
     protected $casts = [
         'tools_photos' => 'array',
         'used_materials' => 'array',
@@ -91,6 +72,17 @@ class Order extends Model
         'payment_received_at' => 'datetime',
         'closed_at' => 'datetime',
     ];
+
+
+    protected static function booted()
+    {
+        static::created(function ($order) {
+            event(new OrderCreated($order));
+        });
+        static::updated(function ($order) {
+            event(new OrderStatusChanged($order, $order->getOriginal('status'), $order->status));
+        });
+    }
 
     public function client()
     {
@@ -185,45 +177,7 @@ class Order extends Model
     }
 
     // Отправка уведомлений о подтверждении заказа
-    public function sendConfirmationNotifications(): void
-    {
-        $telegramService = app(\App\Contracts\TelegramServiceContract::class);
-        $smsService = app(\App\Contracts\SMSServiceContract::class);
 
-        // Отправляем в Telegram
-        if ($this->client->telegram) {
-            $telegramSent = $telegramService->sendOrderConfirmation(
-                $this->client->telegram,
-                $this->order_number,
-                $this->total_amount ?? 0
-            );
-
-            // Сохраняем уведомление
-            $this->notifications()->create([
-                'client_id' => $this->client_id,
-                'type' => 'order_confirmation',
-                'message_text' => "Telegram: Заявка {$this->order_number} подтверждена. Сумма: {$this->total_amount} ₽",
-                'sent_at' => $telegramSent ? now() : null
-            ]);
-        }
-
-        // Отправляем SMS
-        if ($this->client->phone) {
-            $smsSent = $smsService->sendOrderConfirmation(
-                $this->client->phone,
-                $this->order_number,
-                $this->total_amount ?? 0
-            );
-
-            // Сохраняем уведомление
-            $this->notifications()->create([
-                'client_id' => $this->client_id,
-                'type' => 'order_confirmation',
-                'message_text' => "SMS: Заявка {$this->order_number} подтверждена. Сумма: {$this->total_amount} ₽",
-                'sent_at' => $smsSent ? now() : null
-            ]);
-        }
-    }
 
     // Workflow методы для обработки заказа
     public static function getStatusOptions(): array
@@ -251,7 +205,7 @@ class Order extends Model
                 'status' => 'confirmed',
                 'confirmed_at' => now()
             ]);
-            $this->sendConfirmationNotifications();
+
             return true;
         }
         return false;
