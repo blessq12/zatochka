@@ -378,43 +378,33 @@ class Order extends Model
     // Методы для получения опций типов
     public static function getServiceTypeOptions(): array
     {
-        return [
-            'repair' => 'Ремонт',
-            'maintenance' => 'Обслуживание',
-            'diagnostic' => 'Диагностика',
-            'consultation' => 'Консультация',
-            'parts_replacement' => 'Замена запчастей',
-        ];
+        return \App\Models\Types\ServiceType::where('is_active', true)
+            ->orderBy('sort_order')
+            ->pluck('name', 'slug')
+            ->toArray();
     }
 
     public static function getPaymentTypeOptions(): array
     {
-        return [
-            'cash' => 'Наличные',
-            'card' => 'Карта',
-            'online' => 'Онлайн',
-            'bank_transfer' => 'Банковский перевод',
-        ];
+        return \App\Models\Types\PaymentType::where('is_active', true)
+            ->orderBy('sort_order')
+            ->pluck('name', 'slug')
+            ->toArray();
     }
 
     public static function getDeliveryTypeOptions(): array
     {
-        return [
-            'pickup' => 'Самовывоз',
-            'courier' => 'Курьер',
-            'post' => 'Почта',
-        ];
+        return \App\Models\Types\DeliveryType::where('is_active', true)
+            ->orderBy('sort_order')
+            ->pluck('name', 'slug')
+            ->toArray();
     }
 
     public static function getEquipmentTypeOptions(): array
     {
-        return [
-            'phone' => 'Телефон',
-            'laptop' => 'Ноутбук',
-            'desktop' => 'Компьютер',
-            'tablet' => 'Планшет',
-            'console' => 'Игровая приставка',
-            'other' => 'Другое',
-        ];
+        return \App\Models\Types\EquipmentType::where('is_active', true)
+            ->orderBy('sort_order')
+            ->pluck('name', 'slug')
+            ->toArray();
     }
 }
