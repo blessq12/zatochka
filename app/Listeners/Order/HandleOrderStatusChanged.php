@@ -4,6 +4,7 @@ namespace App\Listeners\Order;
 
 use App\Services\TelegramService;
 use App\Services\NotificationService;
+use App\Services\BonusService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -12,14 +13,16 @@ class HandleOrderStatusChanged implements ShouldQueue
 {
     protected TelegramService $telegramService;
     protected NotificationService $notificationService;
+    protected BonusService $bonusService;
 
     /**
      * Create the event listener.
      */
-    public function __construct(TelegramService $telegramService, NotificationService $notificationService)
+    public function __construct(TelegramService $telegramService, NotificationService $notificationService, BonusService $bonusService)
     {
         $this->telegramService = $telegramService;
         $this->notificationService = $notificationService;
+        $this->bonusService = $bonusService;
     }
 
     /**
@@ -39,6 +42,11 @@ class HandleOrderStatusChanged implements ShouldQueue
 
         // Создаем уведомление в системе
         $this->notificationService->notifyOrderStatusChanged($order, $oldStatus, $newStatus);
+
+        // Начисляем бонусы при закрытии заказа
+        if ($newStatus === 'closed' && $order->client) {
+            $this->bonusService->awardBonusForOrder($order);
+        }
 
         // Отправляем уведомление в Telegram клиенту
         if ($order->client && $order->client->telegram && $order->client->isTelegramVerified()) {

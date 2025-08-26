@@ -220,4 +220,54 @@ class TelegramService implements TelegramServiceContract
             return null;
         }
     }
+
+    /**
+     * Уведомление: начисление бонусов
+     */
+    public function sendBonusEarnedNotification(string $chatId, array $data): bool
+    {
+        $message = "🎁 <b>Начисление бонусов</b>\n\n";
+        if (!empty($data['order_number'])) {
+            $message .= "📋 Заказ: <b>{$data['order_number']}</b>\n";
+        }
+        $amount = number_format((float)($data['amount'] ?? 0), 0, '.', ' ');
+        $message .= "💰 Сумма: <b>{$amount} ₽</b>\n";
+        if (!empty($data['reason'])) {
+            $message .= "📝 Причина: <b>{$data['reason']}</b>\n";
+        }
+
+        return $this->sendMessage($chatId, $message);
+    }
+
+    /**
+     * Уведомление: списание бонусов
+     */
+    public function sendBonusSpentNotification(string $chatId, array $data): bool
+    {
+        $message = "💳 <b>Списание бонусов</b>\n\n";
+        if (!empty($data['order_number'])) {
+            $message .= "📋 Заказ: <b>{$data['order_number']}</b>\n";
+        }
+        $amount = number_format((float)($data['amount'] ?? 0), 0, '.', ' ');
+        $message .= "💰 Сумма: <b>{$amount} ₽</b>\n";
+        if (!empty($data['reason'])) {
+            $message .= "📝 Причина: <b>{$data['reason']}</b>\n";
+        }
+
+        return $this->sendMessage($chatId, $message);
+    }
+
+    /**
+     * Уведомление: бонусы скоро истекут
+     */
+    public function sendBonusExpiringNotification(string $chatId, array $data): bool
+    {
+        $balance = number_format((float)($data['balance'] ?? 0), 0, '.', ' ');
+        $daysLeft = (int)($data['days_left'] ?? 0);
+        $message = "⏰ <b>Бонусы скоро истекут</b>\n\n";
+        $message .= "💰 Остаток: <b>{$balance} ₽</b>\n";
+        $message .= "📅 Осталось: <b>{$daysLeft}</b> дн.";
+
+        return $this->sendMessage($chatId, $message);
+    }
 }

@@ -65,6 +65,26 @@ class Client extends Authenticatable
         return $this->hasOne(TelegramChat::class, 'username', 'telegram');
     }
 
+    public function bonus()
+    {
+        return $this->hasOne(ClientBonus::class);
+    }
+
+    public function bonusTransactions()
+    {
+        return $this->hasMany(BonusTransaction::class);
+    }
+
+    public function getBonusBalance(): float
+    {
+        return $this->bonus?->getAvailableBalance() ?? 0;
+    }
+
+    public function hasBonusBalance(): bool
+    {
+        return $this->getBonusBalance() > 0;
+    }
+
     /**
      * Получить имя пользователя для аутентификации
      */

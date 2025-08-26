@@ -1,0 +1,46 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('notifications', function (Blueprint $table) {
+            // Удаляем старое ограничение enum
+            $table->dropColumn('type');
+        });
+
+        Schema::table('notifications', function (Blueprint $table) {
+            // Добавляем новое ограничение enum с дополнительными типами
+            $table->enum('type', [
+                'ready',
+                'reminder',
+                'order_confirmation',
+                'bonus_earned',
+                'bonus_spent',
+                'birthday_bonus',
+                'review_bonus'
+            ])->after('client_id');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('notifications', function (Blueprint $table) {
+            $table->dropColumn('type');
+        });
+
+        Schema::table('notifications', function (Blueprint $table) {
+            $table->enum('type', ['ready', 'reminder'])->after('client_id');
+        });
+    }
+};

@@ -239,7 +239,7 @@
                     </p>
                 </div>
 
-                <!-- Информация о клиенте -->
+                <!-- Информация об аккаунте -->
                 <div
                     class="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md"
                 >
@@ -315,6 +315,163 @@
                                     formatDate(client.telegram_verified_at)
                                 }}</span
                             >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Бонусы клиента -->
+                <div
+                    class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md"
+                >
+                    <div class="flex items-center justify-between mb-4">
+                        <h3
+                            class="text-lg font-medium text-gray-900 dark:text-white"
+                        >
+                            Бонусы
+                        </h3>
+                        <button
+                            @click="fetchBonusData"
+                            class="text-sm text-accent hover:underline"
+                        >
+                            Обновить
+                        </button>
+                    </div>
+
+                    <div v-if="bonusLoading" class="py-4 text-center">
+                        <i class="mdi mdi-loading mdi-spin text-2xl"></i>
+                    </div>
+
+                    <div v-else>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div
+                                class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700"
+                            >
+                                <div
+                                    class="text-sm text-gray-500 dark:text-gray-300"
+                                >
+                                    Текущий баланс
+                                </div>
+                                <div
+                                    class="text-xl font-semibold text-gray-900 dark:text-white"
+                                >
+                                    {{ formatCurrency(bonus?.balance || 0) }}
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700"
+                            >
+                                <div
+                                    class="text-sm text-gray-500 dark:text-gray-300"
+                                >
+                                    Всего начислено
+                                </div>
+                                <div
+                                    class="text-xl font-semibold text-gray-900 dark:text-white"
+                                >
+                                    {{
+                                        formatCurrency(bonus?.total_earned || 0)
+                                    }}
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700"
+                            >
+                                <div
+                                    class="text-sm text-gray-500 dark:text-gray-300"
+                                >
+                                    Всего списано
+                                </div>
+                                <div
+                                    class="text-xl font-semibold text-gray-900 dark:text-white"
+                                >
+                                    {{
+                                        formatCurrency(bonus?.total_spent || 0)
+                                    }}
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700"
+                            >
+                                <div
+                                    class="text-sm text-gray-500 dark:text-gray-300"
+                                >
+                                    Срок действия
+                                </div>
+                                <div
+                                    class="text-xl font-semibold text-gray-900 dark:text-white"
+                                >
+                                    {{
+                                        bonus?.expires_at
+                                            ? formatDate(bonus.expires_at)
+                                            : "—"
+                                    }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4
+                                class="text-md font-medium text-gray-900 dark:text-white mb-2"
+                            >
+                                Последние операции
+                            </h4>
+                            <div
+                                v-if="transactions.length === 0"
+                                class="text-sm text-gray-500 dark:text-gray-400"
+                            >
+                                Нет операций
+                            </div>
+                            <ul
+                                v-else
+                                class="divide-y divide-gray-200 dark:divide-gray-700"
+                            >
+                                <li
+                                    v-for="t in transactions"
+                                    :key="t.id"
+                                    class="py-3 flex items-center justify-between"
+                                >
+                                    <div>
+                                        <div
+                                            class="text-sm text-gray-900 dark:text-white"
+                                        >
+                                            {{
+                                                t.description ||
+                                                (t.type === "earn"
+                                                    ? "Начисление"
+                                                    : "Списание")
+                                            }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ formatDate(t.created_at) }}
+                                        </div>
+                                    </div>
+                                    <div
+                                        :class="
+                                            t.type === 'earn'
+                                                ? 'text-green-600'
+                                                : 'text-red-500'
+                                        "
+                                        class="font-semibold"
+                                    >
+                                        {{ t.type === "earn" ? "+" : "-"
+                                        }}{{ formatCurrency(t.amount) }}
+                                    </div>
+                                </li>
+                            </ul>
+                            <div
+                                v-if="
+                                    pagination &&
+                                    pagination.total > pagination.per_page
+                                "
+                                class="mt-3 text-right"
+                            >
+                                <button
+                                    @click="loadMoreTransactions"
+                                    class="text-sm text-accent hover:underline"
+                                >
+                                    Показать ещё
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -396,6 +553,7 @@
 <script>
 import { gsap } from "gsap";
 import { useAuthStore } from "../../stores/auth.js";
+import { useBonusStore } from "../../stores/bonus.js";
 import Modal from "../Modal.vue";
 import TelegramVerificationModal from "../modals/TelegramVerificationModal.vue";
 import TelegramBotInfo from "../TelegramBotInfo.vue";
@@ -421,11 +579,15 @@ export default {
             resettingPassword: false,
             isEditing: false,
             showTelegramVerification: false,
+            bonusLoading: false,
         };
     },
     computed: {
         authStore() {
             return useAuthStore();
+        },
+        bonusStore() {
+            return useBonusStore();
         },
         loading() {
             return this.authStore.getLoading;
@@ -435,12 +597,16 @@ export default {
         },
         isAuthenticated() {
             const authenticated = this.authStore.isAuthenticated;
-            console.log("🔍 ClientAuth isAuthenticated:", {
-                storeAuthenticated: this.authStore.isAuthenticated,
-                storeUser: this.authStore.getUser,
-                result: authenticated,
-            });
             return authenticated;
+        },
+        bonus() {
+            return this.bonusStore?.balance;
+        },
+        transactions() {
+            return this.bonusStore?.transactions || [];
+        },
+        pagination() {
+            return this.bonusStore?.pagination;
         },
     },
     async mounted() {
@@ -449,12 +615,52 @@ export default {
             await this.checkAuthStatus();
         }
 
+        // Если уже верифицирован — подгружаем бонусы
+        if (
+            this.authStore.isAuthenticated &&
+            this.authStore.isTelegramVerified
+        ) {
+            this.fetchBonusData();
+        }
+
         // Анимация появления компонента
         this.$nextTick(() => {
             this.animateComponentEnter();
         });
     },
     methods: {
+        // Загрузка бонусов и транзакций
+        async fetchBonusData() {
+            try {
+                this.bonusLoading = true;
+                await Promise.all([
+                    this.bonusStore.fetchBalance(),
+                    this.bonusStore.fetchTransactions(),
+                ]);
+            } catch (e) {
+                console.error("Failed to fetch bonus data", e);
+            } finally {
+                this.bonusLoading = false;
+            }
+        },
+        async fetchBonusBalance() {
+            await this.bonusStore.fetchBalance();
+        },
+        async fetchTransactions(page = 1) {
+            await this.bonusStore.fetchTransactions(page);
+        },
+        async loadMoreTransactions() {
+            if (!this.bonusStore.pagination) return;
+            const next = this.bonusStore.pagination.current_page + 1;
+            const maxPages = Math.ceil(
+                this.bonusStore.pagination.total /
+                    this.bonusStore.pagination.per_page
+            );
+            if (next <= maxPages) {
+                await this.fetchTransactions(next);
+            }
+        },
+
         // Анимация появления компонента
         animateComponentEnter() {
             if (this.loading && this.$refs.loadingState) {
@@ -636,87 +842,50 @@ export default {
         },
 
         async checkAuthStatus() {
-            console.log("🔍 checkAuthStatus called");
-            console.log("🔍 Current auth state:", {
-                isAuthenticated: this.authStore.isAuthenticated,
-                token: this.authStore.token,
-                user: this.authStore.getUser,
-            });
-
             try {
-                // Если есть токен, проверяем его валидность
                 if (this.authStore.isAuthenticated) {
-                    console.log("🔍 Token exists, checking...");
                     await this.authStore.checkToken();
-                    console.log("🔍 After checkToken:", {
-                        isAuthenticated: this.authStore.isAuthenticated,
-                        user: this.authStore.getUser,
-                    });
-                } else {
-                    console.log("🔍 No token found");
                 }
             } catch (error) {
-                console.error("🔍 checkAuthStatus error:", error);
-                // Если токен недействителен, он уже удален в сторе
+                // ignore
             }
         },
 
         async handleLoginSuccess(data) {
-            console.log("🎯 handleLoginSuccess called with:", data);
-            console.log("🔍 Current auth state:", {
-                isAuthenticated: this.isAuthenticated,
-                client: this.client,
-                loading: this.loading,
-            });
-
-            // Обновляем данные клиента из стора
             await this.checkAuthStatus();
-
-            // Ждем следующего тика для обновления DOM
             await this.$nextTick();
-
-            console.log("🔍 After checkAuthStatus:", {
-                isAuthenticated: this.isAuthenticated,
-                client: this.client,
-                loading: this.loading,
-            });
-
-            // Эмитим событие
+            if (this.authStore.isTelegramVerified) {
+                this.fetchBonusData();
+            }
             this.$emit("auth-success", data);
         },
 
         async handleRegisterSuccess(data) {
-            // Обновляем данные клиента из стора
             await this.checkAuthStatus();
-
-            // Ждем следующего тика для обновления DOM
             await this.$nextTick();
-
-            // Эмитим событие
             this.$emit("auth-success", data);
         },
 
         async handleVerificationComplete(clientData = null) {
             if (!clientData) {
-                // Обновляем данные клиента через API
                 await this.checkAuthStatus();
             }
-
+            // После верификации сразу подгружаем бонусы
+            this.fetchBonusData();
             this.$emit("verification-complete");
         },
 
         async handleLogout() {
             try {
                 await this.authStore.logout();
-
-                // Эмитим событие об изменении статуса авторизации
                 window.dispatchEvent(
                     new CustomEvent("auth-status-changed", {
                         detail: { isAuthenticated: false, client: null },
                     })
                 );
-
                 this.$emit("logout");
+                // очищаем бонусный блок
+                if (this.bonusStore?.reset) this.bonusStore.reset();
             } catch (error) {
                 console.error("Logout error:", error);
             }
@@ -729,35 +898,12 @@ export default {
         handleProfileUpdated(updatedClient) {
             this.client = updatedClient;
             this.isEditing = false;
-
-            // Эмитим событие об изменении статуса авторизации
             window.dispatchEvent(
                 new CustomEvent("auth-status-changed", {
                     detail: { isAuthenticated: true, client: this.client },
                 })
             );
-
             this.$emit("profile-updated", updatedClient);
-        },
-
-        async handleForgotPassword() {
-            if (!this.resetPhone) {
-                return;
-            }
-
-            this.resettingPassword = true;
-
-            try {
-                await this.authStore.forgotPassword({
-                    phone: this.resetPhone,
-                });
-                this.showForgotPassword = false;
-                this.resetPhone = "";
-            } catch (error) {
-                console.error("Forgot password error:", error);
-            } finally {
-                this.resettingPassword = false;
-            }
         },
 
         formatDate(timestamp) {
@@ -770,6 +916,17 @@ export default {
                 hour: "numeric",
                 minute: "numeric",
             });
+        },
+        formatCurrency(value) {
+            try {
+                return new Intl.NumberFormat("ru-RU", {
+                    style: "currency",
+                    currency: "RUB",
+                    maximumFractionDigits: 0,
+                }).format(value || 0);
+            } catch (e) {
+                return `${value} ₽`;
+            }
         },
     },
 };

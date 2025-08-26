@@ -6,10 +6,11 @@ use App\HasReviews;
 use App\Events\Order\OrderCreated;
 use App\Events\Order\OrderStatusChanged;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Order extends Model
 {
-    use HasReviews;
+    use HasReviews, HasFactory;
 
     protected $fillable = [
         'client_id',
@@ -99,6 +100,28 @@ class Order extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function bonusTransactions()
+    {
+        return $this->hasMany(BonusTransaction::class);
+    }
+
+    public function calculateBonusEarnAmount(): float
+    {
+        $minOrderAmount = BonusSetting::getFloat('min_order_amount_for_bonus', 1500);
+        $bonusPercent = BonusSetting::getFloat('bonus_percent_per_order', 5);
+
+        if ($this->final_price < $minOrderAmount) {
+            return 0;
+        }
+
+        return round($this->final_price * ($bonusPercent / 100), 2);
+    }
+
+    public function canEarnBonus(): bool
+    {
+        return $this->calculateBonusEarnAmount() > 0;
     }
 
     /**

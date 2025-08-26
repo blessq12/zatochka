@@ -30,7 +30,7 @@ class OrderFactory extends Factory
             'client_id' => Client::factory(),
             'order_number' => 'Z' . date('Ymd') . '-' . Str::random(6),
             'service_type' => fake()->randomElement(['sharpening', 'repair']),
-            'tool_type' => fake()->optional()->randomElement(['manicure', 'hair', 'grooming', 'clipper', 'dryer']),
+            'tool_type' => fake()->randomElement(['manicure', 'hair', 'grooming', 'clipper', 'dryer']),
             'equipment_name' => fake()->optional()->words(3, true),
             'problem_description' => fake()->optional()->sentence(),
             'needs_delivery' => fake()->boolean(),

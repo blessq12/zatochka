@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\RepairController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TelegramWebhookController;
+use App\Http\Controllers\Api\BonusController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -41,6 +42,11 @@ Route::middleware('rate.limit')->group(function () {
 
         // Заказы клиента
         Route::get('client/orders', [ClientController::class, 'orders']);
+
+        // Бонусы клиента
+        Route::get('client/bonus/balance', [BonusController::class, 'balance']);
+        Route::get('client/bonus/transactions', [BonusController::class, 'transactions']);
+        Route::get('client/bonus/calc-max', [BonusController::class, 'calculateMax']);
 
         // Маршруты, требующие верификации Telegram
         Route::middleware('client.telegram.verified')->group(function () {

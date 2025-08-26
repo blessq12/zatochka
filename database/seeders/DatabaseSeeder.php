@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             OrderStatusSeeder::class,
             DeliveryTypeSeeder::class,
             EquipmentTypeSeeder::class,
+            BonusSettingSeeder::class,
         ]);
     }
 }
