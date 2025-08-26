@@ -895,15 +895,25 @@ export default {
             this.isEditing = true;
         },
 
-        handleProfileUpdated(updatedClient) {
-            this.client = updatedClient;
+        async handleProfileUpdated(updatedClient) {
+            try {
+                await this.authStore.getProfile();
+            } catch (e) {
+                if (updatedClient) this.authStore.user = updatedClient;
+            }
+
             this.isEditing = false;
+
             window.dispatchEvent(
                 new CustomEvent("auth-status-changed", {
-                    detail: { isAuthenticated: true, client: this.client },
+                    detail: {
+                        isAuthenticated: true,
+                        client: this.authStore.user,
+                    },
                 })
             );
-            this.$emit("profile-updated", updatedClient);
+
+            this.$emit("profile-updated", this.authStore.user || updatedClient);
         },
 
         formatDate(timestamp) {

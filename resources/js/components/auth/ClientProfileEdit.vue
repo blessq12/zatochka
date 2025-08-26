@@ -288,6 +288,26 @@ export default {
         this.animateComponentEnter();
     },
     methods: {
+        // Приводим дату к формату YYYY-MM-DD для input[type="date"]
+        toYMD(value) {
+            if (!value) return "";
+            // Если уже YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+            // Если ISO 8601
+            if (/^\d{4}-\d{2}-\d{2}T/.test(value)) return value.slice(0, 10);
+            // Если DD.MM.YYYY
+            const dmY = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+            if (dmY) return `${dmY[3]}-${dmY[2]}-${dmY[1]}`;
+            try {
+                const d = new Date(value);
+                if (!isNaN(d)) {
+                    const mm = String(d.getMonth() + 1).padStart(2, "0");
+                    const dd = String(d.getDate()).padStart(2, "0");
+                    return `${d.getFullYear()}-${mm}-${dd}`;
+                }
+            } catch (_) {}
+            return "";
+        },
         // Анимация появления компонента
         animateComponentEnter() {
             if (!this.$refs.container) return;
@@ -427,6 +447,16 @@ export default {
 
         // Инициализация формы данными клиента
         initializeForm() {
+            console.log("🔍 Client data in initializeForm:", this.client);
+            console.log("🔍 birth_date from client:", this.client.birth_date);
+            console.log(
+                "🔍 delivery_address from client:",
+                this.client.delivery_address
+            );
+
+            const birthYmd = this.toYMD(this.client.birth_date);
+            console.log("🔍 birthYmd formatted:", birthYmd);
+
             this.formData = {
                 full_name: this.client.full_name || "",
                 phone: this.client.phone || "",
@@ -435,9 +465,11 @@ export default {
                         ? this.client.telegram
                         : `@${this.client.telegram}`
                     : "",
-                birth_date: this.client.birth_date || "",
+                birth_date: birthYmd,
                 delivery_address: this.client.delivery_address || "",
             };
+
+            console.log("🔍 Form data initialized:", this.formData);
         },
 
         // Обработка отправки формы
@@ -470,9 +502,18 @@ export default {
 
                 // Отправка данных на сервер
                 const response = await this.authStore.updateProfile(submitData);
+                console.log("🔍 Update profile response:", response);
+
+                const updated =
+                    (response &&
+                        response.data &&
+                        (response.data.user || response.data.client)) ||
+                    null;
+
+                console.log("🔍 Updated client data:", updated);
 
                 this.success = true;
-                this.$emit("profile-updated", response.data.client);
+                this.$emit("profile-updated", updated);
 
                 // Анимация успешного сообщения
                 this.$nextTick(() => {
@@ -488,8 +529,6 @@ export default {
                 this.$nextTick(() => {
                     this.animateError();
                 });
-            } finally {
-                this.loading = false;
             }
         },
 
