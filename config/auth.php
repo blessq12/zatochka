@@ -40,9 +40,15 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
         'client' => [
             'driver' => 'sanctum',
             'provider' => 'clients',
+        ],
+
+        'filament' => [
+            'driver' => 'session',
+            'provider' => 'users',
         ],
     ],
 

@@ -13,27 +13,28 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Создаем пользователя-менеджера для CRM панели
         User::firstOrCreate(
             [
-                'email' => 'admin@zatochka.org',
+                'email' => 'manager@zatochkatsk.ru',
             ],
             [
-                'name' => 'Администратор',
+                'name' => 'Менеджер',
                 'password' => Hash::make('password'),
-                'role' => 'admin',
+                'role' => 'manager',
                 'email_verified_at' => now(),
             ]
         );
 
-        // Создаем тестового пользователя для демо
+        // Создаем пользователя-мастера для панели мастерской
         User::firstOrCreate(
             [
-                'email' => 'demo@zatochka.org',
+                'email' => 'master@zatochkatsk.ru',
             ],
             [
-                'name' => 'Демо Пользователь',
-                'password' => Hash::make('demo123'),
-                'role' => 'user',
+                'name' => 'Мастер',
+                'password' => Hash::make('password'),
+                'role' => 'master',
                 'email_verified_at' => now(),
             ]
         );

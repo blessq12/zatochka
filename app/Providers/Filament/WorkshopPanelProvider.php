@@ -17,24 +17,23 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Http\Middleware\ManagerAccess;
+use App\Http\Middleware\WorkshopAccess;
 
-class CrmPanelProvider extends PanelProvider
+class WorkshopPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('crm')
-            ->path('panel/manager')
+            ->id('workshop')
+            ->path('panel/master')
             ->authGuard('filament')
             ->login(fn() => redirect()->route('crm.login'))
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald,
             ])
-            ->discoverPages(in: app_path('Filament/Crm/Pages'), for: 'App\\Filament\\Crm\\Pages')
+            ->discoverPages(in: app_path('Filament/Workshop/Pages'), for: 'App\\Filament\\Workshop\\Pages')
             ->pages([
-                \App\Filament\Crm\Pages\Dashboard::class,
+                \App\Filament\Workshop\Pages\Dashboard::class,
             ])
             ->widgets([])
             ->middleware([
@@ -50,9 +49,8 @@ class CrmPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                ManagerAccess::class,
+                WorkshopAccess::class,
                 \App\Http\Middleware\RedirectIfNotFilament::class,
-
             ]);
     }
 }

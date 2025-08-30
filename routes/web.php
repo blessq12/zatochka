@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front\MainController;
+use App\Http\Controllers\FilamentAuthController;
 
 Route::controller(MainController::class)
     ->prefix('')
@@ -25,3 +26,10 @@ Route::get('/client-auth-test', function () {
 Route::get('/dashboard', function () {
     return view('pages.client-dashboard');
 })->name('client-dashboard');
+
+
+Route::controller(FilamentAuthController::class)->group(function () {
+    Route::get('/crm', 'login')->name('crm.login');
+    Route::post('/crm', 'authenticate')->name('crm.authenticate');
+    Route::get('/logout', 'logout')->name('crm.logout');
+});
