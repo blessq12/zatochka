@@ -51,7 +51,10 @@ class EquipmentTypeSeeder extends Seeder
         ];
 
         foreach ($equipmentTypes as $equipmentType) {
-            EquipmentType::create($equipmentType);
+            EquipmentType::firstOrCreate(
+                ['slug' => $equipmentType['slug']],
+                $equipmentType
+            );
         }
     }
 }

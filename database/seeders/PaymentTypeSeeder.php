@@ -44,7 +44,10 @@ class PaymentTypeSeeder extends Seeder
         ];
 
         foreach ($paymentTypes as $paymentType) {
-            PaymentType::create($paymentType);
+            PaymentType::firstOrCreate(
+                ['slug' => $paymentType['slug']],
+                $paymentType
+            );
         }
     }
 }

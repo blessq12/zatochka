@@ -51,7 +51,10 @@ class ServiceTypeSeeder extends Seeder
         ];
 
         foreach ($serviceTypes as $serviceType) {
-            ServiceType::create($serviceType);
+            ServiceType::firstOrCreate(
+                ['slug' => $serviceType['slug']],
+                $serviceType
+            );
         }
     }
 }

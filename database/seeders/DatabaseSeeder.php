@@ -12,14 +12,22 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // Сначала создаем пользователей
+            UserSeeder::class,
+
+            // Затем базовые настройки системы
             CompanySeeder::class,
-            FaqSeeder::class,
+            BonusSettingSeeder::class,
+
+            // Справочники и типы
             PaymentTypeSeeder::class,
             ServiceTypeSeeder::class,
             OrderStatusSeeder::class,
             DeliveryTypeSeeder::class,
             EquipmentTypeSeeder::class,
-            BonusSettingSeeder::class,
+
+            // Контент
+            FaqSeeder::class,
         ]);
     }
 }

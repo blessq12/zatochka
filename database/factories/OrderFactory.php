@@ -46,7 +46,7 @@ class OrderFactory extends Factory
             'review_request_sent' => fake()->boolean(),
             'ready_at' => fake()->optional()->dateTime(),
             'paid_at' => fake()->optional()->dateTime(),
-            'status' => fake()->randomElement(['new', 'in_progress', 'ready', 'completed', 'cancelled']),
+            'status' => fake()->randomElement(['new', 'confirmed', 'in_progress', 'work_completed', 'ready_for_pickup', 'delivered', 'cancelled']),
             'total_amount' => fake()->randomFloat(2, 500, 5000),
             'discount_percent' => fake()->randomFloat(2, 0, 20),
             'discount_amount' => fake()->randomFloat(2, 0, 500),

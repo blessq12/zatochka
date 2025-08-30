@@ -44,7 +44,10 @@ class DeliveryTypeSeeder extends Seeder
         ];
 
         foreach ($deliveryTypes as $deliveryType) {
-            DeliveryType::create($deliveryType);
+            DeliveryType::firstOrCreate(
+                ['slug' => $deliveryType['slug']],
+                $deliveryType
+            );
         }
     }
 }
