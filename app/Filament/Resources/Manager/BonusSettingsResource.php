@@ -23,7 +23,7 @@ class BonusSettingsResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationGroup = 'Система';
+    protected static ?string $navigationGroup = 'Бонусы';
 
     protected static ?string $navigationLabel = 'Настройки бонусов';
 

@@ -9,4 +9,9 @@ return [
     App\Providers\MiddlewareServiceProvider::class,
     App\Providers\TelescopeServiceProvider::class,
     Laravel\Fortify\FortifyServiceProvider::class,
+    App\Providers\Domain\BonusesDomainServiceProvider::class,
+    App\Providers\Domain\OrdersDomainServiceProvider::class,
+    App\Providers\Domain\ClientsDomainServiceProvider::class,
+    App\Providers\Domain\InventoryDomainServiceProvider::class,
+    App\Providers\Domain\UsersDomainServiceProvider::class,
 ];

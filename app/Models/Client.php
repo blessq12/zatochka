@@ -46,6 +46,11 @@ class Client extends Model
         return $this->hasMany(BonusTransaction::class);
     }
 
+    public function bonusAccount()
+    {
+        return $this->hasOne(BonusAccount::class);
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class);

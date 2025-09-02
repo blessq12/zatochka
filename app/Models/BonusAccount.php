@@ -5,31 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BonusTransaction extends Model
+class BonusAccount extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'client_id',
-        'order_id',
-        'type',
-        'amount',
-        'description',
-        'idempotency_key',
+        'balance',
     ];
 
     protected $casts = [
-        'amount' => 'integer',
+        'balance' => 'integer',
     ];
 
-    // Связи
     public function client()
     {
         return $this->belongsTo(Client::class);
-    }
-
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
     }
 }
