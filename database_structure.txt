@@ -1,0 +1,303 @@
+Пользователи и роли
+
+User ✅
+	•	id
+	•	name
+	•	email (unique)
+	•	password
+	•	2FA (fields Fortify)
+	•	is_deleted (bool)
+	•	timestamps
+	•	roles (через Spatie)
+
+⸻
+
+Клиенты
+
+Client ✅
+	•	id
+	•	full_name
+	•	phone (unique)
+	•	telegram (nullable)
+	•	birth_date
+	•	delivery_address
+	•	password (nullable, если есть личный кабинет)
+	•	remember_token
+	•	is_deleted (bool)
+	•	timestamps
+
+BonusTransaction ✅
+	•	id
+	•	client_id (FK → Client)
+	•	order_id (nullable, FK → Order)
+	•	type (earn/spend)
+	•	amount
+	•	description
+	•	timestamps
+
+BonusSettings ✅
+	•	id
+	•	earn_percent (по заказу)
+	•	expire_days
+	•	min_order_amount
+	•	max_bonus_per_order
+	•	updated_at
+
+Notification ✅
+	•	id
+	•	client_id (FK → Client)
+	•	channel (telegram/sms/email)
+	•	content
+	•	status (sent/failed/pending)
+	•	sent_at
+	•	timestamps
+
+⸻
+
+Бизнес-логика
+
+Company ✅
+	•	id
+	•	name
+	•	legal_name, реквизиты
+	•	additional_data (json)
+	•	is_deleted (bool)
+	•	timestamps
+
+Branch ✅
+	•	id
+	•	company_id (FK → Company)
+	•	name
+	•	code (unique)
+	•	address, phone, email
+	•	latitude, longitude
+	•	is_active
+	•	is_deleted (bool)
+	•	timestamps
+
+Order ✅
+	•	id
+	•	client_id (FK → Client)
+	•	branch_id (FK → Branch)
+	•	manager_id (FK → User)
+	•	master_id (nullable, FK → User)
+	•	order_number (unique глобально)
+	•	service_type_id (FK → ServiceType)
+	•	status_id (FK → OrderStatus)
+	•	urgency (normal/urgent)
+	•	is_paid (bool)
+	•	paid_at
+	•	discount_id (nullable, FK → DiscountRule)
+	•	total_amount
+	•	final_price
+	•	cost_price
+	•	profit
+	•	is_deleted (bool)
+	•	timestamps
+
+OrderLog ✅
+	•	id
+	•	order_id (FK → Order)
+	•	user_id (FK → User)
+	•	action (status_changed, payment, note, etc.)
+	•	data (json)
+	•	created_at
+
+OrderMedia (Spatie MediaLibrary)
+	•	через полиморфную связь → Order
+
+⸻
+
+Работы и материалы
+
+Repair ✅
+	•	id
+	•	order_id (FK → Order)
+	•	description
+	•	used_materials (json или связь через InventoryItem)
+	•	work_time_minutes
+	•	price
+	•	is_deleted (bool)
+	•	timestamps
+
+⸻
+
+Инвентаризация (склад)
+
+InventoryItem ✅
+	•	id
+	•	name
+	•	sku (unique)
+	•	quantity
+	•	unit (pcs, ml, etc.)
+	•	min_stock
+	•	is_deleted (bool)
+	•	timestamps
+
+InventoryTransaction ✅
+	•	id
+	•	item_id (FK → InventoryItem)
+	•	type (in/out/adjustment)
+	•	quantity
+	•	order_id (nullable, FK → Order)
+	•	description
+	•	timestamps
+
+⸻
+
+Справочники
+
+ServiceType ✅
+	•	id
+	•	name
+	•	description
+	•	is_deleted (bool)
+
+ToolType ✅
+	•	id
+	•	name
+	•	is_deleted (bool)
+
+EquipmentType ✅
+	•	id
+	•	name
+	•	is_deleted (bool)
+
+PaymentType ✅
+	•	id
+	•	name
+	•	is_deleted (bool)
+
+DeliveryType ✅
+	•	id
+	•	name
+	•	is_deleted (bool)
+
+OrderStatus ✅
+	•	id
+	•	name
+	•	type (manager/master/system)
+	•	is_final (bool)
+	•	sort_order
+	•	is_deleted (bool)
+
+OrderStatusTransition ✅
+	•	id
+	•	from_status_id (FK → OrderStatus)
+	•	to_status_id (FK → OrderStatus)
+	•	role (manager/master/system)
+	•	timestamps
+
+⸻
+
+Отзывы
+
+Review ✅
+	•	id
+	•	client_id (FK → Client)
+	•	order_id (FK → Order)
+	•	rating
+	•	comment
+	•	is_approved
+	•	reply (nullable)
+	•	metadata (json)
+	•	is_deleted (bool)
+	•	timestamps
+
+⸻
+
+Интеграции
+
+TelegramChat ✅
+	•	id
+	•	client_id (nullable, FK → Client)
+	•	username
+	•	chat_id (unique)
+	•	is_active
+	•	metadata (json)
+	•	is_deleted (bool)
+	•	timestamps
+
+TelegramMessage ✅
+	•	id
+	•	chat_id (FK → TelegramChat)
+	•	client_id (nullable, FK → Client)
+	•	content
+	•	direction (in/out)
+	•	sent_at
+	•	is_deleted (bool)
+	•	timestamps
+
+⸻
+
+Дополнительно
+
+DiscountRule ✅
+	•	id
+	•	name
+	•	type (percent/fixed)
+	•	value
+	•	conditions (json)
+	•	active_from
+	•	active_to
+	•	is_active
+	•	is_deleted (bool)
+	•	timestamps
+
+⸻
+
+ВАЖНЫЕ ЗАМЕЧАНИЯ:
+
+1. КАСКАДНЫЕ УДАЛЕНИЯ: Все основные таблицы используют is_deleted (bool) для избежания потери данных
+2. УНИКАЛЬНОСТЬ: order_number уникален глобально по всей системе
+3. ЦИКЛИЧЕСКИЕ ЗАВИСИМОСТИ: Решены через is_deleted - User, Order, Client могут быть "удалены" без потери связей
+4. АУДИТ: OrderLog сохраняет все изменения заказов для полного трекинга
+5. ГИБКОСТЬ: JSON поля (additional_data, metadata, conditions) позволяют расширять функционал без изменения структуры БД
+
+⸻
+
+СТАТУС СОЗДАНИЯ МОДЕЛЕЙ И МИГРАЦИЙ:
+
+✅ User - модель и миграция созданы
+✅ Client - модель и миграция созданы
+✅ Company - модель и миграция созданы
+✅ Branch - модель и миграция созданы
+✅ ServiceType - модель и миграция созданы
+✅ ToolType - модель и миграция созданы
+✅ EquipmentType - модель и миграция созданы
+✅ PaymentType - модель и миграция созданы
+✅ DeliveryType - модель и миграция созданы
+✅ OrderStatus - модель и миграция созданы
+✅ OrderStatusTransition - модель и миграция созданы
+✅ DiscountRule - модель и миграция созданы
+✅ Order - модель и миграция созданы
+✅ OrderLog - модель и миграция созданы
+✅ Repair - модель и миграция созданы
+✅ InventoryItem - модель и миграция созданы
+✅ InventoryTransaction - модель и миграция созданы
+✅ BonusTransaction - модель и миграция созданы
+✅ BonusSettings - модель и миграция созданы
+✅ Notification - модель и миграция созданы
+✅ Review - модель и миграция созданы
+✅ TelegramChat - модель и миграция созданы
+✅ TelegramMessage - модель и миграция созданы
+✅ Tool - модель и миграция созданы
+✅ OrderTools - модель и миграция созданы
+
+🎯 ВСЕ МОДЕЛИ И МИГРАЦИИ СОЗДАНЫ!
+
+⸻
+
+INTEGRATION STATUS:
+
+✅ Spatie MediaLibrary интегрирован в:
+- Order (before_photos, after_photos, documents)
+- Tool (photos, manuals, warranty_documents)
+- Repair (before_photos, after_photos, work_photos, documents)
+
+✅ Связи между моделями:
+- Order ↔ Tool (many-to-many через order_tools)
+- Order → Repair (one-to-many)
+- Tool → ToolType, EquipmentType (belongsTo)
+
+🎯 MediaLibrary полностью интегрирован!
