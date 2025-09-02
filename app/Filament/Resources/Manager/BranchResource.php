@@ -170,7 +170,7 @@ class BranchResource extends Resource
                 Tables\Actions\Action::make('orders')
                     ->label('Заказы')
                     ->icon('heroicon-o-shopping-cart')
-                    ->url(fn(Branch $record): string => route('filament.admin.resources.manager.orders.index', ['tableFilters[branch_id][value]' => $record->id])),
+                    ->url(fn(Branch $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[branch_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

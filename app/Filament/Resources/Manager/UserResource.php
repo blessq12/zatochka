@@ -44,15 +44,23 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('password')
                             ->label('Пароль')
                             ->password()
-                            ->dehydrated(fn($state) => filled($state))
+                            ->dehydrated(fn($state) => !empty($state))
                             ->required(fn(string $context): bool => $context === 'create'),
+
                     ])->columns(2),
 
                 Forms\Components\Section::make('Роли')
                     ->schema([
                         Forms\Components\CheckboxList::make('roles')
                             ->label('Роли')
-                            ->options(Role::pluck('name', 'id'))
+                            ->relationship(
+                                name: 'roles',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: fn($query) => $query->where('guard_name', 'manager'),
+                            )
+                            ->afterStateHydrated(function (Forms\Set $set, ?User $record) {
+                                $set('roles', $record?->roles()->pluck('id')->all() ?? []);
+                            })
                             ->columns(2),
                     ])->collapsible(),
 
@@ -85,19 +93,8 @@ class UserResource extends Resource
                     ->separator(',')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('orders_count')
-                    ->label('Заказов (менеджер)')
-                    ->counts('orders')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('master_orders_count')
-                    ->label('Заказов (мастер)')
-                    ->counts('masterOrders')
-                    ->sortable(),
-
-                Tables\Columns\IconColumn::make('is_deleted')
+                Tables\Columns\BooleanColumn::make('is_deleted')
                     ->label('Статус')
-                    ->boolean()
                     ->trueIcon('heroicon-o-x-circle')
                     ->falseIcon('heroicon-o-check-circle')
                     ->trueColor('danger')
@@ -117,16 +114,12 @@ class UserResource extends Resource
 
                 Tables\Filters\SelectFilter::make('roles')
                     ->label('Роль')
-                    ->options(Role::pluck('name', 'id'))
+                    ->options(Role::where('guard_name', 'manager')->pluck('name', 'name'))
                     ->multiple(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('orders')
-                    ->label('Заказы')
-                    ->icon('heroicon-o-shopping-cart')
-                    ->url(fn(User $record): string => route('filament.admin.resources.manager.orders.index', ['tableFilters[manager_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -156,7 +149,8 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['roles'])
-            ->withCount(['orders', 'masterOrders']);
+            ->with(['roles' => function ($query) {
+                $query->where('guard_name', 'manager');
+            }]);
     }
 }

@@ -135,6 +135,12 @@ return [
     'teams' => false,
 
     /*
+     * The guard name that will be used for checking permissions and roles.
+     * If set to null, the default guard will be used.
+     */
+    'guard_name' => 'manager',
+
+    /*
      * The class to use to resolve the permissions team id
      */
     'team_resolver' => \Spatie\Permission\DefaultTeamResolver::class,

@@ -8,12 +8,14 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles, HasUuids;
 
     protected $fillable = [
+        'uuid',
         'name',
         'email',
         'password',
@@ -28,22 +30,13 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
+        'uuid' => 'string',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_deleted' => 'boolean',
     ];
 
     // Связи
-    public function managedOrders()
-    {
-        return $this->hasMany(Order::class, 'manager_id');
-    }
-
-    public function masterOrders()
-    {
-        return $this->hasMany(Order::class, 'master_id');
-    }
-
     public function orderLogs()
     {
         return $this->hasMany(OrderLog::class);
@@ -58,5 +51,21 @@ class User extends Authenticatable
     public function scopeActive($query)
     {
         return $query->where('is_deleted', false);
+    }
+
+    /**
+     * Get the columns that should receive a unique identifier.
+     */
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    /**
+     * Get the guard name for the model.
+     */
+    public function getGuardName(): string
+    {
+        return 'manager';
     }
 }
