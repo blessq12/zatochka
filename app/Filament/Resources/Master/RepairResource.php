@@ -31,7 +31,7 @@ class RepairResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('order_id')
                             ->label('Заказ')
-                            ->options(Order::where('master_id', fn() => auth()->id())->pluck('order_number', 'id'))
+                            ->options(Order::where('master_id', fn () => auth()->id())->pluck('order_number', 'id'))
                             ->searchable()
                             ->required()
                             ->live(),
@@ -143,7 +143,7 @@ class RepairResource extends Resource
 
                 Tables\Columns\TextColumn::make('work_time_minutes')
                     ->label('Время работы')
-                    ->formatStateUsing(fn(int $state): string => gmdate('H:i', $state * 60))
+                    ->formatStateUsing(fn (int $state): string => gmdate('H:i', $state * 60))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('price')
@@ -169,12 +169,12 @@ class RepairResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\SelectFilter::make('order_id')
                     ->label('Заказ')
-                    ->options(Order::where('master_id', fn() => auth()->id())->pluck('order_number', 'id')),
+                    ->options(Order::where('master_id', fn () => auth()->id())->pluck('order_number', 'id')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -209,7 +209,7 @@ class RepairResource extends Resource
     {
         return parent::getEloquentQuery()
             ->whereHas('order', function (Builder $query) {
-                $query->where('master_id', fn() => auth()->id());
+                $query->where('master_id', fn () => auth()->id());
             })
             ->with(['order.client', 'order.serviceType']);
     }

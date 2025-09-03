@@ -3,7 +3,6 @@
 namespace App\Domain\Company\Services;
 
 use App\Domain\Company\Entities\Company;
-use App\Domain\Company\ValueObjects\CompanyId;
 use App\Domain\Company\ValueObjects\CompanyName;
 use App\Domain\Company\ValueObjects\LegalName;
 use App\Domain\Company\ValueObjects\INN;
@@ -72,7 +71,7 @@ class CompanyService
     }
 
     public function updateCompany(
-        CompanyId $companyId,
+        int $companyId,
         ?CompanyName $name = null,
         ?LegalName $legalName = null,
         ?string $description = null,
@@ -124,7 +123,7 @@ class CompanyService
         return $company;
     }
 
-    public function activateCompany(CompanyId $companyId): Company
+    public function activateCompany(int $companyId): Company
     {
         $company = $this->companyRepository->findById($companyId);
         if (!$company) {
@@ -143,7 +142,7 @@ class CompanyService
         return $company;
     }
 
-    public function deactivateCompany(CompanyId $companyId): Company
+    public function deactivateCompany(int $companyId): Company
     {
         $company = $this->companyRepository->findById($companyId);
         if (!$company) {
@@ -162,7 +161,7 @@ class CompanyService
         return $company;
     }
 
-    public function deleteCompany(CompanyId $companyId): void
+    public function deleteCompany(int $companyId): void
     {
         $company = $this->companyRepository->findById($companyId);
         if (!$company) {
@@ -184,7 +183,7 @@ class CompanyService
         $this->companyRepository->save($company);
     }
 
-    public function getCompanyById(CompanyId $companyId): ?Company
+    public function getCompanyById(int $companyId): ?Company
     {
         return $this->companyRepository->findById($companyId);
     }
@@ -204,7 +203,7 @@ class CompanyService
         return $this->companyRepository->findAll();
     }
 
-    public function companyExists(CompanyId $companyId): bool
+    public function companyExists(int $companyId): bool
     {
         return $this->companyRepository->exists($companyId);
     }

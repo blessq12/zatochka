@@ -33,11 +33,11 @@ class StockMovement extends Model
     ];
 
     // Константы для типов движения
-    const TYPE_IN = 'in';
-    const TYPE_OUT = 'out';
-    const TYPE_TRANSFER = 'transfer';
-    const TYPE_ADJUSTMENT = 'adjustment';
-    const TYPE_RETURN = 'return';
+    public const TYPE_IN = 'in';
+    public const TYPE_OUT = 'out';
+    public const TYPE_TRANSFER = 'transfer';
+    public const TYPE_ADJUSTMENT = 'adjustment';
+    public const TYPE_RETURN = 'return';
 
     // Связи
     public function stockItem()

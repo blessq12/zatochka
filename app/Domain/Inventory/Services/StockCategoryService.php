@@ -3,7 +3,6 @@
 namespace App\Domain\Inventory\Services;
 
 use App\Domain\Inventory\Entities\StockCategory;
-use App\Domain\Inventory\ValueObjects\CategoryId;
 use App\Domain\Inventory\ValueObjects\CategoryName;
 use App\Domain\Inventory\Interfaces\StockCategoryRepositoryInterface;
 use App\Domain\Shared\Events\EventBusInterface;
@@ -17,7 +16,7 @@ class StockCategoryService
     ) {}
 
     public function createCategory(
-        CategoryId $id,
+        int $id,
         CategoryName $name,
         ?string $description = null,
         ?string $color = null,
@@ -38,7 +37,7 @@ class StockCategoryService
     }
 
     public function updateCategory(
-        CategoryId $id,
+        int $id,
         ?CategoryName $name = null,
         ?string $description = null,
         ?string $color = null,
@@ -49,7 +48,7 @@ class StockCategoryService
         if ($name !== null) {
             // Проверяем уникальность нового названия
             $existingCategory = $this->categoryRepository->findByName((string) $name);
-            if ($existingCategory && !$existingCategory->id()->equals($id)) {
+            if ($existingCategory && $existingCategory->id() !== $id) {
                 throw new InvalidArgumentException('Category with this name already exists');
             }
             $category->updateName($name);
@@ -73,7 +72,7 @@ class StockCategoryService
         return $category;
     }
 
-    public function activateCategory(CategoryId $id): StockCategory
+    public function activateCategory(int $id): StockCategory
     {
         $category = $this->getCategoryOrFail($id);
         $category->activate();
@@ -82,7 +81,7 @@ class StockCategoryService
         return $category;
     }
 
-    public function deactivateCategory(CategoryId $id): StockCategory
+    public function deactivateCategory(int $id): StockCategory
     {
         $category = $this->getCategoryOrFail($id);
         $category->deactivate();
@@ -91,7 +90,7 @@ class StockCategoryService
         return $category;
     }
 
-    public function deleteCategory(CategoryId $id): void
+    public function deleteCategory(int $id): void
     {
         $category = $this->getCategoryOrFail($id);
 
@@ -104,7 +103,7 @@ class StockCategoryService
         $this->publishEvents($category);
     }
 
-    public function getCategory(CategoryId $id): ?StockCategory
+    public function getCategory(int $id): ?StockCategory
     {
         return $this->categoryRepository->findById($id);
     }
@@ -124,7 +123,7 @@ class StockCategoryService
         return $this->categoryRepository->findBySortOrder(0);
     }
 
-    private function getCategoryOrFail(CategoryId $id): StockCategory
+    private function getCategoryOrFail(int $id): StockCategory
     {
         $category = $this->categoryRepository->findById($id);
         if (!$category) {

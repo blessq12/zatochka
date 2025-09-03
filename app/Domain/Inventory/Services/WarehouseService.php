@@ -3,9 +3,7 @@
 namespace App\Domain\Inventory\Services;
 
 use App\Domain\Inventory\Entities\Warehouse;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
 use App\Domain\Inventory\ValueObjects\WarehouseName;
-use App\Domain\Inventory\ValueObjects\BranchId;
 use App\Domain\Inventory\Interfaces\WarehouseRepositoryInterface;
 use App\Domain\Shared\Events\EventBusInterface;
 use InvalidArgumentException;
@@ -18,8 +16,8 @@ class WarehouseService
     ) {}
 
     public function createWarehouse(
-        WarehouseId $id,
-        ?BranchId $branchId,
+        int $id,
+        ?int $branchId,
         WarehouseName $name,
         ?string $description = null
     ): Warehouse {
@@ -38,7 +36,7 @@ class WarehouseService
         return $warehouse;
     }
 
-    public function activateWarehouse(WarehouseId $id): void
+    public function activateWarehouse(int $id): void
     {
         $warehouse = $this->getWarehouseOrFail($id);
         $warehouse->activate();
@@ -47,7 +45,7 @@ class WarehouseService
         $this->publishEvents($warehouse);
     }
 
-    public function deactivateWarehouse(WarehouseId $id): void
+    public function deactivateWarehouse(int $id): void
     {
         $warehouse = $this->getWarehouseOrFail($id);
         $warehouse->deactivate();
@@ -56,7 +54,7 @@ class WarehouseService
         $this->publishEvents($warehouse);
     }
 
-    public function deleteWarehouse(WarehouseId $id): void
+    public function deleteWarehouse(int $id): void
     {
         $warehouse = $this->getWarehouseOrFail($id);
 
@@ -69,7 +67,7 @@ class WarehouseService
         $this->publishEvents($warehouse);
     }
 
-    public function updateWarehouseName(WarehouseId $id, WarehouseName $newName): void
+    public function updateWarehouseName(int $id, WarehouseName $newName): void
     {
         $warehouse = $this->getWarehouseOrFail($id);
         $warehouse->updateName($newName);
@@ -78,7 +76,7 @@ class WarehouseService
         $this->publishEvents($warehouse);
     }
 
-    public function updateWarehouseDescription(WarehouseId $id, ?string $newDescription): void
+    public function updateWarehouseDescription(int $id, ?string $newDescription): void
     {
         $warehouse = $this->getWarehouseOrFail($id);
         $warehouse->updateDescription($newDescription);
@@ -87,13 +85,13 @@ class WarehouseService
         $this->publishEvents($warehouse);
     }
 
-    public function assignWarehouseToBranch(WarehouseId $warehouseId, BranchId $branchId): void
+    public function assignWarehouseToBranch(int $warehouseId, int $branchId): void
     {
         $warehouse = $this->getWarehouseOrFail($warehouseId);
 
         // Проверяем, что филиал не занят другим складом
         $existingWarehouse = $this->warehouseRepository->findByBranchId($branchId);
-        if ($existingWarehouse && !$existingWarehouse->id()->equals($warehouseId)) {
+        if ($existingWarehouse && $existingWarehouse->id() !== $warehouseId) {
             throw new InvalidArgumentException('Branch already has a warehouse assigned');
         }
 
@@ -103,7 +101,7 @@ class WarehouseService
         $this->publishEvents($warehouse);
     }
 
-    public function unassignWarehouseFromBranch(WarehouseId $warehouseId): void
+    public function unassignWarehouseFromBranch(int $warehouseId): void
     {
         $warehouse = $this->getWarehouseOrFail($warehouseId);
         $warehouse->unassignFromBranch();
@@ -112,12 +110,12 @@ class WarehouseService
         $this->publishEvents($warehouse);
     }
 
-    public function getWarehouseById(WarehouseId $id): ?Warehouse
+    public function getWarehouseById(int $id): ?Warehouse
     {
         return $this->warehouseRepository->findById($id);
     }
 
-    public function getWarehouseByBranchId(BranchId $branchId): ?Warehouse
+    public function getWarehouseByBranchId(int $branchId): ?Warehouse
     {
         return $this->warehouseRepository->findByBranchId($branchId);
     }
@@ -132,7 +130,7 @@ class WarehouseService
         return $this->warehouseRepository->findActive();
     }
 
-    private function getWarehouseOrFail(WarehouseId $id): Warehouse
+    private function getWarehouseOrFail(int $id): Warehouse
     {
         $warehouse = $this->warehouseRepository->findById($id);
 

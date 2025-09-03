@@ -44,8 +44,8 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('password')
                             ->label('Пароль')
                             ->password()
-                            ->dehydrated(fn($state) => !empty($state))
-                            ->required(fn(string $context): bool => $context === 'create'),
+                            ->dehydrated(fn ($state) => !empty($state))
+                            ->required(fn (string $context): bool => $context === 'create'),
 
                     ])->columns(2),
 
@@ -56,7 +56,7 @@ class UserResource extends Resource
                             ->relationship(
                                 name: 'roles',
                                 titleAttribute: 'name',
-                                modifyQueryUsing: fn($query) => $query->where('guard_name', 'manager'),
+                                modifyQueryUsing: fn ($query) => $query->where('guard_name', 'manager'),
                             )
                             ->afterStateHydrated(function (Forms\Set $set, ?User $record) {
                                 $set('roles', $record?->roles()->pluck('id')->all() ?? []);
@@ -109,7 +109,7 @@ class UserResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\SelectFilter::make('roles')

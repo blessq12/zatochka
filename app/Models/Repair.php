@@ -9,7 +9,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Repair extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia;
+    use HasFactory;
+    use InteractsWithMedia;
 
     protected $fillable = [
         'order_id',

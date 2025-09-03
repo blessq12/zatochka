@@ -40,9 +40,9 @@ class Company implements AggregateRoot
         CompanyName $name,
         LegalName $legalName,
         INN $inn,
+        string $legalAddress,
         ?string $kpp = null,
         ?string $ogrn = null,
-        string $legalAddress,
         ?string $description = null,
         ?string $website = null,
         ?string $phone = null,
@@ -98,9 +98,9 @@ class Company implements AggregateRoot
             $name,
             $legalName,
             $inn,
+            $legalAddress,
             null, // kpp
             null, // ogrn
-            $legalAddress,
             $description,
             $website,
             $phone,

@@ -19,7 +19,8 @@ class TestCompanyController extends Controller
     public function __construct(
         private readonly CompanyService $companyService,
         private readonly BranchService $branchService
-    ) {}
+    ) {
+    }
 
     public function testCreateCompany(): JsonResponse
     {

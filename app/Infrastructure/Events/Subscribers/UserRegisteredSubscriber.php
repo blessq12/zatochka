@@ -20,7 +20,7 @@ class UserRegisteredSubscriber
 
         // Отправляем приветственное письмо (заглушка)
         $this->sendWelcomeEmail($event);
-        
+
         // Можно добавить другие действия:
         // - Создание профиля пользователя
         // - Отправка уведомления администратору
@@ -33,7 +33,7 @@ class UserRegisteredSubscriber
         try {
             // Здесь будет реальная отправка email
             // Mail::to((string) $event->email)->send(new WelcomeEmail($event->name));
-            
+
             Log::info('Welcome email queued for user', [
                 'user_id' => (string) $event->userId,
                 'email' => (string) $event->email

@@ -58,8 +58,8 @@ class ClientResource extends Resource
                         Forms\Components\TextInput::make('password')
                             ->label('Пароль')
                             ->password()
-                            ->dehydrated(fn($state) => filled($state))
-                            ->required(fn(string $context): bool => $context === 'create'),
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->required(fn (string $context): bool => $context === 'create'),
 
                         Forms\Components\Toggle::make('is_deleted')
                             ->label('Удален')
@@ -118,16 +118,16 @@ class ClientResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\Filter::make('with_orders')
                     ->label('С заказами')
-                    ->query(fn(Builder $query): Builder => $query->has('orders')),
+                    ->query(fn (Builder $query): Builder => $query->has('orders')),
 
                 Tables\Filters\Filter::make('with_telegram')
                     ->label('С Telegram')
-                    ->query(fn(Builder $query): Builder => $query->whereNotNull('telegram')),
+                    ->query(fn (Builder $query): Builder => $query->whereNotNull('telegram')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -135,7 +135,7 @@ class ClientResource extends Resource
                 Tables\Actions\Action::make('orders')
                     ->label('Заказы')
                     ->icon('heroicon-o-shopping-cart')
-                    ->url(fn(Client $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[client_id][value]' => $record->id])),
+                    ->url(fn (Client $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[client_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

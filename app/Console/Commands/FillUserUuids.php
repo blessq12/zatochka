@@ -15,7 +15,7 @@ class FillUserUuids extends Command
     public function handle()
     {
         $users = User::whereNull('uuid')->get();
-        
+
         if ($users->isEmpty()) {
             $this->info('All users already have UUIDs.');
             return 0;

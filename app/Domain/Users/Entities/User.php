@@ -125,7 +125,7 @@ class User implements AggregateRoot
         $remove = array_map('strval', $roles);
         $this->roles = array_values(array_filter(
             $this->roles,
-            fn(string $r) => !in_array($r, $remove, true)
+            fn (string $r) => !in_array($r, $remove, true)
         ));
     }
 

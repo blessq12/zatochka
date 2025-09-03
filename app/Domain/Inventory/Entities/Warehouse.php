@@ -2,9 +2,7 @@
 
 namespace App\Domain\Inventory\Entities;
 
-use App\Domain\Inventory\ValueObjects\WarehouseId;
 use App\Domain\Inventory\ValueObjects\WarehouseName;
-use App\Domain\Inventory\ValueObjects\BranchId;
 use App\Domain\Shared\Interfaces\AggregateRoot;
 use App\Domain\Inventory\Events\WarehouseCreated;
 use App\Domain\Inventory\Events\WarehouseActivated;
@@ -12,8 +10,8 @@ use App\Domain\Inventory\Events\WarehouseDeactivated;
 
 class Warehouse implements AggregateRoot
 {
-    private WarehouseId $id;
-    private ?BranchId $branchId;
+    private int $id;
+    private ?int $branchId;
     private WarehouseName $name;
     private ?string $description;
     private bool $isActive;
@@ -22,8 +20,8 @@ class Warehouse implements AggregateRoot
     private \DateTimeImmutable $updatedAt;
 
     private function __construct(
-        WarehouseId $id,
-        ?BranchId $branchId,
+        int $id,
+        ?int $branchId,
         WarehouseName $name,
         ?string $description = null
     ) {
@@ -38,8 +36,8 @@ class Warehouse implements AggregateRoot
     }
 
     public static function create(
-        WarehouseId $id,
-        ?BranchId $branchId,
+        int $id,
+        ?int $branchId,
         WarehouseName $name,
         ?string $description = null
     ): self {
@@ -56,8 +54,8 @@ class Warehouse implements AggregateRoot
     }
 
     public static function reconstitute(
-        WarehouseId $id,
-        ?BranchId $branchId,
+        int $id,
+        ?int $branchId,
         WarehouseName $name,
         ?string $description,
         bool $isActive,
@@ -75,12 +73,12 @@ class Warehouse implements AggregateRoot
     }
 
     // Геттеры
-    public function id(): WarehouseId
+    public function id(): int
     {
         return $this->id;
     }
 
-    public function branchId(): ?BranchId
+    public function branchId(): ?int
     {
         return $this->branchId;
     }
@@ -187,13 +185,13 @@ class Warehouse implements AggregateRoot
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function assignToBranch(BranchId $branchId): void
+    public function assignToBranch(int $branchId): void
     {
         if ($this->isDeleted) {
             throw new \InvalidArgumentException('Cannot assign deleted warehouse');
         }
 
-        if ($this->branchId && $this->branchId->equals($branchId)) {
+        if ($this->branchId && $this->branchId === $branchId) {
             return; // Уже привязан к этому филиалу
         }
 

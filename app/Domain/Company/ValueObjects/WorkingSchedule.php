@@ -9,7 +9,7 @@ class WorkingSchedule
     private array $schedule;
 
     private const DAYS = [
-        'monday', 'tuesday', 'wednesday', 'thursday', 
+        'monday', 'tuesday', 'wednesday', 'thursday',
         'friday', 'saturday', 'sunday'
     ];
 
@@ -27,7 +27,7 @@ class WorkingSchedule
             }
 
             $daySchedule = $schedule[$day];
-            
+
             if (!is_array($daySchedule)) {
                 throw new InvalidArgumentException("Invalid schedule format for day: {$day}");
             }
@@ -69,7 +69,7 @@ class WorkingSchedule
     {
         $startMinutes = $this->timeToMinutes($start);
         $endMinutes = $this->timeToMinutes($end);
-        
+
         return $endMinutes > $startMinutes;
     }
 
@@ -95,7 +95,7 @@ class WorkingSchedule
                 'note' => 'Выходной'
             ];
         }
-        
+
         return new self($defaultSchedule);
     }
 
@@ -131,7 +131,7 @@ class WorkingSchedule
         $now = now();
         $today = strtolower($now->format('l'));
         $daySchedule = $this->schedule[$today];
-        
+
         $currentTime = $now->format('H:i');
         return $currentTime >= $daySchedule['start'] && $currentTime <= $daySchedule['end'];
     }
@@ -150,16 +150,16 @@ class WorkingSchedule
     public function getNextWorkingDay(): ?string
     {
         $today = now();
-        
+
         for ($i = 1; $i <= 7; $i++) {
             $nextDay = $today->copy()->addDays($i);
             $dayName = strtolower($nextDay->format('l'));
-            
+
             if ($this->isWorkingDay($dayName)) {
                 return $dayName;
             }
         }
-        
+
         return null;
     }
 
@@ -172,7 +172,7 @@ class WorkingSchedule
 
         $tempSchedule = $this->schedule;
         $tempSchedule[$day] = $daySchedule;
-        
+
         $this->ensureValidSchedule($tempSchedule);
         $this->schedule = $tempSchedule;
     }

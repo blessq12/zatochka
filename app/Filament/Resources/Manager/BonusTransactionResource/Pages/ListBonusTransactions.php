@@ -9,5 +9,3 @@ class ListBonusTransactions extends ListRecords
 {
     protected static string $resource = BonusTransactionResource::class;
 }
-
-

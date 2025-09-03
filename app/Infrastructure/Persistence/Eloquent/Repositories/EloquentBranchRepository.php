@@ -12,7 +12,8 @@ class EloquentBranchRepository implements BranchRepositoryInterface
 {
     public function __construct(
         private readonly BranchMapper $mapper
-    ) {}
+    ) {
+    }
 
     public function findById(int $id): ?Branch
     {

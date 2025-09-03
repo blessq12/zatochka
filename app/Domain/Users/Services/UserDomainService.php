@@ -18,7 +18,8 @@ class UserDomainService
         private readonly PasswordHasherInterface $hasher,
         private readonly RoleServiceInterface $roles,
         private readonly EventBusInterface $events
-    ) {}
+    ) {
+    }
 
     public function register(string $name, string $email, string $plainPassword, array $roles = []): User
     {

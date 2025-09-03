@@ -72,5 +72,3 @@ class BonusTransactionResource extends Resource
         ];
     }
 }
-
-

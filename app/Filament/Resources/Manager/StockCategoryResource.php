@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Manager;
 
 use App\Filament\Resources\Manager\StockCategoryResource\Pages;
 use App\Models\StockCategory as StockCategoryModel;
-use App\Domain\Inventory\ValueObjects\CategoryId;
+// ... existing code ...
 use App\Domain\Inventory\ValueObjects\CategoryName;
 use App\Domain\Inventory\Services\StockCategoryService;
 use Filament\Forms;
@@ -126,7 +126,7 @@ class StockCategoryResource extends Resource
                     ->using(function (array $data, Model $record): Model {
                         $categoryService = app(StockCategoryService::class);
 
-                        $categoryId = CategoryId::fromString($record->id);
+                        $categoryId = (int) $record->id;
                         $name = CategoryName::fromString($data['name']);
 
                         if ($data['is_active'] && !$record->is_active) {
@@ -162,7 +162,7 @@ class StockCategoryResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->using(function (Model $record): void {
                         $categoryService = app(StockCategoryService::class);
-                        $categoryId = CategoryId::fromString($record->id);
+                        $categoryId = (int) $record->id;
 
                         $categoryService->deleteCategory($categoryId);
 
@@ -179,7 +179,7 @@ class StockCategoryResource extends Resource
                             $categoryService = app(StockCategoryService::class);
 
                             foreach ($records as $record) {
-                                $categoryId = CategoryId::fromString($record->id);
+                                $categoryId = (int) $record->id;
                                 $categoryService->deleteCategory($categoryId);
                             }
 

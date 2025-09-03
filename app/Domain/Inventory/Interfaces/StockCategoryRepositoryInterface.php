@@ -3,11 +3,11 @@
 namespace App\Domain\Inventory\Interfaces;
 
 use App\Domain\Inventory\Entities\StockCategory;
-use App\Domain\Inventory\ValueObjects\CategoryId;
+// ... existing code ...
 
 interface StockCategoryRepositoryInterface
 {
-    public function findById(CategoryId $id): ?StockCategory;
+    public function findById(int $id): ?StockCategory;
 
     public function findByName(string $name): ?StockCategory;
 
@@ -19,9 +19,9 @@ interface StockCategoryRepositoryInterface
 
     public function save(StockCategory $category): void;
 
-    public function delete(CategoryId $id): void;
+    public function delete(int $id): void;
 
-    public function exists(CategoryId $id): bool;
+    public function exists(int $id): bool;
 
     public function existsByName(string $name): bool;
 }

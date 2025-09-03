@@ -104,7 +104,7 @@ class ReviewResource extends Resource
 
                 Tables\Columns\TextColumn::make('rating')
                     ->label('Оценка')
-                    ->formatStateUsing(fn(int $state): string => str_repeat('⭐', $state))
+                    ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('comment')
@@ -133,17 +133,17 @@ class ReviewResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\Filter::make('pending')
                     ->label('Ожидают модерации')
-                    ->query(fn(Builder $query): Builder => $query->where('is_approved', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_approved', false))
                     ->default(),
 
                 Tables\Filters\Filter::make('approved')
                     ->label('Одобренные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_approved', true)),
+                    ->query(fn (Builder $query): Builder => $query->where('is_approved', true)),
 
                 Tables\Filters\SelectFilter::make('rating')
                     ->label('Оценка')
@@ -165,7 +165,7 @@ class ReviewResource extends Resource
                     ->action(function (Review $record): void {
                         $record->update(['is_approved' => true]);
                     })
-                    ->visible(fn(Review $record): bool => !$record->is_approved),
+                    ->visible(fn (Review $record): bool => !$record->is_approved),
 
                 Tables\Actions\Action::make('reject')
                     ->label('Отклонить')
@@ -174,7 +174,7 @@ class ReviewResource extends Resource
                     ->action(function (Review $record): void {
                         $record->update(['is_approved' => false]);
                     })
-                    ->visible(fn(Review $record): bool => $record->is_approved),
+                    ->visible(fn (Review $record): bool => $record->is_approved),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

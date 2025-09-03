@@ -160,7 +160,7 @@ class CompanyResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
             ])
             ->actions([
@@ -169,7 +169,7 @@ class CompanyResource extends Resource
                 Tables\Actions\Action::make('branches')
                     ->label('Филиалы')
                     ->icon('heroicon-o-map-pin')
-                    ->url(fn(Company $record): string => route('filament.admin.resources.manager.branches.index', ['tableFilters[company_id][value]' => $record->id])),
+                    ->url(fn (Company $record): string => route('filament.admin.resources.manager.branches.index', ['tableFilters[company_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

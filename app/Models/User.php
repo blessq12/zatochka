@@ -12,7 +12,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles, HasUuids;
+    use HasApiTokens;
+    use HasFactory;
+    use Notifiable;
+    use TwoFactorAuthenticatable;
+    use HasRoles;
+    use HasUuids;
 
     protected $fillable = [
         'uuid',

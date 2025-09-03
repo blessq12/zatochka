@@ -11,5 +11,6 @@ final class BonusExpired
         public readonly int $clientId,
         public readonly int $amount,
         public readonly string $transactionId
-    ) {}
+    ) {
+    }
 }

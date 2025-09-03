@@ -24,7 +24,7 @@ class TestEventController extends Controller
         try {
             // Создаём тестовое событие
             $event = new UserRegistered(
-                UserId::new(),
+                0, // Временный ID для тестирования
                 'Тестовый Пользователь',
                 Email::fromString('test@example.com')
             );
@@ -111,11 +111,7 @@ class TestEventController extends Controller
     public function getAllEvents()
     {
         $data = [];
-        if ($user->r === 'admin') {
-            //
-        } else {
-            //
-        }
+        // Убираем неопределенную переменную $user
         return response()->json($data);
     }
 }

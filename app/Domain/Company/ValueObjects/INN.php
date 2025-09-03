@@ -33,41 +33,41 @@ class INN
     private function validateINNChecksum(string $inn): bool
     {
         $length = strlen($inn);
-        
+
         if ($length === 10) {
             // Для ИП (10 цифр)
             $weights = [2, 4, 10, 3, 5, 9, 4, 6, 8];
             $sum = 0;
-            
+
             for ($i = 0; $i < 9; $i++) {
                 $sum += (int)$inn[$i] * $weights[$i];
             }
-            
+
             $checksum = ($sum % 11) % 10;
             return $checksum === (int)$inn[9];
         }
-        
+
         if ($length === 12) {
             // Для организаций (12 цифр)
             $weights1 = [7, 2, 4, 10, 3, 5, 9, 4, 6, 8];
             $weights2 = [3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8];
-            
+
             $sum1 = 0;
             $sum2 = 0;
-            
+
             for ($i = 0; $i < 10; $i++) {
                 $sum1 += (int)$inn[$i] * $weights1[$i];
                 $sum2 += (int)$inn[$i] * $weights2[$i];
             }
-            
+
             $sum2 += (int)$inn[10] * 8;
-            
+
             $checksum1 = ($sum1 % 11) % 10;
             $checksum2 = ($sum2 % 11) % 10;
-            
+
             return $checksum1 === (int)$inn[10] && $checksum2 === (int)$inn[11];
         }
-        
+
         return false;
     }
 

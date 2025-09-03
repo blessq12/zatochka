@@ -58,7 +58,7 @@ class BonusSettings extends Model
         }
 
         $bonus = (int) round($orderAmount * ($this->percent_per_order / 100));
-        
+
         return min($bonus, $this->max_bonus_per_order);
     }
 

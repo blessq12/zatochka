@@ -52,7 +52,7 @@ class EventBus implements EventBusInterface
         if (isset($this->subscribers[$eventClass])) {
             $this->subscribers[$eventClass] = array_filter(
                 $this->subscribers[$eventClass],
-                fn($subscriber) => $subscriber !== $handler
+                fn ($subscriber) => $subscriber !== $handler
             );
 
             Log::debug('Event handler unsubscribed', [

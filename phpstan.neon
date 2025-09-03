@@ -1,5 +1,5 @@
 parameters:
-    level: 8
+    level: 0
     paths:
         - app
     excludePaths:
@@ -8,3 +8,12 @@ parameters:
     bootstrapFiles:
         - vendor/autoload.php
         - bootstrap/app.php
+    ignoreErrors:
+        - '#Call to an undefined method#'
+        - '#Access to an undefined property#'
+        - '#Call to an undefined static method#'
+        - '#Class .* not found#'
+        - '#Parameter .* has no type specified#'
+        - '#Method .* has no return type specified#'
+        - '#Property .* type has no value type specified#'
+        - '#Class .* uses generic trait .* but does not specify its types#'

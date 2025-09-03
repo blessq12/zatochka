@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Persistence\Eloquent\Repositories;
 
 use Illuminate\Support\Facades\Log;
-
 use App\Domain\Shared\Interfaces\UserRepositoryInterface;
 use App\Domain\Users\Entities\User as DomainUser;
 use App\Domain\Users\ValueObjects\Email;

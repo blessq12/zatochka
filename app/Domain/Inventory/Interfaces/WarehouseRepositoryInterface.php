@@ -3,14 +3,13 @@
 namespace App\Domain\Inventory\Interfaces;
 
 use App\Domain\Inventory\Entities\Warehouse;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
-use App\Domain\Inventory\ValueObjects\BranchId;
+// ... existing code ...
 
 interface WarehouseRepositoryInterface
 {
-    public function findById(WarehouseId $id): ?Warehouse;
+    public function findById(int $id): ?Warehouse;
 
-    public function findByBranchId(BranchId $branchId): ?Warehouse;
+    public function findByBranchId(int $branchId): ?Warehouse;
 
     public function findAll(): array;
 
@@ -18,9 +17,9 @@ interface WarehouseRepositoryInterface
 
     public function save(Warehouse $warehouse): void;
 
-    public function delete(WarehouseId $id): void;
+    public function delete(int $id): void;
 
-    public function exists(WarehouseId $id): bool;
+    public function exists(int $id): bool;
 
-    public function existsByBranchId(BranchId $branchId): bool;
+    public function existsByBranchId(int $branchId): bool;
 }

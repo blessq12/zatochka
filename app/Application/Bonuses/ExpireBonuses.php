@@ -19,7 +19,8 @@ final class ExpireBonuses
         private readonly BonusTransactionRepository $transactions,
         private readonly SettingsProvider $settings,
         private readonly BonusExpirationService $expiration,
-    ) {}
+    ) {
+    }
 
     /**
      * Simplified: expire a fixed amount per account decided externally; here we assume policy returns full balance if expired.

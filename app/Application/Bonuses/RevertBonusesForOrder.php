@@ -16,7 +16,8 @@ final class RevertBonusesForOrder
     public function __construct(
         private readonly BonusAccountRepository $accounts,
         private readonly BonusTransactionRepository $transactions,
-    ) {}
+    ) {
+    }
 
     public function handle(int $orderId): void
     {

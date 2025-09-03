@@ -104,7 +104,7 @@ class Branch implements AggregateRoot
             $additionalData
         );
 
-        $branch->recordEvent(new BranchCreated($branch->id(), $branch->companyId()));
+        $branch->recordEvent(new BranchCreated($branch->companyId(), $branch->id(), $branch->code()));
 
         return $branch;
     }

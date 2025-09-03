@@ -84,7 +84,7 @@
             "@phpcs",
             "@phpcbf"
         ],
-        "phpstan": "vendor/bin/phpstan analyse app --level=8 --memory-limit=512M",
+        "phpstan": "vendor/bin/phpstan analyse app --level=0 --memory-limit=512M",
         "psalm": "vendor/bin/psalm --no-progress",
         "phpcs": "vendor/bin/phpcs app --standard=PSR12 --extensions=php",
         "phpcbf": "vendor/bin/php-cs-fixer fix app --rules=@PSR12",

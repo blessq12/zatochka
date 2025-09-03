@@ -153,7 +153,7 @@ class BranchResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\SelectFilter::make('company_id')
@@ -162,7 +162,7 @@ class BranchResource extends Resource
 
                 Tables\Filters\Filter::make('is_active')
                     ->label('Только активные филиалы')
-                    ->query(fn(Builder $query): Builder => $query->where('is_active', true)),
+                    ->query(fn (Builder $query): Builder => $query->where('is_active', true)),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -170,7 +170,7 @@ class BranchResource extends Resource
                 Tables\Actions\Action::make('orders')
                     ->label('Заказы')
                     ->icon('heroicon-o-shopping-cart')
-                    ->url(fn(Branch $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[branch_id][value]' => $record->id])),
+                    ->url(fn (Branch $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[branch_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

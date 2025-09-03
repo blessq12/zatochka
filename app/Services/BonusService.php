@@ -29,7 +29,7 @@ class BonusService
 
         // Рассчитываем бонусы
         $bonusAmount = $this->settings->calculateOrderBonus($order->final_price);
-        
+
         if ($bonusAmount <= 0) {
             return null;
         }
@@ -184,7 +184,7 @@ class BonusService
     public function clearExpiredBonuses(): int
     {
         $expireDate = now()->subDays($this->settings->expire_days);
-        
+
         // Находим просроченные начисления
         $expiredEarnings = BonusTransaction::where('type', 'earn')
             ->where('created_at', '<', $expireDate)
@@ -194,11 +194,11 @@ class BonusService
 
         foreach ($expiredEarnings as $earning) {
             $clientBalance = $this->getClientBalance($earning->client_id);
-            
+
             // Если у клиента есть активные бонусы, списываем просроченные
             if ($clientBalance > 0) {
                 $spendAmount = min($earning->amount, $clientBalance);
-                
+
                 if ($spendAmount > 0) {
                     BonusTransaction::create([
                         'client_id' => $earning->client_id,
@@ -207,7 +207,7 @@ class BonusService
                         'amount' => $spendAmount,
                         'description' => "Списание просроченных бонусов",
                     ]);
-                    
+
                     $clearedCount += $spendAmount;
                 }
             }

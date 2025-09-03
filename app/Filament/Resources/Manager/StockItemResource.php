@@ -212,7 +212,7 @@ class StockItemResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color(
-                        fn(int $state): string =>
+                        fn (int $state): string =>
                         $state <= 0 ? 'danger' : ($state <= 10 ? 'warning' : 'success')
                     ),
 
@@ -237,7 +237,7 @@ class StockItemResource extends Resource
                         'danger' => 'Неактивен',
                     ])
                     ->getStateUsing(
-                        fn(Model $record): string =>
+                        fn (Model $record): string =>
                         $record->is_active ? 'Активен' : 'Неактивен'
                     ),
             ])
@@ -258,11 +258,11 @@ class StockItemResource extends Resource
 
                 Filter::make('low_stock')
                     ->label('Низкий остаток')
-                    ->query(fn(Builder $query): Builder => $query->whereRaw('quantity <= min_stock')),
+                    ->query(fn (Builder $query): Builder => $query->whereRaw('quantity <= min_stock')),
 
                 Filter::make('out_of_stock')
                     ->label('Нет в наличии')
-                    ->query(fn(Builder $query): Builder => $query->where('quantity', '<=', 0)),
+                    ->query(fn (Builder $query): Builder => $query->where('quantity', '<=', 0)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()

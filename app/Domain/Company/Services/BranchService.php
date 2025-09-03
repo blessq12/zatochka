@@ -3,8 +3,6 @@
 namespace App\Domain\Company\Services;
 
 use App\Domain\Company\Entities\Branch;
-use App\Domain\Company\ValueObjects\BranchId;
-use App\Domain\Company\ValueObjects\CompanyId;
 use App\Domain\Company\ValueObjects\BranchCode;
 use App\Domain\Company\ValueObjects\WorkingSchedule;
 use App\Domain\Company\Interfaces\BranchRepositoryInterface;
@@ -24,7 +22,7 @@ class BranchService
     ) {}
 
     public function createBranch(
-        CompanyId $companyId,
+        int $companyId,
         string $name,
         BranchCode $code,
         string $address,
@@ -49,8 +47,8 @@ class BranchService
             throw new \InvalidArgumentException('Branch with this code already exists');
         }
 
-        $branchId = BranchId::generate();
-        
+        $branchId = 0; // Временный ID, будет заменен при сохранении
+
         $branch = Branch::create(
             $branchId,
             $companyId,
@@ -80,7 +78,7 @@ class BranchService
     }
 
     public function updateBranch(
-        BranchId $branchId,
+        int $branchId,
         ?string $name = null,
         ?string $address = null,
         ?string $phone = null,
@@ -138,7 +136,7 @@ class BranchService
         return $branch;
     }
 
-    public function activateBranch(BranchId $branchId): Branch
+    public function activateBranch(int $branchId): Branch
     {
         $branch = $this->branchRepository->findById($branchId);
         if (!$branch) {
@@ -157,7 +155,7 @@ class BranchService
         return $branch;
     }
 
-    public function deactivateBranch(BranchId $branchId): Branch
+    public function deactivateBranch(int $branchId): Branch
     {
         $branch = $this->branchRepository->findById($branchId);
         if (!$branch) {
@@ -176,7 +174,7 @@ class BranchService
         return $branch;
     }
 
-    public function setBranchAsMain(BranchId $branchId): Branch
+    public function setBranchAsMain(int $branchId): Branch
     {
         $branch = $this->branchRepository->findById($branchId);
         if (!$branch) {
@@ -204,7 +202,7 @@ class BranchService
         return $branch;
     }
 
-    public function deleteBranch(BranchId $branchId): void
+    public function deleteBranch(int $branchId): void
     {
         $branch = $this->branchRepository->findById($branchId);
         if (!$branch) {
@@ -220,7 +218,7 @@ class BranchService
         $this->branchRepository->save($branch);
     }
 
-    public function getBranchById(BranchId $branchId): ?Branch
+    public function getBranchById(int $branchId): ?Branch
     {
         return $this->branchRepository->findById($branchId);
     }
@@ -230,17 +228,17 @@ class BranchService
         return $this->branchRepository->findByCode($code);
     }
 
-    public function getBranchesByCompanyId(CompanyId $companyId): array
+    public function getBranchesByCompanyId(int $companyId): array
     {
         return $this->branchRepository->findByCompanyId($companyId);
     }
 
-    public function getActiveBranchesByCompanyId(CompanyId $companyId): array
+    public function getActiveBranchesByCompanyId(int $companyId): array
     {
         return $this->branchRepository->findActiveByCompanyId($companyId);
     }
 
-    public function getMainBranchByCompanyId(CompanyId $companyId): ?Branch
+    public function getMainBranchByCompanyId(int $companyId): ?Branch
     {
         return $this->branchRepository->findMainByCompanyId($companyId);
     }
@@ -255,7 +253,7 @@ class BranchService
         return $this->branchRepository->findAll();
     }
 
-    public function branchExists(BranchId $branchId): bool
+    public function branchExists(int $branchId): bool
     {
         return $this->branchRepository->exists($branchId);
     }
@@ -265,13 +263,13 @@ class BranchService
         return $this->branchRepository->existsByCode($code);
     }
 
-    public function countBranchesByCompanyId(CompanyId $companyId): int
+    public function countBranchesByCompanyId(int $companyId): int
     {
         return $this->branchRepository->countByCompanyId($companyId);
     }
 
     // Методы для работы с расписанием
-    public function updateBranchWorkingSchedule(BranchId $branchId, WorkingSchedule $workingSchedule): Branch
+    public function updateBranchWorkingSchedule(int $branchId, WorkingSchedule $workingSchedule): Branch
     {
         $branch = $this->branchRepository->findById($branchId);
         if (!$branch) {
@@ -284,7 +282,7 @@ class BranchService
         return $branch;
     }
 
-    public function isBranchWorkingNow(BranchId $branchId): bool
+    public function isBranchWorkingNow(int $branchId): bool
     {
         $branch = $this->branchRepository->findById($branchId);
         if (!$branch) {
@@ -294,7 +292,7 @@ class BranchService
         return $branch->isWorkingNow();
     }
 
-    public function isBranchWorkingToday(BranchId $branchId): bool
+    public function isBranchWorkingToday(int $branchId): bool
     {
         $branch = $this->branchRepository->findById($branchId);
         if (!$branch) {
@@ -304,7 +302,7 @@ class BranchService
         return $branch->isWorkingToday();
     }
 
-    public function getBranchWorkingSchedule(BranchId $branchId): WorkingSchedule
+    public function getBranchWorkingSchedule(int $branchId): WorkingSchedule
     {
         $branch = $this->branchRepository->findById($branchId);
         if (!$branch) {

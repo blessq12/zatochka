@@ -4,4 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Bonuses\Exceptions;
 
-final class RedemptionNotAllowedException extends \RuntimeException {}
+final class RedemptionNotAllowedException extends \RuntimeException
+{
+}

@@ -3,9 +3,6 @@
 namespace App\Domain\Inventory\Services;
 
 use App\Domain\Inventory\Entities\StockItem;
-use App\Domain\Inventory\ValueObjects\StockItemId;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
-use App\Domain\Inventory\ValueObjects\CategoryId;
 use App\Domain\Inventory\ValueObjects\StockItemName;
 use App\Domain\Inventory\ValueObjects\SKU;
 use App\Domain\Inventory\ValueObjects\Quantity;
@@ -23,9 +20,9 @@ class StockItemService
     ) {}
 
     public function createStockItem(
-        StockItemId $id,
-        WarehouseId $warehouseId,
-        CategoryId $categoryId,
+        int $id,
+        int $warehouseId,
+        int $categoryId,
         StockItemName $name,
         SKU $sku,
         ?string $description = null,
@@ -66,7 +63,7 @@ class StockItemService
         return $stockItem;
     }
 
-    public function addStock(StockItemId $id, Quantity $amount): StockItem
+    public function addStock(int $id, Quantity $amount): StockItem
     {
         $stockItem = $this->getStockItemOrFail($id);
         $stockItem->addQuantity($amount);
@@ -75,7 +72,7 @@ class StockItemService
         return $stockItem;
     }
 
-    public function subtractStock(StockItemId $id, Quantity $amount): StockItem
+    public function subtractStock(int $id, Quantity $amount): StockItem
     {
         $stockItem = $this->getStockItemOrFail($id);
         $stockItem->subtractQuantity($amount);
@@ -84,7 +81,7 @@ class StockItemService
         return $stockItem;
     }
 
-    public function setStock(StockItemId $id, Quantity $newQuantity): StockItem
+    public function setStock(int $id, Quantity $newQuantity): StockItem
     {
         $stockItem = $this->getStockItemOrFail($id);
         $stockItem->setQuantity($newQuantity);
@@ -93,7 +90,7 @@ class StockItemService
         return $stockItem;
     }
 
-    public function updatePrices(StockItemId $id, ?Money $purchasePrice, ?Money $retailPrice): StockItem
+    public function updatePrices(int $id, ?Money $purchasePrice, ?Money $retailPrice): StockItem
     {
         $stockItem = $this->getStockItemOrFail($id);
         $stockItem->updatePrices($purchasePrice, $retailPrice);
@@ -102,7 +99,7 @@ class StockItemService
         return $stockItem;
     }
 
-    public function updateMinStock(StockItemId $id, Quantity $newMinStock): StockItem
+    public function updateMinStock(int $id, Quantity $newMinStock): StockItem
     {
         $stockItem = $this->getStockItemOrFail($id);
         $stockItem->updateMinStock($newMinStock);
@@ -111,7 +108,7 @@ class StockItemService
         return $stockItem;
     }
 
-    public function activateStockItem(StockItemId $id): StockItem
+    public function activateStockItem(int $id): StockItem
     {
         $stockItem = $this->getStockItemOrFail($id);
         $stockItem->activate();
@@ -120,7 +117,7 @@ class StockItemService
         return $stockItem;
     }
 
-    public function deactivateStockItem(StockItemId $id): StockItem
+    public function deactivateStockItem(int $id): StockItem
     {
         $stockItem = $this->getStockItemOrFail($id);
         $stockItem->deactivate();
@@ -129,7 +126,7 @@ class StockItemService
         return $stockItem;
     }
 
-    public function deleteStockItem(StockItemId $id): void
+    public function deleteStockItem(int $id): void
     {
         $stockItem = $this->getStockItemOrFail($id);
 
@@ -142,7 +139,7 @@ class StockItemService
         $this->publishEvents($stockItem);
     }
 
-    public function getStockItem(StockItemId $id): ?StockItem
+    public function getStockItem(int $id): ?StockItem
     {
         return $this->stockItemRepository->findById($id);
     }
@@ -152,12 +149,12 @@ class StockItemService
         return $this->stockItemRepository->findBySku($sku);
     }
 
-    public function getStockItemsByWarehouse(WarehouseId $warehouseId): array
+    public function getStockItemsByWarehouse(int $warehouseId): array
     {
         return $this->stockItemRepository->findByWarehouseId($warehouseId);
     }
 
-    public function getStockItemsByCategory(CategoryId $categoryId): array
+    public function getStockItemsByCategory(int $categoryId): array
     {
         return $this->stockItemRepository->findByCategoryId($categoryId);
     }
@@ -182,7 +179,7 @@ class StockItemService
         return $this->stockItemRepository->findActive();
     }
 
-    private function getStockItemOrFail(StockItemId $id): StockItem
+    private function getStockItemOrFail(int $id): StockItem
     {
         $stockItem = $this->stockItemRepository->findById($id);
         if (!$stockItem) {

@@ -50,7 +50,7 @@ class ReviewResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('rating')
                             ->label('Оценка')
-                            ->formatStateUsing(fn(int $state): string => str_repeat('⭐', $state))
+                            ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state))
                             ->disabled()
                             ->dehydrated(false),
 
@@ -97,7 +97,7 @@ class ReviewResource extends Resource
 
                 Tables\Columns\TextColumn::make('rating')
                     ->label('Оценка')
-                    ->formatStateUsing(fn(int $state): string => str_repeat('⭐', $state))
+                    ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('comment')
@@ -126,16 +126,16 @@ class ReviewResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\Filter::make('approved')
                     ->label('Одобренные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_approved', true)),
+                    ->query(fn (Builder $query): Builder => $query->where('is_approved', true)),
 
                 Tables\Filters\Filter::make('pending')
                     ->label('Ожидают модерации')
-                    ->query(fn(Builder $query): Builder => $query->where('is_approved', false)),
+                    ->query(fn (Builder $query): Builder => $query->where('is_approved', false)),
 
                 Tables\Filters\SelectFilter::make('rating')
                     ->label('Оценка')
@@ -175,7 +175,7 @@ class ReviewResource extends Resource
     {
         return parent::getEloquentQuery()
             ->whereHas('order', function (Builder $query) {
-                $query->where('master_id', fn() => auth()->id());
+                $query->where('master_id', fn () => auth()->id());
             })
             ->with(['client', 'order.serviceType']);
     }

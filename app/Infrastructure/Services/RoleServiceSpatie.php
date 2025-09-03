@@ -3,22 +3,20 @@
 namespace App\Infrastructure\Services;
 
 use Illuminate\Support\Facades\Log;
-
 use App\Domain\Shared\Interfaces\RoleServiceInterface;
-use App\Domain\Users\ValueObjects\UserId;
-use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use App\Models\User;
 
 class RoleServiceSpatie implements RoleServiceInterface
 {
-    public function assignRoles(UserId $userId, array $roles): void
+    public function assignRoles(int $userId, array $roles): void
     {
-        $user = UserModel::query()->where('uuid', (string) $userId)->firstOrFail();
+        $user = User::query()->where('id', $userId)->firstOrFail();
         $user->syncRoles($roles);
     }
 
-    public function getRoles(UserId $userId): array
+    public function getRoles(int $userId): array
     {
-        $user = UserModel::query()->where('uuid', (string) $userId)->firstOrFail();
+        $user = User::query()->where('id', $userId)->firstOrFail();
         return $user->getRoleNames()->toArray();
     }
 }

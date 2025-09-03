@@ -12,5 +12,6 @@ final class BonusAccrued
         public readonly int $amount,
         public readonly ?int $orderId,
         public readonly string $transactionId
-    ) {}
+    ) {
+    }
 }

@@ -16,7 +16,6 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\Placeholder;
 
-
 class BonusSettingsResource extends Resource
 {
     protected static ?string $model = BonusSettings::class;

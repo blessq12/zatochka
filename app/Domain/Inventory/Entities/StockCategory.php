@@ -2,7 +2,7 @@
 
 namespace App\Domain\Inventory\Entities;
 
-use App\Domain\Inventory\ValueObjects\CategoryId;
+// ... existing code ...
 use App\Domain\Inventory\ValueObjects\CategoryName;
 use App\Domain\Shared\Interfaces\AggregateRoot;
 use App\Domain\Inventory\Events\CategoryCreated;
@@ -11,7 +11,7 @@ use App\Domain\Inventory\Events\CategoryDeactivated;
 
 class StockCategory implements AggregateRoot
 {
-    private CategoryId $id;
+    private int $id;
     private CategoryName $name;
     private ?string $description;
     private ?string $color;
@@ -22,7 +22,7 @@ class StockCategory implements AggregateRoot
     private \DateTimeImmutable $updatedAt;
 
     private function __construct(
-        CategoryId $id,
+        int $id,
         CategoryName $name,
         ?string $description = null,
         ?string $color = null,
@@ -40,7 +40,7 @@ class StockCategory implements AggregateRoot
     }
 
     public static function create(
-        CategoryId $id,
+        int $id,
         CategoryName $name,
         ?string $description = null,
         ?string $color = null,
@@ -58,7 +58,7 @@ class StockCategory implements AggregateRoot
     }
 
     public static function reconstitute(
-        CategoryId $id,
+        int $id,
         CategoryName $name,
         ?string $description,
         ?string $color,
@@ -77,7 +77,7 @@ class StockCategory implements AggregateRoot
     }
 
     // Getters
-    public function id(): CategoryId
+    public function id(): int
     {
         return $this->id;
     }

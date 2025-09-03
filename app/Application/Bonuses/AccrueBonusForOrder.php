@@ -19,7 +19,8 @@ final class AccrueBonusForOrder
         private readonly BonusTransactionRepository $transactions,
         private readonly SettingsProvider $settings,
         private readonly BonusCalculator $calculator,
-    ) {}
+    ) {
+    }
 
     public function handle(int $orderId): void
     {

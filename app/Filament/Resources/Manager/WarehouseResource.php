@@ -108,7 +108,7 @@ class WarehouseResource extends Resource
                         'danger' => 'Неактивен',
                     ])
                     ->getStateUsing(
-                        fn(Model $record): string =>
+                        fn (Model $record): string =>
                         $record->is_active ? 'Активен' : 'Неактивен'
                     ),
 

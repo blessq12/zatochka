@@ -21,7 +21,8 @@ final class RequestRedemptionForOrder
         private readonly BonusTransactionRepository $transactions,
         private readonly SettingsProvider $settings,
         private readonly BonusRedemptionCoordinator $coordinator,
-    ) {}
+    ) {
+    }
 
     /**
      * @param int $orderId

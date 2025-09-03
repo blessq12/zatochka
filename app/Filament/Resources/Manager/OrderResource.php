@@ -39,13 +39,13 @@ class OrderResource extends Resource
                             ->searchable()
                             ->required()
                             ->live()
-                            ->afterStateUpdated(fn($state, callable $set) => $set('order_number', null)),
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('order_number', null)),
 
                         Forms\Components\TextInput::make('order_number')
                             ->label('Номер заказа')
                             ->unique(ignoreRecord: true)
                             ->required()
-                            ->default(fn() => 'ORD-' . date('Ymd') . '-' . str_pad(Order::count() + 1, 4, '0', STR_PAD_LEFT)),
+                            ->default(fn () => 'ORD-' . date('Ymd') . '-' . str_pad(Order::count() + 1, 4, '0', STR_PAD_LEFT)),
 
                         Forms\Components\Select::make('branch_id')
                             ->label('Филиал')
@@ -75,7 +75,7 @@ class OrderResource extends Resource
                             ->label('Менеджер')
                             ->options(User::role('manager')->pluck('name', 'id'))
                             ->searchable()
-                            ->default(fn() => auth()->id())
+                            ->default(fn () => auth()->id())
                             ->required(),
 
                         Forms\Components\Select::make('master_id')
@@ -175,7 +175,7 @@ class OrderResource extends Resource
                         'warning' => 'urgent',
                         'gray' => 'normal',
                     ])
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'urgent' => 'Срочно',
                         'normal' => 'Обычно',
                     }),
@@ -183,7 +183,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status.name')
                     ->label('Статус')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Новый' => 'gray',
                         'В работе' => 'warning',
                         'Готов' => 'success',
@@ -216,7 +216,7 @@ class OrderResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\SelectFilter::make('status_id')
@@ -233,11 +233,11 @@ class OrderResource extends Resource
 
                 Tables\Filters\Filter::make('urgent')
                     ->label('Срочные заказы')
-                    ->query(fn(Builder $query): Builder => $query->where('urgency', 'urgent')),
+                    ->query(fn (Builder $query): Builder => $query->where('urgency', 'urgent')),
 
                 Tables\Filters\Filter::make('unpaid')
                     ->label('Неоплаченные')
-                    ->query(fn(Builder $query): Builder => $query->where('is_paid', false)),
+                    ->query(fn (Builder $query): Builder => $query->where('is_paid', false)),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -255,7 +255,7 @@ class OrderResource extends Resource
                     ->action(function (Order $record, array $data): void {
                         $record->update($data);
                     })
-                    ->visible(fn(Order $record): bool => !$record->master_id),
+                    ->visible(fn (Order $record): bool => !$record->master_id),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

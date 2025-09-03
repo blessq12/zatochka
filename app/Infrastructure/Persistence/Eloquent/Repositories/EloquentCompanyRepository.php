@@ -14,7 +14,8 @@ class EloquentCompanyRepository implements CompanyRepositoryInterface
 {
     public function __construct(
         private readonly CompanyMapper $mapper
-    ) {}
+    ) {
+    }
 
     public function findById(int $id): ?Company
     {
@@ -43,7 +44,7 @@ class EloquentCompanyRepository implements CompanyRepositoryInterface
         return array_map([$this->mapper, 'toDomain'], $models->all());
     }
 
-        public function save(Company $company): void
+    public function save(Company $company): void
     {
         $model = $this->mapper->toEloquent($company);
         $model->save();

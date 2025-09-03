@@ -17,7 +17,6 @@ use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
 use Illuminate\Support\Facades\Auth;
 
-
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
@@ -75,6 +74,6 @@ class FortifyServiceProvider extends ServiceProvider
             return '/';
         });
 
-        Fortify::loginView(fn() => view('auth.login'));
+        Fortify::loginView(fn () => view('auth.login'));
     }
 }

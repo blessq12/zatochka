@@ -13,5 +13,6 @@ final class BonusReverted
         public readonly ?int $orderId,
         public readonly string $transactionId,
         public readonly string $revertedTransactionId
-    ) {}
+    ) {
+    }
 }
