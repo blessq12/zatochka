@@ -3,12 +3,11 @@
 namespace App\Domain\Inventory\Events;
 
 use App\Domain\Shared\Events\DomainEvent;
-use App\Domain\Inventory\ValueObjects\StockItemId;
 
 class StockItemDeactivated extends DomainEvent
 {
     public function __construct(
-        private readonly StockItemId $stockItemId
+        private readonly int $stockItemId
     ) {
         parent::__construct();
     }
@@ -21,11 +20,11 @@ class StockItemDeactivated extends DomainEvent
     public function eventData(): array
     {
         return [
-            'stock_item_id' => (string) $this->stockItemId,
+            'stock_item_id' => $this->stockItemId,
         ];
     }
 
-    public function stockItemId(): StockItemId
+    public function stockItemId(): int
     {
         return $this->stockItemId;
     }

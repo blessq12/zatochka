@@ -5,12 +5,11 @@ namespace App\Domain\Users\Entities;
 use App\Domain\Shared\Interfaces\AggregateRoot;
 use App\Domain\Users\ValueObjects\Email;
 use App\Domain\Users\ValueObjects\PasswordHash;
-use App\Domain\Users\ValueObjects\UserId;
 use InvalidArgumentException;
 
 class User implements AggregateRoot
 {
-    private UserId $userId;
+    private int $userId;
     private string $name;
     private Email $email;
     private PasswordHash $passwordHash;
@@ -20,7 +19,7 @@ class User implements AggregateRoot
     private array $roles;
 
     private function __construct(
-        UserId $userId,
+        int $userId,
         string $name,
         Email $email,
         PasswordHash $passwordHash,
@@ -38,13 +37,13 @@ class User implements AggregateRoot
         $this->roles = array_values(array_unique($roles));
     }
 
-    public static function register(UserId $userId, string $name, Email $email, PasswordHash $passwordHash): self
+    public static function register(int $userId, string $name, Email $email, PasswordHash $passwordHash): self
     {
         return new self($userId, $name, $email, $passwordHash, true, false, []);
     }
 
     public static function reconstitute(
-        UserId $userId,
+        int $userId,
         string $name,
         Email $email,
         PasswordHash $passwordHash,
@@ -130,7 +129,7 @@ class User implements AggregateRoot
         ));
     }
 
-    public function userId(): UserId
+    public function userId(): int
     {
         return $this->userId;
     }

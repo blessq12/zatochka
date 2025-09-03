@@ -4,7 +4,6 @@ namespace App\Infrastructure\Persistence\Eloquent\Repositories;
 
 use App\Domain\Company\Entities\Company;
 use App\Domain\Company\Interfaces\CompanyRepositoryInterface;
-use App\Domain\Company\ValueObjects\CompanyId;
 use App\Domain\Company\ValueObjects\CompanyName;
 use App\Domain\Company\ValueObjects\LegalName;
 use App\Domain\Company\ValueObjects\INN;
@@ -17,9 +16,9 @@ class EloquentCompanyRepository implements CompanyRepositoryInterface
         private readonly CompanyMapper $mapper
     ) {}
 
-    public function findById(CompanyId $id): ?Company
+    public function findById(int $id): ?Company
     {
-        $model = CompanyModel::find($id->value());
+        $model = CompanyModel::find($id);
         return $model ? $this->mapper->toDomain($model) : null;
     }
 
@@ -50,14 +49,14 @@ class EloquentCompanyRepository implements CompanyRepositoryInterface
         $model->save();
     }
 
-    public function delete(CompanyId $id): void
+    public function delete(int $id): void
     {
-        CompanyModel::where('id', $id->value())->delete();
+        CompanyModel::where('id', $id)->delete();
     }
 
-    public function exists(CompanyId $id): bool
+    public function exists(int $id): bool
     {
-        return CompanyModel::where('id', $id->value())->exists();
+        return CompanyModel::where('id', $id)->exists();
     }
 
     public function existsByInn(INN $inn): bool

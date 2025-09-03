@@ -3,12 +3,11 @@
 namespace App\Domain\Inventory\Events;
 
 use App\Domain\Shared\Events\DomainEvent;
-use App\Domain\Inventory\ValueObjects\CategoryId;
 
 class CategoryDeactivated extends DomainEvent
 {
     public function __construct(
-        private readonly CategoryId $categoryId
+        public readonly int $categoryId
     ) {
         parent::__construct();
     }
@@ -21,12 +20,7 @@ class CategoryDeactivated extends DomainEvent
     public function eventData(): array
     {
         return [
-            'category_id' => (string) $this->categoryId,
+            'category_id' => $this->categoryId,
         ];
-    }
-
-    public function categoryId(): CategoryId
-    {
-        return $this->categoryId;
     }
 }

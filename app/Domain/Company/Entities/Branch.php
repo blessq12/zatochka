@@ -2,8 +2,6 @@
 
 namespace App\Domain\Company\Entities;
 
-use App\Domain\Company\ValueObjects\CompanyId;
-use App\Domain\Company\ValueObjects\BranchId;
 use App\Domain\Company\ValueObjects\BranchCode;
 use App\Domain\Company\ValueObjects\WorkingSchedule;
 use App\Domain\Company\Events\BranchCreated;
@@ -14,8 +12,8 @@ use App\Domain\Shared\Interfaces\AggregateRoot;
 
 class Branch implements AggregateRoot
 {
-    private BranchId $id;
-    private CompanyId $companyId;
+    private int $id;
+    private int $companyId;
     private string $name;
     private BranchCode $code;
     private string $address;
@@ -36,8 +34,8 @@ class Branch implements AggregateRoot
     private \DateTimeImmutable $updatedAt;
 
     private function __construct(
-        BranchId $id,
-        CompanyId $companyId,
+        int $id,
+        int $companyId,
         string $name,
         BranchCode $code,
         string $address,
@@ -74,8 +72,8 @@ class Branch implements AggregateRoot
     }
 
     public static function create(
-        BranchId $id,
-        CompanyId $companyId,
+        int $id,
+        int $companyId,
         string $name,
         BranchCode $code,
         string $address,
@@ -106,18 +104,14 @@ class Branch implements AggregateRoot
             $additionalData
         );
 
-        $branch->recordEvent(new BranchCreated(
-            $branch->companyId,
-            $branch->id,
-            $branch->code
-        ));
+        $branch->recordEvent(new BranchCreated($branch->id(), $branch->companyId()));
 
         return $branch;
     }
 
     public static function reconstitute(
-        BranchId $id,
-        CompanyId $companyId,
+        int $id,
+        int $companyId,
         string $name,
         BranchCode $code,
         string $address,
@@ -165,11 +159,11 @@ class Branch implements AggregateRoot
     }
 
     // Getters
-    public function id(): BranchId
+    public function id(): int
     {
         return $this->id;
     }
-    public function companyId(): CompanyId
+    public function companyId(): int
     {
         return $this->companyId;
     }

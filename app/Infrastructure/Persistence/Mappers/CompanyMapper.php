@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Persistence\Mappers;
 
 use App\Domain\Company\Entities\Company;
-use App\Domain\Company\ValueObjects\CompanyId;
 use App\Domain\Company\ValueObjects\CompanyName;
 use App\Domain\Company\ValueObjects\LegalName;
 use App\Domain\Company\ValueObjects\INN;
@@ -14,7 +13,7 @@ class CompanyMapper
     public function toDomain(CompanyModel $model): Company
     {
         return Company::reconstitute(
-            CompanyId::fromString($model->id),
+            $model->id,
             CompanyName::fromString($model->name),
             LegalName::fromString($model->legal_name),
             INN::fromString($model->inn),
@@ -43,8 +42,8 @@ class CompanyMapper
         $model = new CompanyModel();
 
         // Если ID больше 0, значит это существующая компания
-        if ($company->id()->value() > 0) {
-            $model->id = $company->id()->value();
+        if ($company->id() > 0) {
+            $model->id = $company->id();
         }
         // Если ID = 0, Laravel сам сгенерирует автоинкремент
 

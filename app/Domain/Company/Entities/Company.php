@@ -2,7 +2,6 @@
 
 namespace App\Domain\Company\Entities;
 
-use App\Domain\Company\ValueObjects\CompanyId;
 use App\Domain\Company\ValueObjects\CompanyName;
 use App\Domain\Company\ValueObjects\LegalName;
 use App\Domain\Company\ValueObjects\INN;
@@ -14,7 +13,7 @@ use App\Domain\Company\Entities\Branch;
 
 class Company implements AggregateRoot
 {
-    private CompanyId $id;
+    private int $id;
     private CompanyName $name;
     private LegalName $legalName;
     private INN $inn;
@@ -37,7 +36,7 @@ class Company implements AggregateRoot
     private \DateTimeImmutable $updatedAt;
 
     private function __construct(
-        CompanyId $id,
+        int $id,
         CompanyName $name,
         LegalName $legalName,
         INN $inn,
@@ -95,7 +94,7 @@ class Company implements AggregateRoot
         array $additionalData = []
     ): self {
         $company = new self(
-            CompanyId::fromInt(0), // Временный ID, будет заменен при сохранении
+            0, // Временный ID, будет заменен при сохранении
             $name,
             $legalName,
             $inn,
@@ -115,17 +114,17 @@ class Company implements AggregateRoot
         );
 
         $company->recordEvent(new CompanyCreated(
-            $company->id,
-            $company->name,
-            $company->legalName,
-            $company->inn
+            $company->id(),
+            $company->name(),
+            $company->legalName(),
+            $company->inn()
         ));
 
         return $company;
     }
 
     public static function reconstitute(
-        CompanyId $id,
+        int $id,
         CompanyName $name,
         LegalName $legalName,
         INN $inn,
@@ -178,7 +177,7 @@ class Company implements AggregateRoot
     }
 
     // Getters
-    public function id(): CompanyId
+    public function id(): int
     {
         return $this->id;
     }

@@ -3,12 +3,11 @@
 namespace App\Domain\Company\Interfaces;
 
 use App\Domain\Company\Entities\Company;
-use App\Domain\Company\ValueObjects\CompanyId;
 use App\Domain\Company\ValueObjects\INN;
 
 interface CompanyRepositoryInterface
 {
-    public function findById(CompanyId $id): ?Company;
+    public function findById(int $id): ?Company;
     
     public function findByInn(INN $inn): ?Company;
     
@@ -18,9 +17,9 @@ interface CompanyRepositoryInterface
     
     public function save(Company $company): void;
     
-    public function delete(CompanyId $id): void;
+    public function delete(int $id): void;
     
-    public function exists(CompanyId $id): bool;
+    public function exists(int $id): bool;
     
     public function existsByInn(INN $inn): bool;
 }

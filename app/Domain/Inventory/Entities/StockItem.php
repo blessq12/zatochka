@@ -2,9 +2,6 @@
 
 namespace App\Domain\Inventory\Entities;
 
-use App\Domain\Inventory\ValueObjects\StockItemId;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
-use App\Domain\Inventory\ValueObjects\CategoryId;
 use App\Domain\Inventory\ValueObjects\StockItemName;
 use App\Domain\Inventory\ValueObjects\SKU;
 use App\Domain\Inventory\ValueObjects\Quantity;
@@ -18,9 +15,9 @@ use App\Domain\Inventory\Events\StockItemDeactivated;
 
 class StockItem implements AggregateRoot
 {
-    private StockItemId $id;
-    private WarehouseId $warehouseId;
-    private CategoryId $categoryId;
+    private int $id;
+    private int $warehouseId;
+    private int $categoryId;
     private StockItemName $name;
     private SKU $sku;
     private ?string $description;
@@ -38,9 +35,9 @@ class StockItem implements AggregateRoot
     private \DateTimeImmutable $updatedAt;
 
     private function __construct(
-        StockItemId $id,
-        WarehouseId $warehouseId,
-        CategoryId $categoryId,
+        int $id,
+        int $warehouseId,
+        int $categoryId,
         StockItemName $name,
         SKU $sku,
         ?string $description = null,
@@ -74,9 +71,9 @@ class StockItem implements AggregateRoot
     }
 
     public static function create(
-        StockItemId $id,
-        WarehouseId $warehouseId,
-        CategoryId $categoryId,
+        int $id,
+        int $warehouseId,
+        int $categoryId,
         StockItemName $name,
         SKU $sku,
         ?string $description = null,
@@ -107,24 +104,24 @@ class StockItem implements AggregateRoot
         );
 
         $stockItem->recordEvent(new StockItemCreated(
-            $stockItem->id,
-            $stockItem->warehouseId,
-            $stockItem->categoryId,
-            $stockItem->name,
-            $stockItem->sku,
-            $stockItem->purchasePrice,
-            $stockItem->retailPrice,
-            $stockItem->quantity,
-            $stockItem->minStock
+            $stockItem->id(),
+            $stockItem->warehouseId(),
+            $stockItem->categoryId(),
+            $stockItem->name(),
+            $stockItem->sku(),
+            $stockItem->purchasePrice(),
+            $stockItem->retailPrice(),
+            $stockItem->quantity(),
+            $stockItem->minStock()
         ));
 
         return $stockItem;
     }
 
     public static function reconstitute(
-        StockItemId $id,
-        WarehouseId $warehouseId,
-        CategoryId $categoryId,
+        int $id,
+        int $warehouseId,
+        int $categoryId,
         StockItemName $name,
         SKU $sku,
         ?string $description,
@@ -157,23 +154,25 @@ class StockItem implements AggregateRoot
             $manufacturer,
             $model
         );
+
         $stockItem->isActive = $isActive;
         $stockItem->isDeleted = $isDeleted;
         $stockItem->createdAt = $createdAt;
         $stockItem->updatedAt = $updatedAt;
+
         return $stockItem;
     }
 
     // Getters
-    public function id(): StockItemId
+    public function id(): int
     {
         return $this->id;
     }
-    public function warehouseId(): WarehouseId
+    public function warehouseId(): int
     {
         return $this->warehouseId;
     }
-    public function categoryId(): CategoryId
+    public function categoryId(): int
     {
         return $this->categoryId;
     }

@@ -4,12 +4,11 @@ namespace App\Domain\Users\Events;
 
 use App\Domain\Shared\Events\DomainEvent;
 use App\Domain\Users\ValueObjects\Email;
-use App\Domain\Users\ValueObjects\UserId;
 
 class UserRegistered extends DomainEvent
 {
     public function __construct(
-        public readonly UserId $userId,
+        public readonly int $userId,
         public readonly string $name,
         public readonly Email $email
     ) {
@@ -24,7 +23,7 @@ class UserRegistered extends DomainEvent
     public function eventData(): array
     {
         return [
-            'user_id' => (string) $this->userId,
+            'user_id' => $this->userId,
             'name' => $this->name,
             'email' => (string) $this->email,
         ];

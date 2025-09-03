@@ -3,12 +3,11 @@
 namespace App\Domain\Company\Events;
 
 use App\Domain\Shared\Events\DomainEvent;
-use App\Domain\Company\ValueObjects\CompanyId;
 
 class CompanyDeactivated extends DomainEvent
 {
     public function __construct(
-        private readonly CompanyId $companyId
+        private readonly int $companyId
     ) {
         parent::__construct();
     }
@@ -21,11 +20,11 @@ class CompanyDeactivated extends DomainEvent
     public function eventData(): array
     {
         return [
-            'company_id' => (string) $this->companyId,
+            'company_id' => $this->companyId,
         ];
     }
 
-    public function companyId(): CompanyId
+    public function companyId(): int
     {
         return $this->companyId;
     }

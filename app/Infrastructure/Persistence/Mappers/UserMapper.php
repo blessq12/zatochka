@@ -5,15 +5,14 @@ namespace App\Infrastructure\Persistence\Mappers;
 use App\Domain\Users\Entities\User as DomainUser;
 use App\Domain\Users\ValueObjects\Email;
 use App\Domain\Users\ValueObjects\PasswordHash;
-use App\Domain\Users\ValueObjects\UserId;
-use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use App\Models\User as UserModel;
 
 class UserMapper
 {
     public static function toDomain(UserModel $model): DomainUser
     {
         return DomainUser::reconstitute(
-            UserId::fromString($model->uuid ?? ''),
+            $model->id,
             $model->name,
             Email::fromString($model->email),
             PasswordHash::fromHash($model->password),
@@ -26,7 +25,7 @@ class UserMapper
     public static function toModel(DomainUser $domain, ?UserModel $model = null): UserModel
     {
         $model = $model ?? new UserModel();
-        $model->uuid = (string) $domain->userId();
+        $model->id = $domain->userId();
         $model->name = $domain->name();
         $model->email = (string) $domain->email();
         $model->password = (string) $domain->passwordHash();

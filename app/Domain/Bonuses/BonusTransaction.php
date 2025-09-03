@@ -6,7 +6,7 @@ namespace App\Domain\Bonuses;
 
 final class BonusTransaction
 {
-    private string $id;
+    private int $id;
     private int $accountId;
     private string $type;
     private BonusAmount $amount;
@@ -16,7 +16,7 @@ final class BonusTransaction
     private \DateTimeImmutable $occurredAt;
 
     private function __construct(
-        string $id,
+        int $id,
         int $accountId,
         string $type,
         BonusAmount $amount,
@@ -45,7 +45,7 @@ final class BonusTransaction
         string $idempotencyKey
     ): self {
         return new self(
-            id: self::generateUuid(),
+            id: 0, // Временный ID, будет заменен при сохранении
             accountId: $accountId,
             type: $type,
             amount: $amount,
@@ -56,12 +56,29 @@ final class BonusTransaction
         );
     }
 
-    private static function generateUuid(): string
-    {
-        return bin2hex(random_bytes(16));
+    public static function reconstitute(
+        int $id,
+        int $accountId,
+        string $type,
+        BonusAmount $amount,
+        ?int $orderId,
+        ?string $relatedTransactionId,
+        string $idempotencyKey,
+        \DateTimeImmutable $occurredAt
+    ): self {
+        return new self(
+            $id,
+            $accountId,
+            $type,
+            $amount,
+            $orderId,
+            $relatedTransactionId,
+            $idempotencyKey,
+            $occurredAt
+        );
     }
 
-    public function getId(): string
+    public function getId(): int
     {
         return $this->id;
     }

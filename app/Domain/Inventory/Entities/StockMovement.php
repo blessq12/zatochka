@@ -2,48 +2,45 @@
 
 namespace App\Domain\Inventory\Entities;
 
-use App\Domain\Inventory\ValueObjects\StockItemId;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
 use App\Domain\Inventory\ValueObjects\MovementType;
 use App\Domain\Inventory\ValueObjects\Quantity;
 use App\Domain\Inventory\ValueObjects\Money;
 use App\Domain\Shared\Interfaces\AggregateRoot;
 use App\Domain\Inventory\Events\StockMovementCreated;
-use App\Domain\Shared\ValueObjects\UuidValueObject;
 
 class StockMovement implements AggregateRoot
 {
-    private UuidValueObject $id;
-    private StockItemId $stockItemId;
-    private WarehouseId $warehouseId;
+    private int $id;
+    private int $stockItemId;
+    private int $warehouseId;
     private MovementType $movementType;
     private Quantity $quantity;
-    private ?UuidValueObject $orderId;
-    private ?UuidValueObject $repairId;
+    private ?int $orderId;
+    private ?int $repairId;
     private ?string $supplier;
     private ?Money $unitPrice;
     private ?Money $totalAmount;
     private ?string $description;
     private ?string $referenceNumber;
     private \DateTimeImmutable $movementDate;
-    private UuidValueObject $createdBy;
+    private int $createdBy;
     private \DateTimeImmutable $createdAt;
     private \DateTimeImmutable $updatedAt;
 
     private function __construct(
-        UuidValueObject $id,
-        StockItemId $stockItemId,
-        WarehouseId $warehouseId,
+        int $id,
+        int $stockItemId,
+        int $warehouseId,
         MovementType $movementType,
         Quantity $quantity,
-        ?UuidValueObject $orderId = null,
-        ?UuidValueObject $repairId = null,
+        ?int $orderId = null,
+        ?int $repairId = null,
         ?string $supplier = null,
         ?Money $unitPrice = null,
         ?Money $totalAmount = null,
         ?string $description = null,
         ?string $referenceNumber = null,
-        ?UuidValueObject $createdBy = null
+        ?int $createdBy = null
     ) {
         $this->id = $id;
         $this->stockItemId = $stockItemId;
@@ -58,25 +55,25 @@ class StockMovement implements AggregateRoot
         $this->description = $description;
         $this->referenceNumber = $referenceNumber;
         $this->movementDate = new \DateTimeImmutable();
-        $this->createdBy = $createdBy ?? UuidValueObject::generate();
+        $this->createdBy = $createdBy ?? 0;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }
 
     public static function create(
-        UuidValueObject $id,
-        StockItemId $stockItemId,
-        WarehouseId $warehouseId,
+        int $id,
+        int $stockItemId,
+        int $warehouseId,
         MovementType $movementType,
         Quantity $quantity,
-        ?UuidValueObject $orderId = null,
-        ?UuidValueObject $repairId = null,
+        ?int $orderId = null,
+        ?int $repairId = null,
         ?string $supplier = null,
         ?Money $unitPrice = null,
         ?Money $totalAmount = null,
         ?string $description = null,
         ?string $referenceNumber = null,
-        ?UuidValueObject $createdBy = null
+        ?int $createdBy = null
     ): self {
         $movement = new self(
             $id,
@@ -95,34 +92,38 @@ class StockMovement implements AggregateRoot
         );
 
         $movement->recordEvent(new StockMovementCreated(
-            $movement->stockItemId,
-            $movement->warehouseId,
-            $movement->movementType,
-            $movement->quantity,
-            $movement->unitPrice,
-            $movement->totalAmount,
-            $movement->description,
-            $movement->referenceNumber
+            $movement->stockItemId(),
+            $movement->warehouseId(),
+            $movement->movementType(),
+            $movement->quantity(),
+            $movement->orderId(),
+            $movement->repairId(),
+            $movement->supplier(),
+            $movement->unitPrice(),
+            $movement->totalAmount(),
+            $movement->description(),
+            $movement->referenceNumber(),
+            $movement->createdBy()
         ));
 
         return $movement;
     }
 
     public static function reconstitute(
-        UuidValueObject $id,
-        StockItemId $stockItemId,
-        WarehouseId $warehouseId,
+        int $id,
+        int $stockItemId,
+        int $warehouseId,
         MovementType $movementType,
         Quantity $quantity,
-        ?UuidValueObject $orderId,
-        ?UuidValueObject $repairId,
+        ?int $orderId,
+        ?int $repairId,
         ?string $supplier,
         ?Money $unitPrice,
         ?Money $totalAmount,
         ?string $description,
         ?string $referenceNumber,
         \DateTimeImmutable $movementDate,
-        UuidValueObject $createdBy,
+        int $createdBy,
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt
     ): self {
@@ -141,22 +142,24 @@ class StockMovement implements AggregateRoot
             $referenceNumber,
             $createdBy
         );
+
         $movement->movementDate = $movementDate;
         $movement->createdAt = $createdAt;
         $movement->updatedAt = $updatedAt;
+
         return $movement;
     }
 
     // Getters
-    public function id(): UuidValueObject
+    public function id(): int
     {
         return $this->id;
     }
-    public function stockItemId(): StockItemId
+    public function stockItemId(): int
     {
         return $this->stockItemId;
     }
-    public function warehouseId(): WarehouseId
+    public function warehouseId(): int
     {
         return $this->warehouseId;
     }
@@ -168,11 +171,11 @@ class StockMovement implements AggregateRoot
     {
         return $this->quantity;
     }
-    public function orderId(): ?UuidValueObject
+    public function orderId(): ?int
     {
         return $this->orderId;
     }
-    public function repairId(): ?UuidValueObject
+    public function repairId(): ?int
     {
         return $this->repairId;
     }
@@ -200,7 +203,7 @@ class StockMovement implements AggregateRoot
     {
         return $this->movementDate;
     }
-    public function createdBy(): UuidValueObject
+    public function createdBy(): int
     {
         return $this->createdBy;
     }

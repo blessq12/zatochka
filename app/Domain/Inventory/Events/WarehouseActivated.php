@@ -3,12 +3,11 @@
 namespace App\Domain\Inventory\Events;
 
 use App\Domain\Shared\Events\DomainEvent;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
 
 class WarehouseActivated extends DomainEvent
 {
     public function __construct(
-        public readonly WarehouseId $warehouseId
+        public readonly int $warehouseId
     ) {
         parent::__construct();
     }
@@ -21,7 +20,7 @@ class WarehouseActivated extends DomainEvent
     public function eventData(): array
     {
         return [
-            'warehouse_id' => (string) $this->warehouseId,
+            'warehouse_id' => $this->warehouseId,
         ];
     }
 }

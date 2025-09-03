@@ -3,23 +3,21 @@
 namespace App\Infrastructure\Persistence\Mappers;
 
 use App\Domain\Company\Entities\Branch;
-use App\Domain\Company\ValueObjects\BranchId;
-use App\Domain\Company\ValueObjects\CompanyId;
 use App\Domain\Company\ValueObjects\BranchCode;
 use App\Domain\Company\ValueObjects\WorkingSchedule;
-use App\Infrastructure\Persistence\Eloquent\Models\BranchModel;
+use App\Models\Branch as BranchModel;
 
 class BranchMapper
 {
     public function toDomain(BranchModel $model): Branch
     {
-        $workingSchedule = $model->working_schedule 
+        $workingSchedule = $model->working_schedule
             ? WorkingSchedule::fromArray($model->working_schedule)
             : WorkingSchedule::createDefault();
 
         return Branch::reconstitute(
-            BranchId::fromString($model->id),
-            CompanyId::fromString($model->company_id),
+            $model->id,
+            $model->company_id,
             $model->name,
             BranchCode::fromString($model->code),
             $model->address,
@@ -44,12 +42,14 @@ class BranchMapper
     public function toEloquent(Branch $branch): BranchModel
     {
         $model = new BranchModel();
-        
-        if ($branch->id()->value()) {
-            $model->id = $branch->id()->value();
+
+        // Если ID больше 0, значит это существующий филиал
+        if ($branch->id() > 0) {
+            $model->id = $branch->id();
         }
-        
-        $model->company_id = $branch->companyId()->value();
+        // Если ID = 0, Laravel сам сгенерирует автоинкремент
+
+        $model->company_id = $branch->companyId();
         $model->name = $branch->name();
         $model->code = $branch->code()->value();
         $model->address = $branch->address();
@@ -68,7 +68,7 @@ class BranchMapper
         $model->is_deleted = $branch->isDeleted();
         $model->created_at = $branch->createdAt();
         $model->updated_at = $branch->updatedAt();
-        
+
         return $model;
     }
 }

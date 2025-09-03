@@ -3,13 +3,12 @@
 namespace App\Domain\Inventory\Events;
 
 use App\Domain\Shared\Events\DomainEvent;
-use App\Domain\Inventory\ValueObjects\StockItemId;
 use App\Domain\Inventory\ValueObjects\Quantity;
 
 class StockItemQuantityChanged extends DomainEvent
 {
     public function __construct(
-        private readonly StockItemId $stockItemId,
+        private readonly int $stockItemId,
         private readonly Quantity $oldQuantity,
         private readonly Quantity $newQuantity,
         private readonly string $changeType
@@ -25,7 +24,7 @@ class StockItemQuantityChanged extends DomainEvent
     public function eventData(): array
     {
         return [
-            'stock_item_id' => (string) $this->stockItemId,
+            'stock_item_id' => $this->stockItemId,
             'old_quantity' => $this->oldQuantity->value(),
             'new_quantity' => $this->newQuantity->value(),
             'change_type' => $this->changeType,
@@ -33,7 +32,7 @@ class StockItemQuantityChanged extends DomainEvent
         ];
     }
 
-    public function stockItemId(): StockItemId
+    public function stockItemId(): int
     {
         return $this->stockItemId;
     }

@@ -1,0 +1,10 @@
+parameters:
+    level: 8
+    paths:
+        - app
+    excludePaths:
+        - app/Console/Commands
+        - app/Providers
+    bootstrapFiles:
+        - vendor/autoload.php
+        - bootstrap/app.php

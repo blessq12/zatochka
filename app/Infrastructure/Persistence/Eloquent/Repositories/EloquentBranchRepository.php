@@ -4,8 +4,6 @@ namespace App\Infrastructure\Persistence\Eloquent\Repositories;
 
 use App\Domain\Company\Entities\Branch;
 use App\Domain\Company\Interfaces\BranchRepositoryInterface;
-use App\Domain\Company\ValueObjects\BranchId;
-use App\Domain\Company\ValueObjects\CompanyId;
 use App\Domain\Company\ValueObjects\BranchCode;
 use App\Models\Branch as BranchModel;
 use App\Infrastructure\Persistence\Mappers\BranchMapper;
@@ -16,9 +14,9 @@ class EloquentBranchRepository implements BranchRepositoryInterface
         private readonly BranchMapper $mapper
     ) {}
 
-    public function findById(BranchId $id): ?Branch
+    public function findById(int $id): ?Branch
     {
-        $model = BranchModel::find($id->value());
+        $model = BranchModel::find($id);
         return $model ? $this->mapper->toDomain($model) : null;
     }
 
@@ -28,15 +26,15 @@ class EloquentBranchRepository implements BranchRepositoryInterface
         return $model ? $this->mapper->toDomain($model) : null;
     }
 
-    public function findByCompanyId(CompanyId $companyId): array
+    public function findByCompanyId(int $companyId): array
     {
-        $models = BranchModel::where('company_id', $companyId->value())->get();
+        $models = BranchModel::where('company_id', $companyId)->get();
         return array_map([$this->mapper, 'toDomain'], $models->all());
     }
 
-    public function findActiveByCompanyId(CompanyId $companyId): array
+    public function findActiveByCompanyId(int $companyId): array
     {
-        $models = BranchModel::where('company_id', $companyId->value())
+        $models = BranchModel::where('company_id', $companyId)
             ->where('is_active', true)
             ->where('is_deleted', false)
             ->get();
@@ -44,9 +42,9 @@ class EloquentBranchRepository implements BranchRepositoryInterface
         return array_map([$this->mapper, 'toDomain'], $models->all());
     }
 
-    public function findMainByCompanyId(CompanyId $companyId): ?Branch
+    public function findMainByCompanyId(int $companyId): ?Branch
     {
-        $model = BranchModel::where('company_id', $companyId->value())
+        $model = BranchModel::where('company_id', $companyId)
             ->where('is_main', true)
             ->first();
 
@@ -74,14 +72,14 @@ class EloquentBranchRepository implements BranchRepositoryInterface
         $model->save();
     }
 
-    public function delete(BranchId $id): void
+    public function delete(int $id): void
     {
-        BranchModel::where('id', $id->value())->delete();
+        BranchModel::where('id', $id)->delete();
     }
 
-    public function exists(BranchId $id): bool
+    public function exists(int $id): bool
     {
-        return BranchModel::where('id', $id->value())->exists();
+        return BranchModel::where('id', $id)->exists();
     }
 
     public function existsByCode(BranchCode $code): bool
@@ -89,8 +87,8 @@ class EloquentBranchRepository implements BranchRepositoryInterface
         return BranchModel::where('code', $code->value())->exists();
     }
 
-    public function countByCompanyId(CompanyId $companyId): int
+    public function countByCompanyId(int $companyId): int
     {
-        return BranchModel::where('company_id', $companyId->value())->count();
+        return BranchModel::where('company_id', $companyId)->count();
     }
 }

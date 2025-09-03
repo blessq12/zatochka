@@ -3,13 +3,12 @@
 namespace App\Domain\Inventory\Events;
 
 use App\Domain\Shared\Events\DomainEvent;
-use App\Domain\Inventory\ValueObjects\CategoryId;
 use App\Domain\Inventory\ValueObjects\CategoryName;
 
 class CategoryCreated extends DomainEvent
 {
     public function __construct(
-        private readonly CategoryId $categoryId,
+        private readonly int $categoryId,
         private readonly CategoryName $name,
         private readonly ?string $description,
         private readonly ?string $color,
@@ -26,7 +25,7 @@ class CategoryCreated extends DomainEvent
     public function eventData(): array
     {
         return [
-            'category_id' => (string) $this->categoryId,
+            'category_id' => $this->categoryId,
             'name' => (string) $this->name,
             'description' => $this->description,
             'color' => $this->color,
@@ -34,7 +33,7 @@ class CategoryCreated extends DomainEvent
         ];
     }
 
-    public function categoryId(): CategoryId
+    public function categoryId(): int
     {
         return $this->categoryId;
     }
