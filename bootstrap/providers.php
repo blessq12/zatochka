@@ -14,4 +14,6 @@ return [
     App\Providers\Domain\ClientsDomainServiceProvider::class,
     App\Providers\Domain\InventoryDomainServiceProvider::class,
     App\Providers\Domain\UsersDomainServiceProvider::class,
+    App\Providers\Domain\EventsDomainServiceProvider::class,
+    App\Providers\Domain\CompanyDomainServiceProvider::class,
 ];

@@ -8,7 +8,7 @@ use App\Domain\Shared\Interfaces\UserRepositoryInterface;
 use App\Domain\Users\Entities\User as DomainUser;
 use App\Domain\Users\ValueObjects\Email;
 use App\Domain\Users\ValueObjects\UserId;
-use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use App\Models\User as UserModel;
 use App\Infrastructure\Persistence\Mappers\UserMapper;
 use Ramsey\Uuid\Uuid as RamseyUuid;
 
@@ -19,7 +19,7 @@ class EloquentUserRepository implements UserRepositoryInterface
         return UserId::fromString(RamseyUuid::uuid4()->toString());
     }
 
-        public function save(DomainUser $user): void
+    public function save(DomainUser $user): void
     {
         $model = UserModel::query()->where('uuid', (string) $user->userId())->first();
         $model = UserMapper::toModel($user, $model);
