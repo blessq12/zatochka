@@ -3,9 +3,7 @@
 namespace App\Filament\Resources\Manager\StockItemResource\Pages;
 
 use App\Filament\Resources\Manager\StockItemResource;
-use App\Domain\Inventory\ValueObjects\StockItemId;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
-use App\Domain\Inventory\ValueObjects\CategoryId;
+// ... existing code ...
 use App\Domain\Inventory\ValueObjects\StockItemName;
 use App\Domain\Inventory\ValueObjects\SKU;
 use App\Domain\Inventory\ValueObjects\Quantity;
@@ -28,9 +26,9 @@ class CreateStockItem extends CreateRecord
     {
         $stockItemService = app(StockItemService::class);
 
-        $id = StockItemId::fromString($this->record->id);
-        $warehouseId = WarehouseId::fromString($this->record->warehouse_id);
-        $categoryId = CategoryId::fromString($this->record->category_id);
+        $id = (int) $this->record->id;
+        $warehouseId = (int) $this->record->warehouse_id;
+        $categoryId = (int) $this->record->category_id;
         $name = StockItemName::fromString($this->record->name);
         $sku = SKU::fromString($this->record->sku);
         $quantity = Quantity::fromInteger($this->record->quantity ?? 0);

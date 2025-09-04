@@ -23,4 +23,14 @@ Route::prefix('test/company')->group(function () {
     Route::get('/list', [TestCompanyController::class, 'testGetCompany']);
     Route::get('/branches', [TestCompanyController::class, 'testGetBranches']);
     Route::get('/schedule', [TestCompanyController::class, 'testWorkingSchedule']);
+    Route::get('/set-main-branch', [TestCompanyController::class, 'testSetBranchAsMain']);
+    Route::get('/change-main-branch', [TestCompanyController::class, 'testChangeMainBranch']);
+    Route::get('/activate-deactivate', [TestCompanyController::class, 'testActivateDeactivateCompany']);
+    Route::get('/update', [TestCompanyController::class, 'testUpdateCompany']);
+    Route::get('/find-by-inn', [TestCompanyController::class, 'testFindCompanyByInn']);
+    Route::get('/exists', [TestCompanyController::class, 'testCompanyExists']);
+    Route::get('/active', [TestCompanyController::class, 'testGetActiveCompanies']);
+    Route::get('/delete', [TestCompanyController::class, 'testDeleteCompany']);
+    Route::get('/delete-branch', [TestCompanyController::class, 'testDeleteBranch']);
+    Route::get('/branch-company-relationship', [TestCompanyController::class, 'testBranchCompanyRelationship']);
 });

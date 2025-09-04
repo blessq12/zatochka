@@ -98,10 +98,10 @@ class Order extends Model implements HasMedia
         return $this->hasMany(BonusTransaction::class);
     }
 
-    public function inventoryTransactions()
-    {
-        return $this->hasMany(InventoryTransaction::class);
-    }
+    // public function inventoryTransactions()
+    // {
+    //     return $this->hasMany(InventoryTransaction::class);
+    // }
 
     public function tools()
     {

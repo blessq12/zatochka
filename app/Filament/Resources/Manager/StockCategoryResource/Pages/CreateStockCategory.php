@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Manager\StockCategoryResource\Pages;
 
 use App\Filament\Resources\Manager\StockCategoryResource;
-use App\Domain\Inventory\ValueObjects\CategoryId;
+// ... existing code ...
 use App\Domain\Inventory\ValueObjects\CategoryName;
 use App\Domain\Inventory\Services\StockCategoryService;
 use Filament\Resources\Pages\CreateRecord;
@@ -22,7 +22,7 @@ class CreateStockCategory extends CreateRecord
     {
         $categoryService = app(StockCategoryService::class);
 
-        $id = CategoryId::fromString($this->record->id);
+        $id = (int) $this->record->id;
         $name = CategoryName::fromString($this->record->name);
 
         // Создаем категорию через доменный сервис

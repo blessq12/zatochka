@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Manager;
 use App\Filament\Resources\Manager\BranchResource\Pages;
 use App\Models\Branch;
 use App\Models\Company;
+use App\Rules\PhoneFormat;
+use App\Filament\Forms\Components\WorkingScheduleInput;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -58,7 +60,15 @@ class BranchResource extends Resource
                         Forms\Components\TextInput::make('phone')
                             ->label('Телефон')
                             ->tel()
-                            ->maxLength(20),
+                            ->maxLength(50)
+                            ->placeholder('+7 (999) 999-99-99')
+                            ->rules([
+                                'nullable',
+                                'string',
+                                'max:50',
+                                new PhoneFormat()
+                            ])
+                            ->helperText('Поддерживаемые форматы: +7 (999) 999-99-99, +7 999 999-99-99, 8 (999) 999-99-99'),
 
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
@@ -72,14 +82,20 @@ class BranchResource extends Resource
                             ->label('Широта')
                             ->numeric()
                             ->step(0.000001)
-                            ->maxLength(20),
+                            ->rules(['nullable', 'numeric', 'between:-90,90']),
 
                         Forms\Components\TextInput::make('longitude')
                             ->label('Долгота')
                             ->numeric()
                             ->step(0.000001)
-                            ->maxLength(20),
+                            ->rules(['nullable', 'numeric', 'between:-180,180']),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Рабочее время')
+                    ->schema([
+                        WorkingScheduleInput::make('working_schedule')
+                            ->label('Расписание работы по дням недели'),
+                    ]),
 
                 Forms\Components\Section::make('Статус')
                     ->schema([
@@ -153,7 +169,7 @@ class BranchResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\SelectFilter::make('company_id')
@@ -162,7 +178,7 @@ class BranchResource extends Resource
 
                 Tables\Filters\Filter::make('is_active')
                     ->label('Только активные филиалы')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true)),
+                    ->query(fn(Builder $query): Builder => $query->where('is_active', true)),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -170,7 +186,7 @@ class BranchResource extends Resource
                 Tables\Actions\Action::make('orders')
                     ->label('Заказы')
                     ->icon('heroicon-o-shopping-cart')
-                    ->url(fn (Branch $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[branch_id][value]' => $record->id])),
+                    ->url(fn(Branch $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[branch_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

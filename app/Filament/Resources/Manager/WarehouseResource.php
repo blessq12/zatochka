@@ -5,9 +5,7 @@ namespace App\Filament\Resources\Manager;
 use App\Filament\Resources\Manager\WarehouseResource\Pages;
 use App\Models\Warehouse as WarehouseModel;
 use App\Models\Branch;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
 use App\Domain\Inventory\ValueObjects\WarehouseName;
-use App\Domain\Inventory\ValueObjects\BranchId;
 use App\Domain\Inventory\Services\WarehouseService;
 use App\Domain\Inventory\Interfaces\WarehouseRepositoryInterface;
 use Filament\Forms;
@@ -108,7 +106,7 @@ class WarehouseResource extends Resource
                         'danger' => 'Неактивен',
                     ])
                     ->getStateUsing(
-                        fn (Model $record): string =>
+                        fn(Model $record): string =>
                         $record->is_active ? 'Активен' : 'Неактивен'
                     ),
 
@@ -133,9 +131,9 @@ class WarehouseResource extends Resource
                     ->using(function (array $data, Model $record): Model {
                         $warehouseService = app(WarehouseService::class);
 
-                        $warehouseId = WarehouseId::fromString($record->id);
+                        $warehouseId = (int) $record->id;
                         $name = WarehouseName::fromString($data['name']);
-                        $branchId = $data['branch_id'] ? BranchId::fromString($data['branch_id']) : null;
+                        $branchId = $data['branch_id'] ? (int) $data['branch_id'] : null;
 
                         if ($data['is_active'] && !$record->is_active) {
                             $warehouseService->activateWarehouse($warehouseId);
@@ -170,7 +168,7 @@ class WarehouseResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->using(function (Model $record): void {
                         $warehouseService = app(WarehouseService::class);
-                        $warehouseId = WarehouseId::fromString($record->id);
+                        $warehouseId = (int) $record->id;
 
                         $warehouseService->deleteWarehouse($warehouseId);
 
@@ -187,7 +185,7 @@ class WarehouseResource extends Resource
                             $warehouseService = app(WarehouseService::class);
 
                             foreach ($records as $record) {
-                                $warehouseId = WarehouseId::fromString($record->id);
+                                $warehouseId = (int) $record->id;
                                 $warehouseService->deleteWarehouse($warehouseId);
                             }
 

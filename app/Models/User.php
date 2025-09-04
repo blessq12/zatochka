@@ -9,6 +9,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+// ... existing code ...
 
 class User extends Authenticatable
 {
@@ -47,10 +48,10 @@ class User extends Authenticatable
         return $this->hasMany(OrderLog::class);
     }
 
-    public function inventoryTransactions()
-    {
-        return $this->hasMany(InventoryTransaction::class);
-    }
+    // public function inventoryTransactions()
+    // {
+    //     return $this->hasMany(InventoryTransaction::class);
+    // }
 
     // Scope для активных пользователей
     public function scopeActive($query)

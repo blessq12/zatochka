@@ -151,9 +151,9 @@ class Company implements AggregateRoot
             $name,
             $legalName,
             $inn,
+            $legalAddress,
             $kpp,
             $ogrn,
-            $legalAddress,
             $description,
             $website,
             $phone,
@@ -166,8 +166,6 @@ class Company implements AggregateRoot
             $additionalData
         );
 
-        $company->kpp = $kpp;
-        $company->ogrn = $ogrn;
         $company->isActive = $isActive;
         $company->isDeleted = $isDeleted;
         $company->createdAt = $createdAt;

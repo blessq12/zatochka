@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Manager\UserResource\Pages;
 
 use App\Domain\Shared\Interfaces\UserRepositoryInterface;
 use App\Domain\Users\ValueObjects\Email;
-use App\Domain\Users\ValueObjects\UserId;
+// ... existing code ...
 use App\Domain\Users\ValueObjects\PasswordHash;
 use App\Filament\Resources\Manager\UserResource;
 use Filament\Actions;
@@ -22,7 +22,7 @@ class EditUser extends EditRecord
 
         // Получаем доменного пользователя по UUID
         $domainUser = $userRepo->getById(
-            UserId::fromString($record->uuid)
+            (int) $record->id
         );
 
         if (!$domainUser) {
@@ -44,14 +44,8 @@ class EditUser extends EditRecord
         }
 
         if (isset($data['roles'])) {
-            \Log::info('Roles data from form', [
-                'form_roles' => $data['roles'],
-                'current_domain_roles' => $domainUser->roles()
-            ]);
+            // Логирование ролей пользователя
             $domainUser->replaceRoles($data['roles']);
-            \Log::info('Roles replaced in domain', [
-                'new_roles' => $domainUser->roles()
-            ]);
         }
 
         // Обрабатываем статус удаления

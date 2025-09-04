@@ -14,7 +14,7 @@ class ListCompanies extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Добавить компанию'),
+                ->label('Создать компанию'),
         ];
     }
 }

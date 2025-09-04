@@ -12,6 +12,17 @@ class CompanyMapper
 {
     public function toDomain(CompanyModel $model): Company
     {
+        // Обрабатываем additional_data - если это JSON строка, декодируем в массив
+        $additionalData = [];
+        if ($model->additional_data) {
+            if (is_string($model->additional_data)) {
+                $decoded = json_decode($model->additional_data, true);
+                $additionalData = is_array($decoded) ? $decoded : [];
+            } elseif (is_array($model->additional_data)) {
+                $additionalData = $model->additional_data;
+            }
+        }
+
         return Company::reconstitute(
             $model->id,
             CompanyName::fromString($model->name),
@@ -29,7 +40,7 @@ class CompanyMapper
             $model->bank_account,
             $model->bank_cor_account,
             $model->logo_path,
-            $model->additional_data ?? [],
+            $additionalData,
             $model->is_active,
             $model->is_deleted,
             \DateTimeImmutable::createFromInterface($model->created_at),
@@ -44,6 +55,7 @@ class CompanyMapper
         // Если ID больше 0, значит это существующая компания
         if ($company->id() > 0) {
             $model->id = $company->id();
+            $model->exists = true; // Указываем Laravel, что это существующая запись
         }
         // Если ID = 0, Laravel сам сгенерирует автоинкремент
 
@@ -62,7 +74,11 @@ class CompanyMapper
         $model->bank_account = $company->bankAccount();
         $model->bank_cor_account = $company->bankCorAccount();
         $model->logo_path = $company->logoPath();
-        $model->additional_data = $company->additionalData();
+
+        // Сохраняем additional_data как JSON строку
+        $additionalData = $company->additionalData();
+        $model->additional_data = !empty($additionalData) ? json_encode($additionalData) : null;
+
         $model->is_active = $company->isActive();
         $model->is_deleted = $company->isDeleted();
         $model->created_at = $company->createdAt();

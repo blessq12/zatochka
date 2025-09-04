@@ -6,9 +6,7 @@ use App\Filament\Resources\Manager\StockItemResource\Pages;
 use App\Models\StockItem as StockItemModel;
 use App\Models\Warehouse;
 use App\Models\StockCategory;
-use App\Domain\Inventory\ValueObjects\StockItemId;
-use App\Domain\Inventory\ValueObjects\WarehouseId;
-use App\Domain\Inventory\ValueObjects\CategoryId;
+// ... existing code ...
 use App\Domain\Inventory\ValueObjects\StockItemName;
 use App\Domain\Inventory\ValueObjects\SKU;
 use App\Domain\Inventory\ValueObjects\Quantity;
@@ -212,7 +210,7 @@ class StockItemResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color(
-                        fn (int $state): string =>
+                        fn(int $state): string =>
                         $state <= 0 ? 'danger' : ($state <= 10 ? 'warning' : 'success')
                     ),
 
@@ -237,7 +235,7 @@ class StockItemResource extends Resource
                         'danger' => 'Неактивен',
                     ])
                     ->getStateUsing(
-                        fn (Model $record): string =>
+                        fn(Model $record): string =>
                         $record->is_active ? 'Активен' : 'Неактивен'
                     ),
             ])
@@ -258,18 +256,18 @@ class StockItemResource extends Resource
 
                 Filter::make('low_stock')
                     ->label('Низкий остаток')
-                    ->query(fn (Builder $query): Builder => $query->whereRaw('quantity <= min_stock')),
+                    ->query(fn(Builder $query): Builder => $query->whereRaw('quantity <= min_stock')),
 
                 Filter::make('out_of_stock')
                     ->label('Нет в наличии')
-                    ->query(fn (Builder $query): Builder => $query->where('quantity', '<=', 0)),
+                    ->query(fn(Builder $query): Builder => $query->where('quantity', '<=', 0)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->using(function (array $data, Model $record): Model {
                         $stockItemService = app(StockItemService::class);
 
-                        $stockItemId = StockItemId::fromString($record->id);
+                        $stockItemId = (int) $record->id;
 
                         // Обновляем цены
                         if (
@@ -311,7 +309,7 @@ class StockItemResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->using(function (Model $record): void {
                         $stockItemService = app(StockItemService::class);
-                        $stockItemId = StockItemId::fromString($record->id);
+                        $stockItemId = (int) $record->id;
 
                         $stockItemService->deleteStockItem($stockItemId);
 
@@ -328,7 +326,7 @@ class StockItemResource extends Resource
                             $stockItemService = app(StockItemService::class);
 
                             foreach ($records as $record) {
-                                $stockItemId = StockItemId::fromString($record->id);
+                                $stockItemId = (int) $record->id;
                                 $stockItemService->deleteStockItem($stockItemId);
                             }
 

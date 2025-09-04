@@ -14,7 +14,7 @@ class ListBranches extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Добавить филиал'),
+                ->label('Создать филиал'),
         ];
     }
 }

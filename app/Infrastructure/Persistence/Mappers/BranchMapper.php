@@ -11,8 +11,19 @@ class BranchMapper
 {
     public function toDomain(BranchModel $model): Branch
     {
-        $workingSchedule = $model->working_schedule
-            ? WorkingSchedule::fromArray($model->working_schedule)
+        // Обрабатываем working_schedule - если это JSON строка, декодируем в массив
+        $workingScheduleData = [];
+        if ($model->working_schedule) {
+            if (is_string($model->working_schedule)) {
+                $decoded = json_decode($model->working_schedule, true);
+                $workingScheduleData = is_array($decoded) ? $decoded : [];
+            } elseif (is_array($model->working_schedule)) {
+                $workingScheduleData = $model->working_schedule;
+            }
+        }
+
+        $workingSchedule = !empty($workingScheduleData)
+            ? WorkingSchedule::fromArray($workingScheduleData)
             : WorkingSchedule::createDefault();
 
         return Branch::reconstitute(
@@ -29,7 +40,7 @@ class BranchMapper
             $model->latitude,
             $model->longitude,
             $model->description,
-            $model->additional_data ?? [],
+            $this->parseAdditionalData($model->additional_data),
             $model->is_active,
             $model->is_main,
             $model->sort_order,
@@ -39,6 +50,24 @@ class BranchMapper
         );
     }
 
+    private function parseAdditionalData($additionalData): array
+    {
+        if (empty($additionalData)) {
+            return [];
+        }
+
+        if (is_string($additionalData)) {
+            $decoded = json_decode($additionalData, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        if (is_array($additionalData)) {
+            return $additionalData;
+        }
+
+        return [];
+    }
+
     public function toEloquent(Branch $branch): BranchModel
     {
         $model = new BranchModel();
@@ -46,6 +75,7 @@ class BranchMapper
         // Если ID больше 0, значит это существующий филиал
         if ($branch->id() > 0) {
             $model->id = $branch->id();
+            $model->exists = true; // Указываем Laravel, что это существующая запись
         }
         // Если ID = 0, Laravel сам сгенерирует автоинкремент
 
@@ -55,7 +85,11 @@ class BranchMapper
         $model->address = $branch->address();
         $model->phone = $branch->phone();
         $model->email = $branch->email();
-        $model->working_schedule = $branch->workingSchedule()->toArray();
+
+        // Сохраняем working_schedule как JSON строку
+        $workingSchedule = $branch->workingSchedule();
+        $model->working_schedule = $workingSchedule ? json_encode($workingSchedule->toArray()) : null;
+
         $model->opening_time = $branch->openingTime();
         $model->closing_time = $branch->closingTime();
         $model->latitude = $branch->latitude();

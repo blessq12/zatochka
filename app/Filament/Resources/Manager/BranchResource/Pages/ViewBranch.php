@@ -13,8 +13,7 @@ class ViewBranch extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make()
-                ->label('Редактировать'),
+            Actions\EditAction::make(),
         ];
     }
 }
