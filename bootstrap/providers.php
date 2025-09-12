@@ -3,17 +3,16 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\MiddlewareServiceProvider::class,
+    // filament panels providers
     App\Providers\Filament\ManagerPanelProvider::class,
     App\Providers\Filament\MasterPanelProvider::class,
+
+    // fortify service provider
     App\Providers\FortifyServiceProvider::class,
     App\Providers\MiddlewareServiceProvider::class,
+    // telescope service provider
     App\Providers\TelescopeServiceProvider::class,
+
     Laravel\Fortify\FortifyServiceProvider::class,
-    App\Providers\Domain\BonusesDomainServiceProvider::class,
-    App\Providers\Domain\OrdersDomainServiceProvider::class,
-    App\Providers\Domain\ClientsDomainServiceProvider::class,
-    App\Providers\Domain\InventoryDomainServiceProvider::class,
-    App\Providers\Domain\UsersDomainServiceProvider::class,
-    App\Providers\Domain\EventsDomainServiceProvider::class,
-    App\Providers\Domain\CompanyDomainServiceProvider::class,
+
 ];
