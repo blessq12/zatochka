@@ -9,6 +9,7 @@ use App\Models\Branch;
 use App\Models\User;
 use App\Models\ServiceType;
 use App\Models\OrderStatus;
+use App\Application\Orders\OrderService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -39,13 +40,13 @@ class OrderResource extends Resource
                             ->searchable()
                             ->required()
                             ->live()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('order_number', null)),
+                            ->afterStateUpdated(fn($state, callable $set) => $set('order_number', null)),
 
                         Forms\Components\TextInput::make('order_number')
                             ->label('Номер заказа')
                             ->unique(ignoreRecord: true)
                             ->required()
-                            ->default(fn () => 'ORD-' . date('Ymd') . '-' . str_pad(Order::count() + 1, 4, '0', STR_PAD_LEFT)),
+                            ->default(fn() => 'ORD-' . date('Ymd') . '-' . str_pad(Order::count() + 1, 4, '0', STR_PAD_LEFT)),
 
                         Forms\Components\Select::make('branch_id')
                             ->label('Филиал')
@@ -75,7 +76,7 @@ class OrderResource extends Resource
                             ->label('Менеджер')
                             ->options(User::role('manager')->pluck('name', 'id'))
                             ->searchable()
-                            ->default(fn () => auth()->id())
+                            ->default(fn() => auth()->id())
                             ->required(),
 
                         Forms\Components\Select::make('master_id')
@@ -175,7 +176,7 @@ class OrderResource extends Resource
                         'warning' => 'urgent',
                         'gray' => 'normal',
                     ])
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'urgent' => 'Срочно',
                         'normal' => 'Обычно',
                     }),
@@ -183,7 +184,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status.name')
                     ->label('Статус')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Новый' => 'gray',
                         'В работе' => 'warning',
                         'Готов' => 'success',
@@ -216,7 +217,7 @@ class OrderResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\SelectFilter::make('status_id')
@@ -233,15 +234,41 @@ class OrderResource extends Resource
 
                 Tables\Filters\Filter::make('urgent')
                     ->label('Срочные заказы')
-                    ->query(fn (Builder $query): Builder => $query->where('urgency', 'urgent')),
+                    ->query(fn(Builder $query): Builder => $query->where('urgency', 'urgent')),
 
                 Tables\Filters\Filter::make('unpaid')
                     ->label('Неоплаченные')
-                    ->query(fn (Builder $query): Builder => $query->where('is_paid', false)),
+                    ->query(fn(Builder $query): Builder => $query->where('is_paid', false)),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('change_status')
+                    ->label('Изменить статус')
+                    ->icon('heroicon-o-arrow-path')
+                    ->form([
+                        Forms\Components\Select::make('status_id')
+                            ->label('Новый статус')
+                            ->options(OrderStatus::all()->pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+                    ])
+                    ->action(function (Order $record, array $data, OrderService $orderService): void {
+                        try {
+                            $orderService->updateOrderStatus($record->id, $data['status_id']);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Статус изменён успешно')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Ошибка при изменении статуса')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+
                 Tables\Actions\Action::make('assign_master')
                     ->label('Назначить мастера')
                     ->icon('heroicon-o-user')
@@ -252,10 +279,43 @@ class OrderResource extends Resource
                             ->searchable()
                             ->required(),
                     ])
-                    ->action(function (Order $record, array $data): void {
-                        $record->update($data);
+                    ->action(function (Order $record, array $data, OrderService $orderService): void {
+                        try {
+                            $orderService->assignMaster($record->id, $data['master_id']);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Мастер назначен успешно')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Ошибка при назначении мастера')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     })
-                    ->visible(fn (Order $record): bool => !$record->master_id),
+                    ->visible(fn(Order $record): bool => !$record->master_id),
+
+                Tables\Actions\Action::make('mark_paid')
+                    ->label('Отметить как оплаченный')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('success')
+                    ->action(function (Order $record, OrderService $orderService): void {
+                        try {
+                            $orderService->markOrderAsPaid($record->id);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Заказ отмечен как оплаченный')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Ошибка при отметке оплаты')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->visible(fn(Order $record): bool => !$record->is_paid),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

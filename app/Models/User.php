@@ -72,6 +72,6 @@ class User extends Authenticatable
      */
     public function getGuardName(): string
     {
-        return 'manager';
+        return 'web';
     }
 }

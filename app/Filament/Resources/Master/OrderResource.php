@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Branch;
 use App\Models\ServiceType;
 use App\Models\OrderStatus;
+use App\Application\Orders\OrderService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -136,7 +137,7 @@ class OrderResource extends Resource
                         'warning' => 'urgent',
                         'gray' => 'normal',
                     ])
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'urgent' => 'Срочно',
                         'normal' => 'Обычно',
                     }),
@@ -144,7 +145,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status.name')
                     ->label('Статус')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Новый' => 'gray',
                         'В работе' => 'warning',
                         'Готов' => 'success',
@@ -173,7 +174,7 @@ class OrderResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('active')
                     ->label('Только активные')
-                    ->query(fn (Builder $query): Builder => $query->where('is_deleted', false))
+                    ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
 
                 Tables\Filters\SelectFilter::make('status_id')
@@ -182,11 +183,11 @@ class OrderResource extends Resource
 
                 Tables\Filters\Filter::make('urgent')
                     ->label('Срочные заказы')
-                    ->query(fn (Builder $query): Builder => $query->where('urgency', 'urgent')),
+                    ->query(fn(Builder $query): Builder => $query->where('urgency', 'urgent')),
 
                 Tables\Filters\Filter::make('unpaid')
                     ->label('Неоплаченные')
-                    ->query(fn (Builder $query): Builder => $query->where('is_paid', false)),
+                    ->query(fn(Builder $query): Builder => $query->where('is_paid', false)),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -194,12 +195,12 @@ class OrderResource extends Resource
                 Tables\Actions\Action::make('repairs')
                     ->label('Работы')
                     ->icon('heroicon-o-wrench')
-                    ->url(fn (Order $record): string => route('filament.admin.resources.master.repairs.index', ['tableFilters[order_id][value]' => $record->id])),
+                    ->url(fn(Order $record): string => route('filament.admin.resources.master.repairs.index', ['tableFilters[order_id][value]' => $record->id])),
 
                 Tables\Actions\Action::make('inventory')
                     ->label('Материалы')
                     ->icon('heroicon-o-cube')
-                    ->url(fn (Order $record): string => route('filament.admin.resources.master.inventory-transactions.index', ['tableFilters[order_id][value]' => $record->id])),
+                    ->url(fn(Order $record): string => route('filament.admin.resources.master.inventory-transactions.index', ['tableFilters[order_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -207,12 +208,34 @@ class OrderResource extends Resource
                         ->label('Отметить "В работе"')
                         ->icon('heroicon-o-play')
                         ->color('warning')
-                        ->action(function ($records): void {
+                        ->action(function ($records, OrderService $orderService): void {
                             $statusId = OrderStatus::where('name', 'В работе')->first()?->id;
                             if ($statusId) {
-                                $records->each(function ($record) use ($statusId) {
-                                    $record->update(['status_id' => $statusId]);
-                                });
+                                $successCount = 0;
+                                $errorCount = 0;
+
+                                foreach ($records as $record) {
+                                    try {
+                                        $orderService->updateOrderStatus($record->id, $statusId);
+                                        $successCount++;
+                                    } catch (\Exception $e) {
+                                        $errorCount++;
+                                    }
+                                }
+
+                                if ($successCount > 0) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title("Обновлено заказов: {$successCount}")
+                                        ->success()
+                                        ->send();
+                                }
+
+                                if ($errorCount > 0) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title("Ошибок при обновлении: {$errorCount}")
+                                        ->warning()
+                                        ->send();
+                                }
                             }
                         }),
 
@@ -220,12 +243,34 @@ class OrderResource extends Resource
                         ->label('Отметить "Готов"')
                         ->icon('heroicon-o-check')
                         ->color('success')
-                        ->action(function ($records): void {
+                        ->action(function ($records, OrderService $orderService): void {
                             $statusId = OrderStatus::where('name', 'Готов')->first()?->id;
                             if ($statusId) {
-                                $records->each(function ($record) use ($statusId) {
-                                    $record->update(['status_id' => $statusId]);
-                                });
+                                $successCount = 0;
+                                $errorCount = 0;
+
+                                foreach ($records as $record) {
+                                    try {
+                                        $orderService->updateOrderStatus($record->id, $statusId);
+                                        $successCount++;
+                                    } catch (\Exception $e) {
+                                        $errorCount++;
+                                    }
+                                }
+
+                                if ($successCount > 0) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title("Обновлено заказов: {$successCount}")
+                                        ->success()
+                                        ->send();
+                                }
+
+                                if ($errorCount > 0) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title("Ошибок при обновлении: {$errorCount}")
+                                        ->warning()
+                                        ->send();
+                                }
                             }
                         }),
                 ]),
@@ -252,7 +297,7 @@ class OrderResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('master_id', fn () => auth()->id())
+            ->where('master_id', fn() => auth()->id())
             ->with(['client', 'branch', 'serviceType', 'status']);
     }
 }
