@@ -15,19 +15,29 @@ class CreateOrder extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Генерируем номер заказа если не указан
-        if (empty($data['order_number'])) {
-            $data['order_number'] = 'ORD-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-        }
-
         // Устанавливаем текущего пользователя как менеджера если не указан
         if (empty($data['manager_id'])) {
             $data['manager_id'] = auth()->user()->id;
         }
 
-        if (empty($data['status_id'])) {
-            $data['status_id'] = 1; // ID статуса "Новый"
+        if (empty($data['branch_id'])) {
+            $mainBranch = \App\Models\Branch::where('is_main', true)->first();
+            if ($mainBranch) {
+                $data['branch_id'] = $mainBranch->id;
+            } else {
+                // Если главный филиал не найден, берем первый доступный
+                $firstBranch = \App\Models\Branch::first();
+                if ($firstBranch) {
+                    $data['branch_id'] = $firstBranch->id;
+                }
+            }
         }
+
+        if (empty($data['status_id'])) {
+            $data['status_id'] = 1;
+        }
+
+        // Номер заказа теперь генерируется в UseCase через OrderNumberGeneratorService
 
         return $data;
     }

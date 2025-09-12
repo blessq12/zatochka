@@ -84,6 +84,8 @@ alwaysApply: true
 -   Сущности и Value Objects
 -   Интерфейсы репозиториев
 -   Доменные события
+-   Доменные сервисы (OrderNumberGeneratorService)
+-   Доменные исключения (OrderNumberAlreadyExistsException)
 
 **Application (app/Application/)**
 
@@ -98,6 +100,7 @@ alwaysApply: true
 -   Внешние API клиенты
 -   Файловые системы
 -   Конфигурации
+-   Методы для проверки существования записей (existsByNumber)
 
 ### Модели (app/Models/)
 
@@ -138,7 +141,7 @@ alwaysApply: true
 
 ### Провайдеры
 
--   `AppServiceProvider` - основные сервисы
+-   `AppServiceProvider` - основные сервисы, привязки репозиториев и доменных сервисов
 -   `FortifyServiceProvider` - аутентификация
 -   `HorizonServiceProvider` - очереди
 -   `TelescopeServiceProvider` - мониторинг
@@ -159,12 +162,20 @@ alwaysApply: true
 -   Интерфейсы в Domain слое
 -   Реализации в Infrastructure слое
 -   Абстракция доступа к данным
+-   Методы для проверки существования записей (existsByNumber)
 
 ### 3. Service Layer
 
 -   Бизнес-логика в сервисах (`app/Services/`)
 -   Тонкие контроллеры
 -   Переиспользуемые сервисы
+
+### 3.1. Domain Services
+
+-   Доменные сервисы в `app/Domain/Service/`
+-   Инкапсулируют сложную бизнес-логику
+-   Независимы от инфраструктуры
+-   Легко тестируются и мокаются
 
 ### 4. Factory Pattern
 
@@ -208,6 +219,7 @@ alwaysApply: true
 -   Кастомные правила в `app/Rules/`
 -   Валидация на уровне формы и модели
 -   Использование `PhoneFormat` для телефонов
+-   Валидация в DTO
 
 ### 4. Безопасность
 

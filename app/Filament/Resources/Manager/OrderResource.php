@@ -71,6 +71,7 @@ class OrderResource extends Resource
                             ->relationship('branch', 'name')
                             ->searchable()
                             ->preload()
+                            ->default(fn() => \App\Models\Branch::where('is_main', true)->first()?->id)
                             ->required(),
 
                         Forms\Components\Select::make('manager_id')

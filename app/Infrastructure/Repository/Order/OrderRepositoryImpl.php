@@ -32,4 +32,9 @@ class OrderRepositoryImpl implements OrderRepository
     {
         return Order::where('id', $id)->exists();
     }
+
+    public function existsByNumber(string $orderNumber): bool
+    {
+        return Order::where('order_number', $orderNumber)->exists();
+    }
 }
