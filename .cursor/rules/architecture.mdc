@@ -61,6 +61,8 @@ alwaysApply: true
 -   Каждый Use Case решает одну задачу
 -   Инкапсулирует бизнес-логику
 -   Независимы от UI и инфраструктуры
+-   Базовый класс `BaseOrderUseCase` с общими методами
+-   Интерфейс `UseCaseInterface` для стандартизации
 
 ### 3. Event Sourcing (опционально)
 
@@ -73,6 +75,14 @@ alwaysApply: true
 -   Интерфейсы в Domain слое
 -   Реализации в Infrastructure слое
 -   Абстракция доступа к данным
+-   Методы для проверки существования записей (existsByNumber)
+
+### 5. Mapper Pattern
+
+-   Интерфейсы мапперов в Domain слое
+-   Реализации в Infrastructure слое
+-   Преобразование между Domain Entity и Eloquent Model
+-   Двунаправленное маппирование (toDomain, toEloquent, fromArray)
 
 ## Структура приложения
 
@@ -81,22 +91,29 @@ alwaysApply: true
 **Domain (app/Domain/)**
 
 -   Бизнес-логика и правила
--   Сущности и Value Objects
--   Интерфейсы репозиториев
+-   Сущности и Value Objects (Order Entity)
+-   Интерфейсы репозиториев (OrderRepository)
+-   Интерфейсы мапперов (OrderMapper)
 -   Доменные события
--   Доменные сервисы (OrderNumberGeneratorService)
--   Доменные исключения (OrderNumberAlreadyExistsException)
+-   Доменные сервисы (OrderNumberGeneratorService, OrderStatusGroupingService)
+-   Доменные исключения (OrderNumberAlreadyExistsException, OrderException)
+-   DTO для передачи данных (CreateOrderDTO, UpdateOrderDTO, GetOrderDTO)
+-   Enums для типизации (OrderStatus, OrderType, OrderUrgency)
+-   Factory для создания объектов (OrderFactory)
 
 **Application (app/Application/)**
 
--   Use Cases - бизнес-сценарии
+-   Use Cases - бизнес-сценарии (CreateOrderUseCase, UpdateOrderUseCase, DeleteOrderUseCase, GetOrderUseCase)
+-   Базовые классы для Use Cases (BaseOrderUseCase)
+-   Интерфейсы Use Cases (UseCaseInterface)
 -   Сервисы приложения
 -   DTO и команды
 -   Интерфейсы сервисов
 
 **Infrastructure (app/Infrastructure/)**
 
--   Реализации репозиториев
+-   Реализации репозиториев (OrderRepositoryImpl)
+-   Реализации мапперов (OrderMapperImpl)
 -   Внешние API клиенты
 -   Файловые системы
 -   Конфигурации
@@ -123,11 +140,12 @@ alwaysApply: true
 
 **Справочники:**
 
--   `ServiceType` - типы услуг
--   `OrderStatus` - статусы заказов
 -   `StockCategory` - категории товаров
 -   `Tool` - инструменты
 -   `EquipmentType` - типы оборудования
+-   `DeliveryType` - типы доставки
+-   `PaymentType` - типы оплаты
+-   `ToolType` - типы инструментов
 
 ### Сервисы (app/Services/)
 
@@ -141,12 +159,13 @@ alwaysApply: true
 
 ### Провайдеры
 
--   `AppServiceProvider` - основные сервисы, привязки репозиториев и доменных сервисов
+-   `AppServiceProvider` - основные сервисы, привязки репозиториев, мапперов и доменных сервисов
 -   `FortifyServiceProvider` - аутентификация
 -   `HorizonServiceProvider` - очереди
 -   `TelescopeServiceProvider` - мониторинг
 -   `ManagerPanelProvider` - панель менеджера
 -   `MasterPanelProvider` - панель мастера
+-   `MiddlewareServiceProvider` - middleware для панелей
 
 ## Паттерны проектирования
 
@@ -198,6 +217,31 @@ alwaysApply: true
 -   Бизнес-логика в моделях
 -   Scope методы для запросов
 
+### 8. DTO Pattern
+
+-   Data Transfer Objects для передачи данных между слоями
+-   Валидация данных в DTO
+-   Immutable объекты с readonly свойствами
+-   Методы fromArray() и toArray() для сериализации
+
+### 9. Factory Pattern (Domain)
+
+-   Доменные фабрики для создания сложных объектов
+-   Статические методы create() в Entity
+-   Отдельные Factory классы для сложной логики создания
+
+### 10. Enum Pattern
+
+-   Типизированные перечисления для статусов и типов
+-   Методы для получения меток и описаний
+-   Бизнес-логика в enum методах (isFinal, isManagerStatus, etc.)
+
+### 11. State Machine Pattern
+
+-   Управление переходами между статусами заказов
+-   Сервис OrderStatusGroupingService для логики переходов
+-   Валидация допустимых переходов между статусами
+
 ## Правила разработки
 
 ### 1. Модели
@@ -207,6 +251,8 @@ alwaysApply: true
 -   Scope методы для частых запросов
 -   Soft deletes через `is_deleted` поле
 -   UUID для пользователей
+-   Использование enum полей для типизации (OrderStatus, OrderType, OrderUrgency)
+-   Поддержка медиафайлов через Spatie MediaLibrary
 
 ### 2. Связи
 
@@ -249,6 +295,22 @@ alwaysApply: true
 -   Psalm для типизации
 -   Автоформатирование через Pint
 
+### 8. Dependency Injection
+
+-   Привязка интерфейсов к реализациям в AppServiceProvider
+-   Singleton для репозиториев и мапперов
+-   Автоматическое внедрение зависимостей в Use Cases
+-   Использование app() helper для получения сервисов
+
+### 9. Domain Entity
+
+-   Immutable объекты с приватными свойствами
+-   Только getter методы для доступа к данным
+-   Бизнес-методы для проверки состояний
+-   Mutator методы для изменения состояния
+-   Factory методы для создания объектов
+-   Методы toArray() для сериализации
+
 ## Команды разработки
 
 ```bash
@@ -273,9 +335,13 @@ composer fix
 -   `clients` - клиенты
 -   `companies` - компании
 -   `branches` - филиалы
--   `orders` - заказы
+-   `orders` - заказы (с enum полями для типизации)
 -   `stock_items` - товары
 -   `warehouses` - склады
+-   `stock_movements` - движения товаров
+-   `repairs` - ремонты
+-   `reviews` - отзывы
+-   `notifications` - уведомления
 
 ### Аудит и логирование
 
@@ -300,10 +366,47 @@ composer fix
 
 -   `spatie/laravel-medialibrary` для файлов
 -   Привязка к заказам и другим сущностям
+-   Таблица `media` для хранения метаданных файлов
+
+## Новые архитектурные решения
+
+### 1. Domain Entity Pattern
+
+-   Полноценные доменные сущности вместо простых моделей
+-   Инкапсуляция бизнес-логики в Entity
+-   Immutable объекты с контролируемыми изменениями
+-   Бизнес-методы для проверки состояний
+
+### 2. Enum-based Status Management
+
+-   Типизированные статусы через PHP 8.1+ Enums
+-   Бизнес-логика в enum методах
+-   Автоматическая валидация переходов между статусами
+-   Группировка статусов по ролям (менеджер/мастер)
+
+### 3. Use Case Architecture
+
+-   Базовый класс для стандартизации Use Cases
+-   Интерфейс для типизации Use Cases
+-   Разделение валидации и выполнения
+-   Интеграция с DTO для передачи данных
+
+### 4. Mapper Layer
+
+-   Отдельный слой для преобразования данных
+-   Двунаправленное маппирование между слоями
+-   Типизированные интерфейсы мапперов
+-   Изоляция Domain от Infrastructure
+
+### 5. State Machine для заказов
+
+-   Централизованное управление переходами статусов
+-   Валидация допустимых переходов
+-   Группировка статусов по ролям пользователей
+-   Автоматическое определение доступных действий
 
 ### Очереди
 
--   Redis для очередей
 -   Horizon для мониторинга
 -   Фоновые задачи для бонусов
 
