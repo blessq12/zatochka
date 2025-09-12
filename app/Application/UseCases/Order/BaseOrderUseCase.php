@@ -5,6 +5,7 @@ namespace App\Application\UseCases\Order;
 use App\Application\UseCases\UseCaseInterface;
 use App\Domain\Order\Repository\OrderRepository;
 
+
 abstract class BaseOrderUseCase implements UseCaseInterface
 {
     protected array $data;
@@ -23,6 +24,7 @@ abstract class BaseOrderUseCase implements UseCaseInterface
 
     public function validate(): self
     {
+        $this->validateSpecificData();
         return $this;
     }
 

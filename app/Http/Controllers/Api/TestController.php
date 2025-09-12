@@ -15,7 +15,18 @@ class TestController extends Controller
 {
     public function createOrder(Request $request)
     {
-        return (new CreateOrderUseCase())->loadData($request->all())->validate()->execute();
+        try {
+            (new CreateOrderUseCase())
+                ->loadData($request->all())
+                ->validate()
+                ->execute();
+
+            return response()->json(['message' => 'Order created successfully'], 200);
+        } catch (\App\Domain\Order\Exception\OrderException $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function getOrder(int $id)

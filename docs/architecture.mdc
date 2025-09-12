@@ -1,0 +1,433 @@
+# Архитектура проекта Zatochka
+
+## Технологический стек
+
+### Backend (PHP)
+
+-   **Laravel 12.0** - основной фреймворк
+-   **PHP 8.2+** - минимальная версия
+-   **Filament 3.3** - админ-панель
+-   **Laravel Fortify** - аутентификация
+-   **Laravel Sanctum** - API токены
+-   **Laravel Horizon** - управление очередями
+-   **Laravel Telescope** - отладка и мониторинг
+
+### Пакеты Spatie
+
+-   **laravel-permission** - роли и права доступа
+-   **laravel-activitylog** - логирование действий
+-   **laravel-event-sourcing** - Event Sourcing
+-   **laravel-data** - Data Transfer Objects
+-   **laravel-query-builder** - построение запросов
+-   **laravel-medialibrary** - работа с медиафайлами
+
+### Frontend
+
+-   **Vue 3.2** - реактивный фреймворк
+-   **Tailwind CSS 4.1** - CSS фреймворк
+-   **Bootstrap 5.2** - UI компоненты
+-   **GSAP 3.13** - анимации
+-   **Maska 3.2** - маски ввода
+-   **Vite 7.0** - сборщик
+
+### Инструменты разработки
+
+-   **PHPStan** - статический анализ
+-   **Psalm** - анализ типов
+-   **PHP CS Fixer** - форматирование кода
+-   **PHPUnit** - тестирование
+-   **Laravel Debugbar** - отладка
+
+## Архитектурные принципы
+
+### 1. Гексагональная архитектура (Hexagonal Architecture)
+
+Проект использует гексагональную архитектуру с разделением на слои:
+
+-   **Domain** - бизнес-логика и правила (ядро приложения)
+-   **Application** - Use Cases и сервисы приложения
+-   **Infrastructure** - внешние зависимости (БД, API, файлы)
+-   **Presentation** - UI слой (Filament, Controllers)
+
+### 2. Use Cases Pattern
+
+-   **Application/UseCases** - бизнес-сценарии приложения
+-   Каждый Use Case решает одну задачу
+-   Инкапсулирует бизнес-логику
+-   Независимы от UI и инфраструктуры
+
+### 3. Event Sourcing (опционально)
+
+-   Настроен для аудита и восстановления состояния
+-   Используется только там, где это действительно нужно
+-   Проекторы для построения представлений
+
+### 4. Repository Pattern
+
+-   Интерфейсы в Domain слое
+-   Реализации в Infrastructure слое
+-   Абстракция доступа к данным
+
+## Структура приложения
+
+### Гексагональная архитектура
+
+**Domain (app/Domain/)**
+
+-   Бизнес-логика и правила
+-   Сущности и Value Objects
+-   Интерфейсы репозиториев
+-   Доменные события
+-   DTO для передачи данных
+-   Исключения домена
+
+**Application (app/Application/)**
+
+-   Use Cases - бизнес-сценарии
+-   Сервисы приложения
+-   DTO и команды
+-   Интерфейсы сервисов
+
+**Infrastructure (app/Infrastructure/)**
+
+-   Реализации репозиториев
+-   Внешние API клиенты
+-   Файловые системы
+-   Конфигурации
+
+### Модели (app/Models/)
+
+**Основные сущности:**
+
+-   `User` - пользователи системы (менеджеры, мастера)
+-   `Client` - клиенты сервиса
+-   `Company` - компании
+-   `Branch` - филиалы
+-   `Order` - заказы
+-   `Repair` - ремонты
+-   `StockItem` - товары на складе
+-   `Warehouse` - склады
+
+**Бонусная система:**
+
+-   `BonusAccount` - бонусные счета
+-   `BonusTransaction` - транзакции бонусов
+-   `BonusSettings` - настройки бонусов
+
+**Справочники:**
+
+-   `ServiceType` - типы услуг
+-   `OrderStatus` - статусы заказов
+-   `StockCategory` - категории товаров
+-   `Tool` - инструменты
+-   `EquipmentType` - типы оборудования
+-   `PaymentType` - типы платежей
+-   `DeliveryType` - типы доставки
+-   `DiscountRule` - правила скидок
+
+**Системные:**
+
+-   `OrderLog` - логи заказов
+-   `Notification` - уведомления
+-   `Review` - отзывы
+-   `TelegramChat` - чаты Telegram
+-   `TelegramMessage` - сообщения Telegram
+-   `StockMovement` - движения товаров
+
+### Use Cases (app/Application/UseCases/)
+
+**Order Use Cases:**
+
+-   `CreateOrderUseCase` - создание заказа
+-   `GetOrderUseCase` - получение заказа
+-   `UpdateOrderUseCase` - обновление заказа
+-   `DeleteOrderUseCase` - удаление заказа
+-   `BaseOrderUseCase` - базовый класс для заказов
+
+**Интерфейсы:**
+
+-   `UseCaseInterface` - базовый интерфейс для всех Use Cases
+
+### Domain (app/Domain/)
+
+**Order Domain:**
+
+-   `DTO/CreateOrderDTO` - DTO для создания заказа
+-   `DTO/GetOrderDTO` - DTO для получения заказа
+-   `DTO/UpdateOrderDTO` - DTO для обновления заказа
+-   `DTO/DeleteOrderDTO` - DTO для удаления заказа
+-   `Repository/OrderRepository` - интерфейс репозитория заказов
+-   `Exception/OrderException` - исключения домена заказов
+
+### Infrastructure (app/Infrastructure/)
+
+**Repository Implementations:**
+
+-   `Repository/Order/OrderRepositoryImpl` - реализация репозитория заказов
+
+### Сервисы (app/Services/)
+
+-   `BonusService` - бизнес-логика бонусной системы
+
+### Filament панели
+
+-   **Manager Panel** (`/manager`) - панель менеджера
+-   **Master Panel** (`/master`) - панель мастера
+-   Роли: `manager`, `master`
+
+**Filament Resources:**
+
+-   `Manager/OrderResource` - ресурс заказов для менеджеров
+-   `Manager/OrderResource/Pages/ListOrders` - страница списка заказов
+-   `Manager/OrderResource/Pages/CreateOrder` - страница создания заказа
+-   `Manager/OrderResource/Pages/EditOrder` - страница редактирования заказа
+
+**Filament Forms:**
+
+-   `Components/WorkingScheduleInput` - компонент для расписания работы
+
+### Провайдеры
+
+-   `AppServiceProvider` - основные сервисы и привязки репозиториев
+-   `FortifyServiceProvider` - аутентификация
+-   `HorizonServiceProvider` - очереди
+-   `TelescopeServiceProvider` - мониторинг
+-   `ManagerPanelProvider` - панель менеджера
+-   `MasterPanelProvider` - панель мастера
+-   `MiddlewareServiceProvider` - middleware
+
+## Паттерны проектирования
+
+### 1. Use Cases Pattern
+
+-   Бизнес-сценарии в `app/Application/UseCases/`
+-   Каждый Use Case решает одну задачу
+-   Независимы от UI и инфраструктуры
+-   Легко тестируются
+-   Базовый интерфейс `UseCaseInterface`
+-   Абстрактный базовый класс `BaseOrderUseCase`
+
+### 2. Repository Pattern
+
+-   Интерфейсы в Domain слое
+-   Реализации в Infrastructure слое
+-   Абстракция доступа к данным
+-   Привязка через Service Container
+
+### 3. Service Layer
+
+-   Бизнес-логика в сервисах (`app/Services/`)
+-   Тонкие контроллеры
+-   Переиспользуемые сервисы
+
+### 4. Factory Pattern
+
+-   Создание сложных объектов
+-   Eloquent фабрики для тестов
+
+### 5. Observer Pattern
+
+-   События модели
+-   Автоматические действия при изменениях
+
+### 6. Strategy Pattern
+
+-   Различные алгоритмы расчета
+-   Плагинная архитектура
+
+### 7. Active Record
+
+-   Прямая работа с Eloquent моделями
+-   Бизнес-логика в моделях
+-   Scope методы для запросов
+
+### 8. DTO Pattern
+
+-   Data Transfer Objects для передачи данных между слоями
+-   Валидация на уровне DTO
+-   Неизменяемые объекты (readonly properties)
+
+### 9. Exception Handling
+
+-   Доменные исключения для бизнес-логики
+-   Централизованная обработка ошибок
+
+## Правила разработки
+
+### 1. Модели
+
+-   Всегда используй `HasFactory` trait
+-   Обязательные `$fillable` и `$casts`
+-   Scope методы для частых запросов
+-   Soft deletes через `is_deleted` поле
+-   UUID для пользователей
+-   Явное объявление связей
+
+### 2. Связи
+
+-   Явное объявление всех связей
+-   Правильные типы связей (belongsTo, hasMany, etc.)
+-   Eager loading для N+1 проблем
+
+### 3. Валидация
+
+-   Кастомные правила в `app/Rules/`
+-   Валидация на уровне формы и модели
+-   Валидация в DTO
+-   Использование `PhoneFormat` для телефонов
+
+### 4. Безопасность
+
+-   Роли и права через Spatie Permission
+-   Middleware для защиты роутов
+-   CSRF защита
+-   Rate limiting для API
+
+### 5. Производительность
+
+-   Индексы в миграциях
+-   Кэширование через Redis
+-   Очереди для тяжелых операций
+-   Eager loading связей
+
+### 6. Тестирование
+
+-   Unit тесты для сервисов
+-   Feature тесты для API
+-   Фабрики для тестовых данных
+-   Моки для внешних сервисов
+
+### 7. Код-стайл
+
+-   PSR-12 стандарт
+-   PHPStan level 0
+-   Psalm для типизации
+-   Автоформатирование через Pint
+
+## Команды разработки
+
+```bash
+# Запуск в dev режиме
+composer dev
+
+# Анализ кода
+composer analyse
+
+# Тестирование
+composer test
+
+# Исправление стиля
+composer fix
+```
+
+## Структура базы данных
+
+### Основные таблицы
+
+-   `users` - пользователи системы
+-   `clients` - клиенты
+-   `companies` - компании
+-   `branches` - филиалы
+-   `orders` - заказы
+-   `stock_items` - товары
+-   `warehouses` - склады
+
+### Аудит и логирование
+
+-   `activity_log` - логи действий
+-   `stored_events` - события Event Sourcing
+-   `order_logs` - логи заказов
+
+### Бонусная система
+
+-   `bonus_accounts` - бонусные счета
+-   `bonus_transactions` - транзакции
+-   `bonus_settings` - настройки
+
+### Справочники
+
+-   `service_types` - типы услуг
+-   `order_statuses` - статусы заказов
+-   `stock_categories` - категории товаров
+-   `tools` - инструменты
+-   `equipment_types` - типы оборудования
+-   `payment_types` - типы платежей
+-   `delivery_types` - типы доставки
+-   `discount_rules` - правила скидок
+
+### Системные таблицы
+
+-   `notifications` - уведомления
+-   `reviews` - отзывы
+-   `telegram_chats` - чаты Telegram
+-   `telegram_messages` - сообщения Telegram
+-   `stock_movements` - движения товаров
+
+## Интеграции
+
+### Telegram
+
+-   Уведомления через `laravel-notification-channels/telegram`
+-   Модели `TelegramChat`, `TelegramMessage`
+
+### Медиафайлы
+
+-   `spatie/laravel-medialibrary` для файлов
+-   Привязка к заказам и другим сущностям
+
+### Очереди
+
+-   Redis для очередей
+-   Horizon для мониторинга
+-   Фоновые задачи для бонусов
+
+## Мониторинг и отладка
+
+### Telescope
+
+-   Запросы к БД
+-   Очереди
+-   События
+-   Логи
+
+### Debugbar
+
+-   Профилирование запросов
+-   Переменные
+-   Время выполнения
+
+### Логирование
+
+-   Activity Log для действий пользователей
+-   Laravel Log для системных событий
+-   Кастомные логи для бизнес-событий
+
+## Архитектурные особенности
+
+### Use Cases Implementation
+
+-   Базовый интерфейс `UseCaseInterface` с методами `loadData()`, `validate()`, `execute()`
+-   Абстрактный класс `BaseOrderUseCase` для заказов
+-   Конкретные реализации для CRUD операций
+-   Валидация через DTO
+-   Обработка исключений домена
+
+### Repository Pattern Implementation
+
+-   Интерфейс `OrderRepository` в Domain слое
+-   Реализация `OrderRepositoryImpl` в Infrastructure слое
+-   Привязка через Service Container в `AppServiceProvider`
+
+### DTO Pattern
+
+-   Readonly properties для неизменяемости
+-   Валидация в конструкторе
+-   Методы `fromArray()` и `toArray()` для сериализации
+-   Доменные исключения при ошибках валидации
+
+### Filament Integration
+
+-   Использование Use Cases в Filament ресурсах
+-   Обработка исключений через уведомления
+-   Кастомные компоненты форм
+-   Разделение панелей по ролям
