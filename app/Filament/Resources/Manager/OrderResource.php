@@ -11,13 +11,15 @@ use App\Filament\Resources\Manager\OrderResource\RelationManagers;
 use App\Models\Order;
 use App\Models\Client;
 use App\Models\Branch;
-use App\Models\ServiceType;
-use App\Models\OrderStatus;
+use App\Domain\Order\Enum\OrderType;
+use App\Domain\Order\Enum\OrderStatus;
+use App\Domain\Order\Enum\OrderUrgency;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -59,11 +61,10 @@ class OrderResource extends Resource
                                     ->maxLength(255),
                             ]),
 
-                        Forms\Components\Select::make('service_type_id')
+                        Forms\Components\Select::make('type')
                             ->label('Тип услуги')
-                            ->relationship('serviceType', 'name')
-                            ->searchable()
-                            ->preload()
+                            ->options(OrderType::getOptions())
+                            ->default(OrderType::REPAIR)
                             ->required(),
 
                         Forms\Components\Select::make('branch_id')
@@ -79,7 +80,7 @@ class OrderResource extends Resource
                             ->relationship('manager', 'name')
                             ->searchable()
                             ->preload()
-                            ->default(auth()->id())
+                            ->default(fn() => \Illuminate\Support\Facades\Auth::id())
                             ->required(),
 
                         Forms\Components\Select::make('master_id')
@@ -97,22 +98,16 @@ class OrderResource extends Resource
                             ->disabled()
                             ->dehydrated(false),
 
-                        Forms\Components\Select::make('status_id')
+                        Forms\Components\Select::make('status')
                             ->label('Статус')
-                            ->relationship('status', 'name')
-                            ->searchable()
-                            ->preload()
+                            ->options(OrderStatus::getOptions())
+                            ->default(OrderStatus::NEW)
                             ->required(),
 
                         Forms\Components\Select::make('urgency')
                             ->label('Срочность')
-                            ->options([
-                                'low' => 'Низкая',
-                                'normal' => 'Обычная',
-                                'high' => 'Высокая',
-                                'urgent' => 'Срочная',
-                            ])
-                            ->default('normal')
+                            ->options(OrderUrgency::getOptions())
+                            ->default(OrderUrgency::NORMAL)
                             ->required(),
 
                         Forms\Components\Textarea::make('description')
@@ -164,6 +159,41 @@ class OrderResource extends Resource
                             ->visible(fn(Forms\Get $get) => $get('is_paid')),
                     ])
                     ->columns(3),
+
+                Forms\Components\Section::make('Фотографии')
+                    ->schema([
+                        SpatieMediaLibraryFileUpload::make('before_photos')
+                            ->label('Фото "До" (что принес клиент)')
+                            ->collection('before_photos')
+                            ->multiple()
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                '16:9',
+                                '4:3',
+                                '1:1',
+                            ])
+                            ->maxFiles(10)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->helperText('Загрузите фотографии устройства/проблемы до начала работ'),
+
+                        SpatieMediaLibraryFileUpload::make('after_photos')
+                            ->label('Фото "После" (результат работ)')
+                            ->collection('after_photos')
+                            ->multiple()
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                '16:9',
+                                '4:3',
+                                '1:1',
+                            ])
+                            ->maxFiles(10)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->helperText('Загрузите фотографии результата работ (можно добавить позже)'),
+                    ])
+                    ->columns(1)
+                    ->collapsible(),
             ]);
     }
 
@@ -181,39 +211,32 @@ class OrderResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('serviceType.name')
+                Tables\Columns\TextColumn::make('type')
                     ->label('Тип услуги')
+                    ->formatStateUsing(fn(OrderType $state): string => $state->getLabel())
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('status.name')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Новый' => 'gray',
-                        'В работе' => 'warning',
-                        'Готов' => 'success',
-                        'Отменен' => 'danger',
-                        default => 'gray',
+                    ->formatStateUsing(fn(OrderStatus $state): string => $state->getLabel())
+                    ->color(fn(OrderStatus $state): string => match ($state) {
+                        OrderStatus::NEW => 'gray',
+                        OrderStatus::CONSULTATION => 'blue',
+                        OrderStatus::DIAGNOSTIC => 'yellow',
+                        OrderStatus::IN_WORK => 'warning',
+                        OrderStatus::WAITING_PARTS => 'orange',
+                        OrderStatus::READY => 'success',
+                        OrderStatus::ISSUED => 'info',
+                        OrderStatus::CANCELLED => 'danger',
                     }),
 
                 Tables\Columns\TextColumn::make('urgency')
                     ->label('Срочность')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'urgent' => 'danger',
-                        'high' => 'warning',
-                        'normal' => 'success',
-                        'low' => 'gray',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        'urgent' => 'Срочная',
-                        'high' => 'Высокая',
-                        'normal' => 'Обычная',
-                        'low' => 'Низкая',
-                        default => $state,
-                    }),
+                    ->formatStateUsing(fn(OrderUrgency $state): string => $state->getLabel())
+                    ->color(fn(OrderUrgency $state): string => $state->getColor()),
 
                 Tables\Columns\TextColumn::make('manager.name')
                     ->label('Менеджер')
@@ -234,6 +257,22 @@ class OrderResource extends Resource
                     ->label('Оплачен')
                     ->boolean(),
 
+                Tables\Columns\TextColumn::make('photos_count')
+                    ->label('Фото')
+                    ->formatStateUsing(function ($record) {
+                        $beforeCount = $record->getMedia('before_photos')->count();
+                        $afterCount = $record->getMedia('after_photos')->count();
+                        $total = $beforeCount + $afterCount;
+
+                        if ($total === 0) {
+                            return 'Нет фото';
+                        }
+
+                        return "📷 {$total} ({$beforeCount} до, {$afterCount} после)";
+                    })
+                    ->badge()
+                    ->color(fn($state) => str_contains($state, 'Нет') ? 'gray' : 'success'),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')
                     ->dateTime()
@@ -241,18 +280,13 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status_id')
+                Tables\Filters\SelectFilter::make('status')
                     ->label('Статус')
-                    ->relationship('status', 'name'),
+                    ->options(OrderStatus::getOptions()),
 
                 Tables\Filters\SelectFilter::make('urgency')
                     ->label('Срочность')
-                    ->options([
-                        'low' => 'Низкая',
-                        'normal' => 'Обычная',
-                        'high' => 'Высокая',
-                        'urgent' => 'Срочная',
-                    ]),
+                    ->options(OrderUrgency::getOptions()),
 
                 Tables\Filters\SelectFilter::make('manager_id')
                     ->label('Менеджер')
@@ -270,7 +304,8 @@ class OrderResource extends Resource
                     ->native(false),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->url(fn(Order $record): string => static::getUrl('view', ['record' => $record])),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->using(function (Order $record) {
@@ -329,6 +364,7 @@ class OrderResource extends Resource
         return [
             'index' => Pages\ListOrders::route('/'),
             'create' => Pages\CreateOrder::route('/create'),
+            'view' => Pages\ViewOrder::route('/{record}'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }

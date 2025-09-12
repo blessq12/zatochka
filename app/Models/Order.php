@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Domain\Order\Enum\OrderStatus;
+use App\Domain\Order\Enum\OrderType;
+use App\Domain\Order\Enum\OrderUrgency;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
@@ -18,8 +21,8 @@ class Order extends Model implements HasMedia
         'manager_id',
         'master_id',
         'order_number',
-        'service_type_id',
-        'status_id',
+        'type',
+        'status',
         'urgency',
         'is_paid',
         'paid_at',
@@ -32,7 +35,9 @@ class Order extends Model implements HasMedia
     ];
 
     protected $casts = [
-        'urgency' => 'string',
+        'type' => OrderType::class,
+        'status' => OrderStatus::class,
+        'urgency' => OrderUrgency::class,
         'is_paid' => 'boolean',
         'paid_at' => 'datetime',
         'total_amount' => 'decimal:2',
@@ -63,15 +68,7 @@ class Order extends Model implements HasMedia
         return $this->belongsTo(User::class, 'master_id');
     }
 
-    public function serviceType()
-    {
-        return $this->belongsTo(ServiceType::class);
-    }
 
-    public function status()
-    {
-        return $this->belongsTo(OrderStatus::class, 'status_id');
-    }
 
     public function discount()
     {
@@ -141,5 +138,64 @@ class Order extends Model implements HasMedia
 
         $this->addMediaCollection('documents')
             ->acceptsMimeTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+    }
+
+    // Методы для работы со статусами
+    public function isNew(): bool
+    {
+        return $this->status === OrderStatus::NEW;
+    }
+
+    public function isInWork(): bool
+    {
+        return $this->status === OrderStatus::IN_WORK;
+    }
+
+    public function isReady(): bool
+    {
+        return $this->status === OrderStatus::READY;
+    }
+
+    public function isIssued(): bool
+    {
+        return $this->status === OrderStatus::ISSUED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === OrderStatus::CANCELLED;
+    }
+
+    public function isFinal(): bool
+    {
+        return $this->status->isFinal();
+    }
+
+    public function isManagerStatus(): bool
+    {
+        return $this->status->isManagerStatus();
+    }
+
+    public function isWorkshopStatus(): bool
+    {
+        return $this->status->isWorkshopStatus();
+    }
+
+    public function canTransferToWorkshop(): bool
+    {
+        return app(\App\Domain\Order\Service\OrderStatusGroupingService::class)
+            ->canTransferToWorkshop($this->status);
+    }
+
+    public function canTransferToManager(): bool
+    {
+        return app(\App\Domain\Order\Service\OrderStatusGroupingService::class)
+            ->canTransferToManager($this->status);
+    }
+
+    public function getAvailableTransitions(): array
+    {
+        return app(\App\Domain\Order\Service\OrderStatusGroupingService::class)
+            ->getAvailableTransitions($this->status);
     }
 }

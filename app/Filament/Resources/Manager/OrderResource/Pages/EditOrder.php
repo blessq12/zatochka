@@ -61,18 +61,21 @@ class EditOrder extends EditRecord
     protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
     {
         try {
-            $updatedOrder = (new UpdateOrderUseCase())
+            $updatedOrderEntity = (new UpdateOrderUseCase())
                 ->loadData(['id' => $record->id, ...$data])
                 ->validate()
                 ->execute();
 
+            // Получаем обновленную Eloquent модель для Filament
+            $updatedEloquentOrder = \App\Models\Order::findOrFail($updatedOrderEntity->getId());
+
             Notification::make()
                 ->title('Заказ обновлен')
-                ->body('Заказ #' . $updatedOrder->order_number . ' успешно обновлен')
+                ->body('Заказ #' . $updatedOrderEntity->getOrderNumber() . ' успешно обновлен')
                 ->success()
                 ->send();
 
-            return $updatedOrder;
+            return $updatedEloquentOrder;
         } catch (OrderException $e) {
             Notification::make()
                 ->title('Ошибка обновления заказа')

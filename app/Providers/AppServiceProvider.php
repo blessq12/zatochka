@@ -11,6 +11,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // mappers
+        $this->app->singleton(\App\Domain\Order\Mapper\OrderMapper::class, \App\Infrastructure\Mapper\OrderMapperImpl::class);
+
         // repositories implementation
         $this->app->singleton(\App\Domain\Order\Repository\OrderRepository::class, \App\Infrastructure\Repository\Order\OrderRepositoryImpl::class);
 
@@ -20,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(\App\Domain\Order\Repository\OrderRepository::class)
             );
         });
+
+        $this->app->singleton(\App\Domain\Order\Service\OrderStatusGroupingService::class);
     }
 
     /**

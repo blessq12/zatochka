@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Manager\ClientResource\RelationManagers;
 
-use App\Models\ServiceType;
-use App\Models\OrderStatus;
+use App\Domain\Order\Enum\OrderType;
+use App\Domain\Order\Enum\OrderStatus;
 use App\Models\User;
 use App\Models\Branch;
 use Filament\Forms;
@@ -29,11 +29,10 @@ class OrdersRelationManager extends RelationManager
                             ->required()
                             ->maxLength(50),
 
-                        Forms\Components\Select::make('service_type_id')
+                        Forms\Components\Select::make('type')
                             ->label('Тип услуги')
-                            ->relationship('serviceType', 'name')
-                            ->searchable()
-                            ->preload()
+                            ->options(OrderType::getOptions())
+                            ->default(OrderType::REPAIR)
                             ->required(),
 
                         Forms\Components\Select::make('branch_id')
@@ -42,11 +41,11 @@ class OrdersRelationManager extends RelationManager
                             ->searchable()
                             ->preload(),
 
-                        Forms\Components\Select::make('status_id')
+                        Forms\Components\Select::make('status')
                             ->label('Статус')
-                            ->relationship('status', 'name')
-                            ->searchable()
-                            ->preload(),
+                            ->options(OrderStatus::getOptions())
+                            ->default(OrderStatus::NEW)
+                            ->required(),
 
                         Forms\Components\Select::make('urgency')
                             ->label('Срочность')
@@ -118,22 +117,25 @@ class OrdersRelationManager extends RelationManager
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('serviceType.name')
+                Tables\Columns\TextColumn::make('type')
                     ->label('Тип услуги')
+                    ->formatStateUsing(fn(OrderType $state): string => $state->getLabel())
                     ->searchable()
-                    ->sortable()
-                    ->placeholder('Не указан'),
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('status.name')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
-                    ->placeholder('Не указан')
-                    ->color(fn(?string $state): string => match ($state) {
-                        'Новый' => 'gray',
-                        'В работе' => 'warning',
-                        'Готов' => 'success',
-                        'Отменен' => 'danger',
-                        default => 'gray',
+                    ->formatStateUsing(fn(OrderStatus $state): string => $state->getLabel())
+                    ->color(fn(OrderStatus $state): string => match ($state) {
+                        OrderStatus::NEW => 'gray',
+                        OrderStatus::CONSULTATION => 'blue',
+                        OrderStatus::DIAGNOSTIC => 'yellow',
+                        OrderStatus::IN_WORK => 'warning',
+                        OrderStatus::WAITING_PARTS => 'orange',
+                        OrderStatus::READY => 'success',
+                        OrderStatus::ISSUED => 'info',
+                        OrderStatus::CANCELLED => 'danger',
                     }),
 
                 Tables\Columns\TextColumn::make('urgency')

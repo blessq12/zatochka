@@ -17,7 +17,7 @@ class CreateOrder extends CreateRecord
     {
         // Устанавливаем текущего пользователя как менеджера если не указан
         if (empty($data['manager_id'])) {
-            $data['manager_id'] = auth()->user()->id;
+            $data['manager_id'] = \Illuminate\Support\Facades\Auth::id();
         }
 
         if (empty($data['branch_id'])) {
@@ -33,9 +33,7 @@ class CreateOrder extends CreateRecord
             }
         }
 
-        if (empty($data['status_id'])) {
-            $data['status_id'] = 1;
-        }
+        // Статус и тип теперь устанавливаются по умолчанию в форме
 
         // Номер заказа теперь генерируется в UseCase через OrderNumberGeneratorService
 
@@ -45,18 +43,21 @@ class CreateOrder extends CreateRecord
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
         try {
-            $order = (new CreateOrderUseCase())
+            $orderEntity = (new CreateOrderUseCase())
                 ->loadData($data)
                 ->validate()
                 ->execute();
 
+            // Получаем Eloquent модель для Filament
+            $eloquentOrder = \App\Models\Order::findOrFail($orderEntity->getId());
+
             Notification::make()
                 ->title('Заказ создан')
-                ->body('Заказ #' . $order->order_number . ' успешно создан')
+                ->body('Заказ #' . $orderEntity->getOrderNumber() . ' успешно создан')
                 ->success()
                 ->send();
 
-            return $order;
+            return $eloquentOrder;
         } catch (OrderException $e) {
             Notification::make()
                 ->title('Ошибка создания заказа')
