@@ -1,0 +1,169 @@
+---
+description: Инфраструктурная архитектура приложения - модели, сервисы, репозитории
+globs:
+alwaysApply: true
+---
+
+# Инфраструктурная архитектура приложения
+
+## Модели (app/Models/)
+
+### Основные сущности
+
+-   `User` - пользователи системы (менеджеры, мастера)
+-   `Client` - клиенты сервиса
+-   `Company` - компании
+-   `Branch` - филиалы
+-   `Order` - заказы
+-   `Repair` - ремонты
+-   `StockItem` - товары на складе
+-   `Warehouse` - склады
+
+### Бонусная система
+
+-   `BonusAccount` - бонусные счета
+-   `BonusTransaction` - транзакции бонусов
+-   `BonusSettings` - настройки бонусов
+
+### Справочники
+
+-   `StockCategory` - категории товаров
+-   `Tool` - инструменты
+-   `EquipmentType` - типы оборудования
+-   `DeliveryType` - типы доставки
+-   `PaymentType` - типы оплаты
+-   `ToolType` - типы инструментов
+
+### Дополнительные модели
+
+-   `Notification` - уведомления
+-   `Review` - отзывы
+-   `StockMovement` - движения товаров
+-   `TelegramChat` - чаты Telegram
+-   `TelegramMessage` - сообщения Telegram
+-   `DiscountRule` - правила скидок
+
+## Сервисы (app/Services/)
+
+### Основные сервисы
+
+-   `BonusService` - бизнес-логика бонусной системы
+
+## Структура базы данных
+
+### Основные таблицы
+
+-   `users` - пользователи системы
+-   `clients` - клиенты
+-   `companies` - компании
+-   `branches` - филиалы
+-   `orders` - заказы (с enum полями для типизации)
+-   `stock_items` - товары
+-   `warehouses` - склады
+-   `stock_movements` - движения товаров
+-   `repairs` - ремонты
+-   `reviews` - отзывы
+-   `notifications` - уведомления
+
+### Аудит и логирование
+
+-   `activity_log` - логи действий (Spatie Activity Log)
+-   `stored_events` - события Event Sourcing
+
+### Бонусная система
+
+-   `bonus_accounts` - бонусные счета
+-   `bonus_transactions` - транзакции
+-   `bonus_settings` - настройки
+
+### Дополнительные таблицы
+
+-   `telegram_chats` - чаты Telegram
+-   `telegram_messages` - сообщения Telegram
+-   `discount_rules` - правила скидок
+-   `media` - медиафайлы (Spatie MediaLibrary)
+
+## Правила для моделей
+
+### 1. Обязательные трейты и свойства
+
+-   Всегда используй `HasFactory` trait
+-   Обязательные `$fillable` и `$casts`
+-   Scope методы для частых запросов
+-   Soft deletes через `is_deleted` поле
+-   UUID для пользователей
+-   Использование enum полей для типизации (OrderStatus, OrderType, OrderUrgency)
+-   Поддержка медиафайлов через Spatie MediaLibrary
+
+### 2. Связи
+
+-   Явное объявление всех связей
+-   Правильные типы связей (belongsTo, hasMany, etc.)
+-   Eager loading для N+1 проблем
+
+### 3. Валидация
+
+-   Кастомные правила в `app/Rules/`
+-   Валидация на уровне формы и модели
+-   Использование `PhoneFormat` для телефонов
+-   Валидация в DTO
+
+### 4. Domain Entity
+
+-   Immutable объекты с приватными свойствами
+-   Только getter методы для доступа к данным
+-   Бизнес-методы для проверки состояний
+-   Mutator методы для изменения состояния
+-   Factory методы для создания объектов
+-   Методы toArray() для сериализации
+
+## Репозитории
+
+### Структура репозиториев
+
+-   Интерфейсы в `app/Domain/Repository/`
+-   Реализации в `app/Infrastructure/Repository/`
+-   Методы для проверки существования записей (existsByNumber)
+-   Абстракция доступа к данным
+
+### Примеры репозиториев
+
+-   `OrderRepository` / `OrderRepositoryImpl`
+-   `BonusAccountRepository` / `BonusAccountRepositoryImpl`
+-   `BonusTransactionRepository` / `BonusTransactionRepositoryImpl`
+
+## Мапперы
+
+### Структура мапперов
+
+-   Интерфейсы в `app/Domain/Mapper/`
+-   Реализации в `app/Infrastructure/Mapper/`
+-   Двунаправленное маппирование (toDomain, toEloquent, fromArray)
+-   Преобразование между Domain Entity и Eloquent Model
+
+### Примеры мапперов
+
+-   `OrderMapper` / `OrderMapperImpl`
+-   `BonusAccountMapper` / `BonusAccountMapperImpl`
+-   `BonusTransactionMapper` / `BonusTransactionMapperImpl`
+
+## Провайдеры
+
+### Основные провайдеры
+
+-   `AppServiceProvider` - основные сервисы, привязки репозиториев, мапперов и доменных сервисов
+-   `FortifyServiceProvider` - аутентификация
+-   `HorizonServiceProvider` - очереди
+-   `TelescopeServiceProvider` - мониторинг
+-   `ManagerPanelProvider` - панель менеджера
+-   `MasterPanelProvider` - панель мастера
+-   `MiddlewareServiceProvider` - middleware для панелей
+
+## Dependency Injection
+
+### Привязки в AppServiceProvider
+
+-   Привязка интерфейсов к реализациям
+-   Singleton для репозиториев и мапперов
+-   Автоматическое внедрение зависимостей в Use Cases
+-   Использование app() helper для получения сервисов

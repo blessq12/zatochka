@@ -1,10 +1,10 @@
 ---
-description: Архитектурные правила и подходы разработки для проекта Zatochka
+description: Основная архитектура проекта Zatochka - гексагональная архитектура, паттерны и принципы
 globs:
 alwaysApply: true
 ---
 
-# Архитектура проекта Zatochka
+# Основная архитектура проекта Zatochka
 
 ## Технологический стек
 
@@ -100,6 +100,8 @@ alwaysApply: true
 -   DTO для передачи данных (CreateOrderDTO, UpdateOrderDTO, GetOrderDTO)
 -   Enums для типизации (OrderStatus, OrderType, OrderUrgency)
 -   Factory для создания объектов (OrderFactory)
+-   FieldLabels для лейблов полей (Order/FieldLabels)
+-   FieldValueFormatterService для форматирования значений
 
 **Application (app/Application/)**
 
@@ -109,6 +111,7 @@ alwaysApply: true
 -   Сервисы приложения
 -   DTO и команды
 -   Интерфейсы сервисов
+-   Use Cases для бонусной системы (app/Application/UseCases/Bonus/)
 
 **Infrastructure (app/Infrastructure/)**
 
@@ -118,54 +121,7 @@ alwaysApply: true
 -   Файловые системы
 -   Конфигурации
 -   Методы для проверки существования записей (existsByNumber)
-
-### Модели (app/Models/)
-
-**Основные сущности:**
-
--   `User` - пользователи системы (менеджеры, мастера)
--   `Client` - клиенты сервиса
--   `Company` - компании
--   `Branch` - филиалы
--   `Order` - заказы
--   `Repair` - ремонты
--   `StockItem` - товары на складе
--   `Warehouse` - склады
-
-**Бонусная система:**
-
--   `BonusAccount` - бонусные счета
--   `BonusTransaction` - транзакции бонусов
--   `BonusSettings` - настройки бонусов
-
-**Справочники:**
-
--   `StockCategory` - категории товаров
--   `Tool` - инструменты
--   `EquipmentType` - типы оборудования
--   `DeliveryType` - типы доставки
--   `PaymentType` - типы оплаты
--   `ToolType` - типы инструментов
-
-### Сервисы (app/Services/)
-
--   `BonusService` - бизнес-логика бонусной системы
-
-### Filament панели
-
--   **Manager Panel** (`/manager`) - панель менеджера
--   **Master Panel** (`/master`) - панель мастера
--   Роли: `manager`, `master`
-
-### Провайдеры
-
--   `AppServiceProvider` - основные сервисы, привязки репозиториев, мапперов и доменных сервисов
--   `FortifyServiceProvider` - аутентификация
--   `HorizonServiceProvider` - очереди
--   `TelescopeServiceProvider` - мониторинг
--   `ManagerPanelProvider` - панель менеджера
--   `MasterPanelProvider` - панель мастера
--   `MiddlewareServiceProvider` - middleware для панелей
+-   Реализации для бонусной системы (app/Infrastructure/Bonus/)
 
 ## Паттерны проектирования
 
@@ -242,132 +198,6 @@ alwaysApply: true
 -   Сервис OrderStatusGroupingService для логики переходов
 -   Валидация допустимых переходов между статусами
 
-## Правила разработки
-
-### 1. Модели
-
--   Всегда используй `HasFactory` trait
--   Обязательные `$fillable` и `$casts`
--   Scope методы для частых запросов
--   Soft deletes через `is_deleted` поле
--   UUID для пользователей
--   Использование enum полей для типизации (OrderStatus, OrderType, OrderUrgency)
--   Поддержка медиафайлов через Spatie MediaLibrary
-
-### 2. Связи
-
--   Явное объявление всех связей
--   Правильные типы связей (belongsTo, hasMany, etc.)
--   Eager loading для N+1 проблем
-
-### 3. Валидация
-
--   Кастомные правила в `app/Rules/`
--   Валидация на уровне формы и модели
--   Использование `PhoneFormat` для телефонов
--   Валидация в DTO
-
-### 4. Безопасность
-
--   Роли и права через Spatie Permission
--   Middleware для защиты роутов
--   CSRF защита
--   Rate limiting для API
-
-### 5. Производительность
-
--   Индексы в миграциях
--   Кэширование через Redis
--   Очереди для тяжелых операций
--   Eager loading связей
-
-### 6. Тестирование
-
--   Unit тесты для сервисов
--   Feature тесты для API
--   Фабрики для тестовых данных
--   Моки для внешних сервисов
-
-### 7. Код-стайл
-
--   PSR-12 стандарт
--   PHPStan level 0
--   Psalm для типизации
--   Автоформатирование через Pint
-
-### 8. Dependency Injection
-
--   Привязка интерфейсов к реализациям в AppServiceProvider
--   Singleton для репозиториев и мапперов
--   Автоматическое внедрение зависимостей в Use Cases
--   Использование app() helper для получения сервисов
-
-### 9. Domain Entity
-
--   Immutable объекты с приватными свойствами
--   Только getter методы для доступа к данным
--   Бизнес-методы для проверки состояний
--   Mutator методы для изменения состояния
--   Factory методы для создания объектов
--   Методы toArray() для сериализации
-
-## Команды разработки
-
-```bash
-# Запуск в dev режиме
-composer dev
-
-# Анализ кода
-composer analyse
-
-# Тестирование
-composer test
-
-# Исправление стиля
-composer fix
-```
-
-## Структура базы данных
-
-### Основные таблицы
-
--   `users` - пользователи системы
--   `clients` - клиенты
--   `companies` - компании
--   `branches` - филиалы
--   `orders` - заказы (с enum полями для типизации)
--   `stock_items` - товары
--   `warehouses` - склады
--   `stock_movements` - движения товаров
--   `repairs` - ремонты
--   `reviews` - отзывы
--   `notifications` - уведомления
-
-### Аудит и логирование
-
--   `activity_log` - логи действий
--   `stored_events` - события Event Sourcing
--   `order_logs` - логи заказов
-
-### Бонусная система
-
--   `bonus_accounts` - бонусные счета
--   `bonus_transactions` - транзакции
--   `bonus_settings` - настройки
-
-## Интеграции
-
-### Telegram
-
--   Уведомления через `laravel-notification-channels/telegram`
--   Модели `TelegramChat`, `TelegramMessage`
-
-### Медиафайлы
-
--   `spatie/laravel-medialibrary` для файлов
--   Привязка к заказам и другим сущностям
--   Таблица `media` для хранения метаданных файлов
-
 ## Новые архитектурные решения
 
 ### 1. Domain Entity Pattern
@@ -405,28 +235,11 @@ composer fix
 -   Группировка статусов по ролям пользователей
 -   Автоматическое определение доступных действий
 
-### Очереди
+### 6. Бонусная система
 
--   Horizon для мониторинга
--   Фоновые задачи для бонусов
-
-## Мониторинг и отладка
-
-### Telescope
-
--   Запросы к БД
--   Очереди
--   События
--   Логи
-
-### Debugbar
-
--   Профилирование запросов
--   Переменные
--   Время выполнения
-
-### Логирование
-
--   Activity Log для действий пользователей
--   Laravel Log для системных событий
--   Кастомные логи для бизнес-событий
+-   Полноценная система начисления и трат бонусов
+-   Настройки через Filament ресурс
+-   Автоматическое логирование транзакций
+-   Срок действия бонусов
+-   Интеграция с заказами
+-   Готовая структура для Domain/Application/Infrastructure слоев
