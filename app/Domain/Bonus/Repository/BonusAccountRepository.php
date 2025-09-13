@@ -2,7 +2,11 @@
 
 namespace App\Domain\Bonus\Repository;
 
+use App\Domain\Bonus\Entity\BonusAccount;
+
 interface BonusAccountRepository
 {
-    // Методы будут добавлены позже
+    public function existsByClientId(int $clientId): bool;
+
+    public function create(int $clientId): BonusAccount;
 }

@@ -6,5 +6,5 @@ use App\Domain\Bonus\Repository\BonusTransactionRepository;
 
 class BonusTransactionRepositoryImpl implements BonusTransactionRepository
 {
-    // Реализация методов будет добавлена позже
+    // Методы будут добавлены позже
 }

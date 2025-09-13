@@ -8,10 +8,9 @@ use Spatie\EventSourcing\AggregateRoots\AggregateRoot;
 
 class BonusAccountAggregateRoot extends AggregateRoot
 {
-    public function createAccount(string $accountId, string $clientId, int $initialBalance = 0): self
+    public function createAccount(int $clientId, int $initialBalance = 0): self
     {
         $this->recordThat(new BonusAccountCreated(
-            accountId: $accountId,
             clientId: $clientId,
             initialBalance: $initialBalance
         ));
