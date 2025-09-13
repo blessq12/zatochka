@@ -7,6 +7,8 @@ use App\Domain\Order\Enum\OrderType;
 use App\Domain\Order\Enum\OrderUrgency;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -14,6 +16,7 @@ class Order extends Model implements HasMedia
 {
     use HasFactory;
     use InteractsWithMedia;
+    use LogsActivity;
 
     protected $fillable = [
         'client_id',
@@ -75,10 +78,6 @@ class Order extends Model implements HasMedia
         return $this->belongsTo(DiscountRule::class, 'discount_id');
     }
 
-    public function orderLogs()
-    {
-        return $this->hasMany(OrderLog::class);
-    }
 
     public function repairs()
     {
@@ -93,6 +92,11 @@ class Order extends Model implements HasMedia
     public function bonusTransactions()
     {
         return $this->hasMany(BonusTransaction::class);
+    }
+
+    public function activities()
+    {
+        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject');
     }
 
     // public function inventoryTransactions()
@@ -197,5 +201,35 @@ class Order extends Model implements HasMedia
     {
         return app(\App\Domain\Order\Service\OrderStatusGroupingService::class)
             ->getAvailableTransitions($this->status);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'client_id',
+                'branch_id',
+                'manager_id',
+                'master_id',
+                'type',
+                'status',
+                'urgency',
+                'is_paid',
+                'paid_at',
+                'total_amount',
+                'final_price',
+                'cost_price',
+                'profit',
+                'description',
+                'notes',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => 'Заказ создан',
+                'updated' => 'Заказ обновлен',
+                'deleted' => 'Заказ удален',
+                default => "Заказ {$eventName}",
+            });
     }
 }

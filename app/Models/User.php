@@ -43,10 +43,6 @@ class User extends Authenticatable
     ];
 
     // Связи
-    public function orderLogs()
-    {
-        return $this->hasMany(OrderLog::class);
-    }
 
     // public function inventoryTransactions()
     // {
