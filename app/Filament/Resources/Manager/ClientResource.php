@@ -27,7 +27,9 @@ class ClientResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('is_deleted', false);
+        return parent::getEloquentQuery()
+            ->where('is_deleted', false)
+            ->with('bonusAccount');
     }
 
     public static function form(Form $form): Form
@@ -106,6 +108,15 @@ class ClientResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
+                Tables\Columns\TextColumn::make('bonusAccount.balance')
+                    ->label('Бонусы')
+                    ->formatStateUsing(function ($state) {
+                        return $state ? number_format($state) . ' бон.' : '0 бон.';
+                    })
+                    ->badge()
+                    ->color(fn($state) => $state > 0 ? 'success' : 'gray')
+                    ->sortable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('is_deleted')
                     ->label('Статус')

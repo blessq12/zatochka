@@ -3,32 +3,22 @@
 namespace App\Domain\Client\AggregateRoot;
 
 use App\Domain\Client\Event\ClientCreated;
-use App\Domain\Client\Event\ClientUpdated;
 use Spatie\EventSourcing\AggregateRoots\AggregateRoot;
+use Illuminate\Support\Str;
 
 class ClientAggregateRoot extends AggregateRoot
 {
-    public function createClient(string $clientId, string $phone, string $fullName, array $clientData): self
+    public function createClient(int $clientId): self
     {
         $this->recordThat(new ClientCreated(
-            clientId: $clientId,
-            phone: $phone,
-            fullName: $fullName,
-            clientData: $clientData
+            clientId: $clientId
         ));
 
         return $this;
     }
 
-    public function updateClient(string $clientId, string $phone, string $fullName, array $clientData): self
+    public static function create(): self
     {
-        $this->recordThat(new ClientUpdated(
-            clientId: $clientId,
-            phone: $phone,
-            fullName: $fullName,
-            clientData: $clientData
-        ));
-
-        return $this;
+        return static::retrieve(Str::uuid()->toString());
     }
 }

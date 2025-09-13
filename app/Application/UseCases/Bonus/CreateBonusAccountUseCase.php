@@ -4,7 +4,6 @@ namespace App\Application\UseCases\Bonus;
 
 use App\Domain\Bonus\DTO\CreateBonusAccountDTO;
 use App\Domain\Bonus\Entity\BonusAccount;
-use App\Domain\Bonus\AggregateRoot\BonusAccountAggregateRoot;
 
 class CreateBonusAccountUseCase extends BaseBonusUseCase
 {
@@ -27,22 +26,6 @@ class CreateBonusAccountUseCase extends BaseBonusUseCase
 
     public function execute(): BonusAccount
     {
-        $aggregate = new BonusAccountAggregateRoot();
-
-        $aggregate->createAccount(
-            clientId: $this->dto->clientId,
-            initialBalance: 0
-        );
-
-
-        $aggregate->persist();
-
-        return new BonusAccount(
-            id: 0,
-            clientId: $this->dto->clientId,
-            balance: 0,
-            createdAt: now(),
-            updatedAt: now()
-        );
+        return $this->bonusAccountRepository->create($this->dto->clientId);
     }
 }

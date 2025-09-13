@@ -13,7 +13,7 @@ class ClientReactor extends Reactor
     {
         try {
             $bonusAccount = app(CreateBonusAccountUseCase::class)
-                ->loadData(['client_id' => (int) $event->clientId])
+                ->loadData(['client_id' => $event->clientId])
                 ->validate()
                 ->execute();
 

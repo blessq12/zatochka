@@ -15,4 +15,9 @@ class ClientException extends Exception
     {
         return new self("Клиент с телефоном {$phone} уже существует");
     }
+
+    public static function forPhone(string $phone): self
+    {
+        return new self("Клиент с телефоном {$phone} уже существует");
+    }
 }

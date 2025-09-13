@@ -22,8 +22,7 @@ class ViewClient extends ViewRecord
             $useCase = app(GetClientUseCase::class);
             $clientEntity = $useCase->loadData(['id' => $record])->validate()->execute();
 
-            // Обновляем запись данными из Use Case
-            $this->record = \App\Models\Client::find($clientEntity->getId());
+            $this->record = \App\Models\Client::with('bonusAccount')->find($clientEntity->getId());
         } catch (\Exception $e) {
             Notification::make()
                 ->title('Ошибка загрузки клиента')
@@ -60,6 +59,23 @@ class ViewClient extends ViewRecord
                             ->label('Адрес доставки')
                             ->placeholder('Не указан')
                             ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Infolists\Components\Section::make('Бонусная система')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('bonusAccount.balance')
+                            ->label('Текущий баланс')
+                            ->formatStateUsing(function ($state) {
+                                return $state ? number_format($state) . ' бонусов' : '0 бонусов';
+                            })
+                            ->badge()
+                            ->color(fn($state) => $state > 0 ? 'success' : 'gray'),
+
+                        Infolists\Components\TextEntry::make('bonusAccount.created_at')
+                            ->label('Дата создания аккаунта')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('Аккаунт не создан'),
                     ])
                     ->columns(2),
 

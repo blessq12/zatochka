@@ -13,7 +13,6 @@ class BonusProjector extends Projector
     public function onBonusAccountCreated(BonusAccountCreated $event): void
     {
         BonusAccount::create([
-            'id' => $event->accountId,
             'client_id' => $event->clientId,
             'balance' => $event->initialBalance
         ]);

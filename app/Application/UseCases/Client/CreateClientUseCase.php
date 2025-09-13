@@ -4,11 +4,9 @@ namespace App\Application\UseCases\Client;
 
 use App\Domain\Client\DTO\CreateClientDTO;
 use App\Domain\Client\Exception\ClientException;
-use App\Domain\Client\Exception\ClientPhoneAlreadyExistsException;
-use App\Domain\Client\AggregateRoot\ClientAggregateRoot;
 use App\Domain\Client\Entity\Client as ClientEntity;
 use App\Domain\Client\Mapper\ClientMapper;
-use Illuminate\Support\Str;
+use App\Domain\Client\AggregateRoot\ClientAggregateRoot;
 
 class CreateClientUseCase extends BaseClientUseCase
 {
@@ -26,7 +24,7 @@ class CreateClientUseCase extends BaseClientUseCase
 
         // Проверяем уникальность телефона
         if ($this->clientRepository->existsByPhone($this->dto->phone)) {
-            throw ClientPhoneAlreadyExistsException::forPhone($this->dto->phone);
+            throw ClientException::forPhone($this->dto->phone);
         }
 
         return $this;
@@ -34,34 +32,12 @@ class CreateClientUseCase extends BaseClientUseCase
 
     public function execute(): ClientEntity
     {
-        // Генерируем UUID для клиента
-        $clientId = Str::uuid()->toString();
+        $client = $this->clientRepository->create($this->dto->toArray());
 
-        // Создаем Aggregate Root
-        $aggregate = ClientAggregateRoot::retrieve($clientId);
-
-        // Вызываем метод создания клиента через Aggregate Root
-        $aggregate->createClient(
-            clientId: $clientId,
-            phone: $this->dto->phone,
-            fullName: $this->dto->fullName,
-            clientData: $this->dto->toArray()
-        );
-
-        // Сохраняем события в Event Store
+        $aggregate = ClientAggregateRoot::create();
+        $aggregate->createClient($client->getId());
         $aggregate->persist();
 
-        // Возвращаем Domain Entity (будет создана через Projector)
-        return new ClientEntity(
-            id: $clientId,
-            fullName: $this->dto->fullName,
-            phone: $this->dto->phone,
-            telegram: $this->dto->telegram,
-            birthDate: $this->dto->birthDate,
-            deliveryAddress: $this->dto->deliveryAddress,
-            isDeleted: false,
-            createdAt: now(),
-            updatedAt: now()
-        );
+        return $client;
     }
 }
