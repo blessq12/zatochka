@@ -108,7 +108,7 @@ alwaysApply: true
     -   BonusAccountAggregateRoot для бонусов
 -   **Доменные события**:
     -   Order: OrderCreated, OrderStatusChanged
-    -   Client: ClientCreated
+    -   Client: ClientCreated, ClientUpdated
     -   Bonus: BonusAccountCreated, BonusTransactionCreated
 -   Интерфейсы репозиториев:
     -   OrderRepository для заказов
@@ -303,9 +303,15 @@ alwaysApply: true
 -   Автоматическое логирование транзакций
 -   Срок действия бонусов
 -   Интеграция с заказами
--   Готовая структура для Domain/Application/Infrastructure слоев
--   Use Cases: BaseBonusUseCase, BonusUseCaseInterface
+-   **Event Sourcing интеграция** - создание бонусных аккаунтов через события
+-   **Автоматическое создание** бонусного аккаунта при создании клиента
+-   **ClientReactor** - обработка события ClientCreated для создания бонусного аккаунта
+-   Use Cases: BaseBonusUseCase, BonusUseCaseInterface, CreateBonusAccountUseCase
 -   Репозитории: BonusAccountRepository, BonusTransactionRepository
+-   **Domain Entity**: BonusAccount с бизнес-логикой
+-   **DTO**: CreateBonusAccountDTO для передачи данных
+-   **Aggregate Root**: BonusAccountAggregateRoot для Event Sourcing
+-   **События**: BonusAccountCreated для создания аккаунта
 
 ### 7. Клиентская система
 
@@ -316,20 +322,48 @@ alwaysApply: true
 -   Связи с заказами, отзывами, уведомлениями
 -   Use Cases: BaseClientUseCase, ClientUseCaseInterface
 -   Репозиторий: ClientRepository
--   Event Sourcing: ClientAggregateRoot, ClientCreated event
+-   **Event Sourcing**: ClientAggregateRoot с методами createClient() и updateClient()
+-   **Доменные события**: ClientCreated, ClientUpdated
+-   **Автоматические side-effects**: создание бонусного аккаунта через ClientReactor
 
 ### 8. Event Sourcing архитектура
 
 -   **Полная реализация Event Sourcing** через Spatie
--   **Aggregate Roots** для всех основных сущностей
--   **Доменные события** для всех изменений состояния
+-   **Aggregate Roots** для всех основных сущностей (Order, Client, BonusAccount)
+-   **Доменные события** для всех изменений состояния:
+    -   Order: OrderCreated, OrderStatusChanged
+    -   Client: ClientCreated, ClientUpdated
+    -   Bonus: BonusAccountCreated, BonusTransactionCreated
 -   **Projectors** для построения read-моделей
--   **Reactors** для обработки side-effects
+-   **Reactors** для обработки side-effects (ClientReactor для создания бонусных аккаунтов)
 -   **Event Store** с таблицами stored_events и snapshots
 -   **Автоматическое восстановление** состояния из событий
 -   **Аудит и трассировка** всех изменений в системе
+-   **Простая реализация** без UUID - используется `new AggregateRoot()` и `retrieve()`
+-   **Интеграция с Use Cases** - все изменения через агрегатные корни
+-   **Автоматические side-effects** - создание связанных сущностей через Reactors
 
-### 9. Filament интеграция с доменной архитектурой
+### 9. Структура бонусной системы с Event Sourcing
+
+-   **Domain Layer**:
+    -   `BonusAccount` Entity - доменная сущность с бизнес-логикой
+    -   `CreateBonusAccountDTO` - DTO для передачи данных
+    -   `BonusAccountAggregateRoot` - агрегатный корень для Event Sourcing
+    -   `BonusAccountCreated` - событие создания бонусного аккаунта
+    -   `BonusAccountRepository` - интерфейс репозитория
+-   **Application Layer**:
+    -   `CreateBonusAccountUseCase` - Use Case для создания бонусного аккаунта
+    -   `BaseBonusUseCase` - базовый класс для бонусных Use Cases
+    -   `BonusUseCaseInterface` - интерфейс для бонусных Use Cases
+-   **Infrastructure Layer**:
+    -   `BonusAccountRepositoryImpl` - реализация репозитория через Eloquent
+    -   `BonusAccount` Eloquent модель - для работы с БД
+-   **Event Sourcing**:
+    -   `ClientReactor` - обработка события ClientCreated
+    -   Автоматическое создание бонусного аккаунта при создании клиента
+    -   Простая реализация без UUID - `new BonusAccountAggregateRoot()`
+
+### 10. Filament интеграция с доменной архитектурой
 
 -   **Use Cases в Filament** - все CRUD операции через доменные Use Cases
 -   **Совместимость типов** - Filament ожидает Eloquent модели, Use Cases возвращают Domain Entity
