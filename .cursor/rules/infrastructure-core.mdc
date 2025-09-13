@@ -49,6 +49,32 @@ alwaysApply: true
 
 -   `BonusService` - бизнес-логика бонусной системы
 
+## Event Sourcing
+
+### Aggregate Roots (app/Domain/\*/AggregateRoot/)
+
+-   `OrderAggregateRoot` - агрегат заказов
+-   `ClientAggregateRoot` - агрегат клиентов
+-   `BonusAccountAggregateRoot` - агрегат бонусных счетов
+
+### Доменные события (app/Domain/\*/Event/)
+
+-   **Order**: `OrderCreated`, `OrderStatusChanged`
+-   **Client**: `ClientCreated`
+-   **Bonus**: `BonusAccountCreated`, `BonusTransactionCreated`
+
+### Projectors (app/Projectors/)
+
+-   `OrderProjector` - проекция заказов в read-модель
+-   `ClientProjector` - проекция клиентов в read-модель
+-   `BonusProjector` - проекция бонусов в read-модель
+
+### Reactors (app/Reactors/)
+
+-   `OrderReactor` - обработка side-effects для заказов
+-   `ClientReactor` - обработка side-effects для клиентов
+-   `BonusReactor` - обработка side-effects для бонусов
+
 ## Структура базы данных
 
 ### Основные таблицы
@@ -69,6 +95,7 @@ alwaysApply: true
 
 -   `activity_log` - логи действий (Spatie Activity Log)
 -   `stored_events` - события Event Sourcing
+-   `snapshots` - снимки состояния для Event Sourcing
 
 ### Бонусная система
 
@@ -129,6 +156,7 @@ alwaysApply: true
 ### Примеры репозиториев
 
 -   `OrderRepository` / `OrderRepositoryImpl`
+-   `ClientRepository` / `ClientRepositoryImpl`
 -   `BonusAccountRepository` / `BonusAccountRepositoryImpl`
 -   `BonusTransactionRepository` / `BonusTransactionRepositoryImpl`
 
@@ -144,6 +172,7 @@ alwaysApply: true
 ### Примеры мапперов
 
 -   `OrderMapper` / `OrderMapperImpl`
+-   `ClientMapper` / `ClientMapperImpl`
 -   `BonusAccountMapper` / `BonusAccountMapperImpl`
 -   `BonusTransactionMapper` / `BonusTransactionMapperImpl`
 
@@ -163,7 +192,12 @@ alwaysApply: true
 
 ### Привязки в AppServiceProvider
 
--   Привязка интерфейсов к реализациям
+-   Привязка интерфейсов к реализациям:
+    -   OrderRepository → OrderRepositoryImpl
+    -   ClientRepository → ClientRepositoryImpl
+    -   BonusAccountRepository → BonusAccountRepositoryImpl
+    -   BonusTransactionRepository → BonusTransactionRepositoryImpl
+    -   OrderMapper → OrderMapperImpl
 -   Singleton для репозиториев и мапперов
 -   Автоматическое внедрение зависимостей в Use Cases
 -   Использование app() helper для получения сервисов

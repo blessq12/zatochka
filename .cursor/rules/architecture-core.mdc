@@ -61,14 +61,24 @@ alwaysApply: true
 -   Каждый Use Case решает одну задачу
 -   Инкапсулирует бизнес-логику
 -   Независимы от UI и инфраструктуры
--   Базовый класс `BaseOrderUseCase` с общими методами
--   Интерфейс `UseCaseInterface` для стандартизации
+-   Базовые классы для каждого домена:
+    -   `BaseOrderUseCase` для заказов
+    -   `BaseClientUseCase` для клиентов
+    -   `BaseBonusUseCase` для бонусной системы
+-   Интерфейсы для каждого домена:
+    -   `UseCaseInterface` для заказов
+    -   `ClientUseCaseInterface` для клиентов
+    -   `BonusUseCaseInterface` для бонусной системы
 
-### 3. Event Sourcing (опционально)
+### 3. Event Sourcing
 
--   Настроен для аудита и восстановления состояния
--   Используется только там, где это действительно нужно
--   Проекторы для построения представлений
+-   **Spatie Event Sourcing** - полная реализация Event Sourcing
+-   Доменные события для всех основных сущностей
+-   Aggregate Roots для инкапсуляции бизнес-логики
+-   Projectors для построения read-моделей
+-   Reactors для обработки side-effects
+-   Автоматическое восстановление состояния из событий
+-   Аудит и трассировка всех изменений
 
 ### 4. Repository Pattern
 
@@ -91,37 +101,78 @@ alwaysApply: true
 **Domain (app/Domain/)**
 
 -   Бизнес-логика и правила
--   Сущности и Value Objects (Order Entity)
--   Интерфейсы репозиториев (OrderRepository)
--   Интерфейсы мапперов (OrderMapper)
--   Доменные события
+-   Сущности и Value Objects (Order Entity, Client Entity, Bonus Entity)
+-   **Aggregate Roots** для Event Sourcing:
+    -   OrderAggregateRoot для заказов
+    -   ClientAggregateRoot для клиентов
+    -   BonusAccountAggregateRoot для бонусов
+-   **Доменные события**:
+    -   Order: OrderCreated, OrderStatusChanged
+    -   Client: ClientCreated
+    -   Bonus: BonusAccountCreated, BonusTransactionCreated
+-   Интерфейсы репозиториев:
+    -   OrderRepository для заказов
+    -   ClientRepository для клиентов
+    -   BonusAccountRepository, BonusTransactionRepository для бонусов
+-   Интерфейсы мапперов (OrderMapper, ClientMapper, BonusMapper)
 -   Доменные сервисы (OrderNumberGeneratorService, OrderStatusGroupingService)
 -   Доменные исключения (OrderNumberAlreadyExistsException, OrderException)
--   DTO для передачи данных (CreateOrderDTO, UpdateOrderDTO, GetOrderDTO)
--   Enums для типизации (OrderStatus, OrderType, OrderUrgency)
--   Factory для создания объектов (OrderFactory)
+-   DTO для передачи данных:
+    -   Order: CreateOrderDTO, UpdateOrderDTO, GetOrderDTO
+    -   Client: CreateClientDTO, UpdateClientDTO, GetClientDTO
+    -   Bonus: CreateBonusAccountDTO, CreateBonusTransactionDTO
+-   Enums для типизации (OrderStatus, OrderType, OrderUrgency, ClientStatus, ClientType)
+-   Factory для создания объектов (OrderFactory, ClientFactory, BonusFactory)
 -   FieldLabels для лейблов полей (Order/FieldLabels)
 -   FieldValueFormatterService для форматирования значений
 
 **Application (app/Application/)**
 
--   Use Cases - бизнес-сценарии (CreateOrderUseCase, UpdateOrderUseCase, DeleteOrderUseCase, GetOrderUseCase)
--   Базовые классы для Use Cases (BaseOrderUseCase)
--   Интерфейсы Use Cases (UseCaseInterface)
+-   Use Cases - бизнес-сценарии:
+    -   Order: CreateOrderUseCase, UpdateOrderUseCase, DeleteOrderUseCase, GetOrderUseCase
+    -   Client: CreateClientUseCase, UpdateClientUseCase, DeleteClientUseCase, GetClientUseCase
+    -   Bonus: CreateBonusAccountUseCase, CreateBonusTransactionUseCase, GetBonusAccountUseCase
+-   Базовые классы для Use Cases:
+    -   BaseOrderUseCase для заказов
+    -   BaseClientUseCase для клиентов
+    -   BaseBonusUseCase для бонусной системы
+-   Интерфейсы Use Cases:
+    -   UseCaseInterface для заказов
+    -   ClientUseCaseInterface для клиентов
+    -   BonusUseCaseInterface для бонусной системы
 -   Сервисы приложения
 -   DTO и команды
 -   Интерфейсы сервисов
--   Use Cases для бонусной системы (app/Application/UseCases/Bonus/)
 
 **Infrastructure (app/Infrastructure/)**
 
--   Реализации репозиториев (OrderRepositoryImpl)
--   Реализации мапперов (OrderMapperImpl)
+-   Реализации репозиториев:
+    -   OrderRepositoryImpl для заказов
+    -   ClientRepositoryImpl для клиентов
+    -   BonusAccountRepositoryImpl, BonusTransactionRepositoryImpl для бонусов
+-   Реализации мапперов:
+    -   OrderMapperImpl для заказов
+    -   ClientMapperImpl для клиентов
+    -   BonusMapperImpl для бонусов
+-   **Event Sourcing инфраструктура**:
+    -   Таблицы stored_events и snapshots
+    -   Конфигурация Spatie Event Sourcing
+    -   Сериализация и нормализация событий
 -   Внешние API клиенты
 -   Файловые системы
 -   Конфигурации
 -   Методы для проверки существования записей (existsByNumber)
--   Реализации для бонусной системы (app/Infrastructure/Bonus/)
+
+**Event Sourcing (app/Projectors/, app/Reactors/)**
+
+-   **Projectors** для построения read-моделей:
+    -   OrderProjector - проекция заказов
+    -   ClientProjector - проекция клиентов
+    -   BonusProjector - проекция бонусов
+-   **Reactors** для обработки side-effects:
+    -   OrderReactor - уведомления, интеграции
+    -   ClientReactor - создание бонусных счетов
+    -   BonusReactor - обновление балансов
 
 ## Паттерны проектирования
 
@@ -198,6 +249,16 @@ alwaysApply: true
 -   Сервис OrderStatusGroupingService для логики переходов
 -   Валидация допустимых переходов между статусами
 
+### 12. Event Sourcing Pattern
+
+-   **Aggregate Roots** - инкапсуляция бизнес-логики и событий
+-   **Domain Events** - доменные события для всех изменений
+-   **Projectors** - построение read-моделей из событий
+-   **Reactors** - обработка side-effects при событиях
+-   **Event Store** - хранение всех событий в таблице stored_events
+-   **Snapshots** - снимки состояния для оптимизации
+-   **Event Replay** - восстановление состояния из событий
+
 ## Новые архитектурные решения
 
 ### 1. Domain Entity Pattern
@@ -243,3 +304,27 @@ alwaysApply: true
 -   Срок действия бонусов
 -   Интеграция с заказами
 -   Готовая структура для Domain/Application/Infrastructure слоев
+-   Use Cases: BaseBonusUseCase, BonusUseCaseInterface
+-   Репозитории: BonusAccountRepository, BonusTransactionRepository
+
+### 7. Клиентская система
+
+-   Управление клиентами с полной доменной структурой
+-   Валидация телефонов и уникальность
+-   Управление статусами клиентов
+-   Интеграция с бонусной системой
+-   Связи с заказами, отзывами, уведомлениями
+-   Use Cases: BaseClientUseCase, ClientUseCaseInterface
+-   Репозиторий: ClientRepository
+-   Event Sourcing: ClientAggregateRoot, ClientCreated event
+
+### 8. Event Sourcing архитектура
+
+-   **Полная реализация Event Sourcing** через Spatie
+-   **Aggregate Roots** для всех основных сущностей
+-   **Доменные события** для всех изменений состояния
+-   **Projectors** для построения read-моделей
+-   **Reactors** для обработки side-effects
+-   **Event Store** с таблицами stored_events и snapshots
+-   **Автоматическое восстановление** состояния из событий
+-   **Аудит и трассировка** всех изменений в системе
