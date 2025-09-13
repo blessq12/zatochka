@@ -1,0 +1,56 @@
+---
+name:
+glob:
+alwaysApply: true
+---
+
+# Backend Stack
+
+## Core Framework
+
+-   **Laravel 12.0** - основной фреймворк
+-   **PHP 8.2+** - минимальная версия
+
+## Architecture Patterns
+
+-   **Event Sourcing** (Spatie) - для DDD архитектуры
+-   **CQRS** - разделение команд и запросов
+-   **Domain-Driven Design** - структура по доменам
+
+## Admin Panel
+
+-   **Filament 3.3** - админ-панель
+-   **Spatie Shield** - роли и права доступа
+-   **Spatie Media Library** - управление файлами
+
+## API & Auth
+
+-   **Laravel Sanctum** - API токены
+-   **Laravel Fortify** - аутентификация
+
+## Background Jobs
+
+-   **Laravel Horizon** - управление очередями
+-   **Redis queues** - асинхронные задачи
+
+## Monitoring & Debug
+
+-   **Laravel Telescope** - профилирование и дебаг
+-   **Laravel Debugbar** - отладка в браузере
+-   **Activity Log** - логирование действий
+
+## Notifications
+
+-   **Telegram Bot API** - уведомления
+
+## Code Quality
+
+-   **PHPStan** - статический анализ
+-   **Psalm** - дополнительная проверка типов
+-   **PHP CS Fixer** - форматирование кода
+-   **PHPUnit** - тестирование
+
+## Development Tools
+
+-   **Laravel Sail** - Docker окружение
+-   **Laravel Tinker** - интерактивная консоль

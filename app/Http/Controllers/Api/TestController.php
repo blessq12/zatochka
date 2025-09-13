@@ -6,41 +6,56 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 //use cases
-use App\Application\UseCases\Order\CreateOrderUseCase;
-use App\Application\UseCases\Order\GetOrderUseCase;
-use App\Application\UseCases\Order\UpdateOrderUseCase;
-use App\Application\UseCases\Order\DeleteOrderUseCase;
+use App\Application\UseCases\Review\CreateReviewUseCase;
 
 class TestController extends Controller
 {
-    public function createOrder(Request $request)
+    public function create(Request $request)
     {
         try {
-            (new CreateOrderUseCase())
-                ->loadData($request->all())
+            // Валидация входных данных
+            $validated = $request->validate([
+                'client_id' => 'required|integer|exists:clients,id',
+                'order_id' => 'required|integer|exists:orders,id',
+                'rating' => 'required|integer|min:1|max:5',
+                'comment' => 'required|string|max:1000',
+                'metadata' => 'sometimes|array',
+            ]);
+
+            // Создание отзыва через Use Case
+            $review = app(CreateReviewUseCase::class)
+                ->loadData($validated)
                 ->validate()
                 ->execute();
 
-            return response()->json(['message' => 'Order created successfully'], 200);
-        } catch (\App\Domain\Order\Exception\OrderException $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Отзыв успешно создан',
+                'review_id' => $review->getId(),
+                'data' => [
+                    'id' => $review->getId(),
+                    'client_id' => $review->getClientId(),
+                    'order_id' => $review->getOrderId(),
+                    'rating' => $review->getRating(),
+                    'comment' => $review->getComment(),
+                    'is_approved' => $review->isApproved(),
+                    'created_at' => $review->getCreatedAt(),
+                ]
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Ошибка валидации',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => 'Ошибка данных',
+                'error' => $e->getMessage()
+            ], 400);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Внутренняя ошибка сервера',
+                'error' => $e->getMessage()
+            ], 500);
         }
-    }
-
-    public function getOrder(int $id)
-    {
-        return (new GetOrderUseCase())->loadData(['id' => $id])->validate()->execute();
-    }
-
-    public function updateOrder(int $id, Request $request)
-    {
-        return (new UpdateOrderUseCase())->loadData(['id' => $id, ...$request->all()])->validate()->execute();
-    }
-
-    public function deleteOrder(int $id)
-    {
-        return (new DeleteOrderUseCase())->loadData(['id' => $id])->validate()->execute();
     }
 }

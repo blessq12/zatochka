@@ -16,12 +16,6 @@ class ClientReactor extends Reactor
                 ->loadData(['client_id' => $event->clientId])
                 ->validate()
                 ->execute();
-
-            // Логируем успешное создание бонусного аккаунта
-            Log::info('Bonus account created for client', [
-                'client_id' => $event->clientId,
-                'bonus_account_id' => $bonusAccount->getId()
-            ]);
         } catch (\Exception $e) {
             Log::error('Failed to create bonus account for client', [
                 'client_id' => $event->clientId,

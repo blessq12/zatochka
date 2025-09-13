@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Manager\ClientResource\Pages;
 
 use App\Application\UseCases\Client\GetClientUseCase;
 use App\Filament\Resources\Manager\ClientResource;
-use Filament\Actions;
+
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;

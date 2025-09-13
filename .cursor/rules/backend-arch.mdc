@@ -1,0 +1,160 @@
+---
+name: backend-arch
+glob:
+alwaysApply: true
+---
+
+# Backend Architecture
+
+## Domain-Driven Design (DDD)
+
+### Структура доменов
+
+Каждый домен организован по следующей структуре:
+
+```
+Domain/{DomainName}/
+├── AggregateRoot/     # Агрегаты для Event Sourcing
+├── Entity/           # Доменные сущности (readonly)
+├── Event/            # События домена
+├── Enum/             # Доменные перечисления
+├── Exception/        # Доменные исключения
+├── Repository/       # Интерфейсы репозиториев
+├── Mapper/           # Интерфейсы мапперов
+├── DTO/              # Объекты передачи данных
+├── Service/          # Доменные сервисы
+└── Factory/          # Фабрики доменных объектов
+```
+
+### Правила Domain слоя
+
+-   **Entities** - только readonly классы с бизнес-логикой
+-   **AggregateRoots** - для Event Sourcing, наследуют от Spatie AggregateRoot
+-   **Events** - immutable события с данными
+-   **Repositories** - только интерфейсы, реализация в Infrastructure
+-   **Enums** - типизированные перечисления для доменных значений
+-   **Exceptions** - специфичные доменные исключения
+
+## Event Sourcing Architecture
+
+### Паттерн CQRS + ES
+
+-   **Commands** → AggregateRoot → Events
+-   **Events** → Projectors (read models) + Reactors (side effects)
+-   **Queries** → Repository (read models)
+
+### Правила Event Sourcing
+
+-   Все изменения состояния через события
+-   AggregateRoots управляют бизнес-правилами
+-   Projectors создают read-модели для запросов
+-   Reactors обрабатывают побочные эффекты (уведомления, логирование)
+
+## Application Layer
+
+### Use Cases Pattern
+
+```
+Application/UseCases/{Domain}/
+├── Base{Domain}UseCase.php    # Базовый класс
+├── {Action}{Domain}UseCase.php # Конкретные use cases
+└── {Domain}UseCaseInterface.php # Интерфейс
+```
+
+### Правила Use Cases
+
+-   **Chain of Responsibility**: loadData() → validate() → execute()
+-   **Dependency Injection**: репозитории через app()
+-   **Validation**: абстрактный метод validateSpecificData()
+-   **Return**: доменные сущности или массивы данных
+
+## Infrastructure Layer
+
+### Repository Pattern
+
+-   **Interface** в Domain слой
+-   **Implementation** в Infrastructure слой
+-   **Mapper** для преобразования Domain ↔ Eloquent
+
+### Правила Infrastructure
+
+-   Все реализации интерфейсов в Infrastructure
+-   Mappers изолируют Domain от ORM
+-   Soft delete через флаг is_deleted
+-   Транзакции в Use Cases, не в Repository
+
+## Filament Integration
+
+### Resource Pattern
+
+```php
+class {Domain}Resource extends Resource
+{
+    protected static ?string $model = {Model}::class;
+
+    // Использование Use Cases в Pages
+    protected function handleRecordCreation(array $data)
+    {
+        $useCase = app(Create{Domain}UseCase::class);
+        return $useCase->loadData($data)->validate()->execute();
+    }
+}
+```
+
+### Правила Filament
+
+-   Resources работают с Eloquent моделями
+-   Use Cases вызываются в Pages для бизнес-логики
+-   Notifications для пользовательских сообщений
+-   Relations через RelationManagers
+
+## Development Rules
+
+### 1. Создание нового домена
+
+1. Создать структуру папок в Domain/
+2. Определить Entity (readonly)
+3. Создать Events для изменения состояния
+4. Реализовать AggregateRoot
+5. Добавить Repository интерфейс
+6. Создать Use Cases в Application/
+7. Реализовать Repository в Infrastructure/
+8. Добавить Filament Resource
+
+### 2. Event Sourcing Workflow
+
+1. **Command** → UseCase → AggregateRoot
+2. **AggregateRoot** → recordThat(Event)
+3. **Event** → Projector (read model) + Reactor (side effects)
+4. **Query** → Repository (read model)
+
+### 3. Naming Conventions
+
+-   **Entities**: `{Domain}Entity` или просто `{Domain}`
+-   **Events**: `{Domain}{Action}` (ReviewCreated, OrderStatusChanged)
+-   **Use Cases**: `{Action}{Domain}UseCase`
+-   **Repositories**: `{Domain}Repository` (interface), `{Domain}RepositoryImpl` (implementation)
+-   **Mappers**: `{Domain}Mapper` (interface), `{Domain}MapperImpl` (implementation)
+
+### 4. Error Handling
+
+-   Доменные исключения в Domain/Exception/
+-   Валидация в Use Cases
+-   Filament Notifications для UI ошибок
+-   Логирование в Reactors
+
+### 5. Testing Strategy
+
+-   Unit тесты для Domain Entities и Services
+-   Integration тесты для Use Cases
+-   Feature тесты для API endpoints
+-   Event Sourcing тесты для AggregateRoots
+
+## Anti-Patterns (НЕ ДЕЛАТЬ)
+
+❌ **Прямые вызовы Eloquent в Use Cases**
+❌ **Бизнес-логика в Controllers или Resources**
+❌ **Изменение состояния через прямые SQL запросы**
+❌ **Смешивание Domain и Infrastructure слоев**
+❌ **Создание Events без AggregateRoot**
+❌ **Использование Eloquent моделей как Domain Entities**
