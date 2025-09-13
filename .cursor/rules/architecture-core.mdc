@@ -328,3 +328,12 @@ alwaysApply: true
 -   **Event Store** с таблицами stored_events и snapshots
 -   **Автоматическое восстановление** состояния из событий
 -   **Аудит и трассировка** всех изменений в системе
+
+### 9. Filament интеграция с доменной архитектурой
+
+-   **Use Cases в Filament** - все CRUD операции через доменные Use Cases
+-   **Совместимость типов** - Filament ожидает Eloquent модели, Use Cases возвращают Domain Entity
+-   **Правильные методы** - использование `mutateFormDataBeforeSave()`, `handleRecordCreation()`, `mount()`
+-   **Обработка ошибок** - уведомления через `Notification::make()` при ошибках Use Cases
+-   **Маппинг данных** - приведение типов в мапперах (bool, null, etc.)
+-   **Валидация** - доменная валидация через Use Cases, UI валидация через Filament

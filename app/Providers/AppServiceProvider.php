@@ -13,6 +13,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // mappers
         $this->app->singleton(\App\Domain\Order\Mapper\OrderMapper::class, \App\Infrastructure\Mapper\OrderMapperImpl::class);
+        $this->app->singleton(\App\Domain\Client\Mapper\ClientMapper::class, \App\Infrastructure\Client\Mapper\ClientMapperImpl::class);
 
         // repositories implementation
         $this->app->singleton(\App\Domain\Order\Repository\OrderRepository::class, \App\Infrastructure\Repository\Order\OrderRepositoryImpl::class);

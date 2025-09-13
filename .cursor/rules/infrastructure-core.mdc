@@ -198,6 +198,28 @@ alwaysApply: true
     -   BonusAccountRepository → BonusAccountRepositoryImpl
     -   BonusTransactionRepository → BonusTransactionRepositoryImpl
     -   OrderMapper → OrderMapperImpl
+    -   ClientMapper → ClientMapperImpl
 -   Singleton для репозиториев и мапперов
 -   Автоматическое внедрение зависимостей в Use Cases
 -   Использование app() helper для получения сервисов
+
+## Правила для мапперов
+
+### 1. Приведение типов
+
+-   **ВСЕГДА приводи типы** в мапперах для совместимости с Domain Entity
+-   `(bool) $model->is_deleted` - для boolean полей
+-   `(bool) ($data['is_deleted'] ?? false)` - для массивов данных
+-   Проверяй nullable поля и приводи к нужным типам
+
+### 2. Обработка null значений
+
+-   Используй оператор null coalescing `??` для значений по умолчанию
+-   Приводи к нужным типам даже для null значений
+-   Проверяй существование ключей в массивах
+
+### 3. Двунаправленное маппирование
+
+-   `toDomain()` - из Eloquent модели в Domain Entity
+-   `toEloquent()` - из Domain Entity в Eloquent модель
+-   `fromArray()` - из массива данных в Domain Entity

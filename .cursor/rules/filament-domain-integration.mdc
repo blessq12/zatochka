@@ -1,0 +1,309 @@
+---
+description: Правила интеграции Filament с доменной архитектурой - Use Cases, маппинг, обработка ошибок
+globs:
+alwaysApply: true
+---
+
+# Filament интеграция с доменной архитектурой
+
+## Основные принципы
+
+### 1. Use Cases в Filament
+
+**ВСЕГДА используй доменные Use Cases вместо прямого обращения к моделям:**
+
+```php
+// ❌ НЕПРАВИЛЬНО - прямая работа с моделью
+$client = Client::create($data);
+
+// ✅ ПРАВИЛЬНО - через Use Case
+$useCase = app(CreateClientUseCase::class);
+$client = $useCase->loadData($data)->validate()->execute();
+```
+
+### 2. Совместимость типов
+
+**Filament ожидает Eloquent модели, Use Cases возвращают Domain Entity:**
+
+```php
+// ✅ ПРАВИЛЬНО - конвертация типов
+protected function handleRecordCreation(array $data): \App\Models\Client
+{
+    $useCase = app(CreateClientUseCase::class);
+    $clientEntity = $useCase->loadData($data)->validate()->execute();
+
+    // Возвращаем Eloquent модель для Filament
+    return \App\Models\Client::find($clientEntity->getId());
+}
+```
+
+### 3. Правильные методы Filament
+
+**Используй правильные методы для разных операций:**
+
+-   **Создание**: `handleRecordCreation()` - возвращает Eloquent модель
+-   **Обновление**: `mutateFormDataBeforeSave()` - выполняет Use Case, возвращает данные
+-   **Просмотр**: `mount()` - загружает данные через Use Case
+-   **Удаление**: кастомные действия в таблице
+
+### 4. Обработка ошибок
+
+**ВСЕГДА обрабатывай ошибки Use Cases:**
+
+```php
+try {
+    $useCase = app(CreateClientUseCase::class);
+    $result = $useCase->loadData($data)->validate()->execute();
+} catch (\Exception $e) {
+    Notification::make()
+        ->title('Ошибка операции')
+        ->body($e->getMessage())
+        ->danger()
+        ->send();
+
+    throw $e; // Пробрасываем для остановки процесса
+}
+```
+
+### 5. Маппинг данных
+
+**ВСЕГДА приводи типы в мапперах:**
+
+```php
+// ✅ ПРАВИЛЬНО - приведение типов
+isDeleted: (bool) $model->is_deleted,
+isDeleted: (bool) ($data['is_deleted'] ?? false),
+
+// ❌ НЕПРАВИЛЬНО - может быть null
+isDeleted: $model->is_deleted,
+```
+
+## Структура Filament страниц
+
+### CreateRecord
+
+```php
+class CreateClient extends CreateRecord
+{
+    protected function handleRecordCreation(array $data): \App\Models\Client
+    {
+        try {
+            $useCase = app(CreateClientUseCase::class);
+            $clientEntity = $useCase->loadData($data)->validate()->execute();
+
+            return \App\Models\Client::find($clientEntity->getId());
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Ошибка создания')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            throw $e;
+        }
+    }
+}
+```
+
+### EditRecord
+
+```php
+class EditClient extends EditRecord
+{
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        try {
+            $data['id'] = $this->record->id;
+            $useCase = app(UpdateClientUseCase::class);
+            $useCase->loadData($data)->validate()->execute();
+
+            return $data;
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Ошибка обновления')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            throw $e;
+        }
+    }
+}
+```
+
+### ViewRecord
+
+```php
+class ViewClient extends ViewRecord
+{
+    public function mount(int | string $record): void
+    {
+        parent::mount($record);
+
+        try {
+            $useCase = app(GetClientUseCase::class);
+            $clientEntity = $useCase->loadData(['id' => $record])->validate()->execute();
+
+            $this->record = \App\Models\Client::find($clientEntity->getId());
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Ошибка загрузки')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+}
+```
+
+### ListRecords
+
+```php
+class ListClients extends ListRecords
+{
+    protected function getTableActions(): array
+    {
+        return [
+            Actions\DeleteAction::make()
+                ->action(function ($record) {
+                    try {
+                        $useCase = app(DeleteClientUseCase::class);
+                        $useCase->loadData(['id' => $record->id])->validate()->execute();
+
+                        Notification::make()
+                            ->title('Успешно удалено')
+                            ->success()
+                            ->send();
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->title('Ошибка удаления')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
+                }),
+        ];
+    }
+}
+```
+
+## Валидация
+
+### UI валидация (Filament)
+
+```php
+Forms\Components\TextInput::make('phone')
+    ->required()
+    ->unique(
+        table: 'clients',
+        column: 'phone',
+        ignoreRecord: true,
+        modifyRuleUsing: function ($rule, $livewire) {
+            return $rule->where('is_deleted', false);
+        }
+    )
+```
+
+### Доменная валидация (Use Cases)
+
+```php
+public function validateSpecificData(): self
+{
+    $this->dto = CreateClientDTO::fromArray($this->data);
+
+    // Проверяем уникальность телефона
+    if ($this->clientRepository->existsByPhone($this->dto->phone)) {
+        throw ClientPhoneAlreadyExistsException::forPhone($this->dto->phone);
+    }
+
+    return $this;
+}
+```
+
+## Запросы к БД
+
+### Фильтрация в ресурсе
+
+```php
+public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery()->where('is_deleted', false);
+}
+```
+
+### Scope методы в моделях
+
+```php
+public function scopeActive($query)
+{
+    return $query->where('is_deleted', false);
+}
+```
+
+## Dependency Injection
+
+### AppServiceProvider
+
+```php
+// Репозитории
+$this->app->singleton(\App\Domain\Client\Repository\ClientRepository::class,
+    \App\Infrastructure\Client\Repository\ClientRepositoryImpl::class);
+
+// Мапперы
+$this->app->singleton(\App\Domain\Client\Mapper\ClientMapper::class,
+    \App\Infrastructure\Client\Mapper\ClientMapperImpl::class);
+```
+
+## Частые ошибки
+
+### 1. Неправильные сигнатуры методов
+
+```php
+// ❌ НЕПРАВИЛЬНО
+protected function handleRecordUpdate(\App\Domain\Client\Entity\Client $record, array $data): \App\Domain\Client\Entity\Client
+
+// ✅ ПРАВИЛЬНО
+protected function mutateFormDataBeforeSave(array $data): array
+```
+
+### 2. Отсутствие приведения типов
+
+```php
+// ❌ НЕПРАВИЛЬНО
+isDeleted: $model->is_deleted, // может быть null
+
+// ✅ ПРАВИЛЬНО
+isDeleted: (bool) $model->is_deleted,
+```
+
+### 3. Отсутствие обработки ошибок
+
+```php
+// ❌ НЕПРАВИЛЬНО
+$useCase = app(CreateClientUseCase::class);
+return $useCase->loadData($data)->validate()->execute();
+
+// ✅ ПРАВИЛЬНО
+try {
+    $useCase = app(CreateClientUseCase::class);
+    return $useCase->loadData($data)->validate()->execute();
+} catch (\Exception $e) {
+    Notification::make()
+        ->title('Ошибка')
+        ->body($e->getMessage())
+        ->danger()
+        ->send();
+
+    throw $e;
+}
+```
+
+## Лучшие практики
+
+1. **Всегда используй Use Cases** в Filament страницах
+2. **Приводи типы** в мапперах для совместимости
+3. **Обрабатывай ошибки** с уведомлениями пользователю
+4. **Используй правильные методы** Filament для разных операций
+5. **Фильтруй данные** на уровне ресурса (getEloquentQuery)
+6. **Валидируй** и на UI уровне, и на доменном уровне
+7. **Регистрируй зависимости** в AppServiceProvider

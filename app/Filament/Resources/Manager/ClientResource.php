@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Manager;
 
+use App\Application\UseCases\Client\GetClientUseCase;
+use App\Domain\Client\Entity\Client as ClientEntity;
+use App\Domain\Client\Repository\ClientRepository;
 use App\Filament\Resources\Manager\ClientResource\Pages;
 use App\Filament\Resources\Manager\ClientResource\RelationManagers;
 use App\Models\Client;
@@ -22,6 +25,11 @@ class ClientResource extends Resource
     protected static ?string $pluralLabel = 'Клиенты';
     protected static ?string $modelLabel = 'Клиент';
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('is_deleted', false);
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -36,11 +44,18 @@ class ClientResource extends Resource
                         Forms\Components\TextInput::make('phone')
                             ->label('Телефон')
                             ->required()
-                            ->unique(ignoreRecord: true)
                             ->mask('+7 (999) 999-99-99')
                             ->placeholder('+7 (###) ###-##-##')
                             ->rules(['regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'])
-                            ->maxLength(20),
+                            ->maxLength(20)
+                            ->unique(
+                                table: 'clients',
+                                column: 'phone',
+                                ignoreRecord: true,
+                                modifyRuleUsing: function ($rule, $livewire) {
+                                    return $rule->where('is_deleted', false);
+                                }
+                            ),
 
                         Forms\Components\TextInput::make('telegram')
                             ->label('Telegram')

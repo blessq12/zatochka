@@ -2,15 +2,36 @@
 
 namespace App\Filament\Resources\Manager\ClientResource\Pages;
 
+use App\Application\UseCases\Client\GetClientUseCase;
 use App\Filament\Resources\Manager\ClientResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 
 class ViewClient extends ViewRecord
 {
     protected static string $resource = ClientResource::class;
+
+    public function mount(int | string $record): void
+    {
+        parent::mount($record);
+
+        try {
+            $useCase = app(GetClientUseCase::class);
+            $clientEntity = $useCase->loadData(['id' => $record])->validate()->execute();
+
+            // Обновляем запись данными из Use Case
+            $this->record = \App\Models\Client::find($clientEntity->getId());
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Ошибка загрузки клиента')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
 
     public function infolist(Infolist $infolist): Infolist
     {
