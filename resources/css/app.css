@@ -1,3 +1,96 @@
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;900&display=swap");
 @import "tailwindcss";
 
+@theme {
+    --font-family-jost: "Jost", "sans-serif";
+
+    /* Фирменные цвета Заточка.ТСК */
+    --color-dark-blue-50: #f0f7ff;
+    --color-dark-blue-100: #e0f2fe;
+    --color-dark-blue-200: #bae6fd;
+    --color-dark-blue-300: #7dd3fc;
+    --color-dark-blue-400: #38bdf8;
+    --color-dark-blue-500: #003859;
+    --color-dark-blue-600: #002c4e;
+    --color-dark-blue-700: #001f3a;
+    --color-dark-blue-800: #001529;
+    --color-dark-blue-900: #001a2e;
+
+    --color-blue-50: #eff6ff;
+    --color-blue-100: #dbeafe;
+    --color-blue-200: #bfdbfe;
+    --color-blue-300: #93c5fd;
+    --color-blue-400: #60a5fa;
+    --color-blue-500: #046490;
+    --color-blue-600: #035a7a;
+    --color-blue-700: #024d66;
+    --color-blue-800: #014052;
+    --color-blue-900: #00333e;
+
+    --color-pink-50: #fdf2f8;
+    --color-pink-100: #fce7f3;
+    --color-pink-200: #fbcfe8;
+    --color-pink-300: #f9a8d4;
+    --color-pink-400: #e879f9;
+    --color-pink-500: #c3006b;
+    --color-pink-600: #a8005a;
+    --color-pink-700: #8e0049;
+    --color-pink-800: #740038;
+    --color-pink-900: #5e0033;
+
+    --color-light-pink-50: #fef7f0;
+    --color-light-pink-100: #fdeee0;
+    --color-light-pink-200: #fbdcc0;
+    --color-light-pink-300: #f8c4a0;
+    --color-light-pink-400: #e991bd;
+    --color-light-pink-500: #d977a6;
+    --color-light-pink-600: #c95d8f;
+    --color-light-pink-700: #b94378;
+    --color-light-pink-800: #a92961;
+    --color-light-pink-900: #990f4a;
+
+    --color-dark-gray-50: #f9fafb;
+    --color-dark-gray-100: #f3f4f6;
+    --color-dark-gray-200: #e5e7eb;
+    --color-dark-gray-300: #d1d5db;
+    --color-dark-gray-400: #9ca3af;
+    --color-dark-gray-500: #3c3c3b;
+    --color-dark-gray-600: #2a2a29;
+    --color-dark-gray-700: #1f1f1e;
+    --color-dark-gray-800: #141413;
+    --color-dark-gray-900: #0a0a09;
+
+    --color-light-gray-50: #f9fafb;
+    --color-light-gray-100: #f3f4f6;
+    --color-light-gray-200: #e5e7eb;
+    --color-light-gray-300: #d1d5db;
+    --color-light-gray-400: #d3d3d3;
+    --color-light-gray-500: #9ca3af;
+    --color-light-gray-600: #6b7280;
+    --color-light-gray-700: #4b5563;
+    --color-light-gray-800: #374151;
+    --color-light-gray-900: #1f2937;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Jost Font Classes */
+.font-jost-black {
+    font-family: "Jost", sans-serif;
+    font-weight: 900;
+}
+
+.font-jost-bold {
+    font-family: "Jost", sans-serif;
+    font-weight: 700;
+}
+
+.font-jost-medium {
+    font-family: "Jost", sans-serif;
+    font-weight: 500;
+}
+
+.font-jost-regular {
+    font-family: "Jost", sans-serif;
+    font-weight: 400;
+}
