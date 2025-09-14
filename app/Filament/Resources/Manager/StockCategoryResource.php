@@ -28,6 +28,13 @@ class StockCategoryResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Основная информация')
                     ->schema([
+                        Forms\Components\Select::make('warehouse_id')
+                            ->label('Склад')
+                            ->relationship('warehouse', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+
                         Forms\Components\TextInput::make('name')
                             ->label('Название категории')
                             ->required()
@@ -65,6 +72,11 @@ class StockCategoryResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('warehouse.name')
+                    ->label('Склад')
+                    ->searchable()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('name')
                     ->label('Название')
                     ->searchable()
@@ -106,6 +118,12 @@ class StockCategoryResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('warehouse_id')
+                    ->label('Склад')
+                    ->relationship('warehouse', 'name')
+                    ->searchable()
+                    ->preload(),
+
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Активные')
                     ->placeholder('Все категории')

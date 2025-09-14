@@ -12,6 +12,7 @@ class StockCategoryMapperImpl implements StockCategoryMapper
     {
         return new StockCategory(
             id: $eloquentModel->id,
+            warehouseId: $eloquentModel->warehouse_id,
             name: $eloquentModel->name,
             description: $eloquentModel->description,
             color: $eloquentModel->color,
@@ -26,6 +27,7 @@ class StockCategoryMapperImpl implements StockCategoryMapper
     public function toEloquent(StockCategory $domainEntity): array
     {
         return [
+            'warehouse_id' => $domainEntity->getWarehouseId(),
             'name' => $domainEntity->getName(),
             'description' => $domainEntity->getDescription(),
             'color' => $domainEntity->getColor(),

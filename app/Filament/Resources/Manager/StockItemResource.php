@@ -51,21 +51,31 @@ class StockItemResource extends Resource
 
                 Forms\Components\Section::make('Классификация')
                     ->schema([
-                        Forms\Components\Select::make('warehouse_id')
-                            ->label('Склад')
-                            ->relationship('warehouse', 'name')
-                            ->required()
-                            ->searchable()
-                            ->preload(),
-
                         Forms\Components\Select::make('category_id')
-                            ->label('Категория')
-                            ->relationship('category', 'name')
+                            ->label('Категория товара')
+                            ->options(function () {
+                                return \App\Models\StockCategory::with('warehouse')
+                                    ->get()
+                                    ->mapWithKeys(function ($category) {
+                                        return [$category->id => $category->name . ' (' . $category->warehouse->name . ')'];
+                                    });
+                            })
                             ->required()
                             ->searchable()
-                            ->preload(),
-                    ])
-                    ->columns(2),
+                            ->preload()
+                            ->helperText('Категория определяет склад для товара')
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state) {
+                                    $category = \App\Models\StockCategory::with('warehouse')->find($state);
+                                    if ($category) {
+                                        $set('warehouse_id', $category->warehouse_id);
+                                    }
+                                }
+                            }),
+
+                        Forms\Components\Hidden::make('warehouse_id'),
+                    ]),
 
                 Forms\Components\Section::make('Цены')
                     ->schema([

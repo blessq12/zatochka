@@ -24,6 +24,8 @@ interface StockItemRepository
 
     public function countByWarehouse(int $warehouseId): int;
 
+    public function countByCategory(int $categoryId): int;
+
     public function getByCategory(int $categoryId): array;
 
     public function getByWarehouseAndCategory(int $warehouseId, int $categoryId): array;

@@ -18,6 +18,10 @@ interface StockCategoryRepository
 
     public function existsByName(string $name, ?int $excludeId = null): bool;
 
+    public function existsByNameInWarehouse(string $name, int $warehouseId, ?int $excludeId = null): bool;
+
+    public function countByWarehouse(int $warehouseId): int;
+
     public function getAll(): array;
 
     public function getActive(): array;

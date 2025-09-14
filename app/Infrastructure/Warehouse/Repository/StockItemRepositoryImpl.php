@@ -75,6 +75,13 @@ class StockItemRepositoryImpl implements StockItemRepository
             ->count();
     }
 
+    public function countByCategory(int $categoryId): int
+    {
+        return StockItemModel::where('category_id', $categoryId)
+            ->where('is_deleted', false)
+            ->count();
+    }
+
     public function getByCategory(int $categoryId): array
     {
         return StockItemModel::where('category_id', $categoryId)

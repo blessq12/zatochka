@@ -32,13 +32,19 @@ class DeleteWarehouseUseCase extends BaseWarehouseUseCase
             throw new \InvalidArgumentException('Склад не найден');
         }
 
-        // Проверяем есть ли товары на складе
-        $stockItemsCount = $this->stockItemRepository->countByWarehouse($this->data['id']);
-        if ($stockItemsCount > 0) {
-            throw new \InvalidArgumentException('Нельзя удалить склад с товарами. Сначала переместите все товары');
+        // Проверяем есть ли категории на складе
+        $categoriesCount = $this->stockCategoryRepository->countByWarehouse($this->data['id']);
+        if ($categoriesCount > 0) {
+            throw new \InvalidArgumentException("Нельзя удалить склад с категориями товаров. На складе есть {$categoriesCount} категорий. При удалении склада будут удалены все категории и товары. Сначала переместите все товары в другие склады.");
         }
 
-        // Soft delete
+        // Проверяем есть ли товары на складе (дополнительная проверка)
+        $stockItemsCount = $this->stockItemRepository->countByWarehouse($this->data['id']);
+        if ($stockItemsCount > 0) {
+            throw new \InvalidArgumentException("Нельзя удалить склад с товарами. На складе есть {$stockItemsCount} товаров. При удалении склада будут удалены все товары. Сначала переместите все товары в другие склады.");
+        }
+
+        // Hard delete
         return $this->warehouseRepository->delete($warehouse->getId());
     }
 }

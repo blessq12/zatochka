@@ -8,13 +8,31 @@ class DeleteStockItemUseCase extends BaseWarehouseUseCase
 {
     public function validateSpecificData(): self
     {
-        // TODO: Add validation logic
+        if (empty($this->data['id'])) {
+            throw new \InvalidArgumentException('ID товара обязателен');
+        }
+
+        if (!is_numeric($this->data['id'])) {
+            throw new \InvalidArgumentException('ID товара должен быть числом');
+        }
+
+        // Проверяем существование товара
+        if (!$this->stockItemRepository->exists($this->data['id'])) {
+            throw new \InvalidArgumentException('Товар не найден');
+        }
+
         return $this;
     }
 
     public function execute(): mixed
     {
-        // TODO: Implement delete logic
-        return $this->data;
+        $item = $this->stockItemRepository->get($this->data['id']);
+        if (!$item) {
+            throw new \InvalidArgumentException('Товар не найден');
+        }
+
+        // Hard delete
+        $this->stockItemRepository->delete($item->getId());
+        return true;
     }
 }

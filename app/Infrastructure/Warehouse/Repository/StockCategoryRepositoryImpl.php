@@ -34,8 +34,8 @@ class StockCategoryRepositoryImpl implements StockCategoryRepository
 
     public function delete(int $id): bool
     {
-        $model = StockCategoryModel::findOrFail($id);
-        return $model->update(['is_deleted' => true]);
+        $deleted = StockCategoryModel::where('id', $id)->delete();
+        return $deleted > 0;
     }
 
     public function exists(int $id): bool
@@ -52,6 +52,25 @@ class StockCategoryRepositoryImpl implements StockCategoryRepository
         }
 
         return $query->exists();
+    }
+
+    public function existsByNameInWarehouse(string $name, int $warehouseId, ?int $excludeId = null): bool
+    {
+        $query = StockCategoryModel::where('name', $name)
+            ->where('warehouse_id', $warehouseId);
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return $query->exists();
+    }
+
+    public function countByWarehouse(int $warehouseId): int
+    {
+        return StockCategoryModel::where('warehouse_id', $warehouseId)
+            ->where('is_deleted', false)
+            ->count();
     }
 
     public function getAll(): array

@@ -6,6 +6,7 @@ readonly class StockCategory
 {
     public function __construct(
         public ?int $id,
+        public int $warehouseId,
         public string $name,
         public ?string $description,
         public string $color,
@@ -20,6 +21,11 @@ readonly class StockCategory
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getWarehouseId(): int
+    {
+        return $this->warehouseId;
     }
 
     public function getName(): string

@@ -10,6 +10,7 @@ class StockCategory extends Model
     use HasFactory;
 
     protected $fillable = [
+        'warehouse_id',
         'name',
         'description',
         'color',
@@ -25,6 +26,11 @@ class StockCategory extends Model
     ];
 
     // Связи
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
     public function stockItems()
     {
         return $this->hasMany(StockItem::class, 'category_id');
