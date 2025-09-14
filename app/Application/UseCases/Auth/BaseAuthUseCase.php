@@ -1,26 +1,20 @@
 <?php
 
-namespace App\Application\UseCases\Company;
+namespace App\Application\UseCases\Auth;
 
-use App\Application\UseCases\Company\CompanyUseCaseInterface;
-
-abstract class BaseUserUseCase implements CompanyUseCaseInterface
+abstract class BaseAuthUseCase implements AuthUseCaseInterface
 {
     protected array $data;
 
-    // Все репозитории и мапперы Company домена
+    // Все репозитории и мапперы для авторизации
     protected \App\Domain\Company\Repository\UserRepository $userRepository;
-
     protected \App\Domain\Company\Mapper\UserMapper $userMapper;
-
-    // Auth контекст
-    protected \App\Domain\Auth\AuthContextInterface $authContext;
 
     public function __construct()
     {
+        // Подтягиваем зависимости для авторизации
         $this->userRepository = app(\App\Domain\Company\Repository\UserRepository::class);
         $this->userMapper = app(\App\Domain\Company\Mapper\UserMapper::class);
-        $this->authContext = app(\App\Domain\Auth\AuthContextInterface::class);
     }
 
     public function loadData(array $data): self

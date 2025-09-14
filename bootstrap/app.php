@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
+
+        $middleware->alias([
+            'role.manager' => \App\Http\Middleware\CheckManagerRole::class,
+            'role.master' => \App\Http\Middleware\CheckMasterRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

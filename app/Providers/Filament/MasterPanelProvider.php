@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\CheckMasterRole;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -25,6 +26,8 @@ class MasterPanelProvider extends PanelProvider
         return $panel
             ->id('master')
             ->path('master')
+            ->login(fn() => redirect()->route('login'))
+            ->loginRouteSlug('auth/login')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -51,7 +54,7 @@ class MasterPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                'role:master',
+                CheckMasterRole::class,
             ]);
     }
 }

@@ -19,7 +19,6 @@
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.16",
-        "bezhansalleh/filament-shield": "^3.3",
         "fakerphp/faker": "^1.23",
         "filament/filament": "^3.3",
         "friendsofphp/php-cs-fixer": "^3.87",
@@ -37,7 +36,6 @@
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-data": "^4.17",
         "spatie/laravel-event-sourcing": "^7.12",
-        "spatie/laravel-permission": "^6.21",
         "spatie/laravel-query-builder": "^6.3",
         "squizlabs/php_codesniffer": "^3.13",
         "vimeo/psalm": "^6.13"

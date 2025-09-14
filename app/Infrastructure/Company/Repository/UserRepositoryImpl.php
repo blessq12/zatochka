@@ -1,51 +1,67 @@
 <?php
 
-namespace App\Infrastructure\Tool\Repository;
+namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Tool\Entity\Tool;
-use App\Domain\Tool\Repository\ToolRepository;
-use App\Domain\Tool\Mapper\ToolMapper;
-use App\Models\Tool as ToolModel;
+use App\Domain\Company\Repository\UserRepository;
+use App\Domain\Company\Entity\User;
+use App\Domain\Company\Mapper\UserMapper;
+use App\Models\User as EloquentUser;
 
-class ToolRepositoryImpl implements ToolRepository
+class UserRepositoryImpl implements UserRepository
 {
+
     public function __construct(
-        private ToolMapper $mapper
+        private UserMapper $userMapper
     ) {}
 
-    public function create(array $data): Tool
+    public function create(array $data): User
     {
-        // TODO: Implement create logic
-        return new Tool(id: null);
+        $model = EloquentUser::create($data);
+        return $this->userMapper->toDomain($model);
     }
 
-    public function get(int $id): ?Tool
+    public function get(int $id): ?User
     {
-        // TODO: Implement get logic
-        return null;
+        $model = EloquentUser::find($id);
+
+        if (!$model) {
+            return null;
+        }
+
+        return $this->userMapper->toDomain($model);
     }
 
-    public function update(Tool $repair, array $data): Tool
+    public function update(User $user, array $data): User
     {
-        // TODO: Implement update logic
-        return $repair;
+        $model = EloquentUser::findOrFail($user->getId());
+        $model->update($data);
+
+        return $this->userMapper->toDomain($model->fresh());
     }
 
     public function delete(int $id): bool
     {
-        // TODO: Implement delete logic
-        return false;
+        $model = EloquentUser::find($id);
+
+        if (!$model) {
+            return false;
+        }
+
+        return $model->update(['is_deleted' => true]);
     }
 
     public function exists(int $id): bool
     {
-        // TODO: Implement exists logic
-        return false;
+        return EloquentUser::where('id', $id)
+            ->where('is_deleted', false)
+            ->exists();
     }
 
     public function getAll(): array
     {
-        // TODO: Implement get all logic
-        return [];
+        return EloquentUser::where('is_deleted', false)
+            ->get()
+            ->map(fn($model) => $this->userMapper->toDomain($model))
+            ->toArray();
     }
 }

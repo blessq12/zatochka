@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
+use App\Domain\Company\Enum\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 // ... existing code ...
 
 class User extends Authenticatable
@@ -17,14 +16,12 @@ class User extends Authenticatable
     use HasFactory;
     use Notifiable;
     use TwoFactorAuthenticatable;
-    use HasRoles;
-    use HasUuids;
 
     protected $fillable = [
-        'uuid',
         'name',
         'email',
         'password',
+        'role',
         'is_deleted',
     ];
 
@@ -36,10 +33,10 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'uuid' => 'string',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_deleted' => 'boolean',
+        'role' => 'array',
     ];
 
     // Связи
@@ -55,19 +52,57 @@ class User extends Authenticatable
         return $query->where('is_deleted', false);
     }
 
-    /**
-     * Get the columns that should receive a unique identifier.
-     */
-    public function uniqueIds(): array
+    // Методы для работы с ролями
+    public function hasRole(string $role): bool
     {
-        return ['uuid'];
+        return in_array($role, $this->role ?? []);
     }
 
-    /**
-     * Get the guard name for the model.
-     */
-    public function getGuardName(): string
+    public function hasAnyRole(array $roles): bool
     {
-        return 'web';
+        return !empty(array_intersect($roles, $this->role ?? []));
+    }
+
+    public function addRole(string $role): void
+    {
+        if (!UserRole::tryFrom($role)) {
+            throw new \InvalidArgumentException("Недопустимая роль: {$role}");
+        }
+
+        $roles = $this->role ?? [];
+        if (!in_array($role, $roles)) {
+            $roles[] = $role;
+            $this->role = $roles;
+        }
+    }
+
+    public function removeRole(string $role): void
+    {
+        $roles = $this->role ?? [];
+        $this->role = array_values(array_filter($roles, fn($r) => $r !== $role));
+    }
+
+    public function setRoles(array $roles): void
+    {
+        if (!UserRole::validate($roles)) {
+            throw new \InvalidArgumentException('Недопустимые роли');
+        }
+
+        $this->role = array_unique($roles);
+    }
+
+    public function getRoles(): array
+    {
+        return $this->role ?? [];
+    }
+
+    public function getRoleEnums(): array
+    {
+        return UserRole::fromArray($this->getRoles());
+    }
+
+    public function hasRoleEnum(UserRole $role): bool
+    {
+        return $this->hasRole($role->value);
     }
 }

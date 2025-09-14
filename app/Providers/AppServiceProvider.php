@@ -17,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Domain\Review\Mapper\ReviewMapper::class, \App\Infrastructure\Review\Mapper\ReviewMapperImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Mapper\WarehouseMapper::class, \App\Infrastructure\Warehouse\Mapper\WarehouseMapperImpl::class);
         $this->app->singleton(\App\Domain\Company\Mapper\CompanyMapper::class, \App\Infrastructure\Company\Mapper\CompanyMapperImpl::class);
+        $this->app->singleton(\App\Domain\Company\Mapper\UserMapper::class, \App\Infrastructure\Company\Mapper\UserMapperImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Mapper\StockCategoryMapper::class, \App\Infrastructure\Warehouse\Mapper\StockCategoryMapperImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Mapper\StockItemMapper::class, \App\Infrastructure\Warehouse\Mapper\StockItemMapperImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Mapper\StockMovementMapper::class, \App\Infrastructure\Warehouse\Mapper\StockMovementMapperImpl::class);
@@ -29,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Domain\Review\Repository\ReviewRepository::class, \App\Infrastructure\Review\Repository\ReviewRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Repository\WarehouseRepository::class, \App\Infrastructure\Warehouse\Repository\WarehouseRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Company\Repository\CompanyRepository::class, \App\Infrastructure\Company\Repository\CompanyRepositoryImpl::class);
+        $this->app->singleton(\App\Domain\Company\Repository\UserRepository::class, \App\Infrastructure\Company\Repository\UserRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Repository\StockCategoryRepository::class, \App\Infrastructure\Warehouse\Repository\StockCategoryRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Repository\StockItemRepository::class, \App\Infrastructure\Warehouse\Repository\StockItemRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Repository\StockMovementRepository::class, \App\Infrastructure\Warehouse\Repository\StockMovementRepositoryImpl::class);
@@ -41,6 +43,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(\App\Domain\Order\Service\OrderStatusGroupingService::class);
+
+        // auth context
+        $this->app->singleton(\App\Domain\Auth\AuthContextInterface::class, \App\Infrastructure\Auth\AuthContextImpl::class);
     }
 
     /**
