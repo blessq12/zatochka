@@ -26,21 +26,38 @@ class StockCategoryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('color')
-                    ->maxLength(7),
-                Forms\Components\TextInput::make('sort_order')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
-                Forms\Components\Toggle::make('is_deleted')
-                    ->required(),
+                Forms\Components\Section::make('Основная информация')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Название категории')
+                            ->required()
+                            ->maxLength(255),
+
+                        Forms\Components\Textarea::make('description')
+                            ->label('Описание')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Настройки')
+                    ->schema([
+                        Forms\Components\ColorPicker::make('color')
+                            ->label('Цвет')
+                            ->default('#6B7280'),
+
+                        Forms\Components\TextInput::make('sort_order')
+                            ->label('Порядок сортировки')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('Чем меньше число, тем выше в списке'),
+
+                        Forms\Components\Toggle::make('is_active')
+                            ->label('Активна')
+                            ->default(true)
+                            ->helperText('Неактивные категории не отображаются в выборе'),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -49,42 +66,87 @@ class StockCategoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('color')
-                    ->searchable(),
+                    ->label('Название')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Описание')
+                    ->limit(50)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        return strlen($state) > 50 ? $state : null;
+                    }),
+
+                Tables\Columns\ColorColumn::make('color')
+                    ->label('Цвет'),
+
                 Tables\Columns\TextColumn::make('sort_order')
+                    ->label('Порядок')
                     ->numeric()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('stockItems_count')
+                    ->label('Товаров')
+                    ->counts('stockItems')
+                    ->numeric(),
+
                 Tables\Columns\IconColumn::make('is_active')
-                    ->boolean(),
-                Tables\Columns\IconColumn::make('is_deleted')
-                    ->boolean(),
+                    ->label('Активна')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger'),
+
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Создана')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Активные')
+                    ->placeholder('Все категории')
+                    ->trueLabel('Только активные')
+                    ->falseLabel('Только неактивные'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('toggle_active')
+                    ->label(fn(StockCategory $record): string => $record->is_active ? 'Деактивировать' : 'Активировать')
+                    ->icon(fn(StockCategory $record): string => $record->is_active ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->color(fn(StockCategory $record): string => $record->is_active ? 'danger' : 'success')
+                    ->action(function (StockCategory $record): void {
+                        $record->update(['is_active' => !$record->is_active]);
+                    })
+                    ->requiresConfirmation(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('activate')
+                        ->label('Активировать')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(fn($records) => $records->each->activate())
+                        ->requiresConfirmation(),
+                    Tables\Actions\BulkAction::make('deactivate')
+                        ->label('Деактивировать')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->action(fn($records) => $records->each->deactivate())
+                        ->requiresConfirmation(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('sort_order', 'asc');
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\StockItemsRelationManager::class,
         ];
     }
 

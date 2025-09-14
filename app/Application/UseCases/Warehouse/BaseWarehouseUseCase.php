@@ -5,7 +5,7 @@ namespace App\Application\UseCases\Warehouse;
 use App\Application\UseCases\UseCaseInterface;
 use App\Domain\Warehouse\Repository\WarehouseRepository;
 
-abstract class BaseWarehouseUseCase implements WarehouseUseCaseInterface
+abstract class BaseWarehouseUseCase implements UseCaseInterface
 {
     protected array $data;
     protected WarehouseRepository $warehouseRepository;

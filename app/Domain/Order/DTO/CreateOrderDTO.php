@@ -39,7 +39,7 @@ class CreateOrderDTO
             'master_id' => $this->masterId,
             'order_number' => $this->orderNumber,
             'status' => $this->status?->value,
-            'urgency' => $this->urgency,
+            'urgency' => $this->urgency?->value,
             'is_paid' => $this->isPaid,
             'paid_at' => $this->paidAt,
             'total_amount' => $this->totalAmount,
