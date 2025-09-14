@@ -3,7 +3,9 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\AuthControllerFilament;
+//
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\ClientController;
 
 Route::controller(MainController::class)
     ->prefix('')
@@ -18,6 +20,12 @@ Route::controller(MainController::class)
         Route::get('/help', 'help')->name('help');
     });
 
+Route::controller(ClientController::class)
+    ->prefix('client')
+    ->name('client.')
+    ->group(function () {
+        Route::get('/dashboard', 'dashboard')->name('dashboard');
+    });
 
 Route::controller(AuthControllerFilament::class)->group(function () {
     Route::get('/login', 'login')->name('login');

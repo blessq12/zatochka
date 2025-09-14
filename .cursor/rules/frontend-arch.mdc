@@ -1,3 +1,273 @@
 ---
-alwaysApply: false
+name: architecture of frontend
+glob:
+alwaysApply: true
 ---
+
+# Frontend Architecture
+
+## Hybrid Architecture: Blade + Vue.js
+
+### Общая концепция
+
+-   **Blade** - для статических страниц и серверного рендеринга
+-   **Vue.js** - для интерактивных компонентов и SPA-функциональности
+-   **Hybrid подход** - комбинирование серверного и клиентского рендеринга
+
+## Blade Views Architecture
+
+### Структура папок
+
+```
+resources/views/
+├── components/           # Переиспользуемые Blade компоненты
+│   ├── layouts/         # Основные макеты
+│   ├── navigation/      # Навигационные компоненты
+│   └── footer/          # Футер компоненты
+├── pages/               # Страницы приложения
+│   ├── client/          # Клиентские страницы
+│   └── *.blade.php      # Основные страницы
+├── auth/                # Аутентификация
+├── livewire/            # Livewire компоненты
+└── vendor/              # Vendor компоненты
+```
+
+### Правила Blade компонентов
+
+#### Layouts
+
+-   **Основной макет**: `components/layouts/app.blade.php`
+-   **Структура**: DOCTYPE + head + body с навигацией и футером
+-   **Vite интеграция**: `@vite(['resources/css/app.css', 'resources/js/app.js'])`
+-   **Стеки**: `@stack('styles')`, `@stack('scripts')`
+-   **CSRF токен**: обязательный в head
+
+#### Компоненты
+
+-   **Именование**: kebab-case для файлов (`main.blade.php`)
+-   **Использование**: `<x-component.name />`
+-   **Props**: через атрибуты компонента
+-   **Slots**: `{{ $slot }}` для контента
+
+#### Страницы
+
+-   **Структура**: наследование от основного макета
+-   **Именование**: kebab-case для файлов
+-   **Title**: через props макета `title="Page Title"`
+-   **Контент**: в `<x-layouts.app>` wrapper
+
+### Правила Blade разработки
+
+1. **Компонентный подход**: разбивать UI на переиспользуемые компоненты
+2. **Макеты**: использовать единый макет для всех страниц
+3. **Навигация**: выносить в отдельные компоненты
+4. **Стили**: Tailwind CSS классы, избегать inline стилей
+5. **Скрипты**: через Vite, избегать inline JavaScript
+
+## Vue.js Architecture
+
+### Структура папок
+
+```
+resources/js/
+├── components/          # Vue компоненты
+│   ├── Auth/           # Аутентификация
+│   ├── Support/        # Вспомогательные компоненты
+│   └── *.vue           # Основные компоненты
+├── stores/             # Pinia stores
+├── services/           # Сервисы и утилиты
+├── app.js              # Точка входа
+└── bootstrap.js        # Bootstrap конфигурация
+```
+
+### Правила Vue компонентов
+
+#### Структура компонента
+
+```vue
+<script>
+// 1. Импорты
+// 2. Export default с name
+// 3. Data, computed, methods
+</script>
+
+<template>
+    <!-- HTML разметка -->
+</template>
+
+<style scoped>
+/* Стили компонента */
+</style>
+```
+
+#### Именование
+
+-   **Файлы**: PascalCase (`LoginForm.vue`)
+-   **Компоненты**: PascalCase в template
+-   **Props**: camelCase
+-   **Events**: kebab-case
+
+#### Композиция
+
+-   **Single File Components**: один файл = один компонент
+-   **Scoped стили**: всегда использовать `scoped`
+-   **Props validation**: через yup или встроенную валидацию
+-   **Events**: четкое именование и документация
+
+### Pinia Stores Architecture
+
+#### Структура store
+
+```javascript
+import { defineStore } from "pinia";
+
+export const useDomainStore = defineStore("domain", {
+    state: () => ({
+        // Состояние
+    }),
+    getters: {
+        // Вычисляемые свойства
+    },
+    actions: {
+        // Методы
+    },
+});
+```
+
+#### Правила stores
+
+-   **Именование**: `use{Domain}Store`
+-   **HMR поддержка**: обязательная для dev режима
+-   **Типизация**: четкие типы для state
+-   **Actions**: асинхронные операции
+-   **Getters**: вычисляемые свойства
+
+### Services Architecture
+
+#### Структура сервиса
+
+```javascript
+export default {
+    // Методы сервиса
+    methodName() {
+        // Логика
+    },
+};
+```
+
+#### Правила сервисов
+
+-   **Именование**: camelCase с суффиксом Service
+-   **Инкапсуляция**: логика, не связанная с компонентами
+-   **Dependency Injection**: через provide/inject
+-   **Чистые функции**: без побочных эффектов
+
+## Integration Patterns
+
+### Blade + Vue Integration
+
+#### Встраивание Vue в Blade
+
+```blade
+<x-layouts.app title="Page">
+    <div class="container">
+        <h1>Static Content</h1>
+        <vue-component></vue-component>
+    </div>
+</x-layouts.app>
+```
+
+#### Правила интеграции
+
+-   **Vue компоненты**: только для интерактивности
+-   **Blade**: для статического контента и SEO
+-   **Монтирование**: на элемент с id="app"
+-   **Авторегистрация**: через import.meta.glob
+
+### Routing Strategy
+
+#### Blade Routes
+
+-   **Статические страницы**: через Laravel routes
+-   **SEO оптимизация**: серверный рендеринг
+-   **Мета-теги**: через Blade макеты
+
+#### Vue Routes (если нужны)
+
+-   **SPA страницы**: через Vue Router
+-   **Клиентская навигация**: для интерактивных разделов
+-   **History API**: для SEO-friendly URLs
+
+## Development Rules
+
+### 1. Создание нового компонента
+
+#### Blade компонент
+
+1. Создать файл в `resources/views/components/`
+2. Определить props и slots
+3. Использовать Tailwind CSS
+4. Тестировать в разных контекстах
+
+#### Vue компонент
+
+1. Создать файл в `resources/js/components/`
+2. Определить props, emits, data
+3. Добавить валидацию
+4. Использовать scoped стили
+
+### 2. State Management
+
+#### Когда использовать Pinia
+
+-   **Глобальное состояние**: аутентификация, настройки
+-   **Сложная логика**: заказы, корзина
+-   **Кэширование**: API данные
+
+#### Когда НЕ использовать Pinia
+
+-   **Локальное состояние**: простые формы
+-   **Временные данные**: модальные окна
+-   **UI состояние**: открыт/закрыт
+
+### 3. Styling Strategy
+
+#### Tailwind CSS
+
+-   **Utility-first**: предпочитать утилиты
+-   **Responsive**: mobile-first подход
+-   **Dark mode**: через CSS переменные
+-   **Кастомизация**: через config
+
+#### Scoped Styles
+
+-   **Vue компоненты**: всегда scoped
+-   **Глобальные стили**: только в app.css
+-   **CSS переменные**: для темизации
+
+### 4. Performance Optimization
+
+#### Code Splitting
+
+-   **Lazy loading**: для больших компонентов
+-   **Dynamic imports**: для условной загрузки
+-   **Tree shaking**: удаление неиспользуемого кода
+
+#### Caching Strategy
+
+-   **API кэширование**: через stores
+-   **Component кэширование**: через keep-alive
+-   **Asset кэширование**: через Vite
+
+## Anti-Patterns (НЕ ДЕЛАТЬ)
+
+❌ **Смешивание Blade и Vue логики в одном файле**
+❌ **Inline стили вместо Tailwind классов**
+❌ **Глобальные Vue компоненты без необходимости**
+❌ **Прямые DOM манипуляции в Vue**
+❌ **Дублирование состояния между Blade и Vue**
+❌ **Использование jQuery с Vue**
+❌ **Создание монолитных компонентов**
+❌ **Игнорирование accessibility (a11y)**
+❌ **Хардкод строк вместо локализации**
+❌ **Отсутствие error boundaries в Vue**

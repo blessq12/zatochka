@@ -9,27 +9,37 @@ alwaysApply: true
 ## Build Tools
 
 -   **Vite 7.0.4** - современный билдер и dev сервер
--   **Laravel Vite Plugin** - интеграция с Laravel backend
+-   **Laravel Vite Plugin 2.0.0** - интеграция с Laravel backend
+-   **@vitejs/plugin-vue 4.5.0** - Vue.js плагин для Vite
 
 ## Frontend Framework
 
 -   **Vue 3.2.37** - реактивный JavaScript фреймворк
--   **Bootstrap 5.2.3** - CSS фреймворк для UI компонентов
+-   **Pinia 3.0.3** - состояние приложения (state management)
 
 ## Styling
 
 -   **Tailwind CSS 4.1.12** - utility-first CSS фреймворк
+-   **@tailwindcss/vite 4.1.12** - Tailwind CSS плагин для Vite
 -   **Sass 1.56.1** - CSS препроцессор с переменными и миксинами
 
 ## HTTP & API
 
 -   **Axios 1.11.0** - HTTP клиент для API запросов
 
+## Forms & Validation
+
+-   **Yup 1.7.0** - схема валидации для форм
+-   **Maska 3.2.0** - маски ввода для форм
+
 ## Animation & UX
 
 -   **GSAP 3.13.0** - профессиональная библиотека анимаций
--   **Maska 3.2.0** - маски ввода для форм
--   **Popper.js 2.11.6** - позиционирование элементов (tooltips, dropdowns)
+-   **@popperjs/core 2.11.6** - позиционирование элементов (tooltips, dropdowns)
+
+## Development Tools
+
+-   **Concurrently 9.0.1** - запуск нескольких команд одновременно
 
 ## Development Scripts
 
@@ -40,6 +50,8 @@ alwaysApply: true
 
 -   **Module Type**: ES modules (type: "module")
 -   **Build Tool**: Vite для быстрой разработки
--   **Styling Strategy**: Tailwind + Bootstrap для быстрой разработки UI
+-   **Styling Strategy**: Tailwind CSS utility-first подход
 -   **Animation**: GSAP для сложных анимаций
--   **Forms**: Maska для валидации и форматирования ввода
+-   **Forms**: Yup для валидации + Maska для форматирования ввода
+-   **State Management**: Pinia для глобального состояния
+-   **HTTP Client**: Axios для API запросов

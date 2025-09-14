@@ -1,0 +1,373 @@
+---
+name: tailwind-styles
+glob:
+alwaysApply: true
+---
+
+# Tailwind CSS Styling Rules
+
+## Общие принципы
+
+### Современный дизайн с эффектом стекла
+
+-   **Большое количество воздуха**: используй большие отступы и padding
+-   **Крупные элементы**: не зажимай дизайн, делай элементы заметными
+-   **Эффект стекла**: полупрозрачные фоны с размытием (backdrop-blur)
+-   **Лаконичность**: минимализм без лишних деталей
+-   **Бесшовность**: все элементы должны выглядеть как единое приложение
+
+### Единообразие стилей
+
+-   **Всегда используй одни и те же классы** для одинаковых элементов
+-   **Не смешивай** разные подходы к стилизации одного типа компонентов
+-   **Следуй единому дизайн-системе** во всем приложении
+
+### Двухтемная архитектура
+
+-   **Светлая тема**: стандартные классы Tailwind с эффектом стекла
+-   **Темная тема**: классы с префиксом `dark:` с полупрозрачными фонами
+-   **Обязательно**: все интерактивные элементы должны поддерживать обе темы
+
+## Цветовая схема
+
+### Фоны с эффектом стекла
+
+#### Основные фоны
+
+```css
+/* Светлая тема - эффект стекла */
+bg-white/80 backdrop-blur-xl border border-white/20     /* Основной фон страниц */
+bg-white/60 backdrop-blur-lg border border-white/10     /* Вторичный фон */
+bg-white/40 backdrop-blur-md border border-white/5      /* Фон контейнеров */
+
+/* Темная тема - эффект стекла */
+dark:bg-gray-900/80 dark:backdrop-blur-xl dark:border-gray-800/20  /* Основной фон страниц */
+dark:bg-gray-800/60 dark:backdrop-blur-lg dark:border-gray-700/10  /* Вторичный фон */
+dark:bg-gray-700/40 dark:backdrop-blur-md dark:border-gray-600/5   /* Фон контейнеров */
+```
+
+#### Специальные фоны с эффектом стекла
+
+```css
+/* Светлая тема */
+bg-blue-50/80 backdrop-blur-lg border border-blue-200/30     /* Информационные блоки */
+bg-green-50/80 backdrop-blur-lg border border-green-200/30   /* Успешные блоки */
+bg-red-50/80 backdrop-blur-lg border border-red-200/30       /* Ошибки */
+bg-yellow-50/80 backdrop-blur-lg border border-yellow-200/30 /* Предупреждения */
+
+/* Темная тема */
+dark:bg-blue-900/30 dark:backdrop-blur-lg dark:border-blue-800/20  /* Информационные блоки */
+dark:bg-green-900/30 dark:backdrop-blur-lg dark:border-green-800/20 /* Успешные блоки */
+dark:bg-red-900/30 dark:backdrop-blur-lg dark:border-red-800/20     /* Ошибки */
+dark:bg-yellow-900/30 dark:backdrop-blur-lg dark:border-yellow-800/20 /* Предупреждения */
+```
+
+### Текст (Text Colors)
+
+#### Основной текст
+
+```css
+/* Светлая тема */
+text-gray-900     /* Основной текст */
+text-gray-700     /* Вторичный текст */
+text-gray-500     /* Приглушенный текст */
+
+/* Темная тема */
+dark:text-gray-100  /* Основной текст */
+dark:text-gray-300  /* Вторичный текст */
+dark:text-gray-400  /* Приглушенный текст */
+```
+
+#### Акцентный текст
+
+```css
+/* Светлая тема */
+text-blue-600     /* Ссылки */
+text-green-600    /* Успех */
+text-red-600      /* Ошибки */
+
+/* Темная тема */
+dark:text-blue-400  /* Ссылки */
+dark:text-green-400 /* Успех */
+dark:text-red-400   /* Ошибки */
+```
+
+## Контейнеризация с большим количеством воздуха
+
+### Основные контейнеры
+
+```css
+/* ВСЕГДА используй эту комбинацию с большими отступами */
+container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16
+
+/* Для страниц с максимальным воздухом */
+container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20
+```
+
+### Вложенные контейнеры
+
+```css
+/* Для секций внутри страниц - много воздуха */
+max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 lg:py-20
+
+/* Для узких блоков - достаточно воздуха */
+max-w-4xl mx-auto px-8 sm:px-12 lg:px-16 py-10 sm:py-12 lg:py-16
+
+/* Для форм - комфортные отступы */
+max-w-md mx-auto px-8 sm:px-10 lg:px-12 py-8 sm:py-10 lg:py-12
+```
+
+## Компоненты с эффектом стекла
+
+### Кнопки
+
+#### Основные кнопки с эффектом стекла
+
+```css
+/* Primary кнопка - эффект стекла */
+bg-blue-600/90 backdrop-blur-md hover:bg-blue-700/90 text-white px-8 py-4 rounded-2xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl
+dark:bg-blue-500/90 dark:hover:bg-blue-600/90 dark:backdrop-blur-md
+
+/* Secondary кнопка - эффект стекла */
+bg-white/60 backdrop-blur-md hover:bg-white/80 text-gray-900 px-8 py-4 rounded-2xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20
+dark:bg-gray-800/60 dark:hover:bg-gray-700/80 dark:text-gray-100 dark:border-gray-700/20
+
+/* Danger кнопка - эффект стекла */
+bg-red-600/90 backdrop-blur-md hover:bg-red-700/90 text-white px-8 py-4 rounded-2xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl
+dark:bg-red-500/90 dark:hover:bg-red-600/90 dark:backdrop-blur-md
+```
+
+#### Размеры кнопок - крупные элементы
+
+```css
+/* Маленькая - но не зажатая */
+px-6 py-3 text-base rounded-xl
+
+/* Средняя (по умолчанию) - комфортная */
+px-8 py-4 text-lg rounded-2xl
+
+/* Большая - заметная */
+px-10 py-5 text-xl rounded-2xl
+```
+
+### Формы с эффектом стекла
+
+#### Поля ввода - крупные и комфортные
+
+```css
+/* Стандартное поле - эффект стекла */
+w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300
+dark:bg-gray-800/60 dark:border-gray-700/20 dark:text-gray-100 dark:focus:ring-blue-400/50 dark:focus:border-blue-400/50
+
+/* Поле с ошибкой - эффект стекла */
+bg-red-50/60 backdrop-blur-md border-red-300/50 focus:ring-red-500/50 focus:border-red-500/50
+dark:bg-red-900/30 dark:border-red-600/50 dark:focus:ring-red-400/50 dark:focus:border-red-400/50
+```
+
+#### Лейблы - крупные и читаемые
+
+```css
+block text-lg font-medium text-gray-700 mb-3
+dark:text-gray-300
+```
+
+### Карточки с эффектом стекла
+
+#### Стандартная карточка - много воздуха
+
+```css
+bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/20
+dark:bg-gray-900/80 dark:border-gray-800/20
+```
+
+#### Карточка с ховером - плавные переходы
+
+```css
+bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/20 hover:shadow-3xl hover:bg-white/90 transition-all duration-500
+dark:bg-gray-900/80 dark:border-gray-800/20 dark:hover:bg-gray-900/90 dark:hover:shadow-3xl
+```
+
+### Навигация с эффектом стекла
+
+#### Основная навигация - эффект стекла
+
+```css
+bg-white/80 backdrop-blur-xl shadow-lg border-b border-white/20
+dark:bg-gray-900/80 dark:border-gray-800/20
+```
+
+#### Навигационные ссылки - крупные и комфортные
+
+```css
+text-gray-600 hover:text-gray-900 px-6 py-4 rounded-2xl text-lg font-medium transition-all duration-300
+dark:text-gray-300 dark:hover:text-gray-100
+
+/* Активная ссылка - эффект стекла */
+bg-blue-100/80 backdrop-blur-md text-blue-700 border border-blue-200/30
+dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/20
+```
+
+## Отступы и размеры - много воздуха
+
+### Стандартные отступы - крупные
+
+```css
+/* Внутренние отступы - много воздуха */
+p-8     /* 32px - стандартный */
+p-10    /* 40px - для карточек */
+p-12    /* 48px - для секций */
+p-16    /* 64px - для больших блоков */
+
+/* Внешние отступы - комфортные */
+mb-8    /* 32px - между элементами */
+mb-12   /* 48px - между секциями */
+mb-16   /* 64px - большие отступы */
+mb-20   /* 80px - максимальные отступы */
+```
+
+### Responsive отступы - адаптивные
+
+```css
+/* Адаптивные отступы - много воздуха */
+px-8 sm:px-12 lg:px-16 xl:px-20    /* Горизонтальные */
+py-8 sm:py-12 lg:py-16 xl:py-20    /* Вертикальные */
+```
+
+## Анимации и переходы - плавные и современные
+
+### Стандартные переходы - плавные
+
+```css
+/* Для кнопок и интерактивных элементов - плавные */
+transition-all duration-300 ease-out
+
+/* Для карточек и блоков - мягкие */
+transition-all duration-500 ease-out
+
+/* Для модальных окон - элегантные */
+transition-all duration-700 ease-out
+```
+
+### Ховер эффекты - современные
+
+```css
+/* Стандартный ховер - эффект стекла */
+hover:shadow-2xl hover:scale-105 transform transition-all duration-300 ease-out
+
+/* Для кнопок - подъем */
+hover:scale-110 hover:shadow-3xl transform transition-all duration-300 ease-out
+
+/* Для карточек - плавающий эффект */
+hover:shadow-3xl hover:-translate-y-2 transform transition-all duration-500 ease-out
+```
+
+## Утилитарные классы
+
+### Скрытие/показ элементов
+
+```css
+/* Скрыть на мобильных */
+hidden sm:block
+
+/* Показать только на мобильных */
+block sm:hidden
+
+/* Скрыть в темной теме */
+block dark:hidden
+
+/* Показать только в темной теме */
+hidden dark:block
+```
+
+### Flexbox утилиты
+
+```css
+/* Центрирование */
+flex items-center justify-center
+
+/* Распределение */
+flex items-center justify-between
+
+/* Вертикальное выравнивание */
+flex flex-col items-center
+```
+
+## Правила именования
+
+### Префиксы для компонентов
+
+-   **btn-** - для кнопок
+-   **card-** - для карточек
+-   **form-** - для форм
+-   **nav-** - для навигации
+
+### Модификаторы
+
+-   **-primary** - основной вариант
+-   **-secondary** - вторичный вариант
+-   **-danger** - опасные действия
+-   **-success** - успешные действия
+
+## Специальные эффекты стекла
+
+### Эффект стекла для модальных окон
+
+```css
+/* Модальное окно - эффект стекла */
+bg-white/90 backdrop-blur-2xl rounded-3xl shadow-3xl border border-white/30
+dark:bg-gray-900/90 dark:border-gray-800/30
+```
+
+### Эффект стекла для выпадающих меню
+
+```css
+/* Выпадающее меню - эффект стекла */
+bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20
+dark:bg-gray-800/80 dark:border-gray-700/20
+```
+
+### Эффект стекла для уведомлений
+
+```css
+/* Уведомление - эффект стекла */
+bg-white/85 backdrop-blur-lg rounded-2xl shadow-xl border border-white/25
+dark:bg-gray-800/85 dark:border-gray-700/25
+```
+
+## Правила современного дизайна
+
+### Принципы Apple-стиля
+
+-   **Много воздуха**: минимум 32px отступы, лучше 48px+
+-   **Крупные элементы**: кнопки минимум 48px высотой
+-   **Эффект стекла**: всегда backdrop-blur + полупрозрачность
+-   **Плавные переходы**: минимум 300ms, лучше 500ms+
+-   **Круглые углы**: минимум rounded-xl, лучше rounded-2xl
+-   **Тени**: используй shadow-2xl и shadow-3xl
+-   **Бесшовность**: все элементы должны выглядеть едино
+
+### Запрещенные практики
+
+❌ **Маленькие отступы** (меньше 24px)
+❌ **Зажатые элементы** (маленькие кнопки, поля)
+❌ **Резкие переходы** (меньше 200ms)
+❌ **Острые углы** (rounded-sm, rounded-md)
+❌ **Плоские тени** (shadow-sm, shadow-md)
+❌ **Непрозрачные фоны** без backdrop-blur
+❌ **Разные стили** для одинаковых элементов
+
+## Anti-Patterns (НЕ ДЕЛАТЬ)
+
+❌ **Смешивание разных подходов к стилизации**
+❌ **Использование inline стилей вместо Tailwind классов**
+❌ **Создание кастомных CSS классов без необходимости**
+❌ **Игнорирование темной темы**
+❌ **Использование разных цветов для одинаковых элементов**
+❌ **Хардкод размеров вместо responsive классов**
+❌ **Отсутствие transition для интерактивных элементов**
+❌ **Использование margin вместо gap в flex/grid**
+❌ **Создание слишком специфичных селекторов**
+❌ **Игнорирование accessibility (focus states)**
+❌ **Маленькие отступы и зажатые элементы**
+❌ **Отсутствие эффекта стекла в современном дизайне**
+❌ **Резкие переходы и острые углы**

@@ -1,5 +1,5 @@
 ---
-name:
+name: backend-stack
 glob:
 alwaysApply: true
 ---
@@ -10,47 +10,65 @@ alwaysApply: true
 
 -   **Laravel 12.0** - основной фреймворк
 -   **PHP 8.2+** - минимальная версия
+-   **Laravel UI 4.6** - базовые компоненты UI
 
 ## Architecture Patterns
 
--   **Event Sourcing** (Spatie) - для DDD архитектуры
+-   **Event Sourcing** (Spatie 7.12) - для DDD архитектуры
 -   **CQRS** - разделение команд и запросов
 -   **Domain-Driven Design** - структура по доменам
+-   **Spatie Data 4.17** - типизированные объекты данных
+-   **Spatie Query Builder 6.3** - построение запросов
 
 ## Admin Panel
 
 -   **Filament 3.3** - админ-панель
--   **Spatie Shield** - роли и права доступа
--   **Spatie Media Library** - управление файлами
+-   **Spatie Media Library 11.0** - управление файлами
+-   **Filament Spatie Media Library Plugin 3.3** - интеграция с Filament
 
 ## API & Auth
 
--   **Laravel Sanctum** - API токены
--   **Laravel Fortify** - аутентификация
+-   **Laravel Sanctum 4.0** - API токены
+-   **Laravel Fortify 1.30** - аутентификация
 
 ## Background Jobs
 
--   **Laravel Horizon** - управление очередями
+-   **Laravel Horizon 5.33** - управление очередями
 -   **Redis queues** - асинхронные задачи
 
 ## Monitoring & Debug
 
--   **Laravel Telescope** - профилирование и дебаг
--   **Laravel Debugbar** - отладка в браузере
--   **Activity Log** - логирование действий
+-   **Laravel Telescope 5.11** - профилирование и дебаг
+-   **Laravel Debugbar 3.16** - отладка в браузере
+-   **Laravel Pail 1.2.2** - просмотр логов
+-   **Spatie Activity Log 4.10** - логирование действий
 
 ## Notifications
 
--   **Telegram Bot API** - уведомления
+-   **Laravel Notification Channels Telegram 6.0** - уведомления в Telegram
 
 ## Code Quality
 
--   **PHPStan** - статический анализ
--   **Psalm** - дополнительная проверка типов
--   **PHP CS Fixer** - форматирование кода
--   **PHPUnit** - тестирование
+-   **PHPStan 2.1** - статический анализ
+-   **Psalm 6.13** - дополнительная проверка типов
+-   **PHP CS Fixer 3.87** - форматирование кода
+-   **PHPUnit 11.5.3** - тестирование
+-   **Laravel Pint 1.24** - форматирование кода Laravel
+-   **PHP CodeSniffer 3.13** - проверка стандартов кода
 
 ## Development Tools
 
--   **Laravel Sail** - Docker окружение
--   **Laravel Tinker** - интерактивная консоль
+-   **Laravel Sail 1.41** - Docker окружение
+-   **Laravel Tinker 2.10.1** - интерактивная консоль
+-   **Faker 1.23** - генерация тестовых данных
+-   **Mockery 1.6** - моки для тестов
+-   **Collision 8.6** - красивые ошибки в консоли
+
+## Scripts & Automation
+
+-   **Composer Scripts**:
+    -   `composer dev` - запуск dev окружения (server, queue, logs, vite)
+    -   `composer test` - запуск тестов
+    -   `composer analyse` - полный анализ кода (phpstan, psalm, phpcs, phpcbf)
+    -   `composer quality` - проверка качества (lint + test)
+    -   `composer fix` - автоисправление кода
