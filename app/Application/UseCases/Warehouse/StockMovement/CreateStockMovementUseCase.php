@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Application\UseCases\Warehouse\StockMovement;
+
+use App\Application\UseCases\Warehouse\BaseWarehouseUseCase;
+
+class CreateStockMovementUseCase extends BaseWarehouseUseCase
+{
+    public function validateSpecificData(): self
+    {
+        // TODO: Add validation logic
+        return $this;
+    }
+
+    public function execute(): mixed
+    {
+        // TODO: Implement create logic
+        return $this->data;
+    }
+}

@@ -34,7 +34,7 @@ class WarehouseRepositoryImpl implements WarehouseRepository
 
     public function delete(int $id): bool
     {
-        return Warehouse::where('id', $id)->update(['is_deleted' => true]) > 0;
+        return Warehouse::where('id', $id)->delete() > 0;
     }
 
     public function exists(int $id): bool

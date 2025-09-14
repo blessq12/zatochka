@@ -52,21 +52,63 @@ Domain/{DomainName}/
 
 ## Application Layer
 
-### Use Cases Pattern
+### Use Cases Pattern (Template Method)
 
 ```
 Application/UseCases/{Domain}/
-├── Base{Domain}UseCase.php    # Базовый класс
-├── {Action}{Domain}UseCase.php # Конкретные use cases
-└── {Domain}UseCaseInterface.php # Интерфейс
+├── Base{Domain}UseCase.php          # Базовый класс с конструктором
+├── {Domain}UseCaseInterface.php     # Интерфейс
+├── {Entity1}/                       # CRUD для сущности 1
+│   ├── Create{Entity1}UseCase.php
+│   ├── Get{Entity1}UseCase.php
+│   ├── Update{Entity1}UseCase.php
+│   └── Delete{Entity1}UseCase.php
+└── {Entity2}/                       # CRUD для сущности 2
+    ├── Create{Entity2}UseCase.php
+    ├── Get{Entity2}UseCase.php
+    ├── Update{Entity2}UseCase.php
+    └── Delete{Entity2}UseCase.php
 ```
 
-### Правила Use Cases
+### Правила Use Cases (Template Method Pattern)
 
+-   **Base{Domain}UseCase**: конструктор подтягивает ВСЕ зависимости домена через app()
+-   **Dependencies**: все репозитории и мапперы домена доступны через protected свойства
+-   **Child Classes**: НЕ создают свои конструкторы, используют готовые зависимости
 -   **Chain of Responsibility**: loadData() → validate() → execute()
--   **Dependency Injection**: репозитории через app()
 -   **Validation**: абстрактный метод validateSpecificData()
 -   **Return**: доменные сущности или массивы данных
+
+### Структура Base{Domain}UseCase
+
+```php
+abstract class Base{Domain}UseCase implements {Domain}UseCaseInterface
+{
+    protected array $data;
+
+    // Все репозитории домена
+    protected {Domain}Repository ${domain}Repository;
+    protected {Entity1}Repository ${entity1}Repository;
+    protected {Entity2}Repository ${entity2}Repository;
+
+    // Все мапперы домена
+    protected {Domain}Mapper ${domain}Mapper;
+    protected {Entity1}Mapper ${entity1}Mapper;
+    protected {Entity2}Mapper ${entity2}Mapper;
+
+    public function __construct()
+    {
+        // Подтягиваем ВСЕ зависимости домена
+        $this->{domain}Repository = app({Domain}Repository::class);
+        $this->{entity1}Repository = app({Entity1}Repository::class);
+        $this->{entity2}Repository = app({Entity2}Repository::class);
+
+        $this->{domain}Mapper = app({Domain}Mapper::class);
+        $this->{entity1}Mapper = app({Entity1}Mapper::class);
+        $this->{entity2}Mapper = app({Entity2}Mapper::class);
+    }
+}
+```
 
 ## Infrastructure Layer
 
@@ -108,6 +150,120 @@ class {Domain}Resource extends Resource
 -   Notifications для пользовательских сообщений
 -   Relations через RelationManagers
 
+### Интеграция Filament с Use Cases
+
+#### CreateRecord Page
+
+```php
+class Create{Domain} extends CreateRecord
+{
+    protected static string $resource = {Domain}Resource::class;
+
+    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    {
+        try {
+            $useCase = app(Create{Domain}UseCase::class);
+            $entity = $useCase->loadData($data)->validate()->execute();
+
+            Notification::make()
+                ->title('{Domain} успешно создан')
+                ->success()
+                ->send();
+
+            // Возвращаем Eloquent модель по ID из Domain Entity
+            return \{Model}::find($entity->getId());
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Ошибка при создании {domain}')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            throw $e;
+        }
+    }
+}
+```
+
+#### EditRecord Page
+
+```php
+class Edit{Domain} extends EditRecord
+{
+    protected static string $resource = {Domain}Resource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\DeleteAction::make()
+                ->requiresConfirmation()
+                ->before(function () {
+                    try {
+                        $useCase = app(Delete{Domain}UseCase::class);
+                        $useCase->loadData(['id' => $this->record->id])->validate();
+                        $useCase->execute();
+
+                        Notification::make()
+                            ->title('{Domain} успешно удален')
+                            ->success()
+                            ->send();
+
+                        $this->redirect($this->getResource()::getUrl('index'));
+                        $this->halt();
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->title('Ошибка при удалении {domain}')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                        $this->halt();
+                    }
+                }),
+        ];
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        try {
+            $data['id'] = $this->record->id;
+
+            $useCase = app(Update{Domain}UseCase::class);
+            $entity = $useCase->loadData($data)->validate()->execute();
+
+            Notification::make()
+                ->title('{Domain} успешно обновлен')
+                ->success()
+                ->send();
+
+            // Возвращаем обновленные данные для Eloquent
+            return [
+                'field1' => $entity->getField1(),
+                'field2' => $entity->getField2(),
+                // ... остальные поля
+            ];
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Ошибка при обновлении {domain}')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            throw $e;
+        }
+    }
+}
+```
+
+#### Правила интеграции
+
+-   **CreateRecord**: используй `handleRecordCreation()` для переопределения создания
+-   **EditRecord**: используй `mutateFormDataBeforeSave()` для обновления
+-   **DeleteAction**: используй `before()` с `halt()` для переопределения удаления
+-   **Notifications**: всегда показывай уведомления об успехе/ошибке
+-   **Error Handling**: try-catch с информативными сообщениями
+-   **Return Types**: возвращай Eloquent модели или массивы данных
+-   **Redirects**: используй `$this->redirect()` для навигации после операций
+
 ## Development Rules
 
 ### 1. Создание нового домена
@@ -116,10 +272,15 @@ class {Domain}Resource extends Resource
 2. Определить Entity (readonly)
 3. Создать Events для изменения состояния
 4. Реализовать AggregateRoot
-5. Добавить Repository интерфейс
-6. Создать Use Cases в Application/
-7. Реализовать Repository в Infrastructure/
-8. Добавить Filament Resource
+5. Добавить Repository интерфейсы для всех сущностей
+6. Добавить Mapper интерфейсы для всех сущностей
+7. Создать Use Cases структуру в Application/:
+    - `Base{Domain}UseCase.php` с конструктором и ВСЕМИ зависимостями домена
+    - `{Domain}UseCaseInterface.php`
+    - Папки для каждой сущности с CRUD Use Cases
+8. Реализовать Repository в Infrastructure/
+9. Реализовать Mapper в Infrastructure/
+10. Добавить Filament Resource
 
 ### 2. Event Sourcing Workflow
 
@@ -158,3 +319,6 @@ class {Domain}Resource extends Resource
 ❌ **Смешивание Domain и Infrastructure слоев**
 ❌ **Создание Events без AggregateRoot**
 ❌ **Использование Eloquent моделей как Domain Entities**
+❌ **Создание конструкторов в дочерних Use Cases классов**
+❌ **Дублирование зависимостей в каждом Use Case**
+❌ **Использование app() в дочерних классах Use Cases**

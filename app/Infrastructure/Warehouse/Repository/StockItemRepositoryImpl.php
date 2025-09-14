@@ -68,6 +68,13 @@ class StockItemRepositoryImpl implements StockItemRepository
             ->toArray();
     }
 
+    public function countByWarehouse(int $warehouseId): int
+    {
+        return StockItemModel::where('warehouse_id', $warehouseId)
+            ->where('is_deleted', false)
+            ->count();
+    }
+
     public function getByCategory(int $categoryId): array
     {
         return StockItemModel::where('category_id', $categoryId)
