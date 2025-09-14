@@ -18,7 +18,6 @@ class EquipmentType extends Model
         'is_deleted' => 'boolean',
     ];
 
-    // Scope для активных типов оборудования
     public function scopeActive($query)
     {
         return $query->where('is_deleted', false);
