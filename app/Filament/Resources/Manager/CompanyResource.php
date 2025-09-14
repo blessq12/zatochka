@@ -26,47 +26,85 @@ class CompanyResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('legal_name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('inn')
-                    ->required()
-                    ->maxLength(12),
-                Forms\Components\TextInput::make('kpp')
-                    ->maxLength(9),
-                Forms\Components\TextInput::make('ogrn')
-                    ->maxLength(15),
-                Forms\Components\Textarea::make('legal_address')
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('website')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
-                    ->tel()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('bank_name')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('bank_bik')
-                    ->maxLength(9),
-                Forms\Components\TextInput::make('bank_account')
-                    ->maxLength(20),
-                Forms\Components\TextInput::make('bank_cor_account')
-                    ->maxLength(20),
-                Forms\Components\TextInput::make('logo_path')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('additional_data'),
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
-                Forms\Components\Toggle::make('is_deleted')
-                    ->required(),
+                Forms\Components\Section::make('Основная информация')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Название компании')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('legal_name')
+                            ->label('Юридическое название')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Описание')
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('is_active')
+                            ->label('Активна')
+                            ->default(true),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Реквизиты')
+                    ->schema([
+                        Forms\Components\TextInput::make('inn')
+                            ->label('ИНН')
+                            ->required()
+                            ->numeric()
+                            ->length(10, 12),
+                        Forms\Components\TextInput::make('kpp')
+                            ->label('КПП')
+                            ->numeric()
+                            ->length(9),
+                        Forms\Components\TextInput::make('ogrn')
+                            ->label('ОГРН')
+                            ->numeric()
+                            ->length(13, 15),
+                        Forms\Components\Textarea::make('legal_address')
+                            ->label('Юридический адрес')
+                            ->required()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Контакты')
+                    ->schema([
+                        Forms\Components\TextInput::make('website')
+                            ->label('Сайт')
+                            ->url()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Телефон')
+                            ->tel()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->maxLength(255),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Банковские реквизиты')
+                    ->schema([
+                        Forms\Components\TextInput::make('bank_name')
+                            ->label('Название банка')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('bank_bik')
+                            ->label('БИК')
+                            ->numeric()
+                            ->length(9),
+                        Forms\Components\TextInput::make('bank_account')
+                            ->label('Расчетный счет')
+                            ->numeric()
+                            ->maxLength(20),
+                        Forms\Components\TextInput::make('bank_cor_account')
+                            ->label('Корреспондентский счет')
+                            ->numeric()
+                            ->maxLength(20),
+                    ])
+                    ->columns(2),
+
+
             ]);
     }
 
@@ -75,46 +113,41 @@ class CompanyResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Название')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('legal_name')
-                    ->searchable(),
+                    ->label('Юридическое название')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('inn')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kpp')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('ogrn')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('website')
-                    ->searchable(),
+                    ->label('ИНН')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('phone')
-                    ->searchable(),
+                    ->label('Телефон')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('bank_name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('bank_bik')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('bank_account')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('bank_cor_account')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('logo_path')
-                    ->searchable(),
+                    ->label('Email')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\IconColumn::make('is_active')
-                    ->boolean(),
-                Tables\Columns\IconColumn::make('is_deleted')
-                    ->boolean(),
+                    ->label('Активна')
+                    ->boolean()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Создана')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Статус')
+                    ->placeholder('Все компании')
+                    ->trueLabel('Только активные')
+                    ->falseLabel('Только неактивные'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -123,7 +156,8 @@ class CompanyResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('name');
     }
 
     public static function getRelations(): array

@@ -26,17 +26,26 @@ class WarehouseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('branch_id')
-                    ->numeric(),
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
-                Forms\Components\Toggle::make('is_deleted')
-                    ->required(),
+                Forms\Components\Section::make('Основная информация')
+                    ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->label('Филиал')
+                            ->relationship('branch', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\TextInput::make('name')
+                            ->label('Название склада')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Описание')
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('is_active')
+                            ->label('Активен')
+                            ->default(true),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -44,26 +53,45 @@ class WarehouseResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('branch_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Филиал')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Название')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Описание')
+                    ->searchable()
+                    ->toggleable()
+                    ->limit(50),
                 Tables\Columns\IconColumn::make('is_active')
-                    ->boolean(),
-                Tables\Columns\IconColumn::make('is_deleted')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Активен')
+                    ->boolean()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('stock_items_count')
+                    ->label('Товаров')
+                    ->counts('stockItems')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Создан')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->label('Филиал')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Статус')
+                    ->placeholder('Все склады')
+                    ->trueLabel('Только активные')
+                    ->falseLabel('Только неактивные'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -72,7 +100,8 @@ class WarehouseResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('name');
     }
 
     public static function getRelations(): array

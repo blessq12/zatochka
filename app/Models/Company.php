@@ -24,14 +24,11 @@ class Company extends Model
         'bank_bik',
         'bank_account',
         'bank_cor_account',
-        'logo_path',
-        'additional_data',
         'is_active',
         'is_deleted',
     ];
 
     protected $casts = [
-        'additional_data' => 'array',
         'is_active' => 'boolean',
         'is_deleted' => 'boolean',
     ];
@@ -58,26 +55,6 @@ class Company extends Model
         return $query->where('is_deleted', false)->where('is_active', true);
     }
 
-    // Методы для работы с банковскими данными
-    public function getBankInnAttribute()
-    {
-        return $this->additional_data['bank_inn'] ?? null;
-    }
-
-    public function getBankKppAttribute()
-    {
-        return $this->additional_data['bank_kpp'] ?? null;
-    }
-
-    public function getShortLegalNameAttribute()
-    {
-        return $this->additional_data['short_legal_name'] ?? null;
-    }
-
-    public function getAccountOpenDateAttribute()
-    {
-        return $this->additional_data['account_open_date'] ?? null;
-    }
 
     // Методы для работы со статусом
     public function activate()

@@ -23,7 +23,6 @@ class Branch extends Model
         'latitude',
         'longitude',
         'description',
-        'additional_data',
         'is_active',
         'is_main',
         'sort_order',
@@ -38,7 +37,6 @@ class Branch extends Model
         'is_main' => 'boolean',
         'sort_order' => 'integer',
         'is_deleted' => 'boolean',
-        'additional_data' => 'array',
     ];
 
     // Связи
