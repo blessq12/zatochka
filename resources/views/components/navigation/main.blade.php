@@ -1,7 +1,7 @@
 <nav
-    class="bg-white/80 backdrop-blur-xl shadow-lg border-b border-white/20 dark:bg-gray-900/80 dark:border-gray-800/20 sticky top-0 z-50">
+    class="bg-white/90 backdrop-blur-xs shadow-lg border-b border-white/30 dark:bg-gray-900/90 dark:backdrop-blur-xs dark:border-gray-800/30 sticky top-0 z-50">
     <div class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20">
-        <div class="flex justify-between items-center h-20">
+        <div class="flex justify-between items-center h-24">
             <!-- Логотип -->
             <div class="flex-shrink-0">
                 <a href="{{ route('home') }}"
@@ -20,27 +20,27 @@
             <!-- Навигационные ссылки -->
             <div class="hidden lg:flex items-center space-x-1">
                 <a href="{{ route('home') }}"
-                    class="text-dark-gray-500 hover:text-blue-500 px-6 py-3 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('home') ? 'bg-blue-50/80 backdrop-blur-md text-blue-500 border border-blue-200/30 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/20' : '' }}">
+                    class="text-dark-gray-500 hover:text-blue-500 hover:bg-white/50 hover:backdrop-blur-xs px-6 py-4 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('home') ? 'bg-white/60 backdrop-blur-xs text-blue-700 border border-white/20 rounded-2xl dark:bg-gray-800/60 dark:backdrop-blur-xs dark:text-blue-400 dark:border-gray-700/20' : '' }}">
                     Главная
                 </a>
 
                 <a href="{{ route('sharpening') }}"
-                    class="text-dark-gray-500 hover:text-blue-500 px-6 py-3 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('sharpening') ? 'bg-blue-50/80 backdrop-blur-md text-blue-500 border border-blue-200/30 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/20' : '' }}">
+                    class="text-dark-gray-500 hover:text-blue-500 hover:bg-white/50 hover:backdrop-blur-xs px-6 py-4 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('sharpening') ? 'bg-white/60 backdrop-blur-xs text-blue-700 border border-white/20 rounded-2xl dark:bg-gray-800/60 dark:backdrop-blur-xs dark:text-blue-400 dark:border-gray-700/20' : '' }}">
                     Заточка
                 </a>
 
                 <a href="{{ route('repair') }}"
-                    class="text-dark-gray-500 hover:text-blue-500 px-6 py-3 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('repair') ? 'bg-blue-50/80 backdrop-blur-md text-blue-500 border border-blue-200/30 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/20' : '' }}">
+                    class="text-dark-gray-500 hover:text-blue-500 hover:bg-white/50 hover:backdrop-blur-xs px-6 py-4 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('repair') ? 'bg-white/60 backdrop-blur-xs text-blue-700 border border-white/20 rounded-2xl dark:bg-gray-800/60 dark:backdrop-blur-xs dark:text-blue-400 dark:border-gray-700/20' : '' }}">
                     Ремонт
                 </a>
 
                 <a href="{{ route('delivery') }}"
-                    class="text-dark-gray-500 hover:text-blue-500 px-6 py-3 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('delivery') ? 'bg-blue-50/80 backdrop-blur-md text-blue-500 border border-blue-200/30 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/20' : '' }}">
+                    class="text-dark-gray-500 hover:text-blue-500 hover:bg-white/50 hover:backdrop-blur-xs px-6 py-4 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('delivery') ? 'bg-white/60 backdrop-blur-xs text-blue-700 border border-white/20 rounded-2xl dark:bg-gray-800/60 dark:backdrop-blur-xs dark:text-blue-400 dark:border-gray-700/20' : '' }}">
                     Доставка
                 </a>
 
                 <a href="{{ route('contacts') }}"
-                    class="text-dark-gray-500 hover:text-blue-500 px-6 py-3 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('contacts') ? 'bg-blue-50/80 backdrop-blur-md text-blue-500 border border-blue-200/30 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/20' : '' }}">
+                    class="text-dark-gray-500 hover:text-blue-500 hover:bg-white/50 hover:backdrop-blur-xs px-6 py-4 rounded-2xl text-lg font-jost-medium transition-all duration-300 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ request()->routeIs('contacts') ? 'bg-white/60 backdrop-blur-xs text-blue-700 border border-white/20 rounded-2xl dark:bg-gray-800/60 dark:backdrop-blur-xs dark:text-blue-400 dark:border-gray-700/20' : '' }}">
                     Контакты
                 </a>
             </div>
@@ -50,7 +50,7 @@
                 <theme-toggler></theme-toggler>
 
                 <a href="{{ route('client.dashboard') }}"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-2xl font-jost-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                    class="bg-blue-600/90 backdrop-blur-xs hover:bg-blue-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 dark:bg-blue-500/90 dark:hover:bg-blue-600/90 dark:backdrop-blur-xs">
                     Войти
                 </a>
             </div>

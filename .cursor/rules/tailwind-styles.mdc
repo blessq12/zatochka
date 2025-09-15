@@ -55,20 +55,32 @@ alwaysApply: true
 -   **ЧЁРНЫЙ**: #000000 - для максимального контраста
 -   **БЕЛЫЙ**: #FFFFFF - для фонов и светлого текста
 
-### Фоны с эффектом стекла
+### Фоны с эффектом стекла (Браузерный стиль)
 
-#### Основные фоны
+#### Основные фоны - как в браузере
 
 ```css
-/* Светлая тема - эффект стекла */
-bg-white/80 backdrop-blur-xl border border-white/20     /* Основной фон страниц */
-bg-white/60 backdrop-blur-lg border border-white/10     /* Вторичный фон */
-bg-white/40 backdrop-blur-md border border-white/5      /* Фон контейнеров */
+/* Светлая тема - эффект стекла браузера */
+bg-white/90 backdrop-blur-xs border border-white/30     /* Основной фон страниц - как адресная строка */
+bg-white/70 backdrop-blur-xs border border-white/20      /* Вторичный фон - как вкладки */
+bg-white/50 backdrop-blur-xs border border-white/15      /* Фон контейнеров - как панели */
 
-/* Темная тема - эффект стекла */
-dark:bg-gray-900/80 dark:backdrop-blur-xl dark:border-gray-800/20  /* Основной фон страниц */
-dark:bg-gray-800/60 dark:backdrop-blur-lg dark:border-gray-700/10  /* Вторичный фон */
-dark:bg-gray-700/40 dark:backdrop-blur-md dark:border-gray-600/5   /* Фон контейнеров */
+/* Темная тема - эффект стекла браузера */
+dark:bg-gray-900/90 dark:backdrop-blur-xs dark:border-gray-800/30  /* Основной фон страниц */
+dark:bg-gray-800/70 dark:backdrop-blur-xs dark:border-gray-700/20   /* Вторичный фон */
+dark:bg-gray-700/50 dark:backdrop-blur-xs dark:border-gray-600/15   /* Фон контейнеров */
+```
+
+#### Навигация с эффектом стекла браузера
+
+```css
+/* Навигационная панель - как в браузере */
+bg-white/85 backdrop-blur-xs border-b border-white/25 shadow-lg
+dark:bg-gray-900/85 dark:backdrop-blur-xs dark:border-gray-800/25 dark:shadow-lg
+
+/* Активная вкладка/ссылка - как в браузере */
+bg-white/60 backdrop-blur-xs border border-white/20 rounded-t-xl
+dark:bg-gray-800/60 dark:backdrop-blur-xs dark:border-gray-700/20
 ```
 
 #### Специальные фоны с эффектом стекла
@@ -150,20 +162,20 @@ max-w-md mx-auto px-8 sm:px-10 lg:px-12 py-8 sm:py-10 lg:py-12
 
 ```css
 /* Primary кнопка - тёмно-синий */
-bg-blue-600/90 backdrop-blur-md hover:bg-blue-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl
-dark:bg-blue-500/90 dark:hover:bg-blue-600/90 dark:backdrop-blur-md
+bg-blue-600/90 backdrop-blur-xs hover:bg-blue-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl
+dark:bg-blue-500/90 dark:hover:bg-blue-600/90 dark:backdrop-blur-xs
 
 /* Secondary кнопка - розовый акцент */
-bg-pink-600/90 backdrop-blur-md hover:bg-pink-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl
-dark:bg-pink-500/90 dark:hover:bg-pink-600/90 dark:backdrop-blur-md
+bg-pink-600/90 backdrop-blur-xs hover:bg-pink-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl
+dark:bg-pink-500/90 dark:hover:bg-pink-600/90 dark:backdrop-blur-xs
 
 /* Tertiary кнопка - эффект стекла */
-bg-white/60 backdrop-blur-md hover:bg-white/80 text-gray-900 px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20
+bg-white/60 backdrop-blur-xs hover:bg-white/80 text-gray-900 px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20
 dark:bg-gray-800/60 dark:hover:bg-gray-700/80 dark:text-gray-100 dark:border-gray-700/20
 
 /* Danger кнопка - розовый */
-bg-pink-600/90 backdrop-blur-md hover:bg-pink-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl
-dark:bg-pink-500/90 dark:hover:bg-pink-600/90 dark:backdrop-blur-md
+bg-pink-600/90 backdrop-blur-xs hover:bg-pink-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl
+dark:bg-pink-500/90 dark:hover:bg-pink-600/90 dark:backdrop-blur-xs
 ```
 
 #### Размеры кнопок - крупные элементы
@@ -200,43 +212,43 @@ block text-lg font-medium text-gray-700 mb-3
 dark:text-gray-300
 ```
 
-### Карточки с эффектом стекла
+### Карточки с эффектом стекла (Браузерный стиль)
 
-#### Стандартная карточка - много воздуха
+#### Стандартная карточка - как панели браузера
 
 ```css
-bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/20
-dark:bg-gray-900/80 dark:border-gray-800/20
+bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25
+dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25
 ```
 
-#### Карточка с ховером - плавные переходы
+#### Карточка с ховером - как активные элементы браузера
 
 ```css
-bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/20 hover:shadow-3xl hover:bg-white/90 transition-all duration-500
-dark:bg-gray-900/80 dark:border-gray-800/20 dark:hover:bg-gray-900/90 dark:hover:shadow-3xl
+bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25 hover:shadow-3xl hover:bg-white/95 hover:backdrop-blur-3xl transition-all duration-500
+dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25 dark:hover:bg-gray-900/95 dark:hover:backdrop-blur-3xl dark:hover:shadow-3xl
 ```
 
-### Навигация с эффектом стекла
+### Навигация с эффектом стекла (Браузерный стиль)
 
-#### Основная навигация - эффект стекла
+#### Основная навигация - как адресная строка браузера
 
 ```css
-bg-white/80 backdrop-blur-xl shadow-lg border-b border-white/20
-dark:bg-gray-900/80 dark:border-gray-800/20
+bg-white/90 backdrop-blur-2xl shadow-lg border-b border-white/30
+dark:bg-gray-900/90 dark:backdrop-blur-2xl dark:border-gray-800/30
 ```
 
-#### Навигационные ссылки - крупные и комфортные (Фирменные цвета)
+#### Навигационные ссылки - как вкладки браузера (Фирменные цвета)
 
 ```css
-text-gray-700 hover:text-blue-600 px-6 py-4 rounded-2xl text-lg font-jost-medium transition-all duration-300
+text-gray-700 hover:text-blue-600 px-6 py-4 rounded-t-xl text-lg font-jost-medium transition-all duration-300
 dark:text-gray-300 dark:hover:text-blue-400
 
-/* Активная ссылка - эффект стекла с фирменными цветами */
-bg-blue-100/80 backdrop-blur-md text-blue-700 border border-blue-200/30
-dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/20
+/* Активная ссылка - как активная вкладка браузера */
+bg-white/70 backdrop-blur-xl text-blue-700 border border-white/25 rounded-t-xl
+dark:bg-gray-800/70 dark:backdrop-blur-xl dark:text-blue-400 dark:border-gray-700/25
 
-/* Ховер ссылки - розовый акцент */
-hover:text-pink-600 dark:hover:text-pink-400
+/* Ховер ссылки - как ховер вкладки браузера */
+hover:bg-white/50 hover:backdrop-blur-lg hover:text-pink-600 dark:hover:bg-gray-800/50 dark:hover:text-pink-400
 ```
 
 ## Отступы и размеры - много воздуха
@@ -377,31 +389,47 @@ module.exports = {
 
 ## Специальные эффекты стекла
 
-### Эффект стекла для модальных окон
+### Эффект стекла для модальных окон (Браузерный стиль)
 
 ```css
-/* Модальное окно - эффект стекла */
-bg-white/90 backdrop-blur-2xl rounded-3xl shadow-3xl border border-white/30
-dark:bg-gray-900/90 dark:border-gray-800/30
+/* Модальное окно - как диалог браузера */
+bg-white/95 backdrop-blur-3xl rounded-3xl shadow-3xl border border-white/35
+dark:bg-gray-900/95 dark:backdrop-blur-3xl dark:border-gray-800/35
+
+/* Оверлей модального окна - как затемнение браузера */
+bg-black/20 backdrop-blur-sm
+dark:bg-black/40 dark:backdrop-blur-sm
 ```
 
-### Эффект стекла для выпадающих меню
+### Эффект стекла для выпадающих меню (Браузерный стиль)
 
 ```css
-/* Выпадающее меню - эффект стекла */
-bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20
-dark:bg-gray-800/80 dark:border-gray-700/20
+/* Выпадающее меню - как контекстное меню браузера */
+bg-white/90 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30
+dark:bg-gray-800/90 dark:backdrop-blur-2xl dark:border-gray-700/30
 ```
 
-### Эффект стекла для уведомлений
+### Эффект стекла для уведомлений (Браузерный стиль)
 
 ```css
-/* Уведомление - эффект стекла */
-bg-white/85 backdrop-blur-lg rounded-2xl shadow-xl border border-white/25
-dark:bg-gray-800/85 dark:border-gray-700/25
+/* Уведомление - как системное уведомление браузера */
+bg-white/90 backdrop-blur-2xl rounded-2xl shadow-xl border border-white/30
+dark:bg-gray-800/90 dark:backdrop-blur-2xl dark:border-gray-700/30
 ```
 
 ## Правила современного дизайна
+
+### Принципы браузерного дизайна (как в Chrome/Safari)
+
+-   **Много воздуха**: минимум 32px отступы, лучше 48px+
+-   **Крупные элементы**: кнопки минимум 48px высотой
+-   **Эффект стекла браузера**: backdrop-blur-2xl + высокая прозрачность (85-95%)
+-   **Плавные переходы**: минимум 300ms, лучше 500ms+
+-   **Круглые углы**: минимум rounded-xl, лучше rounded-2xl
+-   **Тени**: используй shadow-2xl и shadow-3xl
+-   **Бесшовность**: все элементы должны выглядеть как единый браузер
+-   **Границы**: тонкие границы с прозрачностью 25-35%
+-   **Размытие**: сильное размытие (backdrop-blur-2xl/3xl) для глубины
 
 ### Принципы Apple-стиля
 
@@ -422,6 +450,10 @@ dark:bg-gray-800/85 dark:border-gray-700/25
 ❌ **Плоские тени** (shadow-sm, shadow-md)
 ❌ **Непрозрачные фоны** без backdrop-blur
 ❌ **Разные стили** для одинаковых элементов
+❌ **Слабый эффект стекла** (backdrop-blur-sm/md вместо backdrop-blur-2xl)
+❌ **Низкая прозрачность** (меньше 85% для основных элементов)
+❌ **Толстые границы** (больше 1px или без прозрачности)
+❌ **Отсутствие глубины** (нет размытия и теней)
 
 ## Anti-Patterns (НЕ ДЕЛАТЬ)
 
