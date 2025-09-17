@@ -47,4 +47,26 @@ class ClientRepositoryImpl implements ClientRepository
         $model = Client::where('phone', $phone)->where('is_deleted', false)->first();
         return $model ? $this->clientMapper->toDomain($model) : null;
     }
+
+    public function findByPhoneAndPassword(string $phone, string $password): ?ClientEntity
+    {
+        $model = Client::where('phone', $phone)->where('is_deleted', false)->first();
+
+        if (!$model || !password_verify($password, $model->password)) {
+            return null;
+        }
+
+        return $this->clientMapper->toDomain($model);
+    }
+
+    public function existsByEmail(string $email): bool
+    {
+        return Client::where('email', $email)->where('is_deleted', false)->exists();
+    }
+
+    public function findByEmail(string $email): ?ClientEntity
+    {
+        $model = Client::where('email', $email)->where('is_deleted', false)->first();
+        return $model ? $this->clientMapper->toDomain($model) : null;
+    }
 }

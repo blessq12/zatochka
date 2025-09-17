@@ -5,6 +5,7 @@ namespace App\Infrastructure\Mapper;
 use App\Domain\Order\Entity\Order;
 use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Enum\OrderType;
+use App\Domain\Order\Enum\OrderUrgency;
 use App\Domain\Order\Mapper\OrderMapper;
 use App\Models\Order as EloquentOrder;
 
@@ -23,9 +24,9 @@ class OrderMapperImpl implements OrderMapper
             managerId: $eloquentModel->manager_id,
             masterId: $eloquentModel->master_id,
             orderNumber: $eloquentModel->order_number,
-            type: $eloquentModel->type,
-            status: $eloquentModel->status,
-            urgency: $eloquentModel->urgency ?? \App\Domain\Order\Enum\OrderUrgency::NORMAL,
+            type: $eloquentModel->type instanceof OrderType ? $eloquentModel->type : OrderType::from($eloquentModel->type),
+            status: $eloquentModel->status instanceof OrderStatus ? $eloquentModel->status : OrderStatus::from($eloquentModel->status),
+            urgency: $eloquentModel->urgency ? ($eloquentModel->urgency instanceof OrderUrgency ? $eloquentModel->urgency : OrderUrgency::from($eloquentModel->urgency)) : OrderUrgency::NORMAL,
             isPaid: (bool) $eloquentModel->is_paid,
             paidAt: $eloquentModel->paid_at ? new \DateTime($eloquentModel->paid_at) : null,
             discountId: $eloquentModel->discount_id,
@@ -50,7 +51,7 @@ class OrderMapperImpl implements OrderMapper
             'order_number' => $domainEntity->getOrderNumber(),
             'type' => $domainEntity->getType()->value,
             'status' => $domainEntity->getStatus()->value,
-            'urgency' => $domainEntity->getUrgency()->value,
+            'urgency' => $domainEntity->getUrgency(),
             'is_paid' => $domainEntity->isPaid(),
             'paid_at' => $domainEntity->getPaidAt()?->format('Y-m-d H:i:s'),
             'discount_id' => $domainEntity->getDiscountId(),

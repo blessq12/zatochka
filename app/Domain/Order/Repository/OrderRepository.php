@@ -15,4 +15,5 @@ interface OrderRepository
     // custom methods
     public function checkExists(int $id): bool;
     public function existsByNumber(string $orderNumber): bool;
+    public function getOrdersByClientId(int $clientId): array;
 }

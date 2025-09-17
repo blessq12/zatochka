@@ -9,4 +9,6 @@ interface BonusAccountRepository
     public function existsByClientId(int $clientId): bool;
 
     public function create(int $clientId): BonusAccount;
+
+    public function getByClientId(int $clientId): BonusAccount;
 }

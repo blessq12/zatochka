@@ -1,20 +1,17 @@
 <?php
 
-namespace App\Application\UseCases\Client;
+namespace App\Application\UseCases\ApiUseCases;
 
-use App\Domain\Client\Repository\ClientRepository;
+use App\Application\UseCases\UseCaseInterface;
 use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Bonus\Repository\BonusAccountRepository;
 
-abstract class BaseClientUseCase implements ClientUseCaseInterface
+abstract class BaseApiUseCase implements UseCaseInterface
 {
     protected array $data;
-    protected ClientRepository $clientRepository;
     protected OrderRepository $orderRepository;
 
     public function __construct()
     {
-        $this->clientRepository = app(ClientRepository::class);
         $this->orderRepository = app(OrderRepository::class);
     }
 

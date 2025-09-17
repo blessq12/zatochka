@@ -13,12 +13,14 @@ export default {
     computed: {
         ...mapStores(useAuthStore, useOrderStore),
     },
+    async mounted() {
+        await this.authStore.checkAuth();
+    },
 };
 </script>
 
 <template>
-    <button @click="authStore.auth = !authStore.auth">Auth</button>
-    <div v-if="authStore.auth">
+    <div v-if="authStore.isAuthenticated">
         <AuthorizedApp />
     </div>
     <div v-else>

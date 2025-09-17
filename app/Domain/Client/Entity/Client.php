@@ -11,6 +11,7 @@ readonly class Client
         public ?string $telegram = null,
         public ?string $birthDate = null,
         public ?string $deliveryAddress = null,
+        public ?string $password = null,
         public bool $isDeleted = false,
         public ?\DateTime $createdAt = null,
         public ?\DateTime $updatedAt = null
@@ -46,6 +47,11 @@ readonly class Client
         return $this->deliveryAddress;
     }
 
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
     public function isDeleted(): bool
     {
         return $this->isDeleted;
@@ -61,6 +67,21 @@ readonly class Client
         return $this->updatedAt;
     }
 
+    // Password methods
+    public function hasPassword(): bool
+    {
+        return !empty($this->password);
+    }
+
+    public function verifyPassword(string $password): bool
+    {
+        if (!$this->hasPassword()) {
+            return false;
+        }
+
+        return password_verify($password, $this->password);
+    }
+
     public function toArray(): array
     {
         return [
@@ -70,6 +91,7 @@ readonly class Client
             'telegram' => $this->telegram,
             'birth_date' => $this->birthDate,
             'delivery_address' => $this->deliveryAddress,
+            'password' => $this->password,
             'is_deleted' => $this->isDeleted,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,

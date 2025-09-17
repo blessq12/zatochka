@@ -17,6 +17,7 @@ class ClientMapperImpl implements ClientMapper
             telegram: $model->telegram,
             birthDate: $model->birth_date?->format('Y-m-d'),
             deliveryAddress: $model->delivery_address,
+            password: $model->password,
             isDeleted: (bool) $model->is_deleted,
             createdAt: $model->created_at,
             updatedAt: $model->updated_at
@@ -32,6 +33,7 @@ class ClientMapperImpl implements ClientMapper
         $model->telegram = $entity->getTelegram();
         $model->birth_date = $entity->getBirthDate();
         $model->delivery_address = $entity->getDeliveryAddress();
+        $model->password = $entity->getPassword();
         $model->is_deleted = $entity->isDeleted();
         $model->created_at = $entity->getCreatedAt();
         $model->updated_at = $entity->getUpdatedAt();
@@ -48,6 +50,7 @@ class ClientMapperImpl implements ClientMapper
             telegram: $data['telegram'] ?? null,
             birthDate: $data['birth_date'] ?? null,
             deliveryAddress: $data['delivery_address'] ?? null,
+            password: $data['password'] ?? null,
             isDeleted: (bool) ($data['is_deleted'] ?? false),
             createdAt: $data['created_at'] ?? null,
             updatedAt: $data['updated_at'] ?? null

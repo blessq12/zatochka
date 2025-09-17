@@ -1,10 +1,25 @@
 <script>
+import { useAuthStore } from "../../stores/authStore.js";
+
 export default {
     name: "Auth",
     data() {
         return {
             currentForm: "login",
         };
+    },
+    computed: {
+        authStore() {
+            return useAuthStore();
+        },
+        isAuthenticated() {
+            return this.authStore.isAuthenticated;
+        },
+    },
+    methods: {
+        handleSuccess() {
+            this.currentForm = "login";
+        },
     },
 };
 </script>
@@ -56,11 +71,24 @@ export default {
             </div>
 
             <div class="mt-8 pt-2 sm:mt-10 lg:mt-12">
-                <div v-if="currentForm === 'login'">
-                    <LoginForm />
+                <div v-if="isAuthenticated" class="text-center">
+                    <div
+                        class="bg-green-50/80 backdrop-blur-lg border border-green-300/50 text-green-700 px-6 py-4 rounded-2xl dark:bg-green-900/30 dark:border-green-600/50 dark:text-green-400 mb-6"
+                    >
+                        <h3 class="text-lg font-semibold mb-2">
+                            Успешная авторизация!
+                        </h3>
+                        <p>Вы успешно вошли в систему.</p>
+                    </div>
                 </div>
+
                 <div v-else>
-                    <RegisterForm />
+                    <div v-if="currentForm === 'login'">
+                        <LoginForm @success="handleSuccess" />
+                    </div>
+                    <div v-else>
+                        <RegisterForm @success="handleSuccess" />
+                    </div>
                 </div>
             </div>
         </div>

@@ -48,11 +48,7 @@
             <!-- Правая часть -->
             <div class="flex items-center space-x-4">
                 <theme-toggler></theme-toggler>
-
-                <a href="{{ route('client.dashboard') }}"
-                    class="bg-blue-600/90 backdrop-blur-xs hover:bg-blue-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-900 dark:bg-blue-500/90 dark:hover:bg-blue-600/90 dark:backdrop-blur-xs">
-                    Войти
-                </a>
+                <dashboard-button></dashboard-button>
             </div>
         </div>
     </div>

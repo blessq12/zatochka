@@ -17,4 +17,11 @@ interface ClientRepository
     public function existsByPhone(string $phone): bool;
 
     public function findByPhone(string $phone): ?Client;
+
+    // Authentication methods
+    public function findByPhoneAndPassword(string $phone, string $password): ?Client;
+
+    public function existsByEmail(string $email): bool;
+
+    public function findByEmail(string $email): ?Client;
 }

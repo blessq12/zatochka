@@ -48,4 +48,16 @@ class OrderRepositoryImpl implements OrderRepository
     {
         return EloquentOrder::where('order_number', $orderNumber)->exists();
     }
+
+    public function getOrdersByClientId(int $clientId): array
+    {
+        $models = EloquentOrder::where('client_id', $clientId)->get();
+        $orders = [];
+
+        foreach ($models as $model) {
+            $orders[] = $this->mapper->toDomain($model);
+        }
+
+        return $orders;
+    }
 }

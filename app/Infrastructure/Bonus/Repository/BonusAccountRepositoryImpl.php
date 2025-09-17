@@ -28,4 +28,16 @@ class BonusAccountRepositoryImpl implements BonusAccountRepository
             updatedAt: $model->updated_at
         );
     }
+
+    public function getByClientId(int $clientId): BonusAccount
+    {
+        $model = BonusAccountModel::where('client_id', $clientId)->first();
+        return new BonusAccount(
+            id: $model->id,
+            clientId: $model->client_id,
+            balance: $model->balance,
+            createdAt: $model->created_at,
+            updatedAt: $model->updated_at
+        );
+    }
 }

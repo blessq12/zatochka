@@ -14,7 +14,6 @@ class GetClientUseCase extends BaseClientUseCase
     {
         $this->dto = GetClientDTO::fromArray($this->data);
 
-        // Проверяем существование клиента
         $client = $this->clientRepository->get($this->dto->id);
         if (!$client) {
             throw ClientNotFoundException::forId($this->dto->id);
