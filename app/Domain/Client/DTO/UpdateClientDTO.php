@@ -8,6 +8,7 @@ readonly class UpdateClientDTO
         public string $id,
         public ?string $fullName = null,
         public ?string $phone = null,
+        public ?string $email = null,
         public ?string $telegram = null,
         public ?string $birthDate = null,
         public ?string $deliveryAddress = null,
@@ -20,6 +21,7 @@ readonly class UpdateClientDTO
             id: $data['id'],
             fullName: $data['full_name'] ?? null,
             phone: $data['phone'] ?? null,
+            email: $data['email'] ?? null,
             telegram: $data['telegram'] ?? null,
             birthDate: $data['birth_date'] ?? null,
             deliveryAddress: $data['delivery_address'] ?? null,
@@ -33,6 +35,7 @@ readonly class UpdateClientDTO
 
         if ($this->fullName !== null) $data['full_name'] = $this->fullName;
         if ($this->phone !== null) $data['phone'] = $this->phone;
+        if ($this->email !== null) $data['email'] = $this->email;
         if ($this->telegram !== null) $data['telegram'] = $this->telegram;
         if ($this->birthDate !== null) $data['birth_date'] = $this->birthDate;
         if ($this->deliveryAddress !== null) $data['delivery_address'] = $this->deliveryAddress;

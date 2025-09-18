@@ -57,6 +57,7 @@ export default {
         <!-- Основной контент приложения -->
         <div v-else>
             <!-- Информация о пользователе и бонусном аккаунте -->
+            <QuickActions />
             <UserInfoCard />
             <TelegramVerify />
             <!-- Заказы и быстрые действия -->
@@ -64,7 +65,6 @@ export default {
                 class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 mt-8 sm:mt-10 lg:mt-12"
             >
                 <OrdersList />
-                <QuickActions />
             </div>
         </div>
     </div>

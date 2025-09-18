@@ -14,6 +14,7 @@ class ClientMapperImpl implements ClientMapper
             id: $model->id,
             fullName: $model->full_name,
             phone: $model->phone,
+            email: $model->email,
             telegram: $model->telegram,
             birthDate: $model->birth_date?->format('Y-m-d'),
             deliveryAddress: $model->delivery_address,
@@ -30,6 +31,7 @@ class ClientMapperImpl implements ClientMapper
         $model->id = $entity->getId();
         $model->full_name = $entity->getFullName();
         $model->phone = $entity->getPhone();
+        $model->email = $entity->getEmail();
         $model->telegram = $entity->getTelegram();
         $model->birth_date = $entity->getBirthDate();
         $model->delivery_address = $entity->getDeliveryAddress();
@@ -47,6 +49,7 @@ class ClientMapperImpl implements ClientMapper
             id: $data['id'] ?? null,
             fullName: $data['full_name'],
             phone: $data['phone'],
+            email: $data['email'] ?? null,
             telegram: $data['telegram'] ?? null,
             birthDate: $data['birth_date'] ?? null,
             deliveryAddress: $data['delivery_address'] ?? null,

@@ -28,6 +28,13 @@ class UpdateClientUseCase extends BaseClientUseCase
             }
         }
 
+        // Проверяем уникальность email если он изменяется
+        if ($this->dto->email && $this->dto->email !== ($client->getEmail() ?? null)) {
+            if ($this->clientRepository->existsByEmail($this->dto->email)) {
+                throw new \InvalidArgumentException('Email уже используется');
+            }
+        }
+
         return $this;
     }
 

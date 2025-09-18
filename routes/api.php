@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\TelegramController;
 
 
 Route::controller(AuthController::class)->group(function () {
@@ -13,6 +14,14 @@ Route::controller(AuthController::class)->group(function () {
 
 
 Route::middleware('auth:client')->group(function () {
-    Route::get('/client/self', [ClientController::class, 'clientSelf']);
-    Route::get('/client/orders-get', [ClientController::class, 'clientOrdersGet']);
+    Route::controller(ClientController::class)->group(function () {
+        Route::get('/client/self', 'clientSelf');
+        Route::get('/client/orders-get', 'clientOrdersGet');
+        Route::post('/client/update', 'clientUpdate');
+    });
+
+    Route::controller(TelegramController::class)->group(function () {
+        Route::post('/telegram/check-status', 'telegramCheckStatus');
+        Route::post('telegram/connect', 'telegramConnect');
+    });
 });

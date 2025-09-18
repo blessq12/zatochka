@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Api;
 use App\Application\UseCases\Bonus\GetClientBonusAccount;
 use App\Application\UseCases\Client\GetClientUseCase;
 use App\Application\UseCases\ApiUseCases\GetClientOrderUseCase;
+use App\Application\UseCases\Client\UpdateClientUseCase;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
@@ -36,5 +38,19 @@ class ClientController extends Controller
             'client' => $client->toArray(),
             'bonusAccount' => $bonusAccount->toArray(),
         ]);
+    }
+
+    public function clientUpdate(Request $request)
+    {
+        try {
+            $client = auth('sanctum')->user();
+            $useCase = app(UpdateClientUseCase::class);
+            $client = $useCase->loadData($request->all())->validate()->execute();
+            return response()->json([
+                'client' => $client->toArray(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
     }
 }

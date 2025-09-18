@@ -27,6 +27,11 @@ class CreateClientUseCase extends BaseClientUseCase
             throw ClientException::forPhone($this->dto->phone);
         }
 
+        // Проверяем уникальность email если передан
+        if ($this->dto->email && $this->clientRepository->existsByEmail($this->dto->email)) {
+            throw new \InvalidArgumentException('Email уже используется');
+        }
+
         return $this;
     }
 

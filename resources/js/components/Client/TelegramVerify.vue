@@ -121,7 +121,7 @@ export default {
         <!-- Призыв к подключению -->
         <div v-else-if="authStore.user && !isTelegramConnected">
             <div
-                class="bg-blue-50/80 backdrop-blur-lg border border-blue-200/30 rounded-2xl p-6 mb-6 dark:bg-blue-900/30 dark:backdrop-blur-lg dark:border-blue-800/20"
+                class="bg-blue-50/80 backdrop-blur-lg border border-blue-200/30 rounded-2xl p-6 mb-6 dark:bg-gray-800/60 dark:backdrop-blur-lg dark:border-blue-800/20"
             >
                 <div class="flex items-start">
                     <div

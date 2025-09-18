@@ -34,6 +34,7 @@ class ClientProjector extends Projector
             id: null,
             fullName: $event->fullName,
             phone: $event->phone,
+            email: $event->email,
             telegram: $event->telegram,
             birthDate: $event->birthDate,
             deliveryAddress: $event->deliveryAddress,

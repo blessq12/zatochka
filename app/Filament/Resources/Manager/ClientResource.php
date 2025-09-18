@@ -59,6 +59,19 @@ class ClientResource extends Resource
                                 }
                             ),
 
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->maxLength(255)
+                            ->unique(
+                                table: 'clients',
+                                column: 'email',
+                                ignoreRecord: true,
+                                modifyRuleUsing: function ($rule, $livewire) {
+                                    return $rule->where('is_deleted', false);
+                                }
+                            ),
+
                         Forms\Components\TextInput::make('telegram')
                             ->label('Telegram')
                             ->maxLength(255),
@@ -89,6 +102,12 @@ class ClientResource extends Resource
 
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Телефон')
+                    ->searchable()
+                    ->copyable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable()
                     ->copyable()
                     ->sortable(),

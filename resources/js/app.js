@@ -7,6 +7,8 @@
 import { vMaska } from "maska/vue";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 import "./bootstrap";
 
 //services
@@ -25,6 +27,20 @@ const pinia = createPinia();
 app.directive("maska", vMaska);
 app.provide("themeTogglerService", themeTogglerService);
 app.use(pinia);
+app.use(Toast, {
+    position: "top-right",
+    timeout: 4000,
+    closeOnClick: true,
+    pauseOnFocusLoss: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+    hideProgressBar: false,
+    closeButton: "button",
+    icon: true,
+    rtl: false,
+});
 
 /**
  * The following block of code may be used to automatically register your

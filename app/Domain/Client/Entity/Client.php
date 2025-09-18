@@ -8,6 +8,7 @@ readonly class Client
         public ?string $id,
         public string $fullName,
         public string $phone,
+        public ?string $email = null,
         public ?string $telegram = null,
         public ?string $birthDate = null,
         public ?string $deliveryAddress = null,
@@ -30,6 +31,11 @@ readonly class Client
     public function getPhone(): string
     {
         return $this->phone;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
     }
 
     public function getTelegram(): ?string
@@ -88,6 +94,7 @@ readonly class Client
             'id' => $this->id,
             'full_name' => $this->fullName,
             'phone' => $this->phone,
+            'email' => $this->email,
             'telegram' => $this->telegram,
             'birth_date' => $this->birthDate,
             'delivery_address' => $this->deliveryAddress,
