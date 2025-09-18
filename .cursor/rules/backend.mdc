@@ -1,0 +1,115 @@
+---
+name: backend
+glob:
+alwaysApply: true
+---
+
+# Backend Rules
+
+## Architecture
+
+### Domain-Driven Design + Event Sourcing
+
+-   **Domain Layer**: Entities (readonly), AggregateRoots, Events (immutable), Repository interfaces, Mapper interfaces, Enums, Exceptions, DTOs, Services
+-   **Application Layer**: Use Cases with Template Method pattern
+-   **Infrastructure Layer**: Repository implementations, Mapper implementations
+
+### Event Sourcing Flow
+
+-   Commands → UseCase → AggregateRoot → Events → Projectors (read models) + Reactors (side effects)
+-   Queries: Use Repository (read models)
+-   State Changes: Only through events
+-   Business Rules: Managed by AggregateRoots
+
+### Use Cases Pattern
+
+-   **Base Class**: `Base{Domain}UseCase` with constructor injecting ALL domain dependencies via `app()`
+-   **Child Classes**: NO constructors, use inherited dependencies
+-   **Chain**: `loadData() → validate() → execute()`
+-   **Validation**: Abstract method `validateSpecificData()`
+-   **Return**: Domain entities or data arrays
+
+## Stack
+
+### Core
+
+-   **Laravel 12.0** + **PHP 8.2+**
+-   **Event Sourcing** (Spatie 7.12) + **CQRS** + **DDD**
+-   **Spatie Data 4.17** - типизированные объекты
+-   **Spatie Query Builder 6.3** - построение запросов
+
+### Admin & API
+
+-   **Filament 3.3** - админ-панель
+-   **Laravel Sanctum 4.0** - API токены
+-   **Laravel Fortify 1.30** - аутентификация
+
+### Infrastructure
+
+-   **Laravel Horizon 5.33** + **Redis queues** - фоновые задачи
+-   **Laravel Telescope 5.11** - профилирование
+-   **Spatie Media Library 11.0** - управление файлами
+
+### Quality
+
+-   **PHPStan 2.1** + **Psalm 6.13** - статический анализ
+-   **PHPUnit 11.5.3** - тестирование
+-   **Laravel Pint 1.24** + **PHP CS Fixer 3.87** - форматирование
+
+## Rules
+
+### Repository Pattern
+
+-   Interface in Domain, Implementation in Infrastructure
+-   Mappers isolate Domain from ORM
+-   Soft Delete via `is_deleted` flag
+-   Transactions in Use Cases, not Repository
+
+### Filament Integration
+
+-   Resources work with Eloquent models
+-   Use Cases called in Pages for business logic
+-   Override `handleRecordCreation()`, `mutateFormDataBeforeSave()`, `before()` with `halt()`
+-   Always show success/error notifications
+
+### API Controllers
+
+-   Use Use Cases with proper chain `loadData()->validate()->execute()`
+-   Laravel validation in controller, business validation in Use Cases
+-   Try-catch with proper HTTP status codes
+-   Return JSON with consistent structure
+
+### Reactors (Event Sourcing Side Effects)
+
+-   Inject repositories through constructor, NOT app()
+-   Use Repository interfaces, NEVER direct Eloquent calls
+-   Call Use Cases for business operations
+-   Log errors, don't break event processing
+
+## Naming Conventions
+
+-   **Entities**: `{Domain}Entity` or `{Domain}`
+-   **Events**: `{Domain}{Action}`
+-   **Use Cases**: `{Action}{Domain}UseCase`
+-   **Repositories**: `{Domain}Repository` (interface), `{Domain}RepositoryImpl` (implementation)
+-   **Mappers**: `{Domain}Mapper` (interface), `{Domain}MapperImpl` (implementation)
+
+## Development Workflow
+
+1. **New Domain**: Domain structure → Entity → Events → AggregateRoot → Repository interfaces → Mapper interfaces → Use Cases → Infrastructure implementations → Filament Resource
+2. **Event Sourcing**: Command → UseCase → AggregateRoot → recordThat(Event) → Projector + Reactor
+3. **Error Handling**: Domain exceptions in Domain/Exception/, validation in Use Cases, Filament Notifications for UI
+4. **Testing**: Unit tests for Domain, Integration tests for Use Cases, Feature tests for API
+
+## Anti-Patterns (НЕ ДЕЛАТЬ)
+
+❌ **Прямые вызовы Eloquent в Use Cases/Reactors**
+❌ **Бизнес-логика в Controllers или Resources**
+❌ **Изменение состояния через прямые SQL запросы**
+❌ **Смешивание Domain и Infrastructure слоев**
+❌ **Создание Events без AggregateRoot**
+❌ **Использование Eloquent моделей как Domain Entities**
+❌ **Создание конструкторов в дочерних Use Cases классов**
+❌ **Использование app() в дочерних классах Use Cases**
+❌ **Прямые Eloquent вызовы в Reactors**
+❌ **Неправильная цепочка вызова Use Cases в Controllers**

@@ -1,0 +1,161 @@
+---
+name: tailwind
+glob:
+alwaysApply: true
+---
+
+# Tailwind CSS Rules (Заточка.ТСК Brand)
+
+## Design Principles
+
+### Modern Glass Design
+
+-   **Большое количество воздуха**: минимум 32px отступы, лучше 48px+
+-   **Крупные элементы**: кнопки минимум 48px высотой
+-   **Эффект стекла**: backdrop-blur-2xl + высокая прозрачность (85-95%)
+-   **Плавные переходы**: минимум 300ms, лучше 500ms+
+-   **Круглые углы**: минимум rounded-xl, лучше rounded-2xl
+-   **Тени**: shadow-2xl и shadow-3xl
+
+### Brand Colors
+
+-   **ТЁМНО-СИНИЙ**: #003859 - основные элементы и заголовки
+-   **СИНИЙ**: #046490 - дополнительные элементы
+-   **РОЗОВЫЙ**: #C3006B - акценты, ссылки и важные действия
+-   **ТЁМНО-СЕРЫЙ**: #3C3C3B - основной текст
+-   **СЕРЫЙ**: #7C7C7B - вторичный текст
+
+### Typography
+
+-   **Основной шрифт**: Jost для всего приложения
+-   **Веса**: Regular (400), Medium (500), Bold (700), Black (900)
+-   **Responsive размеры**: sm:, lg: префиксы
+
+## Component Patterns
+
+### Glass Effect Backgrounds
+
+```css
+/* Основные фоны */
+bg-white/90 backdrop-blur-xs border border-white/30
+dark:bg-gray-900/90 dark:backdrop-blur-xs dark:border-gray-800/30
+
+/* Вторичные фоны */
+bg-white/70 backdrop-blur-xs border border-white/20
+dark:bg-gray-800/70 dark:backdrop-blur-xs dark:border-gray-700/20
+
+/* Контейнеры */
+bg-white/50 backdrop-blur-xs border border-white/15
+dark:bg-gray-700/50 dark:backdrop-blur-xs dark:border-gray-600/15
+```
+
+### Buttons
+
+```css
+/* Primary - тёмно-синий */
+bg-blue-600/90 backdrop-blur-xs hover:bg-blue-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl
+
+/* Secondary - розовый */
+bg-pink-600/90 backdrop-blur-xs hover:bg-pink-700/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl
+
+/* Tertiary - эффект стекла */
+bg-white/60 backdrop-blur-xs hover:bg-white/80 text-gray-900 px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20
+```
+
+### Forms
+
+```css
+/* Поля ввода */
+w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300
+
+/* Лейблы */
+block text-lg font-medium text-gray-700 mb-3
+```
+
+### Cards
+
+```css
+/* Стандартная карточка */
+bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25
+
+/* Карточка с ховером */
+bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25 hover:shadow-3xl hover:bg-white/95 hover:backdrop-blur-3xl transition-all duration-500
+```
+
+### Navigation
+
+```css
+/* Навигационная панель */
+bg-white/90 backdrop-blur-2xl shadow-lg border-b border-white/30
+
+/* Навигационные ссылки */
+text-gray-700 hover:text-blue-600 px-6 py-4 rounded-t-xl text-lg font-jost-medium transition-all duration-300
+
+/* Активная ссылка */
+bg-white/70 backdrop-blur-xl text-blue-700 border border-white/25 rounded-t-xl
+```
+
+## Spacing & Layout
+
+### Containers
+
+```css
+/* Основные контейнеры */
+container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16
+
+/* Максимальный воздух */
+container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20
+
+/* Секции */
+max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 lg:py-20
+```
+
+### Spacing Scale
+
+```css
+/* Внутренние отступы */
+p-8     /* 32px - стандартный */
+p-10    /* 40px - для карточек */
+p-12    /* 48px - для секций */
+p-16    /* 64px - для больших блоков */
+
+/* Внешние отступы */
+mb-8    /* 32px - между элементами */
+mb-12   /* 48px - между секциями */
+mb-16   /* 64px - большие отступы */
+mb-20   /* 80px - максимальные отступы */
+```
+
+## Transitions & Animations
+
+```css
+/* Стандартные переходы */
+transition-all duration-300 ease-out  /* для кнопок */
+transition-all duration-500 ease-out  /* для карточек */
+transition-all duration-700 ease-out  /* для модальных окон */
+
+/* Ховер эффекты */
+hover:shadow-2xl hover:scale-105 transform transition-all duration-300 ease-out
+hover:shadow-3xl hover:-translate-y-2 transform transition-all duration-500 ease-out
+```
+
+## Dark Mode Support
+
+-   **Обязательно**: все интерактивные элементы поддерживают обе темы
+-   **Префикс**: `dark:` для темной темы
+-   **Прозрачность**: полупрозрачные фоны с размытием
+
+## Anti-Patterns (НЕ ДЕЛАТЬ)
+
+❌ **Маленькие отступы** (меньше 24px)
+❌ **Зажатые элементы** (маленькие кнопки, поля)
+❌ **Резкие переходы** (меньше 200ms)
+❌ **Острые углы** (rounded-sm, rounded-md)
+❌ **Плоские тени** (shadow-sm, shadow-md)
+❌ **Непрозрачные фоны** без backdrop-blur
+❌ **Слабый эффект стекла** (backdrop-blur-sm/md)
+❌ **Низкая прозрачность** (меньше 85% для основных элементов)
+❌ **Отсутствие глубины** (нет размытия и теней)
+❌ **Смешивание разных подходов** к стилизации
+❌ **Inline стили** вместо Tailwind классов
+❌ **Игнорирование темной темы**

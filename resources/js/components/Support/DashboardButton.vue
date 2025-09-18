@@ -11,6 +11,9 @@ export default {
             return this.authStore.isAuthenticated;
         },
     },
+    mounted() {
+        this.authStore.checkAuth();
+    },
     methods: {
         handleClick() {
             window.location.href = "/client/dashboard";

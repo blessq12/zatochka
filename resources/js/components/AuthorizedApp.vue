@@ -58,10 +58,10 @@ export default {
         <div v-else>
             <!-- Информация о пользователе и бонусном аккаунте -->
             <UserInfoCard />
-
+            <TelegramVerify />
             <!-- Заказы и быстрые действия -->
             <div
-                class="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12 mt-8 sm:mt-10 lg:mt-12"
+                class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 mt-8 sm:mt-10 lg:mt-12"
             >
                 <OrdersList />
                 <QuickActions />
