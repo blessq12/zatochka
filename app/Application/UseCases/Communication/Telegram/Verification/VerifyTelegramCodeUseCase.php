@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Application\UseCases\Communication;
+namespace App\Application\UseCases\Communication\Telegram\Verification;
 
+use App\Application\UseCases\Communication\BaseCommunicationUseCase;
 use Illuminate\Support\Facades\Log;
 
 class VerifyTelegramCodeUseCase extends BaseCommunicationUseCase

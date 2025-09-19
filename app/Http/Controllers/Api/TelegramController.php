@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Application\UseCases\Communication\SendVerificationCodeUseCase;
-use App\Application\UseCases\Communication\HandleTelegramCommandUseCase;
-use App\Application\UseCases\Communication\HandleTelegramMessageUseCase;
-use App\Application\UseCases\Communication\VerifyTelegramCodeUseCase;
+use App\Application\UseCases\Communication\Telegram\Verification\SendVerificationCodeUseCase;
+use App\Application\UseCases\Communication\Telegram\Webhook\HandleTelegramCommandUseCase;
+use App\Application\UseCases\Communication\Telegram\Webhook\HandleTelegramMessageUseCase;
+use App\Application\UseCases\Communication\Telegram\Verification\VerifyTelegramCodeUseCase;
 
 
 use App\Http\Controllers\Controller;

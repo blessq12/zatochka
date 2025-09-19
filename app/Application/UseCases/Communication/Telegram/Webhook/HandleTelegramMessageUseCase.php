@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Application\UseCases\Communication;
+namespace App\Application\UseCases\Communication\Telegram\Webhook;
 
+use App\Application\UseCases\Communication\BaseCommunicationUseCase;
 use App\Domain\Communication\Entity\TelegramChat;
 
-class HandleTelegramMessageUseCase extends BaseTelegramWebhookUseCase
+class HandleTelegramMessageUseCase extends BaseCommunicationUseCase
 {
     protected function validateSpecificData(): void
     {
-        parent::validateSpecificData();
+        $this->validateWebhookData();
 
         if (!isset($this->data['message']['text'])) {
             throw new \InvalidArgumentException('Message text is required');

@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Application\UseCases\Communication;
+namespace App\Application\UseCases\Communication\Telegram\Webhook;
 
+use App\Application\UseCases\Communication\BaseCommunicationUseCase;
 use App\Domain\Communication\Entity\TelegramChat;
 use App\Domain\Communication\Entity\TelegramMessage;
 
-class HandleTelegramCommandUseCase extends BaseTelegramWebhookUseCase
+class HandleTelegramCommandUseCase extends BaseCommunicationUseCase
 {
     protected function validateSpecificData(): void
     {
-        parent::validateSpecificData();
+        $this->validateWebhookData();
 
         if (!isset($this->data['message']['text']) || !str_starts_with($this->data['message']['text'], '/')) {
             throw new \InvalidArgumentException('Command must start with /');
