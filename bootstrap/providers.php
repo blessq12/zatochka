@@ -11,7 +11,7 @@ return [
     App\Providers\FortifyServiceProvider::class,
     App\Providers\MiddlewareServiceProvider::class,
     // telescope service provider
-    App\Providers\TelescopeServiceProvider::class,
+    // App\Providers\TelescopeServiceProvider::class,
 
     Laravel\Fortify\FortifyServiceProvider::class,
 
