@@ -6,40 +6,64 @@ use App\Domain\Communication\Entity\TelegramChat;
 use App\Domain\Communication\Repository\TelegramChatRepository;
 use App\Domain\Communication\Mapper\TelegramChatMapper;
 use App\Models\TelegramChat as TelegramChatModel;
+use Illuminate\Support\Facades\DB;
 
 class TelegramChatRepositoryImpl implements TelegramChatRepository
 {
     public function __construct(
-        private TelegramChatMapper $mapper
+        private readonly TelegramChatMapper $mapper
     ) {}
 
-    public function findByChatId(string $chatId): ?TelegramChat
+    public function findByTelegramId(int $telegramId): ?TelegramChat
     {
-        $model = TelegramChatModel::where('chat_id', $chatId)
+        $model = TelegramChatModel::where('chat_id', $telegramId)
             ->where('is_deleted', false)
             ->first();
 
-        return $model ? $this->mapper->toDomain($model) : null;
+        return $model ? $this->mapper->toEntity($model) : null;
     }
 
-    public function findByUsername(string $username): ?TelegramChat
+    public function create(array $data): TelegramChat
     {
-        $model = TelegramChatModel::where('username', $username)
-            ->where('is_deleted', false)
-            ->first();
+        $model = TelegramChatModel::create([
+            'client_id' => $data['client_id'] ?? null,
+            'username' => $data['username'] ?? '',
+            'chat_id' => $data['chat_id'],
+            'is_active' => $data['is_active'] ?? true,
+            'metadata' => $data['metadata'] ?? [],
+            'is_deleted' => false,
+        ]);
 
-        return $model ? $this->mapper->toDomain($model) : null;
+        return $this->mapper->toEntity($model);
     }
 
-    public function save(TelegramChat $telegramChat): void
+    public function findOrCreate(int $telegramId, array $data): TelegramChat
     {
-        $model = $this->mapper->toModel($telegramChat);
-        $model->save();
+        $existing = $this->findByTelegramId($telegramId);
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return $this->create([
+            'chat_id' => $telegramId,
+            'username' => $data['username'] ?? '',
+            'is_active' => true,
+            'metadata' => $data,
+        ]);
     }
 
-    public function delete(int $id): void
+    public function update(int $id, array $data): TelegramChat
     {
-        TelegramChatModel::where('id', $id)
-            ->update(['is_deleted' => true]);
+        $model = TelegramChatModel::findOrFail($id);
+        $model->update($data);
+
+        return $this->mapper->toEntity($model->fresh());
+    }
+
+    public function delete(int $id): bool
+    {
+        return TelegramChatModel::where('id', $id)
+            ->update(['is_deleted' => true]) > 0;
     }
 }

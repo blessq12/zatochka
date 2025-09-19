@@ -7,6 +7,9 @@ use App\Models\TelegramChat as TelegramChatModel;
 
 interface TelegramChatMapper
 {
-    public function toDomain(TelegramChatModel $model): TelegramChat;
+    public function toEntity(TelegramChatModel $model): TelegramChat;
+
     public function toModel(TelegramChat $entity): TelegramChatModel;
+
+    public function toArray(TelegramChat $entity): array;
 }

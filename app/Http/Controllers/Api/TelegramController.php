@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Application\UseCases\Communication\SendVerificationCodeUseCase;
+use App\Application\UseCases\Communication\HandleTelegramCommandUseCase;
+use App\Application\UseCases\Communication\HandleTelegramMessageUseCase;
+
 use App\Http\Controllers\Controller;
-use App\Application\UseCases\Communication\ConnectTelegramUseCase;
-use App\Application\UseCases\Communication\VerifyTelegramConnectionUseCase;
-use App\Domain\Communication\Service\TelegramWebhookServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -23,50 +24,36 @@ class TelegramController extends Controller
         try {
             $data = $request->all();
 
-            // Обрабатываем webhook через сервис
-            $webhookService = app(TelegramWebhookServiceInterface::class);
-            $result = $webhookService->handleWebhook($data);
-
-            // Если это команда /start, запускаем Use Case
-            if ($result['action'] === 'start_command') {
-                $useCase = new ConnectTelegramUseCase();
-                $useCase->loadData([
-                    'username' => $result['username'],
-                    'chat_id' => $result['chat_id']
-                ])->validate()->execute();
+            if (!isset($data['message'])) {
+                return response()->json(['status' => 'ok']);
             }
 
-            return response()->json(['ok' => true, 'result' => $result]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'ok' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+            $message = $data['message'];
 
-    public function verifyCode(Request $request): JsonResponse
-    {
-        try {
-            $request->validate([
-                'code' => 'required|string|size:6',
-                'chat_id' => 'required|string'
-            ]);
+            if (isset($message['text']) && str_starts_with($message['text'], '/')) {
+                $result = (new HandleTelegramCommandUseCase())->loadData($data)->validate()->execute();
+            } else {
+                $result = (new HandleTelegramMessageUseCase())->loadData($data)->validate()->execute();
+            }
 
-            $useCase = new VerifyTelegramConnectionUseCase();
-            $result = $useCase->loadData([
-                'code' => $request->input('code'),
-                'chat_id' => $request->input('chat_id')
-            ])->validate()->execute();
-
-            return response()->json([
-                'success' => true,
-                'data' => $result
-            ]);
+            return response()->json($result, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage()
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function telegramSendVerificationCode(Request $request)
+    {
+        try {
+            $result = (new SendVerificationCodeUseCase())->loadData($request->all())->validate()->execute();
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
             ], 400);
         }
     }

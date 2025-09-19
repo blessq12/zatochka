@@ -21,7 +21,8 @@ class ClientMapperImpl implements ClientMapper
             password: $model->password,
             isDeleted: (bool) $model->is_deleted,
             createdAt: $model->created_at,
-            updatedAt: $model->updated_at
+            updatedAt: $model->updated_at,
+            telegramVerifiedAt: $model->telegram_verified_at
         );
     }
 
@@ -39,7 +40,7 @@ class ClientMapperImpl implements ClientMapper
         $model->is_deleted = $entity->isDeleted();
         $model->created_at = $entity->getCreatedAt();
         $model->updated_at = $entity->getUpdatedAt();
-
+        $model->telegram_verified_at = $entity->getTelegramVerifiedAt();
         return $model;
     }
 
@@ -56,7 +57,8 @@ class ClientMapperImpl implements ClientMapper
             password: $data['password'] ?? null,
             isDeleted: (bool) ($data['is_deleted'] ?? false),
             createdAt: $data['created_at'] ?? null,
-            updatedAt: $data['updated_at'] ?? null
+            updatedAt: $data['updated_at'] ?? null,
+            telegramVerifiedAt: $data['telegram_verified_at'] ?? null
         );
     }
 }
