@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Application\UseCases\Communication\SendVerificationCodeUseCase;
 use App\Application\UseCases\Communication\HandleTelegramCommandUseCase;
 use App\Application\UseCases\Communication\HandleTelegramMessageUseCase;
+use App\Application\UseCases\Communication\VerifyTelegramCodeUseCase;
+
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -32,8 +34,6 @@ class TelegramController extends Controller
             }
 
             $message = $data['message'];
-
-            // Проверяем является ли сообщение командой
             if ($this->isCommand($message)) {
                 $result = (new HandleTelegramCommandUseCase())->loadData($data)->validate()->execute();
             } else {
@@ -78,5 +78,11 @@ class TelegramController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    public function telegramVerifyCode(Request $request)
+    {
+        $result = (new VerifyTelegramCodeUseCase())->loadData($request->all())->validate()->execute();
+        return response()->json($result);
     }
 }
