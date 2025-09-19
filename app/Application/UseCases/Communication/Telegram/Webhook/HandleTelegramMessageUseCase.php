@@ -23,24 +23,21 @@ class HandleTelegramMessageUseCase extends BaseCommunicationUseCase
 
         $message = $this->saveMessage($this->data, $chat);
 
-        // Обрабатываем сообщение
+        // Обрабатываем сообщение и отправляем ответ
         $response = $this->processMessage($message->getContent(), $chat);
+        
+        // Отправляем ответ в чат
+        $this->telegramMessageService->sendMessage($chat->getChatId(), $response);
 
         return [
             'success' => true,
-            'message' => $response,
+            'message' => 'Message processed and response sent',
             'chat_id' => $chat->getChatId(),
         ];
     }
 
     private function processMessage(string $messageText, TelegramChat $chat): string
     {
-        return '🤖 Спасибо за сообщение!\n\n' .
-               'К сожалению, я пока не умею понимать и обрабатывать текстовые сообщения.\n\n' .
-               '📋 Доступные команды:\n' .
-               '/start - приветствие\n' .
-               '/help - справка\n' .
-               '/status - статус бота\n\n' .
-               '⚠️ Функционал обработки сообщений будет добавлен в ближайшее время.';
+        return 'Я не умею работать с текстовыми сообщениями.';
     }
 }
