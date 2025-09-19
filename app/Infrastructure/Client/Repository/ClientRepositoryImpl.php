@@ -75,7 +75,7 @@ class ClientRepositoryImpl implements ClientRepository
         $model = Client::findOrFail($id);
         $model->telegram_verified_at = $verifiedAt;
         $model->save();
-        
+
         return $this->clientMapper->toDomain($model->fresh());
     }
 }

@@ -24,6 +24,6 @@ interface ClientRepository
     public function existsByEmail(string $email): bool;
 
     public function findByEmail(string $email): ?Client;
-    
+
     public function updateTelegramVerification(string $id, \DateTime $verifiedAt): Client;
 }
