@@ -5,35 +5,60 @@ namespace App\Domain\Communication\Entity;
 class TelegramChat
 {
     public function __construct(
-        public readonly int $id,
-        public readonly int $clientId,
-        public readonly string $username,
-        public readonly string $chatId,
-        public readonly bool $isActive,
-        public readonly array $metadata,
-        public readonly bool $isDeleted = false
+        private readonly ?int $id,
+        private readonly ?int $clientId,
+        private readonly string $username,
+        private readonly int $chatId,
+        private readonly bool $isActive,
+        private readonly array $metadata,
+        private readonly bool $isDeleted,
     ) {}
 
-    public function activate(): self
+    public function getId(): ?int
     {
-        return new self(
-            $this->id,
-            $this->clientId,
-            $this->username,
-            $this->chatId,
-            true, // isActive
-            array_merge($this->metadata, ['verified_at' => now()]),
-            $this->isDeleted
-        );
+        return $this->id;
     }
 
-    public function isVerified(): bool
+    public function getClientId(): ?int
+    {
+        return $this->clientId;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function getChatId(): int
+    {
+        return $this->chatId;
+    }
+
+    public function isActive(): bool
     {
         return $this->isActive;
     }
 
-    public function isPendingVerification(): bool
+    public function getMetadata(): array
     {
-        return !$this->isActive && isset($this->metadata['verification_pending']);
+        return $this->metadata;
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->isDeleted;
+    }
+
+    public function withClientId(int $clientId): self
+    {
+        return new self(
+            $this->id,
+            $clientId,
+            $this->username,
+            $this->chatId,
+            $this->isActive,
+            $this->metadata,
+            $this->isDeleted
+        );
     }
 }

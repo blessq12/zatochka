@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\TelegramController;
 
-
+Route::post('/telegram/webhook', [TelegramController::class, 'handleWebhook']);
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
     Route::post('/register', 'register');
@@ -21,8 +21,6 @@ Route::middleware('auth:client')->group(function () {
     });
 
     Route::controller(TelegramController::class)->group(function () {
-        Route::post('/telegram/webhook', 'handleWebhook');
-        Route::post('/telegram/check-status', 'telegramCheckStatus');
-        Route::post('telegram/connect', 'telegramConnect');
+        Route::post('/telegram/send-verification-code', 'telegramSendVerificationCode');
     });
 });

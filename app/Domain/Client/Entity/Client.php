@@ -15,7 +15,8 @@ readonly class Client
         public ?string $password = null,
         public bool $isDeleted = false,
         public ?\DateTime $createdAt = null,
-        public ?\DateTime $updatedAt = null
+        public ?\DateTime $updatedAt = null,
+        public ?\DateTime $telegramVerifiedAt = null
     ) {}
 
     public function getId(): ?string
@@ -72,6 +73,10 @@ readonly class Client
     {
         return $this->updatedAt;
     }
+    public function getTelegramVerifiedAt(): ?\DateTime
+    {
+        return $this->telegramVerifiedAt;
+    }
 
     // Password methods
     public function hasPassword(): bool
@@ -88,6 +93,7 @@ readonly class Client
         return password_verify($password, $this->password);
     }
 
+
     public function toArray(): array
     {
         return [
@@ -102,6 +108,7 @@ readonly class Client
             'is_deleted' => $this->isDeleted,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
+            'telegram_verified_at' => $this->telegramVerifiedAt,
         ];
     }
 }

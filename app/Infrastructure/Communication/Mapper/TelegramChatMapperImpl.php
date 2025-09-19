@@ -8,16 +8,16 @@ use App\Models\TelegramChat as TelegramChatModel;
 
 class TelegramChatMapperImpl implements TelegramChatMapper
 {
-    public function toDomain(TelegramChatModel $model): TelegramChat
+    public function toEntity(TelegramChatModel $model): TelegramChat
     {
         return new TelegramChat(
-            id: $model->id,
-            clientId: $model->client_id,
-            username: $model->username,
-            chatId: $model->chat_id,
-            isActive: $model->is_active,
-            metadata: $model->metadata ?? [],
-            isDeleted: $model->is_deleted
+            $model->id,
+            $model->client_id,
+            $model->username,
+            $model->chat_id,
+            $model->is_active,
+            $model->metadata ?? [],
+            $model->is_deleted
         );
     }
 
@@ -25,17 +25,30 @@ class TelegramChatMapperImpl implements TelegramChatMapper
     {
         $model = new TelegramChatModel();
 
-        if ($entity->id > 0) {
-            $model = TelegramChatModel::find($entity->id);
+        if ($entity->getId()) {
+            $model = TelegramChatModel::findOrFail($entity->getId());
         }
 
-        $model->client_id = $entity->clientId;
-        $model->username = $entity->username;
-        $model->chat_id = $entity->chatId;
-        $model->is_active = $entity->isActive;
-        $model->metadata = $entity->metadata;
-        $model->is_deleted = $entity->isDeleted;
+        $model->client_id = $entity->getClientId();
+        $model->username = $entity->getUsername();
+        $model->chat_id = $entity->getChatId();
+        $model->is_active = $entity->isActive();
+        $model->metadata = $entity->getMetadata();
+        $model->is_deleted = $entity->isDeleted();
 
         return $model;
+    }
+
+    public function toArray(TelegramChat $entity): array
+    {
+        return [
+            'id' => $entity->getId(),
+            'client_id' => $entity->getClientId(),
+            'username' => $entity->getUsername(),
+            'chat_id' => $entity->getChatId(),
+            'is_active' => $entity->isActive(),
+            'metadata' => $entity->getMetadata(),
+            'is_deleted' => $entity->isDeleted(),
+        ];
     }
 }
