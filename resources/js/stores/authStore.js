@@ -12,6 +12,7 @@ export const useAuthStore = defineStore("auth", {
         token: null,
         isLoading: false,
         error: null,
+        telegramVerified: false,
     }),
 
     getters: {
@@ -89,6 +90,12 @@ export const useAuthStore = defineStore("auth", {
 
                 this.user = response.data.client;
                 this.bonusAccount = response.data.bonusAccount;
+
+                // Инициализируем статус Telegram на основе данных пользователя
+                this.telegramVerified =
+                    this.user?.telegram_verified_at !== null &&
+                    this.user?.telegram_verified_at !== undefined;
+
                 return true;
             } catch (error) {
                 console.error("Auth check failed:", error);
@@ -133,8 +140,12 @@ export const useAuthStore = defineStore("auth", {
             this.error = null;
         },
 
+        setTelegramVerified(verified) {
+            this.telegramVerified = verified;
+        },
+
         async checkTelegramChat() {
-            this.isLoading = true;
+            // НЕ устанавливаем isLoading = true, чтобы не вызывать ререндер родителя
             this.error = null;
 
             try {
@@ -163,18 +174,16 @@ export const useAuthStore = defineStore("auth", {
                     },
                 };
             } catch (error) {
-                this.error =
+                const errorMessage =
                     error.response?.data?.message ||
                     "Ошибка проверки Telegram чата";
-                toastService.error(this.error);
-                return { success: false, error: this.error };
-            } finally {
-                this.isLoading = false;
+                toastService.error(errorMessage);
+                return { success: false, error: errorMessage };
             }
         },
 
         async sendTelegramVerificationCode() {
-            this.isLoading = true;
+            // НЕ устанавливаем isLoading = true, чтобы не вызывать ререндер родителя
             this.error = null;
 
             try {
@@ -209,18 +218,16 @@ export const useAuthStore = defineStore("auth", {
                     },
                 };
             } catch (error) {
-                this.error =
+                const errorMessage =
                     error.response?.data?.message ||
                     "Ошибка отправки кода подтверждения";
-                toastService.error(this.error);
-                return { success: false, error: this.error };
-            } finally {
-                this.isLoading = false;
+                toastService.error(errorMessage);
+                return { success: false, error: errorMessage };
             }
         },
 
         async verifyTelegramCode(code) {
-            this.isLoading = true;
+            // НЕ устанавливаем isLoading = true, чтобы не вызывать ререндер родителя
             this.error = null;
 
             try {
@@ -245,6 +252,9 @@ export const useAuthStore = defineStore("auth", {
                         this.user = client;
                     }
 
+                    // Устанавливаем статус подтверждения Telegram
+                    this.telegramVerified = true;
+
                     const verifiedDate = new Date(verified_at).toLocaleString(
                         "ru-RU"
                     );
@@ -265,13 +275,11 @@ export const useAuthStore = defineStore("auth", {
                     },
                 };
             } catch (error) {
-                this.error =
+                const errorMessage =
                     error.response?.data?.message ||
                     "Ошибка подтверждения кода";
-                toastService.error(this.error);
-                return { success: false, error: this.error };
-            } finally {
-                this.isLoading = false;
+                toastService.error(errorMessage);
+                return { success: false, error: errorMessage };
             }
         },
     },

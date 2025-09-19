@@ -10,6 +10,7 @@ export default {
             isCodeSent: false,
             isVerifying: false,
             isCheckingChat: false,
+            codeSendStatus: null, // 'success', 'error', 'chat-not-found'
         };
     },
     computed: {
@@ -20,18 +21,17 @@ export default {
             const hasTelegram =
                 this.authStore.user.telegram &&
                 this.authStore.user.telegram.length > 0;
-            const isVerified =
-                this.authStore.user.telegram_verified_at !== null &&
-                this.authStore.user.telegram_verified_at !== undefined;
 
             if (!hasTelegram) return "no-telegram";
-            if (hasTelegram && !isVerified) return "unverified";
-            if (hasTelegram && isVerified) return "verified";
+            if (hasTelegram && !this.authStore.telegramVerified)
+                return "unverified";
+            if (hasTelegram && this.authStore.telegramVerified)
+                return "verified";
 
             return "loading";
         },
         isTelegramConnected() {
-            return this.userStatus === "verified";
+            return this.authStore.telegramVerified;
         },
     },
     mounted() {
@@ -53,22 +53,27 @@ export default {
 
         async sendVerificationCode() {
             this.isCheckingChat = true;
+            this.codeSendStatus = null;
+            this.isCodeSent = false; // Сбрасываем состояние формы
+
             try {
                 // Сначала проверяем наличие чата
                 const chatResult = await this.authStore.checkTelegramChat();
 
                 if (!chatResult.success) {
                     console.error("Ошибка проверки чата:", chatResult.error);
+                    this.codeSendStatus = "error";
                     return;
                 }
 
                 if (!chatResult.data.chatExists) {
-                    // Чат не найден - показываем предупреждение
+                    // Чат не найден - НЕ показываем форму, только ошибку
                     console.log(
                         "Чат не найден для пользователя:",
                         this.authStore.user?.telegram
                     );
-                    return;
+                    this.codeSendStatus = "chat-not-found";
+                    return; // Выходим, не показываем форму
                 }
 
                 // Чат найден - отправляем код подтверждения
@@ -77,11 +82,17 @@ export default {
                     await this.authStore.sendTelegramVerificationCode();
 
                 if (codeResult.success) {
-                    this.isCodeSent = true;
-                    this.verificationCode = ""; // Очищаем поле
+                    this.codeSendStatus = "success";
+                    this.isCodeSent = true; // Показываем форму только при успехе
+                    this.verificationCode = "";
+                } else {
+                    this.codeSendStatus = "error";
+                    // НЕ показываем форму при ошибке отправки
                 }
             } catch (error) {
                 console.error("Ошибка отправки кода:", error);
+                this.codeSendStatus = "error";
+                // НЕ показываем форму при ошибке
             } finally {
                 this.isVerifying = false;
                 this.isCheckingChat = false;
@@ -98,10 +109,17 @@ export default {
                 );
 
                 if (result.success) {
-                    // Код подтвержден успешно
+                    // Код подтвержден успешно - сбрасываем локальные состояния
                     this.isCodeSent = false;
                     this.verificationCode = "";
+                    this.codeSendStatus = null;
                     console.log("Telegram успешно подтвержден!");
+                    console.log(
+                        "telegramVerified:",
+                        this.authStore.telegramVerified
+                    );
+                    // Компонент автоматически переключится на статус "verified"
+                    // благодаря обновлению authStore.telegramVerified в store
                 } else {
                     console.error("Ошибка подтверждения кода:", result.error);
                 }
@@ -115,6 +133,7 @@ export default {
         async resendCode() {
             this.isCodeSent = false;
             this.verificationCode = "";
+            this.codeSendStatus = null;
             await this.sendVerificationCode();
         },
     },
@@ -426,6 +445,87 @@ export default {
                             </ol>
                         </div>
 
+                        <!-- Статусные сообщения (показываются всегда) -->
+                        <div v-if="codeSendStatus && !isCodeSent" class="mb-6">
+                            <!-- Чат не найден -->
+                            <div
+                                v-if="codeSendStatus === 'chat-not-found'"
+                                class="bg-yellow-50/80 backdrop-blur-lg border border-yellow-200/30 rounded-2xl p-6 dark:bg-yellow-900/30 dark:border-yellow-800/20"
+                            >
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-8 h-8 bg-yellow-500/90 rounded-xl flex items-center justify-center mr-4 flex-shrink-0"
+                                    >
+                                        <svg
+                                            class="w-5 h-5 text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                            ></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p
+                                            class="text-lg font-jost-bold text-yellow-800 dark:text-yellow-200"
+                                        >
+                                            Чат с ботом не найден
+                                        </p>
+                                        <p
+                                            class="text-yellow-700 dark:text-yellow-300"
+                                        >
+                                            Перейдите в Telegram, найдите
+                                            @zatochkatsk_bot и нажмите /start,
+                                            затем попробуйте снова.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ошибка отправки -->
+                            <div
+                                v-else-if="codeSendStatus === 'error'"
+                                class="bg-red-50/80 backdrop-blur-lg border border-red-200/30 rounded-2xl p-6 dark:bg-red-900/30 dark:border-red-800/20"
+                            >
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-8 h-8 bg-red-500/90 rounded-xl flex items-center justify-center mr-4 flex-shrink-0"
+                                    >
+                                        <svg
+                                            class="w-5 h-5 text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"
+                                            ></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p
+                                            class="text-lg font-jost-bold text-red-800 dark:text-red-200"
+                                        >
+                                            Ошибка отправки кода
+                                        </p>
+                                        <p
+                                            class="text-red-700 dark:text-red-300"
+                                        >
+                                            Попробуйте отправить код снова.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Форма подтверждения -->
                         <div v-if="!isCodeSent">
                             <button
@@ -473,6 +573,130 @@ export default {
 
                         <!-- Форма ввода кода -->
                         <div v-else class="space-y-6">
+                            <!-- Статус отправки кода -->
+                            <div v-if="codeSendStatus" class="mb-6">
+                                <!-- Успешная отправка -->
+                                <div
+                                    v-if="codeSendStatus === 'success'"
+                                    class="bg-green-50/80 backdrop-blur-lg border border-green-200/30 rounded-2xl p-6 dark:bg-green-900/30 dark:border-green-800/20"
+                                >
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 bg-green-500/90 rounded-xl flex items-center justify-center mr-4 flex-shrink-0"
+                                        >
+                                            <svg
+                                                class="w-5 h-5 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M5 13l4 4L19 7"
+                                                ></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p
+                                                class="text-lg font-jost-bold text-green-800 dark:text-green-200"
+                                            >
+                                                Код успешно отправлен!
+                                            </p>
+                                            <p
+                                                class="text-green-700 dark:text-green-300"
+                                            >
+                                                Проверьте Telegram и введите
+                                                полученный код ниже.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Чат не найден -->
+                                <div
+                                    v-else-if="
+                                        codeSendStatus === 'chat-not-found'
+                                    "
+                                    class="bg-yellow-50/80 backdrop-blur-lg border border-yellow-200/30 rounded-2xl p-6 dark:bg-yellow-900/30 dark:border-yellow-800/20"
+                                >
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 bg-yellow-500/90 rounded-xl flex items-center justify-center mr-4 flex-shrink-0"
+                                        >
+                                            <svg
+                                                class="w-5 h-5 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                                ></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p
+                                                class="text-lg font-jost-bold text-yellow-800 dark:text-yellow-200"
+                                            >
+                                                Чат с ботом не найден
+                                            </p>
+                                            <p
+                                                class="text-yellow-700 dark:text-yellow-300"
+                                            >
+                                                Перейдите в Telegram, найдите
+                                                @zatochkatsk_bot и нажмите
+                                                /start, затем попробуйте снова.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ошибка отправки -->
+                                <div
+                                    v-else-if="codeSendStatus === 'error'"
+                                    class="bg-red-50/80 backdrop-blur-lg border border-red-200/30 rounded-2xl p-6 dark:bg-red-900/30 dark:border-red-800/20"
+                                >
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 bg-red-500/90 rounded-xl flex items-center justify-center mr-4 flex-shrink-0"
+                                        >
+                                            <svg
+                                                class="w-5 h-5 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                ></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p
+                                                class="text-lg font-jost-bold text-red-800 dark:text-red-200"
+                                            >
+                                                Ошибка отправки кода
+                                            </p>
+                                            <p
+                                                class="text-red-700 dark:text-red-300"
+                                            >
+                                                Попробуйте отправить код снова
+                                                или введите код вручную, если он
+                                                уже был отправлен.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div>
                                 <label
                                     class="block text-lg font-jost-medium text-gray-700 dark:text-gray-300 mb-3"
