@@ -28,7 +28,7 @@ class HandleTelegramCommandUseCase extends BaseCommunicationUseCase
         // Обрабатываем команду и отправляем ответ
         $command = $this->data['message']['text'];
         $response = $this->processCommand($command, $chat);
-        
+
         // Отправляем ответ в чат
         $this->telegramMessageService->sendMessage($chat->getChatId(), $response);
 
@@ -45,7 +45,7 @@ class HandleTelegramCommandUseCase extends BaseCommunicationUseCase
             '/start' => 'Бот работает.',
             '/help' => 'Доступные команды: /start, /help, /status',
             '/status' => 'Бот работает нормально.',
-            default => 'У меня нет обработчиков для кастомных команд.',
+            default => 'я не умею обрабатывать кастомные команды 🤷🏻‍♂️',
         };
     }
 }

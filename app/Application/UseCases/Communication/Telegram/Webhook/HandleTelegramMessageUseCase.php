@@ -23,10 +23,7 @@ class HandleTelegramMessageUseCase extends BaseCommunicationUseCase
 
         $message = $this->saveMessage($this->data, $chat);
 
-        // Обрабатываем сообщение и отправляем ответ
         $response = $this->processMessage($message->getContent(), $chat);
-        
-        // Отправляем ответ в чат
         $this->telegramMessageService->sendMessage($chat->getChatId(), $response);
 
         return [
@@ -38,6 +35,6 @@ class HandleTelegramMessageUseCase extends BaseCommunicationUseCase
 
     private function processMessage(string $messageText, TelegramChat $chat): string
     {
-        return 'Я не умею работать с текстовыми сообщениями.';
+        return 'К сожалению, я не умею работать с текстовыми сообщениями 🤷🏻‍♂️';
     }
 }
