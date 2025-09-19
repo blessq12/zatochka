@@ -43,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Domain\Communication\Service\TelegramServiceInterface::class, \App\Infrastructure\Communication\Service\TelegramService::class);
         $this->app->singleton(\App\Domain\Communication\Service\SmsServiceInterface::class, \App\Infrastructure\Communication\Service\SmsService::class);
         $this->app->singleton(\App\Domain\Communication\Service\TelegramWebhookServiceInterface::class, \App\Infrastructure\Communication\Service\TelegramWebhookService::class);
+        $this->app->singleton(\App\Domain\Communication\Service\TelegramMessageServiceInterface::class, \App\Infrastructure\Communication\Service\TelegramMessageServiceImpl::class);
 
         // domain services
         $this->app->singleton(\App\Domain\Order\Service\OrderNumberGeneratorService::class, function ($app) {

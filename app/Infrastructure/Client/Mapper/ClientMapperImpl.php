@@ -22,7 +22,7 @@ class ClientMapperImpl implements ClientMapper
             isDeleted: (bool) $model->is_deleted,
             createdAt: $model->created_at,
             updatedAt: $model->updated_at,
-            telegramVerifiedAt: $model->telegram_verified_at
+            telegramVerifiedAt: $model->telegram_verified_at ? new \DateTime($model->telegram_verified_at) : null
         );
     }
 
