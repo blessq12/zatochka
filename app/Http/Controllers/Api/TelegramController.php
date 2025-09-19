@@ -26,13 +26,15 @@ class TelegramController extends Controller
             \Illuminate\Support\Facades\Log::info('Telegram webhook received', [
                 'data' => json_encode($data),
             ]);
+
             if (!isset($data['message'])) {
                 return response()->json(['status' => 'ok']);
             }
 
             $message = $data['message'];
 
-            if (isset($message['text']) && str_starts_with($message['text'], '/')) {
+            // Проверяем является ли сообщение командой
+            if ($this->isCommand($message)) {
                 $result = (new HandleTelegramCommandUseCase())->loadData($data)->validate()->execute();
             } else {
                 $result = (new HandleTelegramMessageUseCase())->loadData($data)->validate()->execute();
@@ -45,6 +47,24 @@ class TelegramController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    /**
+     * Определяет является ли сообщение командой
+     */
+    private function isCommand(array $message): bool
+    {
+        // Проверяем entities на наличие bot_command
+        if (isset($message['entities'])) {
+            foreach ($message['entities'] as $entity) {
+                if ($entity['type'] === 'bot_command') {
+                    return true;
+                }
+            }
+        }
+
+        // Fallback: проверяем начинается ли текст с /
+        return isset($message['text']) && str_starts_with($message['text'], '/');
     }
 
     public function telegramSendVerificationCode(Request $request)
