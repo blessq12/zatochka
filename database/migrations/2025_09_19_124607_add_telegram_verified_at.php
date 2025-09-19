@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stock_categories', function (Blueprint $table) {
-            $table->foreignId('warehouse_id')->nullable()->after('id')->constrained()->onDelete('set null');
+        Schema::table('clients', function (Blueprint $table) {
+            $table->timestamp('telegram_verified_at')->nullable();
         });
     }
 
@@ -21,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stock_categories', function (Blueprint $table) {
-            $table->dropForeign(['warehouse_id']);
-            $table->dropColumn('warehouse_id');
+        Schema::table('clients', function (Blueprint $table) {
+            $table->dropColumn('telegram_verified_at');
         });
     }
 };
