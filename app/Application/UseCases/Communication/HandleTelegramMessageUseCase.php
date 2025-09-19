@@ -20,7 +20,6 @@ class HandleTelegramMessageUseCase extends BaseTelegramWebhookUseCase
         // Обеспечиваем существование чата
         $chat = $this->ensureChatExists($this->data);
 
-        // Сохраняем сообщение
         $message = $this->saveMessage($this->data, $chat);
 
         // Обрабатываем сообщение
