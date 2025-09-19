@@ -69,4 +69,13 @@ class ClientRepositoryImpl implements ClientRepository
         $model = Client::where('email', $email)->where('is_deleted', false)->first();
         return $model ? $this->clientMapper->toDomain($model) : null;
     }
+
+    public function updateTelegramVerification(string $id, \DateTime $verifiedAt): ClientEntity
+    {
+        $model = Client::findOrFail($id);
+        $model->telegram_verified_at = $verifiedAt;
+        $model->save();
+        
+        return $this->clientMapper->toDomain($model->fresh());
+    }
 }

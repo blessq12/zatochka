@@ -5,6 +5,7 @@ namespace App\Application\UseCases\Communication;
 use App\Application\UseCases\UseCaseInterface;
 use App\Domain\Communication\Service\TelegramMessageServiceInterface;
 use App\Domain\Communication\Repository\TelegramChatRepository;
+use App\Domain\Client\Repository\ClientRepository;
 
 abstract class BaseCommunicationUseCase implements UseCaseInterface
 {
@@ -12,12 +13,14 @@ abstract class BaseCommunicationUseCase implements UseCaseInterface
     protected array $data = [];
     protected TelegramMessageServiceInterface $telegramMessageService;
     protected TelegramChatRepository $telegramChatRepository;
+    protected ClientRepository $clientRepository;
 
     public function __construct()
     {
         $this->authContext = auth('sanctum')->user();
         $this->telegramMessageService = app(TelegramMessageServiceInterface::class);
         $this->telegramChatRepository = app(TelegramChatRepository::class);
+        $this->clientRepository = app(ClientRepository::class);
     }
 
     public function loadData(array $data): self
