@@ -64,10 +64,6 @@ class Client extends Model
         return $this->hasMany(TelegramChat::class);
     }
 
-    public function telegramMessages()
-    {
-        return $this->hasMany(TelegramMessage::class);
-    }
 
     // Scope для активных клиентов
     public function scopeActive($query)

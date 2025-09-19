@@ -21,6 +21,7 @@ Route::middleware('auth:client')->group(function () {
     });
 
     Route::controller(TelegramController::class)->group(function () {
+        Route::post('/telegram/webhook', 'handleWebhook');
         Route::post('/telegram/check-status', 'telegramCheckStatus');
         Route::post('telegram/connect', 'telegramConnect');
     });
