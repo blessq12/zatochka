@@ -10,6 +10,8 @@ interface TelegramChatRepository
 
     public function findByUsername(string $username): ?TelegramChat;
 
+    public function findByClientId(string $clientId): ?TelegramChat;
+
     public function create(array $data): TelegramChat;
 
     public function findOrCreate(int $telegramId, array $data): TelegramChat;

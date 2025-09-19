@@ -6,6 +6,7 @@ use App\Application\UseCases\Communication\Telegram\Verification\SendVerificatio
 use App\Application\UseCases\Communication\Telegram\Webhook\HandleTelegramCommandUseCase;
 use App\Application\UseCases\Communication\Telegram\Webhook\HandleTelegramMessageUseCase;
 use App\Application\UseCases\Communication\Telegram\Verification\VerifyTelegramCodeUseCase;
+use App\Application\UseCases\Communication\Telegram\Verification\CheckChatIsExistsUseCase;
 
 
 use App\Http\Controllers\Controller;

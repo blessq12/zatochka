@@ -114,6 +114,14 @@ abstract class BaseCommunicationUseCase implements UseCaseInterface
     }
 
     /**
+     * Находит чат по client_id (надежный способ)
+     */
+    protected function findTelegramChatByClientId(string $clientId): ?TelegramChat
+    {
+        return $this->telegramChatRepository->findByClientId($clientId);
+    }
+
+    /**
      * Валидация webhook данных (для webhook Use Cases)
      */
     protected function validateWebhookData(): void

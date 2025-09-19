@@ -9,6 +9,7 @@ export default {
             verificationCode: "",
             isCodeSent: false,
             isVerifying: false,
+            isCheckingChat: false,
         };
     },
     computed: {
@@ -51,17 +52,39 @@ export default {
         },
 
         async sendVerificationCode() {
-            this.isVerifying = true;
+            this.isCheckingChat = true;
             try {
-                // TODO: Вызов API для отправки кода подтверждения
-                console.log("Отправка кода подтверждения...");
-                // Имитация задержки
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-                this.isCodeSent = true;
+                // Сначала проверяем наличие чата
+                const chatResult = await this.authStore.checkTelegramChat();
+
+                if (!chatResult.success) {
+                    console.error("Ошибка проверки чата:", chatResult.error);
+                    return;
+                }
+
+                if (!chatResult.data.chatExists) {
+                    // Чат не найден - показываем предупреждение
+                    console.log(
+                        "Чат не найден для пользователя:",
+                        this.authStore.user?.telegram
+                    );
+                    return;
+                }
+
+                // Чат найден - отправляем код подтверждения
+                this.isVerifying = true;
+                const codeResult =
+                    await this.authStore.sendTelegramVerificationCode();
+
+                if (codeResult.success) {
+                    this.isCodeSent = true;
+                    this.verificationCode = ""; // Очищаем поле
+                }
             } catch (error) {
                 console.error("Ошибка отправки кода:", error);
             } finally {
                 this.isVerifying = false;
+                this.isCheckingChat = false;
             }
         },
 
@@ -70,12 +93,18 @@ export default {
 
             this.isVerifying = true;
             try {
-                // TODO: Вызов API для проверки кода
-                console.log("Проверка кода:", this.verificationCode);
-                // Имитация задержки
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-                // TODO: Обновить статус пользователя в store
-                console.log("Код подтвержден!");
+                const result = await this.authStore.verifyTelegramCode(
+                    this.verificationCode.trim()
+                );
+
+                if (result.success) {
+                    // Код подтвержден успешно
+                    this.isCodeSent = false;
+                    this.verificationCode = "";
+                    console.log("Telegram успешно подтвержден!");
+                } else {
+                    console.error("Ошибка подтверждения кода:", result.error);
+                }
             } catch (error) {
                 console.error("Ошибка проверки кода:", error);
             } finally {
@@ -401,10 +430,25 @@ export default {
                         <div v-if="!isCodeSent">
                             <button
                                 @click="sendVerificationCode"
-                                :disabled="isVerifying"
+                                :disabled="isVerifying || isCheckingChat"
                                 class="w-full bg-pink-600/90 backdrop-blur-xs hover:bg-pink-700/90 disabled:bg-pink-400/90 text-white px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center dark:bg-pink-500/90 dark:hover:bg-pink-600/90"
                             >
                                 <svg
+                                    v-if="isCheckingChat"
+                                    class="w-6 h-6 mr-3 animate-spin"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                    ></path>
+                                </svg>
+                                <svg
+                                    v-else
                                     class="w-6 h-6 mr-3"
                                     fill="none"
                                     stroke="currentColor"
@@ -418,7 +462,9 @@ export default {
                                     ></path>
                                 </svg>
                                 {{
-                                    isVerifying
+                                    isCheckingChat
+                                        ? "Проверяем чат..."
+                                        : isVerifying
                                         ? "Отправляем..."
                                         : "Отправить код подтверждения"
                                 }}
@@ -469,7 +515,7 @@ export default {
 
                                 <button
                                     @click="resendCode"
-                                    :disabled="isVerifying"
+                                    :disabled="isVerifying || isCheckingChat"
                                     class="flex-1 bg-white/60 backdrop-blur-xs hover:bg-white/80 text-gray-900 px-8 py-4 rounded-2xl font-jost-bold transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 dark:bg-gray-800/60 dark:hover:bg-gray-700/80 dark:text-gray-100 dark:border-gray-700/20"
                                 >
                                     <svg

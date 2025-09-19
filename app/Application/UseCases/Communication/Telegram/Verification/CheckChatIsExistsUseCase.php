@@ -14,13 +14,27 @@ class CheckChatIsExistsUseCase extends BaseCommunicationUseCase
     public function execute(): mixed
     {
         $telegramUsername = trim($this->authContext->telegram);
-        
+
         if (!$telegramUsername) {
             return 0;
         }
 
         $telegramChat = $this->findTelegramChatByUsername($telegramUsername);
-        
-        return $telegramChat ? 1 : 0;
+
+        if ($telegramChat) {
+            $this->linkChatToClient($telegramChat, $this->authContext->id);
+            return 1;
+        }
+
+        return 0;
+    }
+
+
+    private function linkChatToClient($telegramChat, string $clientId): void
+    {
+        $this->telegramChatRepository->update($telegramChat->getId(), [
+            'client_id' => $clientId,
+            'is_active' => true,
+        ]);
     }
 }
