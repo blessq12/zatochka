@@ -23,7 +23,9 @@ class TelegramController extends Controller
     {
         try {
             $data = $request->all();
-
+            \Illuminate\Support\Facades\Log::info('Telegram webhook received', [
+                'data' => json_encode($data),
+            ]);
             if (!isset($data['message'])) {
                 return response()->json(['status' => 'ok']);
             }
