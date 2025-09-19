@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Repository\Order;
+namespace App\Infrastructure\Order\Repository;
 
 use App\Domain\Order\Entity\Order;
 use App\Domain\Order\Mapper\OrderMapper;

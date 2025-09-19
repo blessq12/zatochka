@@ -21,9 +21,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Domain\Warehouse\Mapper\StockCategoryMapper::class, \App\Infrastructure\Warehouse\Mapper\StockCategoryMapperImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Mapper\StockItemMapper::class, \App\Infrastructure\Warehouse\Mapper\StockItemMapperImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Mapper\StockMovementMapper::class, \App\Infrastructure\Warehouse\Mapper\StockMovementMapperImpl::class);
+        $this->app->singleton(\App\Domain\Communication\Mapper\TelegramChatMapper::class, \App\Infrastructure\Communication\Mapper\TelegramChatMapperImpl::class);
 
         // repositories implementation
-        $this->app->singleton(\App\Domain\Order\Repository\OrderRepository::class, \App\Infrastructure\Repository\Order\OrderRepositoryImpl::class);
+        $this->app->singleton(\App\Domain\Order\Repository\OrderRepository::class, \App\Infrastructure\Order\Repository\OrderRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Bonus\Repository\BonusAccountRepository::class, \App\Infrastructure\Bonus\Repository\BonusAccountRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Bonus\Repository\BonusTransactionRepository::class, \App\Infrastructure\Bonus\Repository\BonusTransactionRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Client\Repository\ClientRepository::class, \App\Infrastructure\Client\Repository\ClientRepositoryImpl::class);
@@ -34,6 +35,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Domain\Warehouse\Repository\StockCategoryRepository::class, \App\Infrastructure\Warehouse\Repository\StockCategoryRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Repository\StockItemRepository::class, \App\Infrastructure\Warehouse\Repository\StockItemRepositoryImpl::class);
         $this->app->singleton(\App\Domain\Warehouse\Repository\StockMovementRepository::class, \App\Infrastructure\Warehouse\Repository\StockMovementRepositoryImpl::class);
+        $this->app->singleton(\App\Domain\Communication\Repository\TelegramChatRepository::class, \App\Infrastructure\Communication\Repository\TelegramChatRepositoryImpl::class);
+
+        // communication services
+        $this->app->singleton(\App\Domain\Communication\Service\TelegramServiceInterface::class, \App\Infrastructure\Communication\Service\TelegramService::class);
+        $this->app->singleton(\App\Domain\Communication\Service\SmsServiceInterface::class, \App\Infrastructure\Communication\Service\SmsService::class);
+        $this->app->singleton(\App\Domain\Communication\Service\TelegramWebhookServiceInterface::class, \App\Infrastructure\Communication\Service\TelegramWebhookService::class);
 
         // domain services
         $this->app->singleton(\App\Domain\Order\Service\OrderNumberGeneratorService::class, function ($app) {
