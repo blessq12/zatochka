@@ -106,6 +106,14 @@ abstract class BaseCommunicationUseCase implements UseCaseInterface
     }
 
     /**
+     * Находит чат по username
+     */
+    protected function findTelegramChatByUsername(string $username): ?TelegramChat
+    {
+        return $this->telegramChatRepository->findByUsername($username);
+    }
+
+    /**
      * Валидация webhook данных (для webhook Use Cases)
      */
     protected function validateWebhookData(): void

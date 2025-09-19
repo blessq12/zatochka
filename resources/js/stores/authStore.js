@@ -132,5 +132,80 @@ export const useAuthStore = defineStore("auth", {
         clearError() {
             this.error = null;
         },
+
+        async checkTelegramChat() {
+            this.isLoading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(
+                    "/api/telegram/check-chat-is-exists",
+                    {},
+                    { headers: { Authorization: `Bearer ${this.token}` } }
+                );
+
+                return { success: true, data: response.data };
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "Ошибка проверки Telegram чата";
+                return { success: false, error: this.error };
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async sendTelegramVerificationCode() {
+            this.isLoading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(
+                    "/api/telegram/send-verification-code",
+                    {},
+                    { headers: { Authorization: `Bearer ${this.token}` } }
+                );
+
+                toastService.success("Код подтверждения отправлен в Telegram");
+                return { success: true, data: response.data };
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "Ошибка отправки кода подтверждения";
+                toastService.error(this.error);
+                return { success: false, error: this.error };
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async verifyTelegramCode(code) {
+            this.isLoading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(
+                    "/api/telegram/verify-code",
+                    { code },
+                    { headers: { Authorization: `Bearer ${this.token}` } }
+                );
+
+                // Обновляем данные пользователя после успешной верификации
+                if (response.data.client) {
+                    this.user = response.data.client;
+                }
+
+                toastService.success("Telegram успешно подтвержден");
+                return { success: true, data: response.data };
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "Ошибка подтверждения кода";
+                toastService.error(this.error);
+                return { success: false, error: this.error };
+            } finally {
+                this.isLoading = false;
+            }
+        },
     },
 });

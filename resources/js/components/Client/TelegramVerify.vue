@@ -34,7 +34,6 @@ export default {
         },
     },
     mounted() {
-        // Проверяем статус пользователя при загрузке компонента
         if (this.authStore.user) {
             console.log("Данные пользователя:", this.authStore.user);
             console.log("telegram:", this.authStore.user.telegram);

@@ -70,7 +70,7 @@ class SendVerificationCodeUseCase extends BaseCommunicationUseCase
     /**
      * Ищет Telegram чат по username
      */
-    private function findTelegramChatByUsername(string $username): ?TelegramChat
+    protected function findTelegramChatByUsername(string $username): ?TelegramChat
     {
         // Убираем @ если есть
         $cleanUsername = ltrim($username, '@');

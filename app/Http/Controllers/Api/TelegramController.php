@@ -85,4 +85,10 @@ class TelegramController extends Controller
         $result = (new VerifyTelegramCodeUseCase())->loadData($request->all())->validate()->execute();
         return response()->json($result);
     }
+
+    public function telegramCheckChatIsExists(Request $request)
+    {
+        $result = (new CheckChatIsExistsUseCase())->loadData($request->all())->validate()->execute();
+        return response()->json($result);
+    }
 }
