@@ -23,5 +23,6 @@ Route::middleware('auth:client')->group(function () {
     Route::controller(TelegramController::class)->group(function () {
         Route::post('/telegram/send-verification-code', 'telegramSendVerificationCode');
         Route::post('/telegram/verify-code', 'telegramVerifyCode');
+        Route::post('/telegram/check-chat-is-exists', 'telegramCheckChatIsExists');
     });
 });

@@ -132,5 +132,147 @@ export const useAuthStore = defineStore("auth", {
         clearError() {
             this.error = null;
         },
+
+        async checkTelegramChat() {
+            this.isLoading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(
+                    "/api/telegram/check-chat-is-exists",
+                    {},
+                    { headers: { Authorization: `Bearer ${this.token}` } }
+                );
+
+                // Парсим ответ: 1 = чат существует, 0 = чат не найден
+                const chatExists = response.data === 1;
+
+                if (chatExists) {
+                    toastService.success("Telegram чат найден");
+                } else {
+                    toastService.warning(
+                        "Telegram чат не найден. Перейдите в бота и нажмите /start"
+                    );
+                }
+
+                return {
+                    success: true,
+                    data: {
+                        chatExists,
+                        rawResponse: response.data,
+                    },
+                };
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "Ошибка проверки Telegram чата";
+                toastService.error(this.error);
+                return { success: false, error: this.error };
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async sendTelegramVerificationCode() {
+            this.isLoading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(
+                    "/api/telegram/send-verification-code",
+                    {},
+                    { headers: { Authorization: `Bearer ${this.token}` } }
+                );
+
+                // Парсим ответ сервера
+                const {
+                    success,
+                    message,
+                    telegram_username,
+                    expires_in_minutes,
+                } = response.data;
+
+                if (success) {
+                    toastService.success(
+                        `Код отправлен в Telegram (@${telegram_username}). Действителен ${expires_in_minutes} мин.`
+                    );
+                } else {
+                    toastService.error(message || "Ошибка отправки кода");
+                }
+
+                return {
+                    success: success,
+                    data: {
+                        message,
+                        telegramUsername: telegram_username,
+                        expiresInMinutes: expires_in_minutes,
+                    },
+                };
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "Ошибка отправки кода подтверждения";
+                toastService.error(this.error);
+                return { success: false, error: this.error };
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async verifyTelegramCode(code) {
+            this.isLoading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(
+                    "/api/telegram/verify-code",
+                    { code },
+                    { headers: { Authorization: `Bearer ${this.token}` } }
+                );
+
+                // Парсим ответ сервера
+                const {
+                    success,
+                    message,
+                    telegram_username,
+                    verified_at,
+                    client,
+                } = response.data;
+
+                if (success) {
+                    // Обновляем данные пользователя после успешной верификации
+                    if (client) {
+                        this.user = client;
+                    }
+
+                    const verifiedDate = new Date(verified_at).toLocaleString(
+                        "ru-RU"
+                    );
+                    toastService.success(
+                        `Telegram (@${telegram_username}) успешно подтвержден!`
+                    );
+                } else {
+                    toastService.error(message || "Ошибка подтверждения кода");
+                }
+
+                return {
+                    success: success,
+                    data: {
+                        message,
+                        telegramUsername: telegram_username,
+                        verifiedAt: verified_at,
+                        client: client,
+                    },
+                };
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "Ошибка подтверждения кода";
+                toastService.error(this.error);
+                return { success: false, error: this.error };
+            } finally {
+                this.isLoading = false;
+            }
+        },
     },
 });

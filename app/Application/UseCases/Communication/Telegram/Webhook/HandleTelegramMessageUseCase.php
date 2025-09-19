@@ -35,6 +35,6 @@ class HandleTelegramMessageUseCase extends BaseCommunicationUseCase
 
     private function processMessage(string $messageText, TelegramChat $chat): string
     {
-        return 'К сожалению, я не умею работать с текстовыми сообщениями 🤷🏻‍♂️';
+        return 'к сожалению, я не умею работать с текстовыми сообщениями 🤷🏻‍♂️';
     }
 }

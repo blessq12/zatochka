@@ -3,7 +3,6 @@
 namespace App\Application\UseCases\Communication\Telegram\Verification;
 
 use App\Application\UseCases\Communication\BaseCommunicationUseCase;
-use Illuminate\Support\Facades\Log;
 
 class VerifyTelegramCodeUseCase extends BaseCommunicationUseCase
 {
@@ -29,52 +28,60 @@ class VerifyTelegramCodeUseCase extends BaseCommunicationUseCase
     public function execute(): mixed
     {
         $telegramUsername = trim($this->authContext->telegram);
-        $providedCode = trim($this->data['code']);
 
-        // Получаем сохраненный код из кэша
+        $providedCode = trim($this->data['code']);
         $storedCode = $this->getVerificationCode($telegramUsername);
 
         if (!$storedCode) {
             throw new \Exception('Код подтверждения не найден или истек. Запросите новый код.');
         }
 
-        // Проверяем соответствие кода
         if ($storedCode !== $providedCode) {
-            Log::warning('Invalid Telegram verification code attempt', [
-                'client_id' => $this->authContext->id,
-                'telegram_username' => $telegramUsername,
-                'provided_code' => $providedCode,
-                'stored_code' => $storedCode,
-            ]);
-
             throw new \Exception('Неверный код подтверждения. Проверьте код и попробуйте снова.');
         }
 
-        // Код верный - обновляем клиента
-        $this->updateClientVerification($this->authContext->id);
+        $this->ensureChatLinkedToClient($telegramUsername);
 
-        // Удаляем код из кэша
+        $updatedClient = $this->updateClientVerification($this->authContext->id);
+
         $this->clearVerificationCode($telegramUsername);
-
-        Log::info('Telegram verification successful', [
-            'client_id' => $this->authContext->id,
-            'telegram_username' => $telegramUsername,
-            'verified_at' => now(),
-        ]);
 
         return [
             'success' => true,
             'message' => 'Telegram успешно подтвержден',
             'telegram_username' => $telegramUsername,
             'verified_at' => now()->toISOString(),
+            'client' => $updatedClient,
         ];
     }
 
     /**
+     * Обеспечивает привязку чата к клиенту
+     */
+    private function ensureChatLinkedToClient(string $telegramUsername): void
+    {
+        $existingChat = $this->telegramChatRepository->findByClientId($this->authContext->id);
+
+        if ($existingChat) {
+            return;
+        }
+
+        $telegramChat = $this->findTelegramChatByUsername($telegramUsername);
+
+        if ($telegramChat) {
+            $this->telegramChatRepository->update($telegramChat->getId(), [
+                'client_id' => $this->authContext->id,
+                'is_active' => true,
+            ]);
+        }
+    }
+
+
+    /**
      * Обновляет дату подтверждения Telegram у клиента
      */
-    private function updateClientVerification(int $clientId): void
+    private function updateClientVerification(int $clientId): mixed
     {
-        $this->clientRepository->updateTelegramVerification((string) $clientId, now());
+        return $this->clientRepository->updateTelegramVerification((string) $clientId, now());
     }
 }

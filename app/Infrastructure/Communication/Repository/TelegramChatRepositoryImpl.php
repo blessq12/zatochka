@@ -33,6 +33,16 @@ class TelegramChatRepositoryImpl implements TelegramChatRepository
         return $model ? $this->mapper->toEntity($model) : null;
     }
 
+    public function findByClientId(string $clientId): ?TelegramChat
+    {
+        $model = TelegramChatModel::where('client_id', $clientId)
+            ->where('is_active', true)
+            ->where('is_deleted', false)
+            ->first();
+
+        return $model ? $this->mapper->toEntity($model) : null;
+    }
+
     public function create(array $data): TelegramChat
     {
         $model = TelegramChatModel::create([
