@@ -68,6 +68,19 @@ class MainController extends Controller
      */
     public function help(): View
     {
-        return view('pages.help');
+        // Контактные данные компании
+        $contacts = [
+            'phone' => '+7 (983) 233-59-07',
+            'email' => 'zatochka.tsk@yandex.ru',
+            'address' => 'ул. Примерная, д. 123',
+            'workingHours' => 'Пн-Сб: 9:00-18:00',
+            'socialMedia' => [
+                'telegram' => 'https://t.me/zatochka_tsk',
+                'instagram' => 'https://instagram.com/zatochka_tsk',
+                'vk' => 'https://vk.com/zatochka_tsk'
+            ]
+        ];
+
+        return view('pages.help', compact('contacts'));
     }
 }
