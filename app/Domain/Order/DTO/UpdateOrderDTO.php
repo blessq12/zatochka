@@ -26,6 +26,8 @@ class UpdateOrderDTO
         public readonly ?float $finalPrice = null,
         public readonly ?float $costPrice = null,
         public readonly ?float $profit = null,
+        public readonly ?string $internalNotes = null,
+        public readonly ?string $problemDescription = null,
     ) {
         $this->validate();
     }
@@ -48,6 +50,8 @@ class UpdateOrderDTO
             'final_price' => $this->finalPrice,
             'cost_price' => $this->costPrice,
             'profit' => $this->profit,
+            'internal_notes' => $this->internalNotes,
+            'problem_description' => $this->problemDescription,
         ], [
             'id' => 'required|integer|exists:orders,id',
             'client_id' => 'nullable|integer|exists:clients,id',
@@ -64,6 +68,8 @@ class UpdateOrderDTO
             'final_price' => 'nullable|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'profit' => 'nullable|numeric',
+            'internal_notes' => 'nullable|string',
+            'problem_description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -89,6 +95,8 @@ class UpdateOrderDTO
             finalPrice: $data['final_price'] ?? null,
             costPrice: $data['cost_price'] ?? null,
             profit: $data['profit'] ?? null,
+            internalNotes: $data['internal_notes'] ?? null,
+            problemDescription: $data['problem_description'] ?? null,
         );
     }
 
@@ -110,6 +118,8 @@ class UpdateOrderDTO
             'final_price' => $this->finalPrice,
             'cost_price' => $this->costPrice,
             'profit' => $this->profit,
+            'internal_notes' => $this->internalNotes,
+            'problem_description' => $this->problemDescription,
         ], fn($value) => $value !== null);
     }
 }

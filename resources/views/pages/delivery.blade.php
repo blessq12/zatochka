@@ -79,67 +79,6 @@
         </div>
     </div>
 
-    <!-- Schedule Section -->
-    <div class="max-w-7xl mx-auto mb-16">
-        <div
-            class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-12 sm:p-16 lg:p-20 border border-white/25 dark:border-gray-600/30">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl sm:text-5xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">График
-                    доставки</h2>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Working Days -->
-                <div
-                    class="bg-blue-50/80 backdrop-blur-lg rounded-3xl p-10 border border-blue-200/30 dark:bg-blue-900/60 dark:border-blue-700/40">
-                    <h3 class="text-2xl font-jost-bold text-blue-600 mb-6 dark:text-blue-300">Рабочие дни</h3>
-                    <div class="space-y-3">
-                        <div
-                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
-                            <p class="text-lg font-jost-medium text-blue-700 dark:text-blue-300">Понедельник: 13:00 -
-                                17:00</p>
-                        </div>
-                        <div
-                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
-                            <p class="text-lg font-jost-medium text-blue-700 dark:text-blue-300">Вторник: 13:00 - 17:00
-                            </p>
-                        </div>
-                        <div
-                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
-                            <p class="text-lg font-jost-medium text-blue-700 dark:text-blue-300">Среда: 13:00 - 17:00
-                            </p>
-                        </div>
-                        <div
-                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
-                            <p class="text-lg font-jost-medium text-blue-700 dark:text-blue-300">Пятница: 13:00 - 17:00
-                            </p>
-                        </div>
-                        <div
-                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
-                            <p class="text-lg font-jost-medium text-blue-700 dark:text-blue-300">Суббота: 13:00 - 17:00
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Weekends -->
-                <div
-                    class="bg-pink-50/80 backdrop-blur-lg rounded-3xl p-10 border border-pink-200/30 dark:bg-pink-900/60 dark:border-pink-700/40">
-                    <h3 class="text-2xl font-jost-bold text-pink-600 mb-6 dark:text-pink-300">Выходные дни</h3>
-                    <div class="space-y-3">
-                        <div
-                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
-                            <p class="text-lg font-jost-medium text-pink-700 dark:text-pink-300">Четверг</p>
-                        </div>
-                        <div
-                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
-                            <p class="text-lg font-jost-medium text-pink-700 dark:text-pink-300">Воскресенье</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Advantages Section -->
     <div class="max-w-7xl mx-auto mb-16">
@@ -180,6 +119,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Form Section -->
+    <div class="max-w-7xl mx-auto mb-16">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl sm:text-5xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Оставить заявку
+            </h2>
+        </div>
+        <div
+            class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-12 sm:p-16 lg:p-20 border border-white/25 dark:border-gray-600/30">
+            <order-form></order-form>
+        </div>
+    </div>
+
 
     <!-- CTA Section -->
     <div class="max-w-4xl mx-auto">

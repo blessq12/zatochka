@@ -3,13 +3,11 @@ export default {
     name: "QuickActions",
     methods: {
         handleNewOrder() {
-            // TODO: Реализовать логику создания нового заказа
             console.log("Создание нового заказа");
         },
 
         handleSupport() {
-            // TODO: Реализовать переход к поддержке
-            console.log("Переход к поддержке");
+            window.location.href = "/help";
         },
     },
 };

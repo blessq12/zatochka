@@ -12,7 +12,7 @@ class Order
         private ?int $id,
         private int $clientId,
         private int $branchId,
-        private int $managerId,
+        private ?int $managerId,
         private ?int $masterId,
         private string $orderNumber,
         private OrderType $type,
@@ -25,6 +25,8 @@ class Order
         private ?float $finalPrice = null,
         private ?float $costPrice = null,
         private ?float $profit = null,
+        private ?string $internalNotes = null,
+        private ?string $problemDescription = null,
         private bool $isDeleted = false,
         private ?\DateTime $createdAt = null,
         private ?\DateTime $updatedAt = null,
@@ -46,7 +48,7 @@ class Order
         return $this->branchId;
     }
 
-    public function getManagerId(): int
+    public function getManagerId(): ?int
     {
         return $this->managerId;
     }
@@ -71,7 +73,7 @@ class Order
         return $this->status;
     }
 
-    public function getUrgency(): string
+    public function getUrgency(): OrderUrgency
     {
         return $this->urgency;
     }
@@ -109,6 +111,16 @@ class Order
     public function getProfit(): ?float
     {
         return $this->profit;
+    }
+
+    public function getInternalNotes(): ?string
+    {
+        return $this->internalNotes;
+    }
+
+    public function getProblemDescription(): ?string
+    {
+        return $this->problemDescription;
     }
 
     public function isDeleted(): bool
@@ -209,12 +221,12 @@ class Order
     public static function create(
         int $clientId,
         int $branchId,
-        int $managerId,
+        ?int $managerId,
         string $orderNumber,
         OrderType $type = OrderType::REPAIR,
         OrderStatus $status = OrderStatus::NEW,
         ?int $masterId = null,
-        string $urgency = 'normal'
+        OrderUrgency $urgency = OrderUrgency::NORMAL
     ): self {
         return new self(
             id: null,
@@ -249,6 +261,8 @@ class Order
             'final_price' => $this->finalPrice,
             'cost_price' => $this->costPrice,
             'profit' => $this->profit,
+            'internal_notes' => $this->internalNotes,
+            'problem_description' => $this->problemDescription,
             'is_deleted' => $this->isDeleted,
             'created_at' => $this->createdAt?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updatedAt?->format('Y-m-d H:i:s'),

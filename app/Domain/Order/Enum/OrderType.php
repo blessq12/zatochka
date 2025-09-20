@@ -5,6 +5,7 @@ namespace App\Domain\Order\Enum;
 enum OrderType: string
 {
     case REPAIR = 'repair';
+    case SHARPENING = 'sharpening';
     case DIAGNOSTIC = 'diagnostic';
     case REPLACEMENT = 'replacement';
     case MAINTENANCE = 'maintenance';
@@ -15,6 +16,7 @@ enum OrderType: string
     {
         return match ($this) {
             self::REPAIR => 'Ремонт',
+            self::SHARPENING => 'Заточка',
             self::DIAGNOSTIC => 'Диагностика',
             self::REPLACEMENT => 'Замена',
             self::MAINTENANCE => 'Обслуживание',
@@ -27,6 +29,7 @@ enum OrderType: string
     {
         return match ($this) {
             self::REPAIR => 'Ремонт оборудования',
+            self::SHARPENING => 'Заточка инструментов',
             self::DIAGNOSTIC => 'Диагностика неисправности',
             self::REPLACEMENT => 'Замена деталей',
             self::MAINTENANCE => 'Плановое обслуживание',

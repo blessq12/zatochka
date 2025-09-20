@@ -110,15 +110,17 @@ class OrderResource extends Resource
                             ->default(OrderUrgency::NORMAL)
                             ->required(),
 
-                        Forms\Components\Textarea::make('description')
+                        Forms\Components\Textarea::make('problem_description')
                             ->label('Описание проблемы')
                             ->rows(3)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->helperText('Описание проблемы от клиента'),
 
-                        Forms\Components\Textarea::make('notes')
-                            ->label('Примечания')
+                        Forms\Components\Textarea::make('internal_notes')
+                            ->label('Внутренние примечания')
                             ->rows(2)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->helperText('Примечания для внутреннего использования'),
                     ])
                     ->columns(2),
 
@@ -247,6 +249,15 @@ class OrderResource extends Resource
                     ->label('Мастер')
                     ->searchable()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('problem_description')
+                    ->label('Проблема')
+                    ->limit(50)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        return strlen($state) > 50 ? $state : null;
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('final_price')
                     ->label('Сумма')

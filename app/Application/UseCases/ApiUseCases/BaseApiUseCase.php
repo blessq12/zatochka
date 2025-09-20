@@ -4,15 +4,24 @@ namespace App\Application\UseCases\ApiUseCases;
 
 use App\Application\UseCases\UseCaseInterface;
 use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Client\Repository\ClientRepository;
+use App\Domain\Company\Repository\BranchRepository;
+use App\Domain\Order\Service\OrderNumberGeneratorService;
 
 abstract class BaseApiUseCase implements UseCaseInterface
 {
     protected array $data;
     protected OrderRepository $orderRepository;
+    protected ClientRepository $clientRepository;
+    protected BranchRepository $branchRepository;
+    protected OrderNumberGeneratorService $orderNumberGenerator;
 
     public function __construct()
     {
         $this->orderRepository = app(OrderRepository::class);
+        $this->clientRepository = app(ClientRepository::class);
+        $this->branchRepository = app(BranchRepository::class);
+        $this->orderNumberGenerator = app(OrderNumberGeneratorService::class);
     }
 
     public function loadData(array $data): self

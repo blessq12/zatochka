@@ -12,4 +12,5 @@ interface BranchRepository
     public function delete(int $id): bool;
     public function exists(int $id): bool;
     public function getAll(): array;
+    public function getMain(): ?Branch;
 }
