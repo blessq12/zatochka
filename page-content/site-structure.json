@@ -1,0 +1,87 @@
+{
+    "project": "ЗАТОЧКА.ТСК",
+    "description": "Профессиональная заточка и ремонт инструментов",
+    "migration_date": "2024-12-19",
+    "pages": [
+        {
+            "route": "index",
+            "file": "index.json",
+            "title": "Главная страница",
+            "description": "Основная страница с услугами, навигацией и процессом работы"
+        },
+        {
+            "route": "sharpening",
+            "file": "sharpening.json",
+            "title": "Заточка инструментов",
+            "description": "Прайс на заточку маникюрных, парикмахерских и грумерских инструментов"
+        },
+        {
+            "route": "repair",
+            "file": "repair.json",
+            "title": "Ремонт оборудования",
+            "description": "Прайс на ремонт маникюрного, парикмахерского и грумерского оборудования"
+        },
+        {
+            "route": "delivery",
+            "file": "delivery.json",
+            "title": "Условия доставки",
+            "description": "Информация о стоимости, графике и условиях доставки"
+        },
+        {
+            "route": "contacts",
+            "file": "contacts.json",
+            "title": "Контакты",
+            "description": "Контактная информация, адрес, социальные сети"
+        },
+        {
+            "route": "privacy-policy",
+            "file": "privacy-policy.json",
+            "title": "Политика конфиденциальности",
+            "description": "Правила обработки персональных данных"
+        },
+        {
+            "route": "terms-of-service",
+            "file": "terms-of-service.json",
+            "title": "Пользовательское соглашение",
+            "description": "Условия использования сайта и услуг"
+        },
+        {
+            "route": "help",
+            "file": "help.json",
+            "title": "Помощь",
+            "description": "Справочный центр с FAQ и инструкциями"
+        }
+    ],
+    "common_data": {
+        "company": {
+            "name": "ИП Максим",
+            "phone": "+7 (983) 233-59-07",
+            "email": "zatochka.tsk@yandex.ru",
+            "address": "Пр. Ленина 169/пер. Карповский 12, Томск",
+            "working_hours": "Пн-Сб 9:00-18:00"
+        },
+        "social_media": {
+            "telegram": "#",
+            "vk": "#",
+            "whatsapp": "https://wa.me/79832335907"
+        },
+        "services": {
+            "sharpening": {
+                "categories": ["маникюрные", "парикмахерские", "груминг"],
+                "guarantee": "30 дней"
+            },
+            "repair": {
+                "guarantee": "90 дней",
+                "diagnostics": "бесплатно"
+            }
+        }
+    },
+    "migration_notes": [
+        "Все стили и HTML разметка удалены, оставлен только чистый контент",
+        "Структура данных оптимизирована для переноса в новый проект",
+        "Мета-данные (title, description, keywords) сохранены",
+        "Компоненты (FAQ, отзывы, формы) выделены отдельно",
+        "Контактная информация централизована",
+        "Цены и услуги структурированы для легкого обновления"
+    ]
+}
