@@ -166,6 +166,19 @@
         </div>
     </div>
 
+
+    <!-- Form Section -->
+    <div class="max-w-7xl mx-auto mb-16">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl sm:text-5xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Заказать заточку
+            </h2>
+        </div>
+        <div
+            class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-12 sm:p-16 lg:p-20 border border-white/25 dark:border-gray-600/30">
+            <order-form initial-service-type="sharpening"></order-form>
+        </div>
+    </div>
+
     <!-- CTA Section -->
     <div class="max-w-4xl mx-auto">
         <div

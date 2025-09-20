@@ -14,181 +14,247 @@
         </div>
     </div>
 
-    <!-- Main Contacts Section -->
-    <div class="max-w-7xl mx-auto mb-16">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl sm:text-5xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Основные контакты
-            </h2>
-            <p class="text-xl sm:text-2xl font-jost-regular text-gray-500 dark:text-gray-200">Выберите удобный способ
-                связи</p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Phone Contact -->
-            <div
-                class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-10 sm:p-12 lg:p-16 border border-white/25 dark:border-gray-600/30 hover:shadow-3xl hover:bg-white/95 dark:hover:bg-gray-800/20 hover:backdrop-blur-3xl transition-all duration-500">
-                <div class="text-center mb-8">
-                    <div class="w-20 h-20 bg-blue-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-4xl">📞</span>
-                    </div>
-                    <h3 class="text-3xl font-jost-bold text-blue-600 mb-4 dark:text-blue-300">Телефон</h3>
-                    <p class="text-xl font-jost-bold text-blue-500 dark:text-blue-300">+7 (983) 233-59-07</p>
-                    <p class="text-lg font-jost-medium text-blue-700 dark:text-blue-300 mt-2">Максим</p>
-                </div>
-                <div
-                    class="bg-blue-50/80 backdrop-blur-lg rounded-2xl p-6 border border-blue-200/30 dark:bg-blue-900/60 dark:border-blue-700/40">
-                    <p class="text-lg font-jost-medium text-blue-700 dark:text-blue-300">Ежедневно с 9:00 до 18:00</p>
-                </div>
-            </div>
-
-            <!-- Email Contact -->
-            <div
-                class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-10 sm:p-12 lg:p-16 border border-white/25 dark:border-gray-600/30 hover:shadow-3xl hover:bg-white/95 dark:hover:bg-gray-800/20 hover:backdrop-blur-3xl transition-all duration-500">
-                <div class="text-center mb-8">
-                    <div class="w-20 h-20 bg-green-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-4xl">📧</span>
-                    </div>
-                    <h3 class="text-3xl font-jost-bold text-green-600 mb-4 dark:text-green-300">Email</h3>
-                    <p class="text-xl font-jost-bold text-green-500 dark:text-green-300">zatochka.tsk@yandex.ru</p>
-                </div>
-                <div
-                    class="bg-green-50/80 backdrop-blur-lg rounded-2xl p-6 border border-green-200/30 dark:bg-green-900/60 dark:border-green-700/40">
-                    <p class="text-lg font-jost-medium text-green-700 dark:text-green-300">Ответим в течение 2 часов</p>
-                </div>
-            </div>
-
-            <!-- Address Contact -->
-            <div
-                class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-10 sm:p-12 lg:p-16 border border-white/25 dark:border-gray-600/30 hover:shadow-3xl hover:bg-white/95 dark:hover:bg-gray-800/20 hover:backdrop-blur-3xl transition-all duration-500">
-                <div class="text-center mb-8">
-                    <div class="w-20 h-20 bg-pink-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-4xl">📍</span>
-                    </div>
-                    <h3 class="text-3xl font-jost-bold text-pink-600 mb-4 dark:text-pink-300">Адрес</h3>
-                    <p class="text-xl font-jost-bold text-pink-500 dark:text-pink-300">Пр. Ленина 169/пер. Карповский 12
-                    </p>
-                </div>
-                <div class="space-y-4">
-                    <div
-                        class="bg-pink-50/80 backdrop-blur-lg rounded-2xl p-6 border border-pink-200/30 dark:bg-pink-900/60 dark:border-pink-700/40">
-                        <p class="text-lg font-jost-medium text-pink-700 dark:text-pink-300">Вход со стороны Ленина</p>
-                    </div>
-                    <div
-                        class="bg-pink-50/80 backdrop-blur-lg rounded-2xl p-6 border border-pink-200/30 dark:bg-pink-900/60 dark:border-pink-700/40">
-                        <p class="text-lg font-jost-medium text-pink-700 dark:text-pink-300">Ориентир — магазин «Тайга»
-                        </p>
-                    </div>
-                    <div
-                        class="bg-pink-50/80 backdrop-blur-lg rounded-2xl p-6 border border-pink-200/30 dark:bg-pink-900/60 dark:border-pink-700/40">
-                        <p class="text-lg font-jost-medium text-pink-700 dark:text-pink-300">Рабочие дни: Пн-Сб
-                            9:00-18:00</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Social Media Section -->
-    <div class="max-w-7xl mx-auto mb-16">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl sm:text-5xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Мы в социальных
-                сетях</h2>
-            <p class="text-xl sm:text-2xl font-jost-regular text-gray-500 dark:text-gray-200">Следите за нашими
-                новостями и акциями</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Telegram -->
-            <div
-                class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-10 sm:p-12 lg:p-16 border border-white/25 dark:border-gray-600/30 hover:shadow-3xl hover:bg-white/95 dark:hover:bg-gray-800/20 hover:backdrop-blur-3xl transition-all duration-500 text-center">
-                <div class="w-20 h-20 bg-blue-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <span class="text-4xl">📱</span>
-                </div>
-                <h3 class="text-2xl font-jost-bold text-dark-gray-500 mb-4 dark:text-gray-100">Telegram-канал</h3>
-                <p class="text-lg font-jost-regular text-gray-500 dark:text-gray-400 mb-6">Подписывайтесь на наш канал
-                    для получения новостей и акций</p>
-                <a href="#"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-2xl font-jost-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform">
-                    Подписаться
-                </a>
-            </div>
-
-            <!-- VKontakte -->
-            <div
-                class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-10 sm:p-12 lg:p-16 border border-white/25 dark:border-gray-600/30 hover:shadow-3xl hover:bg-white/95 dark:hover:bg-gray-800/20 hover:backdrop-blur-3xl transition-all duration-500 text-center">
-                <div class="w-20 h-20 bg-blue-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <span class="text-4xl">👥</span>
-                </div>
-                <h3 class="text-2xl font-jost-bold text-dark-gray-500 mb-4 dark:text-gray-100">ВКонтакте</h3>
-                <p class="text-lg font-jost-regular text-gray-500 dark:text-gray-400 mb-6">Присоединяйтесь к нашей
-                    группе ВКонтакте</p>
-                <a href="#"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-2xl font-jost-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform">
-                    Присоединиться
-                </a>
-            </div>
-
-            <!-- WhatsApp -->
-            <div
-                class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-10 sm:p-12 lg:p-16 border border-white/25 dark:border-gray-600/30 hover:shadow-3xl hover:bg-white/95 dark:hover:bg-gray-800/20 hover:backdrop-blur-3xl transition-all duration-500 text-center">
-                <div class="w-20 h-20 bg-green-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <span class="text-4xl">💬</span>
-                </div>
-                <h3 class="text-2xl font-jost-bold text-dark-gray-500 mb-4 dark:text-gray-100">WhatsApp</h3>
-                <p class="text-lg font-jost-regular text-gray-500 dark:text-gray-400 mb-6">Напишите нам в WhatsApp для
-                    быстрой связи</p>
-                <a href="https://wa.me/79832335907"
-                    class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-2xl font-jost-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform">
-                    Написать
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Location Section -->
+    <!-- Contacts & Social Section -->
     <div class="max-w-7xl mx-auto mb-16">
         <div
             class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-12 sm:p-16 lg:p-20 border border-white/25 dark:border-gray-600/30">
             <div class="text-center mb-12">
-                <h2 class="text-4xl sm:text-5xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Как нас найти
-                </h2>
-                <p class="text-xl sm:text-2xl font-jost-regular text-gray-500 dark:text-gray-200">Удобное расположение в
-                    центре города</p>
+                <h2 class="text-4xl sm:text-5xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Контакты и
+                    связь</h2>
+                <p class="text-xl sm:text-2xl font-jost-regular text-gray-500 dark:text-gray-200">Свяжитесь с нами любым
+                    удобным способом</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div
-                    class="bg-blue-50/80 backdrop-blur-lg rounded-3xl p-10 border border-blue-200/30 dark:bg-blue-900/60 dark:border-blue-700/40 text-center">
-                    <div class="w-20 h-20 bg-blue-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-4xl">1️⃣</span>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Left Column: Contacts & Social -->
+                <div class="space-y-8">
+                    <!-- Main Contacts -->
+                    <div>
+                        <h3 class="text-2xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Основные контакты
+                        </h3>
+                        <div class="space-y-4">
+                            <!-- Phone -->
+                            <div
+                                class="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20 hover:shadow-xl hover:scale-105 transform transition-all duration-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
+                                        <span class="text-2xl">📞</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-lg font-jost-bold text-dark-gray-500 dark:text-gray-100">+7 (983)
+                                            233-59-07</p>
+                                        <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">Максим •
+                                            Ежедневно 9:00-18:00</p>
+                                    </div>
+                                    <a href="tel:+79832335907"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl">
+                                        Позвонить
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div
+                                class="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20 hover:shadow-xl hover:scale-105 transform transition-all duration-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
+                                        <span class="text-2xl">📧</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-lg font-jost-bold text-dark-gray-500 dark:text-gray-100">
+                                            zatochka.tsk@yandex.ru</p>
+                                        <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">Ответим в
+                                            течение 2 часов</p>
+                                    </div>
+                                    <a href="mailto:zatochka.tsk@yandex.ru"
+                                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl">
+                                        Написать
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Address -->
+                            <div
+                                class="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20 hover:shadow-xl hover:scale-105 transform transition-all duration-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-pink-500/20 rounded-2xl flex items-center justify-center">
+                                        <span class="text-2xl">📍</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-lg font-jost-bold text-dark-gray-500 dark:text-gray-100">Пр.
+                                            Ленина
+                                            169/пер. Карповский 12</p>
+                                        <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">Вход со
+                                            стороны Ленина • Ориентир — магазин «Тайга»</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="text-2xl font-jost-bold text-blue-600 mb-4 dark:text-blue-300">Шаг 1</h3>
-                    <p class="text-lg font-jost-medium text-blue-700 dark:text-blue-300">От остановки «Центральный
-                        рынок» идите направо</p>
+
+                    <!-- Social Media -->
+                    <div>
+                        <h3 class="text-2xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Мы в социальных
+                            сетях</h3>
+                        <div class="space-y-4">
+                            <!-- Telegram -->
+                            <div
+                                class="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20 hover:shadow-xl hover:scale-105 transform transition-all duration-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
+                                        <span class="text-2xl">📱</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-lg font-jost-bold text-dark-gray-500 dark:text-gray-100">
+                                            Telegram-канал</p>
+                                        <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">Новости и
+                                            акции</p>
+                                    </div>
+                                    <a href="#"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl">
+                                        Подписаться
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- VKontakte -->
+                            <div
+                                class="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20 hover:shadow-xl hover:scale-105 transform transition-all duration-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
+                                        <span class="text-2xl">👥</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-lg font-jost-bold text-dark-gray-500 dark:text-gray-100">
+                                            ВКонтакте</p>
+                                        <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">Группа
+                                            ВКонтакте</p>
+                                    </div>
+                                    <a href="#"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl">
+                                        Присоединиться
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- WhatsApp -->
+                            <div
+                                class="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20 hover:shadow-xl hover:scale-105 transform transition-all duration-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
+                                        <span class="text-2xl">💬</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-lg font-jost-bold text-dark-gray-500 dark:text-gray-100">WhatsApp
+                                        </p>
+                                        <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">Быстрая
+                                            связь</p>
+                                    </div>
+                                    <a href="https://wa.me/79832335907"
+                                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl">
+                                        Написать
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div
-                    class="bg-green-50/80 backdrop-blur-lg rounded-3xl p-10 border border-green-200/30 dark:bg-green-900/60 dark:border-green-700/40 text-center">
-                    <div class="w-20 h-20 bg-green-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-4xl">2️⃣</span>
+                <!-- Right Column: Interactive Map -->
+                <div>
+                    <h3 class="text-2xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">Как нас найти</h3>
+                    <div
+                        class="bg-white/60 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20 overflow-hidden">
+                        <iframe
+                            src="https://yandex.ru/map-widget/v1/?um=constructor%3A1234567890abcdef&amp;source=constructor&amp;ll=84.9784%2C56.4846&amp;z=16"
+                            width="100%" height="400" frameborder="0" class="rounded-3xl">
+                        </iframe>
                     </div>
-                    <h3 class="text-2xl font-jost-bold text-green-600 mb-4 dark:text-green-300">Шаг 2</h3>
-                    <p class="text-lg font-jost-medium text-green-700 dark:text-green-300">Ищите вывеску магазина
-                        «Тайга»</p>
-                </div>
-
-                <div
-                    class="bg-pink-50/80 backdrop-blur-lg rounded-3xl p-10 border border-pink-200/30 dark:bg-pink-900/60 dark:border-pink-700/40 text-center">
-                    <div class="w-20 h-20 bg-pink-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-4xl">3️⃣</span>
+                    <div class="mt-4 space-y-2">
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">📍 От остановки
+                                «Центральный рынок» идите направо</p>
+                        </div>
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">🏪 Ищите вывеску
+                                магазина «Тайга»</p>
+                        </div>
+                        <div
+                            class="bg-blue-50/80 backdrop-blur-lg rounded-2xl p-4 border border-blue-200/30 dark:bg-blue-900/60 dark:border-blue-700/40">
+                            <p class="text-sm font-jost-medium text-gray-600 dark:text-gray-300">🏢 Мы находимся в том
+                                же здании</p>
+                        </div>
                     </div>
-                    <h3 class="text-2xl font-jost-bold text-pink-600 mb-4 dark:text-pink-300">Шаг 3</h3>
-                    <p class="text-lg font-jost-medium text-pink-700 dark:text-pink-300">Мы находимся в том же здании
-                    </p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Schedule Section -->
+    <div class="max-w-7xl mx-auto mb-16">
+        <div
+            class="bg-white/85 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl p-12 sm:p-16 lg:p-20 border border-white/25 dark:border-gray-600/30">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl sm:text-5xl font-jost-bold text-dark-gray-500 mb-6 dark:text-gray-100">График
+                    работы</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Working Days -->
+                <div
+                    class="bg-blue-50/80 backdrop-blur-lg rounded-3xl p-10 border border-blue-200/30 dark:bg-blue-900/60 dark:border-blue-700/40">
+                    <h3 class="text-2xl font-jost-bold text-blue-600 mb-6 dark:text-blue-300">Рабочие дни</h3>
+                    <div class="space-y-3">
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-lg font-jost-medium text-gray-600 dark:text-gray-300">Понедельник: 13:00 -
+                                17:00</p>
+                        </div>
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-lg font-jost-medium text-gray-600 dark:text-gray-300">Вторник: 13:00 - 17:00
+                            </p>
+                        </div>
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-lg font-jost-medium text-gray-600 dark:text-gray-300">Среда: 13:00 - 17:00
+                            </p>
+                        </div>
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-lg font-jost-medium text-gray-600 dark:text-gray-300">Пятница: 13:00 - 17:00
+                            </p>
+                        </div>
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-lg font-jost-medium text-gray-600 dark:text-gray-300">Суббота: 13:00 - 17:00
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekends -->
+                <div
+                    class="bg-pink-50/80 backdrop-blur-lg rounded-3xl p-10 border border-pink-200/30 dark:bg-pink-900/60 dark:border-pink-700/40">
+                    <h3 class="text-2xl font-jost-bold text-pink-600 mb-6 dark:text-pink-300">Выходные дни</h3>
+                    <div class="space-y-3">
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-lg font-jost-medium text-gray-600 dark:text-gray-300">Четверг</p>
+                        </div>
+                        <div
+                            class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/20 dark:bg-gray-700/60 dark:border-gray-600/20">
+                            <p class="text-lg font-jost-medium text-gray-600 dark:text-gray-300">Воскресенье</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
     <!-- CTA Section -->
     <div class="max-w-4xl mx-auto">

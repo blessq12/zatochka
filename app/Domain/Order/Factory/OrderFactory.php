@@ -27,6 +27,8 @@ class OrderFactory
             finalPrice: $data['final_price'] ?? null,
             costPrice: $data['cost_price'] ?? null,
             profit: $data['profit'] ?? null,
+            internalNotes: $data['internal_notes'] ?? null,
+            problemDescription: $data['problem_description'] ?? null,
             isDeleted: $data['is_deleted'] ?? false,
             createdAt: isset($data['created_at']) ? new \DateTime($data['created_at']) : null,
             updatedAt: isset($data['updated_at']) ? new \DateTime($data['updated_at']) : null,
@@ -36,7 +38,7 @@ class OrderFactory
     public static function createNew(
         int $clientId,
         int $branchId,
-        int $managerId,
+        ?int $managerId,
         string $orderNumber,
         OrderType $type = OrderType::REPAIR,
         OrderStatus $status = OrderStatus::NEW,

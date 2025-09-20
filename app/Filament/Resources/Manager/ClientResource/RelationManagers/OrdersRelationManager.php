@@ -59,6 +59,22 @@ class OrdersRelationManager extends RelationManager
                     ])
                     ->columns(2),
 
+                Forms\Components\Section::make('Описание')
+                    ->schema([
+                        Forms\Components\Textarea::make('problem_description')
+                            ->label('Описание проблемы')
+                            ->rows(3)
+                            ->columnSpanFull()
+                            ->helperText('Описание проблемы от клиента'),
+
+                        Forms\Components\Textarea::make('internal_notes')
+                            ->label('Внутренние примечания')
+                            ->rows(2)
+                            ->columnSpanFull()
+                            ->helperText('Примечания для внутреннего использования'),
+                    ])
+                    ->columns(1),
+
                 Forms\Components\Section::make('Ответственные')
                     ->schema([
                         Forms\Components\Select::make('manager_id')
@@ -155,6 +171,15 @@ class OrdersRelationManager extends RelationManager
                         'urgent' => 'Срочная',
                         default => $state,
                     }),
+
+                Tables\Columns\TextColumn::make('problem_description')
+                    ->label('Проблема')
+                    ->limit(30)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        return strlen($state) > 30 ? $state : null;
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('manager.name')
                     ->label('Менеджер')

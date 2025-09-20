@@ -34,6 +34,8 @@ class Order extends Model implements HasMedia
         'final_price',
         'cost_price',
         'profit',
+        'internal_notes',
+        'problem_description',
         'is_deleted',
     ];
 
@@ -220,8 +222,8 @@ class Order extends Model implements HasMedia
                 'final_price',
                 'cost_price',
                 'profit',
-                'description',
-                'notes',
+                'internal_notes',
+                'problem_description',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()

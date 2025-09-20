@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\TelegramController;
+use App\Http\Controllers\Api\OrderController;
 
 Route::post('/telegram/webhook', [TelegramController::class, 'handleWebhook']);
 Route::controller(AuthController::class)->group(function () {
@@ -11,6 +12,11 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/register', 'register');
     Route::post('/logout', 'logout');
 });
+
+Route::controller(OrderController::class)->group(function () {
+    Route::post('/order/create', 'createOrder');
+});
+
 
 
 Route::middleware('auth:client')->group(function () {
