@@ -1,6 +1,7 @@
 import axios from "axios";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import createOrderRequestDto from "../dto/form/orderRequestDto.js";
+import createReviewRequestDto from "../dto/review/createReviewRequestDto.js";
 import { toastService } from "../services/toastService.js";
 
 export const useOrderStore = defineStore("order", {
@@ -11,6 +12,8 @@ export const useOrderStore = defineStore("order", {
         error: null,
         createOrderLoading: false,
         createOrderError: null,
+        createReviewLoading: false,
+        createReviewError: null,
         pagination: {
             current_page: 1,
             last_page: 1,
@@ -70,6 +73,39 @@ export const useOrderStore = defineStore("order", {
                 return { success: false, error: this.error };
             } finally {
                 this.isLoading = false;
+            }
+        },
+
+        async createReview(token, orderId, rating, comment) {
+            this.createReviewLoading = true;
+            this.createReviewError = null;
+
+            try {
+                const payload = createReviewRequestDto({
+                    orderId,
+                    rating,
+                    comment,
+                });
+
+                const response = await axios.post(
+                    "/api/review/create",
+                    payload,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+
+                toastService.success(
+                    "Отзыв успешно создан и отправлен на модерацию!"
+                );
+                return { success: true, data: response.data };
+            } catch (error) {
+                this.createReviewError =
+                    error.response?.data?.message || "Ошибка создания отзыва";
+                toastService.error(this.createReviewError);
+                return { success: false, error: this.createReviewError };
+            } finally {
+                this.createReviewLoading = false;
             }
         },
     },

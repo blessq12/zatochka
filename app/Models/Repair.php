@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -14,6 +16,7 @@ class Repair extends Model implements HasMedia
 {
     use HasFactory;
     use InteractsWithMedia;
+    use LogsActivity;
     use SoftDeletes;
 
     protected $fillable = [
@@ -39,6 +42,11 @@ class Repair extends Model implements HasMedia
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function activities()
+    {
+        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject');
     }
 
 
@@ -114,5 +122,26 @@ class Repair extends Model implements HasMedia
         $this->addMediaCollection('after_photos')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
             ->singleFile(false);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'order_id',
+                'problem_description',
+                'price',
+                'status',
+                'comments',
+                'completed_works',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => 'Ремонт создан',
+                'updated' => 'Ремонт обновлен',
+                'deleted' => 'Ремонт удален',
+                default => "Ремонт {$eventName}",
+            });
     }
 }

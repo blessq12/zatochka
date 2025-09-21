@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Manager;
 
 use App\Filament\Resources\Manager\OrderResource\Pages;
+use App\Filament\Resources\Manager\OrderResource\RelationManagers\ActivityLogRelationManager;
 use App\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -262,7 +263,7 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ActivityLogRelationManager::class,
         ];
     }
 
