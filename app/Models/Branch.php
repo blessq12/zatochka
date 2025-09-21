@@ -17,17 +17,24 @@ class Branch extends Model
         'phone',
         'email',
         'working_hours',
+        'working_schedule',
+        'opening_time',
+        'closing_time',
         'latitude',
         'longitude',
         'description',
         'is_active',
+        'is_main',
+        'sort_order',
         'is_deleted',
     ];
 
     protected $casts = [
+        'working_schedule' => 'array',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'is_active' => 'boolean',
+        'is_main' => 'boolean',
         'is_deleted' => 'boolean',
     ];
 
