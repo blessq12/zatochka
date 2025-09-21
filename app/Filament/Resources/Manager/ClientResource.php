@@ -195,15 +195,29 @@ class ClientResource extends Resource
                         ->requiresConfirmation()
                         ->action(function ($records): void {
                             try {
-                                // Переподключаемся к БД для избежания prepared statement ошибок
-                                DB::reconnect();
+                                // Получаем ID клиентов для удаления
+                                $clientIds = $records->pluck('id')->toArray();
 
-                                $records->each(function ($client) {
-                                    // Удаляем токены Sanctum (не каскадно)
-                                    $client->tokens()->delete();
+                                // Используем транзакцию для безопасности
+                                DB::transaction(function () use ($clientIds) {
+                                    // Принудительно переподключаемся к БД для shared hosting
+                                    DB::disconnect();
+                                    DB::reconnect();
 
-                                    // Удаляем клиента - остальные записи удалятся каскадно
-                                    $client->delete();
+                                    // Небольшая задержка для стабилизации соединения
+                                    usleep(100000); // 100ms
+
+                                    // Удаляем через raw SQL для избежания prepared statement ошибок
+                                    foreach ($clientIds as $clientId) {
+                                        // Удаляем токены Sanctum
+                                        DB::table('personal_access_tokens')
+                                            ->where('tokenable_type', 'App\Models\Client')
+                                            ->where('tokenable_id', $clientId)
+                                            ->delete();
+
+                                        // Удаляем клиента через raw SQL (каскадное удаление сработает)
+                                        DB::statement('DELETE FROM clients WHERE id = ?', [$clientId]);
+                                    }
                                 });
 
                                 \Filament\Notifications\Notification::make()
@@ -213,7 +227,7 @@ class ClientResource extends Resource
                             } catch (\Exception $e) {
                                 \Filament\Notifications\Notification::make()
                                     ->title('Ошибка при удалении')
-                                    ->body('Попробуйте еще раз или обратитесь к администратору')
+                                    ->body('Ошибка: ' . $e->getMessage())
                                     ->danger()
                                     ->send();
                             }
