@@ -7,6 +7,7 @@ use App\Domain\Order\Enum\OrderType;
 use App\Domain\Order\Enum\OrderUrgency;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -17,6 +18,7 @@ class Order extends Model implements HasMedia
     use HasFactory;
     use InteractsWithMedia;
     use LogsActivity;
+    use SoftDeletes;
 
     protected $fillable = [
         'client_id',
@@ -61,6 +63,11 @@ class Order extends Model implements HasMedia
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function warehouse()
+    {
+        return $this->hasOneThrough(Warehouse::class, Branch::class, 'id', 'branch_id', 'branch_id', 'id');
     }
 
     public function manager()
