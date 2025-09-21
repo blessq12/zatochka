@@ -37,7 +37,7 @@ return [
 
     'guards' => [
         'admin' => [
-            'driver' => 'sanctum',
+            'driver' => 'session',
             'provider' => 'users',
         ],
         'client' => [
@@ -45,11 +45,11 @@ return [
             'provider' => 'clients',
         ],
         'manager' => [
-            'driver' => 'sanctum',
+            'driver' => 'session',
             'provider' => 'users',
         ],
         'master' => [
-            'driver' => 'sanctum',
+            'driver' => 'session',
             'provider' => 'users',
         ],
     ],
