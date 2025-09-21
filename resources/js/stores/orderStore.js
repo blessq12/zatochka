@@ -14,6 +14,8 @@ export const useOrderStore = defineStore("order", {
         createOrderError: null,
         createReviewLoading: false,
         createReviewError: null,
+        getReviewLoading: false,
+        getReviewError: null,
         pagination: {
             current_page: 1,
             last_page: 1,
@@ -106,6 +108,28 @@ export const useOrderStore = defineStore("order", {
                 return { success: false, error: this.createReviewError };
             } finally {
                 this.createReviewLoading = false;
+            }
+        },
+
+        async getOrderReview(token, orderId) {
+            this.getReviewLoading = true;
+            this.getReviewError = null;
+
+            try {
+                const response = await axios.get(
+                    `/api/review/order/${orderId}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+
+                return { success: true, data: response.data };
+            } catch (error) {
+                this.getReviewError =
+                    error.response?.data?.message || "Ошибка получения отзыва";
+                return { success: false, error: this.getReviewError };
+            } finally {
+                this.getReviewLoading = false;
             }
         },
     },
