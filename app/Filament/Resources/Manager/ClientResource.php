@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class ClientResource extends Resource
 {
@@ -78,9 +79,9 @@ class ClientResource extends Resource
                         Forms\Components\TextInput::make('password')
                             ->label('Пароль')
                             ->password()
-                            ->required(fn (string $context): bool => $context === 'create')
-                            ->dehydrated(fn ($state) => filled($state))
-                            ->dehydrateStateUsing(fn ($state) => bcrypt($state))
+                            ->required(fn(string $context): bool => $context === 'create')
+                            ->dehydrated(fn($state) => filled($state))
+                            ->dehydrateStateUsing(fn($state) => bcrypt($state))
                             ->maxLength(255),
 
                         Forms\Components\Toggle::make('is_deleted')
@@ -115,7 +116,7 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('telegram')
                     ->label('Telegram')
                     ->searchable()
-                    ->formatStateUsing(fn (?string $state): ?string => $state ? "@{$state}" : null)
+                    ->formatStateUsing(fn(?string $state): ?string => $state ? "@{$state}" : null)
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('birth_date')
@@ -171,11 +172,11 @@ class ClientResource extends Resource
 
                 Tables\Filters\Filter::make('has_orders')
                     ->label('С заказами')
-                    ->query(fn (Builder $query): Builder => $query->has('orders')),
+                    ->query(fn(Builder $query): Builder => $query->has('orders')),
 
                 Tables\Filters\Filter::make('birthday_soon')
                     ->label('День рождения скоро')
-                    ->query(fn (Builder $query): Builder => $query->whereRaw('DAYOFYEAR(birth_date) BETWEEN DAYOFYEAR(NOW()) AND DAYOFYEAR(NOW()) + 7')),
+                    ->query(fn(Builder $query): Builder => $query->whereRaw('DAYOFYEAR(birth_date) BETWEEN DAYOFYEAR(NOW()) AND DAYOFYEAR(NOW()) + 7')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -183,11 +184,40 @@ class ClientResource extends Resource
                 Tables\Actions\Action::make('view_orders')
                     ->label('Заказы')
                     ->icon('heroicon-o-clipboard-document-list')
-                    ->url(fn (Client $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[client_id][value]' => $record->id])),
+                    ->url(fn(Client $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[client_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('delete_clients')
+                        ->label('Удалить')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(function ($records): void {
+                            try {
+                                // Переподключаемся к БД для избежания prepared statement ошибок
+                                DB::reconnect();
+
+                                $records->each(function ($client) {
+                                    // Удаляем токены Sanctum (не каскадно)
+                                    $client->tokens()->delete();
+
+                                    // Удаляем клиента - остальные записи удалятся каскадно
+                                    $client->delete();
+                                });
+
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Клиенты успешно удалены')
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Ошибка при удалении')
+                                    ->body('Попробуйте еще раз или обратитесь к администратору')
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
                     Tables\Actions\BulkAction::make('mark_deleted')
                         ->label('Пометить как удаленные')
                         ->icon('heroicon-o-trash')
