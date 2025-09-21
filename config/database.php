@@ -59,6 +59,10 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // Опции для shared hosting
+                PDO::ATTR_PERSISTENT => false, // Отключаем persistent connections
+                PDO::ATTR_EMULATE_PREPARES => true, // Эмулируем prepared statements
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, // Буферизуем запросы
             ]) : [],
         ],
 
@@ -147,7 +151,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')) . '-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 
