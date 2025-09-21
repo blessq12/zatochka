@@ -15,30 +15,17 @@ class Repair extends Model implements HasMedia
     use HasFactory, SoftDeletes, InteractsWithMedia;
 
     protected $fillable = [
-        'number',
         'order_id',
-        'master_id',
-        'status',
-        'description',
-        'diagnosis',
-        'work_performed',
-        'notes',
-        'started_at',
-        'completed_at',
-        'estimated_completion',
-        'parts_used',
-        'additional_data',
-        'work_time_minutes',
+        'problem_description',
         'price',
+        'status',
+        'comments',
+        'completed_works',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'parts_used' => 'array',
-        'additional_data' => 'array',
-        'started_at' => 'datetime',
-        'completed_at' => 'datetime',
-        'estimated_completion' => 'datetime',
+        'completed_works' => 'array',
     ];
 
     // Relationships
@@ -47,10 +34,6 @@ class Repair extends Model implements HasMedia
         return $this->belongsTo(Order::class);
     }
 
-    public function master(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'master_id');
-    }
 
     public function stockMovements(): HasMany
     {

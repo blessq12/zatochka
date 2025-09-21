@@ -14,7 +14,6 @@ class Tool extends Model implements HasMedia
 
     protected $fillable = [
         'name',
-        'tool_type_id',
         'equipment_type_id',
         'serial_number',
         'brand',
@@ -34,19 +33,9 @@ class Tool extends Model implements HasMedia
     ];
 
     // Связи
-    public function toolType()
-    {
-        return $this->belongsTo(ToolType::class);
-    }
-
     public function equipmentType()
     {
         return $this->belongsTo(EquipmentType::class);
-    }
-
-    public function orders()
-    {
-        return $this->belongsToMany(Order::class, 'order_tools');
     }
 
     // Scope для активных инструментов
@@ -55,11 +44,6 @@ class Tool extends Model implements HasMedia
         return $query->where('is_deleted', false)->where('is_active', true);
     }
 
-    // Scope для инструментов по типу
-    public function scopeByType($query, $toolTypeId)
-    {
-        return $query->where('tool_type_id', $toolTypeId);
-    }
 
     // MediaLibrary конфигурация
     public function registerMediaCollections(): void

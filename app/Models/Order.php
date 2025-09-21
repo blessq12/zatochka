@@ -24,33 +24,22 @@ class Order extends Model implements HasMedia
         'client_id',
         'branch_id',
         'manager_id',
-        'master_id',
         'order_number',
         'type',
         'status',
         'urgency',
-        'is_paid',
-        'paid_at',
         'discount_id',
-        'total_amount',
-        'final_price',
-        'cost_price',
-        'profit',
+        'estimated_price',
+        'actual_price',
         'internal_notes',
         'problem_description',
         'is_deleted',
     ];
 
     protected $casts = [
-        'type' => OrderType::class,
-        'status' => OrderStatus::class,
         'urgency' => OrderUrgency::class,
-        'is_paid' => 'boolean',
-        'paid_at' => 'datetime',
-        'total_amount' => 'decimal:2',
-        'final_price' => 'decimal:2',
-        'cost_price' => 'decimal:2',
-        'profit' => 'decimal:2',
+        'estimated_price' => 'decimal:2',
+        'actual_price' => 'decimal:2',
         'is_deleted' => 'boolean',
     ];
 
@@ -75,10 +64,6 @@ class Order extends Model implements HasMedia
         return $this->belongsTo(User::class, 'manager_id');
     }
 
-    public function master()
-    {
-        return $this->belongsTo(User::class, 'master_id');
-    }
 
 
 
@@ -88,9 +73,9 @@ class Order extends Model implements HasMedia
     }
 
 
-    public function repairs()
+    public function repair()
     {
-        return $this->hasMany(Repair::class);
+        return $this->hasOne(Repair::class);
     }
 
     public function reviews()
@@ -113,12 +98,6 @@ class Order extends Model implements HasMedia
     //     return $this->hasMany(InventoryTransaction::class);
     // }
 
-    public function tools()
-    {
-        return $this->belongsToMany(Tool::class, 'order_tools')
-            ->withPivot(['problem_description', 'work_description'])
-            ->withTimestamps();
-    }
 
     // Scope для активных заказов
     public function scopeActive($query)
@@ -219,16 +198,11 @@ class Order extends Model implements HasMedia
                 'client_id',
                 'branch_id',
                 'manager_id',
-                'master_id',
                 'type',
                 'status',
                 'urgency',
-                'is_paid',
-                'paid_at',
-                'total_amount',
-                'final_price',
-                'cost_price',
-                'profit',
+                'estimated_price',
+                'actual_price',
                 'internal_notes',
                 'problem_description',
             ])
