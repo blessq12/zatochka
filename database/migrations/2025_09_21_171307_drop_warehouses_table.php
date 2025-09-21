@@ -11,6 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Сначала удаляем foreign key constraint из stock_movements
+        if (Schema::hasTable('stock_movements') && Schema::hasColumn('stock_movements', 'warehouse_id')) {
+            Schema::table('stock_movements', function (Blueprint $table) {
+                $table->dropForeign(['warehouse_id']);
+            });
+        }
+
+        // Затем удаляем таблицу warehouses
         Schema::dropIfExists('warehouses');
     }
 
