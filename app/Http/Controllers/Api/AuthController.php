@@ -32,19 +32,36 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-
         $request->validate([
             'full_name' => 'required',
-            'phone' => 'required',
+            'phone' => 'required|unique:clients,phone',
             'password' => 'required|min:6',
             'password_confirmation' => 'required|same:password',
         ]);
 
         try {
-            $client = \App\Models\Client::create($request->all());
-            $result = $client;
+            $clientData = $request->all();
+            $clientData['password'] = Hash::make($request->password);
 
-            return response()->json($result);
+            $client = \App\Models\Client::create($clientData);
+            $token = $client->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'Registration successful',
+                'token' => $token,
+                'client' => $client
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function logout(Request $request)
+    {
+        try {
+            $request->user()->currentAccessToken()->delete();
+
+            return response()->json(['message' => 'Logout successful']);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
