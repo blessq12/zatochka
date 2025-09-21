@@ -16,6 +16,7 @@ class Client extends Model
         'phone',
         'email',
         'telegram',
+        'telegram_verified_at',
         'birth_date',
         'delivery_address',
         'password',
@@ -30,6 +31,7 @@ class Client extends Model
 
     protected $casts = [
         'birth_date' => 'date',
+        'telegram_verified_at' => 'datetime',
         'is_deleted' => 'boolean',
     ];
 

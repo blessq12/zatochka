@@ -145,7 +145,6 @@ export const useAuthStore = defineStore("auth", {
         },
 
         async checkTelegramChat() {
-            // НЕ устанавливаем isLoading = true, чтобы не вызывать ререндер родителя
             this.error = null;
 
             try {
@@ -155,8 +154,8 @@ export const useAuthStore = defineStore("auth", {
                     { headers: { Authorization: `Bearer ${this.token}` } }
                 );
 
-                // Парсим ответ: 1 = чат существует, 0 = чат не найден
-                const chatExists = response.data === 1;
+                // Обрабатываем новый формат ответа
+                const chatExists = response.data.chat_exists || false;
 
                 if (chatExists) {
                     toastService.success("Telegram чат найден");

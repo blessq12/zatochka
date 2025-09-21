@@ -46,18 +46,14 @@ export default {
         }
     },
     methods: {
-        async connectTelegram() {
-            console.log("Подключение Telegram...");
-            // TODO: Реализовать логику подключения Telegram
-        },
+        async connectTelegram() {},
 
         async sendVerificationCode() {
             this.isCheckingChat = true;
             this.codeSendStatus = null;
-            this.isCodeSent = false; // Сбрасываем состояние формы
+            this.isCodeSent = false;
 
             try {
-                // Сначала проверяем наличие чата
                 const chatResult = await this.authStore.checkTelegramChat();
 
                 if (!chatResult.success) {
@@ -67,32 +63,28 @@ export default {
                 }
 
                 if (!chatResult.data.chatExists) {
-                    // Чат не найден - НЕ показываем форму, только ошибку
                     console.log(
                         "Чат не найден для пользователя:",
                         this.authStore.user?.telegram
                     );
                     this.codeSendStatus = "chat-not-found";
-                    return; // Выходим, не показываем форму
+                    return;
                 }
 
-                // Чат найден - отправляем код подтверждения
                 this.isVerifying = true;
                 const codeResult =
                     await this.authStore.sendTelegramVerificationCode();
 
                 if (codeResult.success) {
                     this.codeSendStatus = "success";
-                    this.isCodeSent = true; // Показываем форму только при успехе
+                    this.isCodeSent = true;
                     this.verificationCode = "";
                 } else {
                     this.codeSendStatus = "error";
-                    // НЕ показываем форму при ошибке отправки
                 }
             } catch (error) {
                 console.error("Ошибка отправки кода:", error);
                 this.codeSendStatus = "error";
-                // НЕ показываем форму при ошибке
             } finally {
                 this.isVerifying = false;
                 this.isCheckingChat = false;
@@ -109,17 +101,13 @@ export default {
                 );
 
                 if (result.success) {
-                    // Код подтвержден успешно - сбрасываем локальные состояния
                     this.isCodeSent = false;
                     this.verificationCode = "";
                     this.codeSendStatus = null;
-                    console.log("Telegram успешно подтвержден!");
                     console.log(
                         "telegramVerified:",
                         this.authStore.telegramVerified
                     );
-                    // Компонент автоматически переключится на статус "verified"
-                    // благодаря обновлению authStore.telegramVerified в store
                 } else {
                     console.error("Ошибка подтверждения кода:", result.error);
                 }
