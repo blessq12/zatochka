@@ -132,8 +132,25 @@ export default {
             this.form.full_name = u.full_name || "";
             this.form.email = u.email || "";
             this.form.telegram = u.telegram || "";
-            this.form.birth_date = u.birth_date || "";
+            this.form.birth_date = this.formatDateForInput(u.birth_date) || "";
             this.form.delivery_address = u.delivery_address || "";
+        },
+        formatDateForInput(date) {
+            if (!date) return "";
+
+            // Если дата уже в формате YYYY-MM-DD, возвращаем как есть
+            if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                return date;
+            }
+
+            // Если это timestamp, парсим и форматируем для input[type="date"]
+            try {
+                const dateObj = new Date(date);
+                return dateObj.toISOString().split("T")[0];
+            } catch (error) {
+                console.error("Error formatting date for input:", error);
+                return date;
+            }
         },
     },
 };

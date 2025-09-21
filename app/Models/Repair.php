@@ -41,10 +41,6 @@ class Repair extends Model implements HasMedia
         return $this->hasMany(StockMovement::class);
     }
 
-    public function warehouse()
-    {
-        return $this->hasOneThrough(Warehouse::class, Order::class, 'id', 'branch_id', 'order_id', 'branch_id');
-    }
 
     // Scopes
     public function scopeActive($query)

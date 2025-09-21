@@ -12,11 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stock_movements', function (Blueprint $table) {
-            // Удаляем внешний ключ
-            $table->dropForeign(['warehouse_id']);
+            // Сначала удаляем индексы, связанные со складом
+            if (Schema::hasIndex('stock_movements', 'stock_movements_warehouse_id_movement_date_index')) {
+                $table->dropIndex(['warehouse_id', 'movement_date']);
+            }
 
-            // Удаляем колонку
-            $table->dropColumn('warehouse_id');
+            // Удаляем внешний ключ и колонку
+            if (Schema::hasColumn('stock_movements', 'warehouse_id')) {
+                $table->dropForeign(['warehouse_id']);
+                $table->dropColumn('warehouse_id');
+            }
         });
     }
 

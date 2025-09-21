@@ -23,6 +23,7 @@ Route::middleware('auth:client')->group(function () {
         Route::get('/client/self', 'clientSelf');
         Route::get('/client/orders-get', 'clientOrdersGet');
         Route::post('/client/update', 'clientUpdate');
+        Route::post('/client/review', 'createReview');
     });
 
     Route::controller(TelegramController::class)->group(function () {

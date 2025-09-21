@@ -21,6 +21,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'branch_id',
         'is_deleted',
     ];
 
@@ -118,5 +119,11 @@ class User extends Authenticatable
     public static function getSelectableRoles(): array
     {
         return UserRole::getSelectable();
+    }
+
+    // Связи
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Manager;
 
 use App\Filament\Resources\Manager\UserResource\Pages;
+use App\Models\Branch;
 use App\Models\User;
 use App\UserRole;
 use Filament\Forms;
@@ -43,6 +44,14 @@ class UserResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
+
+                        Forms\Components\Select::make('branch_id')
+                            ->label('Филиал')
+                            ->options(Branch::all()->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Выберите филиал')
+                            ->helperText('Филиал, к которому привязан пользователь'),
                     ])
                     ->columns(2),
 
@@ -89,6 +98,13 @@ class UserResource extends Resource
                     ->sortable()
                     ->copyable(),
 
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Филиал')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('Не указан')
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('role')
                     ->label('Роли')
                     ->formatStateUsing(function ($state): string {
@@ -126,6 +142,12 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->label('Филиал')
+                    ->options(Branch::all()->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload(),
+
                 Tables\Filters\SelectFilter::make('role')
                     ->label('Роль')
                     ->options(User::getAvailableRoles())
@@ -193,6 +215,11 @@ class UserResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('branch');
     }
 
     public static function getPages(): array

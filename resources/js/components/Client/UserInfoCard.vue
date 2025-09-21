@@ -14,6 +14,25 @@ export default {
     computed: {
         ...mapStores(useAuthStore),
     },
+    methods: {
+        formatBirthDate(date) {
+            if (!date) return null;
+
+            // Если дата уже в формате YYYY-MM-DD, возвращаем как есть
+            if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                return date;
+            }
+
+            // Если это timestamp, парсим и форматируем
+            try {
+                const dateObj = new Date(date);
+                return dateObj.toISOString().split("T")[0];
+            } catch (error) {
+                console.error("Error formatting birth date:", error);
+                return date;
+            }
+        },
+    },
 };
 </script>
 
@@ -117,7 +136,10 @@ export default {
                     <div
                         class="text-3xl font-black text-gray-900 dark:text-gray-100 mb-2"
                     >
-                        {{ authStore.user?.birth_date || "Не указана" }}
+                        {{
+                            formatBirthDate(authStore.user?.birth_date) ||
+                            "Не указана"
+                        }}
                     </div>
                     <div class="text-gray-700 dark:text-gray-300">
                         Дата рождения

@@ -15,6 +15,7 @@ class Review extends Model
         'rating',
         'comment',
         'is_approved',
+        'is_visible',
         'reply',
         'metadata',
         'is_deleted',
@@ -23,6 +24,7 @@ class Review extends Model
     protected $casts = [
         'rating' => 'integer',
         'is_approved' => 'boolean',
+        'is_visible' => 'boolean',
         'metadata' => 'array',
         'is_deleted' => 'boolean',
     ];

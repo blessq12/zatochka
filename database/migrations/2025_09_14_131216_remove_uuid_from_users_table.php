@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             if (Schema::hasColumn('users', 'uuid')) {
+                // Сначала удаляем индекс, если он существует
+                if (Schema::hasIndex('users', 'users_uuid_unique')) {
+                    $table->dropUnique('users_uuid_unique');
+                }
                 $table->dropColumn('uuid');
             }
         });

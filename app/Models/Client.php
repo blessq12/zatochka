@@ -33,6 +33,22 @@ class Client extends Model
         'is_deleted' => 'boolean',
     ];
 
+    // Accessor для форматирования даты рождения
+    public function getBirthDateAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        // Если это уже отформатированная дата, возвращаем как есть
+        if (is_string($value) && !str_contains($value, 'T')) {
+            return $value;
+        }
+
+        // Форматируем дату в Y-m-d формат
+        return \Carbon\Carbon::parse($value)->format('Y-m-d');
+    }
+
     protected static function boot()
     {
         parent::boot();
