@@ -26,7 +26,7 @@ class MasterPanelProvider extends PanelProvider
         return $panel
             ->id('master')
             ->path('master')
-            ->login(fn() => redirect()->route('login'))
+            ->login(fn () => redirect()->route('login'))
             ->loginRouteSlug('auth/login')
             ->colors([
                 'primary' => Color::Amber,

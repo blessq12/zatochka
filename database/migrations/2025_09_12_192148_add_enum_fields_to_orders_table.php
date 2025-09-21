@@ -18,7 +18,7 @@ return new class extends Migration
                 'replacement',
                 'maintenance',
                 'consultation',
-                'warranty'
+                'warranty',
             ])->after('order_number');
 
             $table->enum('status', [
@@ -29,7 +29,7 @@ return new class extends Migration
                 'waiting_parts',
                 'ready',
                 'issued',
-                'cancelled'
+                'cancelled',
             ])->default('new')->after('type');
         });
     }

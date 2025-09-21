@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Repair;
 use App\Models\Order;
+use App\Models\Repair;
 use App\Models\User;
-use App\Domain\Repair\Enum\RepairStatus;
+use Illuminate\Database\Seeder;
 
 class RepairSeeder extends Seeder
 {
@@ -18,11 +17,13 @@ class RepairSeeder extends Seeder
 
         if ($orders->isEmpty()) {
             $this->command->info('Нет заказов для создания ремонтов');
+
             return;
         }
 
         if ($masters->isEmpty()) {
             $this->command->info('Нет мастеров для назначения ремонтов');
+
             return;
         }
 
@@ -33,20 +34,20 @@ class RepairSeeder extends Seeder
                 'used_materials' => json_encode([
                     'abrasive_stones' => 2,
                     'polishing_compound' => 1,
-                    'honing_oil' => 1
+                    'honing_oil' => 1,
                 ]),
                 'work_time_minutes' => 120,
-                'price' => 1500.00
+                'price' => 1500.00,
             ],
             [
                 'order_id' => $orders[1]->id ?? $orders[0]->id,
                 'description' => 'Ремонт ножниц. Не режут бумагу, тупые лезвия. Лезвия ножниц затупились и имеют зазубрины. Требуется заточка и выравнивание. Клиентка принесла дорогие ножницы, просит аккуратно.',
                 'used_materials' => json_encode([
                     'fine_abrasive' => 1,
-                    'polishing_paste' => 1
+                    'polishing_paste' => 1,
                 ]),
                 'work_time_minutes' => 60,
-                'price' => 800.00
+                'price' => 800.00,
             ],
             [
                 'order_id' => $orders[2]->id ?? $orders[0]->id,
@@ -54,20 +55,20 @@ class RepairSeeder extends Seeder
                 'used_materials' => json_encode([
                     'grinding_wheel' => 1,
                     'honing_oil' => 1,
-                    'heat_treatment' => 1
+                    'heat_treatment' => 1,
                 ]),
                 'work_time_minutes' => 180,
-                'price' => 2200.00
+                'price' => 2200.00,
             ],
             [
                 'order_id' => $orders[3]->id ?? $orders[0]->id,
                 'description' => 'Ремонт электрического точильного станка. Не включается. Проблема с электродвигателем. Требуется замена щеток и проверка обмотки. Диагностика двигателя, замена щеток. Ждем поставку новых щеток от поставщика.',
                 'used_materials' => json_encode([
                     'motor_brushes' => 2,
-                    'electrical_tape' => 1
+                    'electrical_tape' => 1,
                 ]),
                 'work_time_minutes' => 240,
-                'price' => 3500.00
+                'price' => 3500.00,
             ],
             [
                 'order_id' => $orders[4]->id ?? $orders[0]->id,
@@ -75,17 +76,17 @@ class RepairSeeder extends Seeder
                 'used_materials' => json_encode([
                     'professional_stones' => 3,
                     'polishing_compound' => 2,
-                    'honing_steel' => 1
+                    'honing_steel' => 1,
                 ]),
                 'work_time_minutes' => 300,
-                'price' => 4500.00
-            ]
+                'price' => 4500.00,
+            ],
         ];
 
         foreach ($repairs as $repairData) {
             Repair::create($repairData);
         }
 
-        $this->command->info('Создано ' . count($repairs) . ' демо ремонтов');
+        $this->command->info('Создано '.count($repairs).' демо ремонтов');
     }
 }

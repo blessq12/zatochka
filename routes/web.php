@@ -1,11 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\Auth\AuthControllerFilament;
+use App\Http\Controllers\ClientController;
 //
 use App\Http\Controllers\MainController;
-use App\Http\Controllers\ClientController;
+use Illuminate\Support\Facades\Route;
 
 Route::controller(MainController::class)
     ->prefix('')

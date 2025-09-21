@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Company;
 use App\Models\Branch;
+use App\Models\Company;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class CompanyAndBranchSeeder extends Seeder
@@ -51,38 +51,38 @@ class CompanyAndBranchSeeder extends Seeder
                             'monday' => [
                                 'is_working' => true,
                                 'start' => '10:00',
-                                'end' => '19:00'
+                                'end' => '19:00',
                             ],
                             'tuesday' => [
                                 'is_working' => true,
                                 'start' => '10:00',
-                                'end' => '19:00'
+                                'end' => '19:00',
                             ],
                             'wednesday' => [
                                 'is_working' => true,
                                 'start' => '10:00',
-                                'end' => '19:00'
+                                'end' => '19:00',
                             ],
                             'thursday' => [
                                 'is_working' => true,
                                 'start' => '10:00',
-                                'end' => '19:00'
+                                'end' => '19:00',
                             ],
                             'friday' => [
                                 'is_working' => true,
                                 'start' => '10:00',
-                                'end' => '19:00'
+                                'end' => '19:00',
                             ],
                             'saturday' => [
                                 'is_working' => true,
                                 'start' => '11:00',
-                                'end' => '16:00'
+                                'end' => '16:00',
                             ],
                             'sunday' => [
                                 'is_working' => false,
                                 'start' => null,
-                                'end' => null
-                            ]
+                                'end' => null,
+                            ],
                         ],
                         'opening_time' => '10:00',
                         'closing_time' => '19:00',

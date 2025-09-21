@@ -16,20 +16,12 @@ class Company extends Model
         'kpp',
         'ogrn',
         'legal_address',
-        'description',
         'website',
-        'phone',
-        'email',
-        'bank_name',
-        'bank_bik',
-        'bank_account',
-        'bank_cor_account',
-        'is_active',
+        'logo_path',
         'is_deleted',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
         'is_deleted' => 'boolean',
     ];
 
@@ -41,7 +33,7 @@ class Company extends Model
 
     public function mainBranch()
     {
-        return $this->hasOne(Branch::class)->where('is_main', true);
+        return $this->branches()->first();
     }
 
     public function activeBranches()
@@ -52,30 +44,19 @@ class Company extends Model
     // Scope для активных компаний
     public function scopeActive($query)
     {
-        return $query->where('is_deleted', false)->where('is_active', true);
+        return $query->where('is_deleted', false);
     }
-
 
     // Методы для работы со статусом
-    public function activate()
-    {
-        $this->update(['is_active' => true]);
-    }
-
-    public function deactivate()
-    {
-        $this->update(['is_active' => false]);
-    }
-
     public function markDeleted()
     {
-        $this->update(['is_deleted' => true, 'is_active' => false]);
+        $this->update(['is_deleted' => true]);
     }
 
     // Проверки статуса
     public function isActive(): bool
     {
-        return $this->is_active && !$this->is_deleted;
+        return ! $this->is_deleted;
     }
 
     public function isDeleted(): bool
@@ -85,11 +66,11 @@ class Company extends Model
 
     public function hasMainBranch(): bool
     {
-        return $this->branches()->where('is_main', true)->exists();
+        return $this->branches()->exists();
     }
 
     public function getMainBranch()
     {
-        return $this->branches()->where('is_main', true)->first();
+        return $this->branches()->first();
     }
 }

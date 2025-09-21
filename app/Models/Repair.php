@@ -12,7 +12,9 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Repair extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes, InteractsWithMedia;
+    use HasFactory;
+    use InteractsWithMedia;
+    use SoftDeletes;
 
     protected $fillable = [
         'order_id',
@@ -33,7 +35,6 @@ class Repair extends Model implements HasMedia
     {
         return $this->belongsTo(Order::class);
     }
-
 
     public function stockMovements(): HasMany
     {
@@ -100,7 +101,7 @@ class Repair extends Model implements HasMedia
 
     public function getDurationAttribute(): ?int
     {
-        if (!$this->started_at || !$this->completed_at) {
+        if (! $this->started_at || ! $this->completed_at) {
             return null;
         }
 

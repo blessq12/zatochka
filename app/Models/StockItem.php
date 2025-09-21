@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StockItem extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
-        'warehouse_id',
         'category_id',
         'name',
         'sku',
@@ -38,11 +38,6 @@ class StockItem extends Model
     ];
 
     // Связи
-    public function warehouse()
-    {
-        return $this->belongsTo(Warehouse::class);
-    }
-
     public function category()
     {
         return $this->belongsTo(StockCategory::class, 'category_id');
@@ -53,10 +48,6 @@ class StockItem extends Model
         return $this->hasMany(StockMovement::class, 'stock_item_id');
     }
 
-    public function branch()
-    {
-        return $this->hasOneThrough(Branch::class, Warehouse::class, 'id', 'id', 'warehouse_id', 'branch_id');
-    }
 
     // Scope для активных товаров
     public function scopeActive($query)
@@ -70,11 +61,6 @@ class StockItem extends Model
         return $query->whereRaw('quantity <= min_stock');
     }
 
-    // Scope для товаров по складу
-    public function scopeByWarehouse($query, $warehouseId)
-    {
-        return $query->where('warehouse_id', $warehouseId);
-    }
 
     // Scope для товаров по категории
     public function scopeByCategory($query, $categoryId)
@@ -160,7 +146,7 @@ class StockItem extends Model
 
     public function getProfitMargin(): float
     {
-        if (!$this->purchase_price || !$this->retail_price) {
+        if (! $this->purchase_price || ! $this->retail_price) {
             return 0;
         }
 

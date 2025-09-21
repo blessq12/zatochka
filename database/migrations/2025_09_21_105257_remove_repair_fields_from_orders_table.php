@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('repairs', function (Blueprint $table) {
             $table->dropColumn([
                 'used_materials',
-                'work_time_minutes'
+                'work_time_minutes',
             ]);
         });
     }

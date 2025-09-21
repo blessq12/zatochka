@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Domain\Company\Enum\UserRole;
+use App\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -59,17 +59,18 @@ class User extends Authenticatable
 
     public function hasAnyRole(array $roles): bool
     {
-        return !empty(array_intersect($roles, $this->role ?? []));
+        return ! empty(array_intersect($roles, $this->role ?? []));
     }
 
     public function addRole(string $role): void
     {
-        if (!UserRole::tryFrom($role)) {
+        $allowedRoles = array_column(UserRole::cases(), 'value');
+        if (! in_array($role, $allowedRoles)) {
             throw new \InvalidArgumentException("Недопустимая роль: {$role}");
         }
 
         $roles = $this->role ?? [];
-        if (!in_array($role, $roles)) {
+        if (! in_array($role, $roles)) {
             $roles[] = $role;
             $this->role = $roles;
         }
@@ -83,8 +84,11 @@ class User extends Authenticatable
 
     public function setRoles(array $roles): void
     {
-        if (!UserRole::validate($roles)) {
-            throw new \InvalidArgumentException('Недопустимые роли');
+        $allowedRoles = array_column(UserRole::cases(), 'value');
+        $invalidRoles = array_diff($roles, $allowedRoles);
+
+        if (! empty($invalidRoles)) {
+            throw new \InvalidArgumentException('Недопустимые роли: ' . implode(', ', $invalidRoles));
         }
 
         $this->role = array_unique($roles);
@@ -95,13 +99,24 @@ class User extends Authenticatable
         return $this->role ?? [];
     }
 
-    public function getRoleEnums(): array
+    public function getRoleLabels(): array
     {
-        return UserRole::fromArray($this->getRoles());
+        return array_map(fn($role) => UserRole::getAll()[$role] ?? $role, $this->getRoles());
     }
 
-    public function hasRoleEnum(UserRole $role): bool
+    /**
+     * Получить все доступные роли
+     */
+    public static function getAvailableRoles(): array
     {
-        return $this->hasRole($role->value);
+        return UserRole::getAll();
+    }
+
+    /**
+     * Получить роли для выбора в формах (без админа)
+     */
+    public static function getSelectableRoles(): array
+    {
+        return UserRole::getSelectable();
     }
 }

@@ -11,7 +11,6 @@ class StockMovement extends Model
 
     protected $fillable = [
         'stock_item_id',
-        'warehouse_id',
         'movement_type',
         'quantity',
         'order_id',
@@ -23,6 +22,15 @@ class StockMovement extends Model
         'reference_number',
         'movement_date',
         'created_by',
+        // Поля для "заморозки" данных запчасти
+        'part_name',
+        'part_sku',
+        'part_purchase_price',
+        'part_retail_price',
+        'part_unit',
+        'part_supplier',
+        'part_manufacturer',
+        'part_model',
     ];
 
     protected $casts = [
@@ -30,13 +38,51 @@ class StockMovement extends Model
         'unit_price' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'movement_date' => 'datetime',
+        'part_purchase_price' => 'decimal:2',
+        'part_retail_price' => 'decimal:2',
     ];
+
+    // Boot method для автоматического списания при создании движения типа 'out'
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($movement) {
+            // Автоматически заполняем данные запчасти при создании движения
+            if ($movement->stock_item_id) {
+                $stockItem = \App\Models\StockItem::find($movement->stock_item_id);
+                if ($stockItem) {
+                    $movement->part_name = $stockItem->name;
+                    $movement->part_sku = $stockItem->sku;
+                    $movement->part_purchase_price = $stockItem->purchase_price;
+                    $movement->part_retail_price = $stockItem->retail_price;
+                    $movement->part_unit = $stockItem->unit;
+                    $movement->part_supplier = $stockItem->supplier;
+                    $movement->part_manufacturer = $stockItem->manufacturer;
+                    $movement->part_model = $stockItem->model;
+                }
+            }
+        });
+
+        static::created(function ($movement) {
+            if ($movement->movement_type === self::TYPE_OUT && $movement->stock_item_id) {
+                $stockItem = $movement->stockItem;
+                if ($stockItem && $stockItem->hasStock($movement->quantity)) {
+                    $stockItem->deductStock($movement->quantity);
+                }
+            }
+        });
+    }
 
     // Константы для типов движения
     public const TYPE_IN = 'in';
+
     public const TYPE_OUT = 'out';
+
     public const TYPE_TRANSFER = 'transfer';
+
     public const TYPE_ADJUSTMENT = 'adjustment';
+
     public const TYPE_RETURN = 'return';
 
     // Связи
@@ -45,10 +91,6 @@ class StockMovement extends Model
         return $this->belongsTo(StockItem::class, 'stock_item_id');
     }
 
-    public function warehouse()
-    {
-        return $this->belongsTo(Warehouse::class);
-    }
 
     public function order()
     {
@@ -65,10 +107,6 @@ class StockMovement extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function branch()
-    {
-        return $this->hasOneThrough(Branch::class, Warehouse::class, 'id', 'id', 'warehouse_id', 'branch_id');
-    }
 
     // Scope для движений по типу
     public function scopeByType($query, $type)
@@ -77,10 +115,6 @@ class StockMovement extends Model
     }
 
     // Scope для движений по складу
-    public function scopeByWarehouse($query, $warehouseId)
-    {
-        return $query->where('warehouse_id', $warehouseId);
-    }
 
     // Scope для движений по товару
     public function scopeByStockItem($query, $stockItemId)
@@ -182,13 +216,13 @@ class StockMovement extends Model
     // Проверить, связано ли движение с заказом
     public function isOrderRelated(): bool
     {
-        return !is_null($this->order_id);
+        return ! is_null($this->order_id);
     }
 
     // Проверить, связано ли движение с ремонтом
     public function isRepairRelated(): bool
     {
-        return !is_null($this->repair_id);
+        return ! is_null($this->repair_id);
     }
 
     // Получить общую сумму движения

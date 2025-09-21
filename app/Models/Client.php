@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 use Laravel\Sanctum\HasApiTokens;
 
 class Client extends Model
 {
-    use HasFactory, HasApiTokens;
+    use HasApiTokens;
+    use HasFactory;
 
     protected $fillable = [
         'full_name',
@@ -32,6 +32,16 @@ class Client extends Model
         'birth_date' => 'date',
         'is_deleted' => 'boolean',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::created(function ($client) {
+            $client->bonusAccount()->create([
+                'balance' => 0,
+            ]);
+        });
+    }
 
     // Связи
     public function orders()
@@ -63,7 +73,6 @@ class Client extends Model
     {
         return $this->hasMany(TelegramChat::class);
     }
-
 
     // Scope для активных клиентов
     public function scopeActive($query)

@@ -2,11 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-//use cases
-use App\Application\UseCases\Bonus\GetClientBonusAccount;
-use App\Application\UseCases\Client\GetClientUseCase;
-use App\Application\UseCases\ApiUseCases\GetClientOrderUseCase;
-use App\Application\UseCases\Client\UpdateClientUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -15,10 +10,9 @@ class ClientController extends Controller
     public function clientOrdersGet()
     {
 
-
         $client = auth('sanctum')->user();
-        $useCase = app(GetClientOrderUseCase::class);
-        $orders = $useCase->loadData(['id' => $client->id])->validate()->execute();
+        $orders = $client->orders;
+
         return response()->json([
             'orders' => $orders,
         ]);
@@ -27,16 +21,11 @@ class ClientController extends Controller
     public function clientSelf()
     {
         $client = auth('sanctum')->user();
-
-        $getClientUseCase = app(GetClientUseCase::class);
-        $getClientBonusAccountUseCase = app(GetClientBonusAccount::class);
-        $client = $getClientUseCase->loadData(['id' => $client->id])->validate()->execute();
-        $bonusAccount = $getClientBonusAccountUseCase->loadData(['id' => $client->id])->validate()->execute();
-
+        $bonusAccount = $client->bonusAccount;
 
         return response()->json([
-            'client' => $client->toArray(),
-            'bonusAccount' => $bonusAccount->toArray(),
+            'client' => $client,
+            'bonusAccount' => $bonusAccount,
         ]);
     }
 
@@ -44,13 +33,17 @@ class ClientController extends Controller
     {
         try {
             $client = auth('sanctum')->user();
-            $useCase = app(UpdateClientUseCase::class);
-            $client = $useCase->loadData($request->all())->validate()->execute();
+
+            $client = \App\Models\Client::find($client->id)->update(
+                $request->all()
+            );
+
             return response()->json([
-                'client' => $client->toArray(),
-            ]);
+                'client' => $client,
+                'message' => 'Client updated successfully',
+            ], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['message' => $e->getMessage()], 400);
         }
     }
 }

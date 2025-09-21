@@ -44,7 +44,6 @@ class Tool extends Model implements HasMedia
         return $query->where('is_deleted', false)->where('is_active', true);
     }
 
-
     // MediaLibrary конфигурация
     public function registerMediaCollections(): void
     {

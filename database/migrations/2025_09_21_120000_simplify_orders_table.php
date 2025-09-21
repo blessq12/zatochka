@@ -23,7 +23,7 @@ return new class extends Migration
                 'profit',
                 'master_id',
                 'is_paid',
-                'paid_at'
+                'paid_at',
             ]);
 
             // Добавляем новые поля цен
@@ -62,7 +62,7 @@ return new class extends Migration
                 'replacement',
                 'maintenance',
                 'consultation',
-                'warranty'
+                'warranty',
             ])->change();
 
             $table->enum('status', [
@@ -73,7 +73,7 @@ return new class extends Migration
                 'waiting_parts',
                 'ready',
                 'issued',
-                'cancelled'
+                'cancelled',
             ])->default('new')->change();
 
             // Удаляем новые поля

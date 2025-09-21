@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use App\Domain\Order\Enum\OrderStatus;
-use App\Domain\Order\Enum\OrderType;
-use App\Domain\Order\Enum\OrderUrgency;
+// Удалены Enum'ы - теперь используются строки в БД
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,6 +17,43 @@ class Order extends Model implements HasMedia
     use InteractsWithMedia;
     use LogsActivity;
     use SoftDeletes;
+
+    // Константы статусов заказов
+    public const STATUS_NEW = 'new';
+
+    public const STATUS_CONSULTATION = 'consultation';
+
+    public const STATUS_DIAGNOSTIC = 'diagnostic';
+
+    public const STATUS_IN_WORK = 'in_work';
+
+    public const STATUS_WAITING_PARTS = 'waiting_parts';
+
+    public const STATUS_READY = 'ready';
+
+    public const STATUS_ISSUED = 'issued';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
+    // Константы типов заказов
+    public const TYPE_REPAIR = 'repair';
+
+    public const TYPE_SHARPENING = 'sharpening';
+
+    public const TYPE_DIAGNOSTIC = 'diagnostic';
+
+    public const TYPE_REPLACEMENT = 'replacement';
+
+    public const TYPE_MAINTENANCE = 'maintenance';
+
+    public const TYPE_CONSULTATION = 'consultation';
+
+    public const TYPE_WARRANTY = 'warranty';
+
+    // Константы срочности
+    public const URGENCY_NORMAL = 'normal';
+
+    public const URGENCY_URGENT = 'urgent';
 
     protected $fillable = [
         'client_id',
@@ -37,7 +72,6 @@ class Order extends Model implements HasMedia
     ];
 
     protected $casts = [
-        'urgency' => OrderUrgency::class,
         'estimated_price' => 'decimal:2',
         'actual_price' => 'decimal:2',
         'is_deleted' => 'boolean',
@@ -64,14 +98,10 @@ class Order extends Model implements HasMedia
         return $this->belongsTo(User::class, 'manager_id');
     }
 
-
-
-
     public function discount()
     {
         return $this->belongsTo(DiscountRule::class, 'discount_id');
     }
-
 
     public function repair()
     {
@@ -98,7 +128,6 @@ class Order extends Model implements HasMedia
     //     return $this->hasMany(InventoryTransaction::class);
     // }
 
-
     // Scope для активных заказов
     public function scopeActive($query)
     {
@@ -106,9 +135,9 @@ class Order extends Model implements HasMedia
     }
 
     // Scope для заказов по статусу
-    public function scopeByStatus($query, $statusId)
+    public function scopeByStatus($query, $status)
     {
-        return $query->where('status_id', $statusId);
+        return $query->where('status', $status);
     }
 
     // Scope для срочных заказов
@@ -135,60 +164,96 @@ class Order extends Model implements HasMedia
     // Методы для работы со статусами
     public function isNew(): bool
     {
-        return $this->status === OrderStatus::NEW;
+        return $this->status === self::STATUS_NEW;
     }
 
     public function isInWork(): bool
     {
-        return $this->status === OrderStatus::IN_WORK;
+        return $this->status === self::STATUS_IN_WORK;
     }
 
     public function isReady(): bool
     {
-        return $this->status === OrderStatus::READY;
+        return $this->status === self::STATUS_READY;
     }
 
     public function isIssued(): bool
     {
-        return $this->status === OrderStatus::ISSUED;
+        return $this->status === self::STATUS_ISSUED;
     }
 
     public function isCancelled(): bool
     {
-        return $this->status === OrderStatus::CANCELLED;
+        return $this->status === self::STATUS_CANCELLED;
     }
 
     public function isFinal(): bool
     {
-        return $this->status->isFinal();
+        return in_array($this->status, [self::STATUS_ISSUED, self::STATUS_CANCELLED]);
     }
 
     public function isManagerStatus(): bool
     {
-        return $this->status->isManagerStatus();
+        return in_array($this->status, [self::STATUS_NEW, self::STATUS_CONSULTATION, self::STATUS_DIAGNOSTIC]);
     }
 
     public function isWorkshopStatus(): bool
     {
-        return $this->status->isWorkshopStatus();
+        return in_array($this->status, [self::STATUS_IN_WORK, self::STATUS_WAITING_PARTS, self::STATUS_READY]);
     }
 
     public function canTransferToWorkshop(): bool
     {
-        return app(\App\Domain\Order\Service\OrderStatusGroupingService::class)
-            ->canTransferToWorkshop($this->status);
+        // TODO: Implement workshop transfer logic
+        return false;
     }
 
     public function canTransferToManager(): bool
     {
-        return app(\App\Domain\Order\Service\OrderStatusGroupingService::class)
-            ->canTransferToManager($this->status);
+        // TODO: Implement manager transfer logic
+        return false;
     }
 
     public function getAvailableTransitions(): array
     {
-        return app(\App\Domain\Order\Service\OrderStatusGroupingService::class)
-            ->getAvailableTransitions($this->status);
+        // TODO: Implement status transitions logic
+        return [];
+    }
+
+    // Статические методы для получения доступных значений
+    public static function getAvailableStatuses(): array
+    {
+        return [
+            self::STATUS_NEW => 'Новый',
+            self::STATUS_CONSULTATION => 'Консультация',
+            self::STATUS_DIAGNOSTIC => 'Диагностика',
+            self::STATUS_IN_WORK => 'В работе',
+            self::STATUS_WAITING_PARTS => 'Ожидание запчастей',
+            self::STATUS_READY => 'Готов',
+            self::STATUS_ISSUED => 'Выдан',
+            self::STATUS_CANCELLED => 'Отменен',
+        ];
+    }
+
+    public static function getAvailableTypes(): array
+    {
+        return [
+            self::TYPE_REPAIR => 'Ремонт',
+            self::TYPE_SHARPENING => 'Заточка',
+            self::TYPE_DIAGNOSTIC => 'Диагностика',
+            self::TYPE_REPLACEMENT => 'Замена',
+            self::TYPE_MAINTENANCE => 'Обслуживание',
+            self::TYPE_CONSULTATION => 'Консультация',
+            self::TYPE_WARRANTY => 'Гарантийный',
+        ];
+    }
+
+    public static function getAvailableUrgencies(): array
+    {
+        return [
+            self::URGENCY_NORMAL => 'Обычный',
+            self::URGENCY_URGENT => 'Срочный',
+        ];
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -208,11 +273,36 @@ class Order extends Model implements HasMedia
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => 'Заказ создан',
                 'updated' => 'Заказ обновлен',
                 'deleted' => 'Заказ удален',
                 default => "Заказ {$eventName}",
             });
+    }
+
+    /**
+     * Генерирует уникальный номер заказа
+     */
+    public static function generateOrderNumber(): string
+    {
+        $date = date('Ymd');
+        $count = static::whereDate('created_at', today())->count() + 1;
+
+        return 'ORD-'.$date.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Boot метод для автоматической генерации номера заказа
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($order) {
+            if (empty($order->order_number)) {
+                $order->order_number = static::generateOrderNumber();
+            }
+        });
     }
 }

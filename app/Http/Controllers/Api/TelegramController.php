@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Application\UseCases\Communication\Telegram\Verification\CheckChatIsExistsUseCase;
 use App\Application\UseCases\Communication\Telegram\Verification\SendVerificationCodeUseCase;
+use App\Application\UseCases\Communication\Telegram\Verification\VerifyTelegramCodeUseCase;
 use App\Application\UseCases\Communication\Telegram\Webhook\HandleTelegramCommandUseCase;
 use App\Application\UseCases\Communication\Telegram\Webhook\HandleTelegramMessageUseCase;
-use App\Application\UseCases\Communication\Telegram\Verification\VerifyTelegramCodeUseCase;
-use App\Application\UseCases\Communication\Telegram\Verification\CheckChatIsExistsUseCase;
-
-
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TelegramController extends Controller
 {
@@ -30,7 +28,7 @@ class TelegramController extends Controller
                 'data' => json_encode($data),
             ]);
 
-            if (!isset($data['message'])) {
+            if (! isset($data['message'])) {
                 return response()->json(['status' => 'ok']);
             }
 
@@ -72,6 +70,7 @@ class TelegramController extends Controller
     {
         try {
             $result = (new SendVerificationCodeUseCase())->loadData($request->all())->validate()->execute();
+
             return response()->json($result);
         } catch (\Exception $e) {
             return response()->json([
@@ -84,12 +83,14 @@ class TelegramController extends Controller
     public function telegramVerifyCode(Request $request)
     {
         $result = (new VerifyTelegramCodeUseCase())->loadData($request->all())->validate()->execute();
+
         return response()->json($result);
     }
 
     public function telegramCheckChatIsExists(Request $request)
     {
         $result = (new CheckChatIsExistsUseCase())->loadData($request->all())->validate()->execute();
+
         return response()->json($result);
     }
 }
