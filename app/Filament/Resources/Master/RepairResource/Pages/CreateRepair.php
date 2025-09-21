@@ -3,33 +3,79 @@
 namespace App\Filament\Resources\Master\RepairResource\Pages;
 
 use App\Filament\Resources\Master\RepairResource;
+use App\Application\UseCases\Repair\CreateRepairUseCase;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Notifications\Notification;
 
 class CreateRepair extends CreateRecord
 {
     protected static string $resource = RepairResource::class;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+
+    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
-        // Автоматическое заполнение полей при создании
-        $data['created_at'] = now();
-        $data['updated_at'] = now();
+        try {
+            // Подготовка данных для Use Case
+            $useCaseData = [
+                'order_id' => $data['order_id'],
+                'master_id' => $data['master_id'] ?? null,
+                'status' => $data['status'] ?? 'pending',
+                'description' => $data['description'],
+                'diagnosis' => $data['diagnosis'] ?? null,
+                'work_performed' => $data['work_performed'] ?? null,
+                'notes' => $data['notes'] ?? null,
+                'started_at' => $data['started_at'] ?? null,
+                'estimated_completion' => $data['estimated_completion'] ?? null,
+                'parts_used' => $data['parts_used'] ?? [],
+                'additional_data' => $data['additional_data'] ?? [],
+            ];
 
-        // Обработка запчастей - получаем склад через заказ
-        if (isset($data['stock_movements'])) {
-            $order = \App\Models\Order::find($data['order_id']);
-            $warehouse = $order?->branch?->warehouses()->first();
+            // Выполнение Use Case
+            $repair = (new CreateRepairUseCase())
+                ->loadData($useCaseData)
+                ->validate()
+                ->execute();
 
-            foreach ($data['stock_movements'] as &$movement) {
-                $movement['warehouse_id'] = $warehouse?->id;
-                $movement['movement_type'] = 'out';
-                $movement['movement_date'] = now();
-                $movement['created_by'] = auth()->id();
-                $movement['total_amount'] = ($movement['quantity'] ?? 0) * ($movement['unit_price'] ?? 0);
-            }
+            // Создание Eloquent модели для Filament
+            $repairModel = new \App\Models\Repair();
+            $repairModel->fill([
+                'id' => $repair->getId(),
+                'number' => $repair->getNumber(),
+                'order_id' => $repair->getOrderId(),
+                'master_id' => $repair->getMasterId(),
+                'status' => $repair->getStatus(),
+                'description' => $repair->getDescription(),
+                'diagnosis' => $repair->getDiagnosis(),
+                'work_performed' => $repair->getWorkPerformed(),
+                'notes' => $repair->getNotes(),
+                'started_at' => $repair->getStartedAt(),
+                'completed_at' => $repair->getCompletedAt(),
+                'estimated_completion' => $repair->getEstimatedCompletion(),
+                'parts_used' => $repair->getPartsUsed(),
+                'additional_data' => $repair->getAdditionalData(),
+                'work_time_minutes' => $data['work_time_minutes'] ?? null,
+                'price' => $data['price'] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $repairModel->save();
+
+
+            Notification::make()
+                ->title('Ремонт успешно создан')
+                ->success()
+                ->send();
+
+            return $repairModel;
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Ошибка при создании ремонта')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            throw $e;
         }
-
-        return $data;
     }
 
     protected function getRedirectUrl(): string

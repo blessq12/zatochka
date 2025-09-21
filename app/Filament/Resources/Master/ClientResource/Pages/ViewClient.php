@@ -6,10 +6,27 @@ use App\Filament\Resources\Master\ClientResource;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use App\Application\UseCases\Client\GetClientUseCase;
 
 class ViewClient extends ViewRecord
 {
     protected static string $resource = ClientResource::class;
+
+    public function mount(int | string $record): void
+    {
+        // Получаем данные клиента через Use Case
+        $useCase = new GetClientUseCase();
+        $clientEntity = $useCase->loadData(['id' => $record])->validate()->execute();
+        $eloquentClient = \App\Models\Client::find($clientEntity->getId());
+
+        if (!$eloquentClient) {
+            abort(404, 'Клиент не найден');
+        }
+
+        $this->record = $eloquentClient;
+
+        parent::mount($record);
+    }
 
     public function infolist(Infolist $infolist): Infolist
     {

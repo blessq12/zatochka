@@ -19,6 +19,8 @@ readonly class Repair
         public ?\DateTime $estimatedCompletion,
         public array $partsUsed = [],
         public array $additionalData = [],
+        public ?int $workTimeMinutes = null,
+        public ?float $price = null,
         public bool $isDeleted = false,
         public ?\DateTime $createdAt = null,
         public ?\DateTime $updatedAt = null,
@@ -108,6 +110,16 @@ readonly class Repair
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
+    }
+
+    public function getWorkTimeMinutes(): ?int
+    {
+        return $this->workTimeMinutes;
+    }
+
+    public function getPrice(): ?float
+    {
+        return $this->price;
     }
 
     // Business methods

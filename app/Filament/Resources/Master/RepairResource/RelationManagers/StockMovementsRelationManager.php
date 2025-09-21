@@ -16,13 +16,49 @@ class StockMovementsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('stock_item_id')
-                    ->label('Запчасть')
-                    ->relationship('stockItem', 'name')
-                    ->getOptionLabelFromRecordUsing(fn($record) => $record->name . ' (' . $record->sku . ')')
+                Forms\Components\Select::make('warehouse_id')
+                    ->label('Склад')
+                    ->relationship('warehouse', 'name')
+                    ->getOptionLabelFromRecordUsing(fn($record) => $record->name)
                     ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function (Forms\Set $set, $state, Forms\Get $get) {
+                        // Обновляем доступные запчасти при смене склада
+                        $set('stock_item_id', null);
+                        $set('unit_price', null);
+                        $set('total_amount', null);
+                    }),
+
+                Forms\Components\Select::make('stock_item_id')
+                    ->label('Запчасть')
+                    ->relationship('stockItem', 'name', function ($query, Forms\Get $get) {
+                        $warehouseId = $get('warehouse_id');
+                        if ($warehouseId) {
+                            return $query->where('warehouse_id', $warehouseId)
+                                ->where('is_active', true)
+                                ->where('is_deleted', false)
+                                ->where('quantity', '>', 0);
+                        }
+                        return $query->where('id', 0); // Пустой результат если склад не выбран
+                    })
+                    ->getOptionLabelFromRecordUsing(fn($record) => $record->name . ' (' . $record->sku . ') - ' . number_format($record->retail_price, 2) . '₽')
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function (Forms\Set $set, $state, Forms\Get $get) {
+                        if ($state) {
+                            // Получаем розничную цену товара
+                            $stockItem = \App\Models\StockItem::find($state);
+                            if ($stockItem) {
+                                $set('unit_price', $stockItem->retail_price);
+                                $quantity = $get('quantity') ?? 0;
+                                $set('total_amount', $quantity * $stockItem->retail_price);
+                            }
+                        }
+                    }),
 
                 Forms\Components\TextInput::make('quantity')
                     ->label('Количество')
@@ -41,20 +77,15 @@ class StockMovementsRelationManager extends RelationManager
                     ->numeric()
                     ->prefix('₽')
                     ->step(0.01)
-                    ->required()
-                    ->live()
-                    ->afterStateUpdated(function (Forms\Set $set, $state, Forms\Get $get) {
-                        $quantity = $get('quantity') ?? 0;
-                        $unitPrice = $state ?? 0;
-                        $set('total_amount', $quantity * $unitPrice);
-                    }),
+                    ->disabled()
+                    ->dehydrated()
+                    ->helperText('Цена берется из розничной цены товара'),
 
                 Forms\Components\TextInput::make('total_amount')
                     ->label('Общая сумма')
                     ->numeric()
                     ->prefix('₽')
                     ->step(0.01)
-                    ->required()
                     ->disabled()
                     ->dehydrated(),
 
@@ -64,8 +95,6 @@ class StockMovementsRelationManager extends RelationManager
 
                 Forms\Components\Hidden::make('movement_type')
                     ->default('out'),
-
-                Forms\Components\Hidden::make('warehouse_id'),
             ]);
     }
 
@@ -117,19 +146,6 @@ class StockMovementsRelationManager extends RelationManager
             ])
             ->headerActions([
                 //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->mutateFormDataUsing(function (array $data, $record): array {
-                        $data['total_amount'] = ($data['quantity'] ?? 0) * ($data['unit_price'] ?? 0);
-                        return $data;
-                    }),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ])
             ->defaultSort('movement_date', 'desc');
     }

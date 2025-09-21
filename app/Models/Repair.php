@@ -15,14 +15,30 @@ class Repair extends Model implements HasMedia
     use HasFactory, SoftDeletes, InteractsWithMedia;
 
     protected $fillable = [
+        'number',
         'order_id',
+        'master_id',
+        'status',
         'description',
+        'diagnosis',
+        'work_performed',
+        'notes',
+        'started_at',
+        'completed_at',
+        'estimated_completion',
+        'parts_used',
+        'additional_data',
         'work_time_minutes',
         'price',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'parts_used' => 'array',
+        'additional_data' => 'array',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'estimated_completion' => 'datetime',
     ];
 
     // Relationships

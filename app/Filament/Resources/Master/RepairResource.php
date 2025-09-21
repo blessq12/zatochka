@@ -32,7 +32,10 @@ class RepairResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('order_id')
                             ->label('Заказ')
-                            ->relationship('order', 'order_number')
+                            ->relationship('order', 'order_number', function ($query) {
+                                // Исключаем заказы, для которых уже создан ремонт
+                                return $query->whereDoesntHave('repairs');
+                            })
                             ->getOptionLabelFromRecordUsing(fn($record) => $record->order_number)
                             ->required()
                             ->searchable()
@@ -45,68 +48,8 @@ class RepairResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(1),
 
-                Forms\Components\Section::make('Материалы и время')
+                Forms\Components\Section::make('Время и стоимость')
                     ->schema([
-                        Forms\Components\Repeater::make('stock_movements')
-                            ->label('Использованные запчасти')
-                            ->relationship('stockMovements')
-                            ->schema([
-                                Forms\Components\Select::make('stock_item_id')
-                                    ->label('Запчасть')
-                                    ->relationship('stockItem', 'name')
-                                    ->getOptionLabelFromRecordUsing(fn($record) => $record->name . ' (' . $record->sku . ')')
-                                    ->searchable()
-                                    ->preload()
-                                    ->required(),
-                                Forms\Components\TextInput::make('quantity')
-                                    ->label('Количество')
-                                    ->numeric()
-                                    ->required()
-                                    ->minValue(1)
-                                    ->live()
-                                    ->afterStateUpdated(function (Forms\Set $set, $state, Forms\Get $get) {
-                                        $quantity = $state ?? 0;
-                                        $unitPrice = $get('unit_price') ?? 0;
-                                        $set('total_amount', $quantity * $unitPrice);
-                                    }),
-                                Forms\Components\TextInput::make('unit_price')
-                                    ->label('Цена за единицу')
-                                    ->numeric()
-                                    ->prefix('₽')
-                                    ->step(0.01)
-                                    ->required()
-                                    ->live()
-                                    ->afterStateUpdated(function (Forms\Set $set, $state, Forms\Get $get) {
-                                        $quantity = $get('quantity') ?? 0;
-                                        $unitPrice = $state ?? 0;
-                                        $set('total_amount', $quantity * $unitPrice);
-                                    }),
-                                Forms\Components\TextInput::make('total_amount')
-                                    ->label('Общая сумма')
-                                    ->numeric()
-                                    ->prefix('₽')
-                                    ->step(0.01)
-                                    ->disabled()
-                                    ->dehydrated(),
-                                Forms\Components\Textarea::make('description')
-                                    ->label('Описание')
-                                    ->rows(2),
-
-                                Forms\Components\Hidden::make('movement_type')
-                                    ->default('out'),
-
-                                Forms\Components\Hidden::make('warehouse_id'),
-
-                                Forms\Components\Hidden::make('movement_date')
-                                    ->default(now()),
-
-                                Forms\Components\Hidden::make('created_by')
-                                    ->default(auth()->id()),
-                            ])
-                            ->columns(2)
-                            ->addActionLabel('Добавить запчасть')
-                            ->columnSpanFull(),
-
                         Forms\Components\TextInput::make('work_time_minutes')
                             ->label('Время работы (минуты)')
                             ->numeric()
@@ -195,19 +138,6 @@ class RepairResource extends Resource
                     ->money('RUB')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('stock_movements_count')
-                    ->label('Запчасти')
-                    ->counts('stockMovements')
-                    ->badge()
-                    ->color('info'),
-
-                Tables\Columns\TextColumn::make('stock_movements_sum')
-                    ->label('Стоимость запчастей')
-                    ->getStateUsing(function ($record) {
-                        return $record->stockMovements()->sum('total_amount');
-                    })
-                    ->money('RUB')
-                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')
@@ -245,7 +175,7 @@ class RepairResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\StockMovementsRelationManager::class,
+            //
         ];
     }
 
@@ -303,19 +233,6 @@ class RepairResource extends Resource
                             ->badge()
                             ->color('success'),
 
-                        Infolists\Components\TextEntry::make('stock_movements')
-                            ->label('Использованные запчасти')
-                            ->formatStateUsing(function ($record) {
-                                $movements = $record->stockMovements()->with('stockItem')->get();
-                                if ($movements->isEmpty()) return 'Запчасти не использовались';
-
-                                $result = [];
-                                foreach ($movements as $movement) {
-                                    $result[] = "• {$movement->stockItem->name}: {$movement->quantity} шт. - " . number_format($movement->total_amount, 2) . '₽';
-                                }
-                                return implode("\n", $result);
-                            })
-                            ->columnSpanFull(),
 
                         Infolists\Components\TextEntry::make('created_at')
                             ->label('Создан')
