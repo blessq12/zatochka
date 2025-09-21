@@ -12,10 +12,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
         // Запускаем сидеры
         $this->call([
-            //
+            BonusSettingsSeeder::class,
+            CompanyAndBranchSeeder::class,
         ]);
     }
 }
