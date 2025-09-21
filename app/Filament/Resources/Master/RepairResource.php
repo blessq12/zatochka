@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Master;
 
 use App\Filament\Resources\Master\RepairResource\Pages;
+use App\Filament\Resources\Master\RepairResource\RelationManagers\ActivityLogRelationManager;
 use App\Models\Repair;
 use App\Models\Order;
 use Filament\Forms;
@@ -312,7 +313,7 @@ class RepairResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ActivityLogRelationManager::class,
         ];
     }
 
