@@ -29,6 +29,7 @@ Route::middleware('auth:client')->group(function () {
     });
     Route::controller(ReviewController::class)->group(function () {
         Route::post('/review/create', 'createReview');
+        Route::get('/review/order/{orderId}', 'getOrderReview');
     });
     Route::controller(TelegramController::class)->group(function () {
         Route::post('/telegram/send-verification-code', 'telegramSendVerificationCode');

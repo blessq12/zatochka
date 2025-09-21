@@ -102,4 +102,51 @@ class ReviewController extends Controller
             ], 500);
         }
     }
+
+    public function getOrderReview(Request $request, $orderId)
+    {
+        try {
+            $client = Auth::guard('sanctum')->user();
+            if (!$client) {
+                return response()->json(['success' => false, 'message' => 'Необходима авторизация'], 401);
+            }
+
+            // Проверяем, что заказ принадлежит клиенту
+            $order = Order::where('id', $orderId)->where('client_id', $client->id)->first();
+            if (!$order) {
+                return response()->json(['success' => false, 'message' => 'Заказ не найден или не принадлежит вам'], 404);
+            }
+
+            // Ищем отзыв по заказу
+            $review = Review::where('order_id', $orderId)
+                ->where('client_id', $client->id)
+                ->where('is_deleted', false)
+                ->first();
+
+            if (!$review) {
+                return response()->json([
+                    'success' => true,
+                    'has_review' => false,
+                    'message' => 'Отзыв не найден'
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'has_review' => true,
+                'review' => [
+                    'id' => $review->id,
+                    'rating' => $review->rating,
+                    'comment' => $review->comment,
+                    'is_approved' => $review->is_approved,
+                    'is_visible' => $review->is_visible,
+                    'reply' => $review->reply,
+                    'created_at' => $review->created_at->format('d.m.Y H:i'),
+                    'updated_at' => $review->updated_at->format('d.m.Y H:i'),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Произошла ошибка при получении отзыва'], 500);
+        }
+    }
 }

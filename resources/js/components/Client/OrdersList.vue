@@ -14,10 +14,31 @@ export default {
                 rating: 5,
                 comment: "",
             },
+            orderReviews: {}, // Кэш отзывов по заказам
         };
     },
     computed: {
         ...mapStores(useOrderStore, useAuthStore),
+    },
+    watch: {
+        "orderStore.orders": {
+            handler: async function (newOrders) {
+                if (newOrders && newOrders.length > 0) {
+                    console.log("Orders changed, loading reviews...");
+                    await this.loadReviewsForOrders();
+                }
+            },
+            immediate: true,
+        },
+    },
+    async mounted() {
+        console.log("OrdersList component mounted with review functionality!");
+        // Загружаем отзывы для завершенных заказов
+        await this.loadReviewsForOrders();
+    },
+    async updated() {
+        // Загружаем отзывы при обновлении списка заказов
+        await this.loadReviewsForOrders();
     },
     methods: {
         getStatusClass(status) {
@@ -93,6 +114,9 @@ export default {
                 page,
                 this.orderStore.pagination.per_page
             );
+
+            // После загрузки заказов загружаем отзывы
+            await this.loadReviewsForOrders();
         },
         getVisiblePages() {
             const current = this.orderStore.pagination.current_page;
@@ -120,9 +144,14 @@ export default {
             return pages;
         },
         canLeaveReview(order) {
-            return order.status === "issued";
+            return order.status === "issued" && !this.hasReview(order.id);
         },
         openReviewSlide(order) {
+            // Проверяем, что отзыва еще нет
+            if (this.hasReview(order.id)) {
+                return;
+            }
+
             this.selectedOrder = order;
             this.reviewForm = {
                 rating: 5,
@@ -150,7 +179,6 @@ export default {
             const reviewSlide = this.$el.querySelector(".review-slide");
             if (!reviewSlide) return;
 
-            // Устанавливаем начальное состояние для контейнера
             gsap.set(reviewSlide, {
                 height: 0,
                 opacity: 0,
@@ -158,7 +186,6 @@ export default {
                 scale: 0.95,
             });
 
-            // Устанавливаем начальное состояние для внутренних элементов
             const header = reviewSlide.querySelector(".review-header");
             const content = reviewSlide.querySelector(".review-content");
             const buttons = reviewSlide.querySelector(".review-buttons");
@@ -233,7 +260,13 @@ export default {
             );
 
             if (result.success) {
+                // Обновляем кэш отзывов
+                await this.loadOrderReview(this.selectedOrder.id);
+                // Форма автоматически закроется в loadOrderReview если отзыв создан
                 this.closeReviewSlide();
+
+                // Принудительно обновляем компонент
+                this.$forceUpdate();
             }
         },
         getStarClass(star) {
@@ -270,6 +303,74 @@ export default {
                 duration: 0.2,
                 ease: "power2.out",
             });
+        },
+        async loadReviewsForOrders() {
+            if (this.orderStore.orders) {
+                console.log(
+                    "Loading reviews for orders:",
+                    this.orderStore.orders.length
+                );
+                for (const order of this.orderStore.orders) {
+                    if (order.status === "issued") {
+                        console.log("Loading review for order:", order.id);
+                        await this.loadOrderReview(order.id);
+                    }
+                }
+            }
+        },
+        async loadOrderReview(orderId) {
+            if (this.orderReviews[orderId]) {
+                return this.orderReviews[orderId];
+            }
+
+            const result = await this.orderStore.getOrderReview(
+                this.authStore.token,
+                orderId
+            );
+
+            if (result.success) {
+                this.orderReviews[orderId] = result.data;
+
+                // Если отзыв существует и форма открыта для этого заказа, закрываем её
+                if (
+                    result.data.has_review &&
+                    this.selectedOrder &&
+                    this.selectedOrder.id === orderId
+                ) {
+                    this.closeReviewSlide();
+                }
+
+                return result.data;
+            }
+
+            return null;
+        },
+        hasReview(orderId) {
+            return (
+                this.orderReviews[orderId] &&
+                this.orderReviews[orderId].has_review
+            );
+        },
+        getReview(orderId) {
+            return this.orderReviews[orderId]?.review || null;
+        },
+        getReviewStatusText(review) {
+            if (!review) return "";
+
+            if (!review.is_approved) {
+                return "Ожидает модерации";
+            }
+
+            return "";
+        },
+        getReviewStatusClass(review) {
+            if (!review) return "";
+
+            if (!review.is_approved) {
+                return "text-orange-600 dark:text-orange-400";
+            }
+
+            return "text-green-600 dark:text-green-400";
         },
     },
 };
@@ -392,6 +493,159 @@ export default {
                             >
                                 ⭐ Оставить отзыв
                             </button>
+
+                            <!-- Индикация что отзыв уже оставлен -->
+                            <div
+                                v-else-if="
+                                    order.status === 'issued' &&
+                                    hasReview(order.id)
+                                "
+                                class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+                            >
+                                <span class="text-green-600 dark:text-green-400"
+                                    >✅</span
+                                >
+                                <span>Отзыв оставлен</span>
+                                <span
+                                    v-if="
+                                        getReviewStatusText(getReview(order.id))
+                                    "
+                                    :class="[
+                                        'text-xs font-medium px-2 py-1 rounded-lg',
+                                        getReviewStatusClass(
+                                            getReview(order.id)
+                                        ),
+                                    ]"
+                                >
+                                    {{
+                                        getReviewStatusText(getReview(order.id))
+                                    }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Отображение существующего отзыва -->
+                        <div
+                            v-if="
+                                order.status === 'issued' && hasReview(order.id)
+                            "
+                            class="mt-4 bg-white/85 backdrop-blur-2xl rounded-2xl shadow-xl border border-white/25 dark:bg-gray-800/85 dark:border-gray-700/25 overflow-hidden"
+                        >
+                            <div class="p-4 space-y-4">
+                                <!-- Заголовок отзыва -->
+                                <div class="flex items-center justify-between">
+                                    <h4
+                                        class="text-lg font-bold text-gray-900 dark:text-gray-100"
+                                    >
+                                        Ваш отзыв
+                                    </h4>
+                                    <div class="flex items-center gap-2">
+                                        <!-- Рейтинг -->
+                                        <div class="flex items-center gap-1">
+                                            <span
+                                                v-for="star in 5"
+                                                :key="star"
+                                                :class="[
+                                                    'text-lg',
+                                                    star <=
+                                                    getReview(order.id)?.rating
+                                                        ? 'text-yellow-400'
+                                                        : 'text-gray-300 dark:text-gray-600',
+                                                ]"
+                                            >
+                                                ⭐
+                                            </span>
+                                        </div>
+                                        <!-- Статус модерации -->
+                                        <span
+                                            v-if="
+                                                getReviewStatusText(
+                                                    getReview(order.id)
+                                                )
+                                            "
+                                            :class="[
+                                                'text-xs font-medium px-2 py-1 rounded-lg',
+                                                getReviewStatusClass(
+                                                    getReview(order.id)
+                                                ),
+                                            ]"
+                                        >
+                                            {{
+                                                getReviewStatusText(
+                                                    getReview(order.id)
+                                                )
+                                            }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Сообщение клиента -->
+                                <div
+                                    class="bg-blue-50/80 backdrop-blur-lg rounded-xl p-3 border border-blue-200/30 dark:bg-blue-900/30 dark:border-blue-800/20"
+                                >
+                                    <div class="flex items-start gap-3">
+                                        <div
+                                            class="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0"
+                                        >
+                                            <span
+                                                class="text-blue-600 dark:text-blue-400 text-sm font-bold"
+                                                >В</span
+                                            >
+                                        </div>
+                                        <div class="flex-1">
+                                            <div
+                                                class="text-sm text-gray-600 dark:text-gray-400 mb-1"
+                                            >
+                                                Вы •
+                                                {{
+                                                    getReview(order.id)
+                                                        ?.created_at
+                                                }}
+                                            </div>
+                                            <div
+                                                class="text-gray-900 dark:text-gray-100"
+                                            >
+                                                {{
+                                                    getReview(order.id)?.comment
+                                                }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ответ менеджера (если есть) -->
+                                <div
+                                    v-if="getReview(order.id)?.reply"
+                                    class="bg-green-50/80 backdrop-blur-lg rounded-xl p-3 border border-green-200/30 dark:bg-green-900/30 dark:border-green-800/20"
+                                >
+                                    <div class="flex items-start gap-3">
+                                        <div
+                                            class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0"
+                                        >
+                                            <span
+                                                class="text-green-600 dark:text-green-400 text-sm font-bold"
+                                                >М</span
+                                            >
+                                        </div>
+                                        <div class="flex-1">
+                                            <div
+                                                class="text-sm text-gray-600 dark:text-gray-400 mb-1"
+                                            >
+                                                Менеджер •
+                                                {{
+                                                    getReview(order.id)
+                                                        ?.updated_at
+                                                }}
+                                            </div>
+                                            <div
+                                                class="text-gray-900 dark:text-gray-100"
+                                            >
+                                                {{ getReview(order.id)?.reply }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Раскрывающийся блок для создания отзыва -->
@@ -399,7 +653,8 @@ export default {
                             v-if="
                                 showReviewSlide &&
                                 selectedOrder &&
-                                selectedOrder.id === order.id
+                                selectedOrder.id === order.id &&
+                                !hasReview(order.id)
                             "
                             class="review-slide mt-4 bg-white/85 backdrop-blur-2xl rounded-2xl shadow-xl border border-white/25 dark:bg-gray-800/85 dark:border-gray-700/25 overflow-hidden"
                         >
