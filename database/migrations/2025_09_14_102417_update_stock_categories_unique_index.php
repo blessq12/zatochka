@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stock_categories', function (Blueprint $table) {
-            // Добавляем новый составной уникальный индекс
-            $table->unique(['warehouse_id', 'name'], 'stock_categories_warehouse_name_unique');
+            // Добавляем новый уникальный индекс только по name
+            $table->unique('name', 'stock_categories_name_unique');
         });
     }
 
@@ -23,9 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('stock_categories', function (Blueprint $table) {
-            // Возвращаем старый индекс
-            $table->dropUnique('stock_categories_warehouse_name_unique');
-            $table->unique('name');
+            // Удаляем уникальный индекс
+            $table->dropUnique('stock_categories_name_unique');
         });
     }
 };

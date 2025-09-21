@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Manager;
 
 use App\Filament\Resources\Manager\BranchResource\Pages;
-use App\Filament\Resources\Manager\BranchResource\RelationManagers;
 use App\Models\Branch;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -11,16 +10,20 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BranchResource extends Resource
 {
     protected static ?string $model = Branch::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
-    protected static ?string $navigationGroup = 'Компания';
-    protected static ?string $pluralLabel = 'Филиалы';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static ?string $navigationLabel = 'Филиалы';
+
     protected static ?string $modelLabel = 'Филиал';
+
+    protected static ?string $pluralModelLabel = 'Филиалы';
+
+    protected static ?string $navigationGroup = 'Организация';
 
     public static function form(Form $form): Form
     {
@@ -31,35 +34,33 @@ class BranchResource extends Resource
                         Forms\Components\Select::make('company_id')
                             ->label('Компания')
                             ->relationship('company', 'name')
-                            ->required()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->required(),
+
                         Forms\Components\TextInput::make('name')
-                            ->label('Название филиала')
+                            ->label('Название')
                             ->required()
                             ->maxLength(255),
+
                         Forms\Components\TextInput::make('code')
-                            ->label('Код филиала')
+                            ->label('Код')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
+
                         Forms\Components\Textarea::make('address')
                             ->label('Адрес')
                             ->required()
+                            ->rows(3)
                             ->columnSpanFull(),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Описание')
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
 
-                Forms\Components\Section::make('Контакты')
-                    ->schema([
                         Forms\Components\TextInput::make('phone')
                             ->label('Телефон')
                             ->tel()
                             ->required()
                             ->maxLength(255),
+
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
                             ->email()
@@ -68,164 +69,41 @@ class BranchResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Рабочее время')
+                Forms\Components\Section::make('Дополнительная информация')
                     ->schema([
-                        Forms\Components\TextInput::make('working_hours')
-                            ->label('Рабочие часы (текст)')
-                            ->placeholder('Пн-Пт: 10:00-19:00, Сб: 11:00-16:00')
+                        Forms\Components\Textarea::make('working_hours')
+                            ->label('Режим работы')
+                            ->rows(3)
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('opening_time')
-                            ->label('Время открытия')
-                            ->placeholder('10:00')
-                            ->maxLength(5),
-                        Forms\Components\TextInput::make('closing_time')
-                            ->label('Время закрытия')
-                            ->placeholder('19:00')
-                            ->maxLength(5),
-                        Forms\Components\Grid::make(3)
-                            ->schema([
-                                Forms\Components\Section::make('Понедельник')
-                                    ->schema([
-                                        Forms\Components\Toggle::make('working_schedule.monday.is_working')
-                                            ->label('Рабочий день'),
-                                        Forms\Components\TextInput::make('working_schedule.monday.start')
-                                            ->label('Начало')
-                                            ->placeholder('10:00')
-                                            ->maxLength(5),
-                                        Forms\Components\TextInput::make('working_schedule.monday.end')
-                                            ->label('Конец')
-                                            ->placeholder('19:00')
-                                            ->maxLength(5),
-                                    ])
-                                    ->columns(1)
-                                    ->compact(),
 
-                                Forms\Components\Section::make('Вторник')
-                                    ->schema([
-                                        Forms\Components\Toggle::make('working_schedule.tuesday.is_working')
-                                            ->label('Рабочий день'),
-                                        Forms\Components\TextInput::make('working_schedule.tuesday.start')
-                                            ->label('Начало')
-                                            ->placeholder('10:00')
-                                            ->maxLength(5),
-                                        Forms\Components\TextInput::make('working_schedule.tuesday.end')
-                                            ->label('Конец')
-                                            ->placeholder('19:00')
-                                            ->maxLength(5),
-                                    ])
-                                    ->columns(1)
-                                    ->compact(),
-
-                                Forms\Components\Section::make('Среда')
-                                    ->schema([
-                                        Forms\Components\Toggle::make('working_schedule.wednesday.is_working')
-                                            ->label('Рабочий день'),
-                                        Forms\Components\TextInput::make('working_schedule.wednesday.start')
-                                            ->label('Начало')
-                                            ->placeholder('10:00')
-                                            ->maxLength(5),
-                                        Forms\Components\TextInput::make('working_schedule.wednesday.end')
-                                            ->label('Конец')
-                                            ->placeholder('19:00')
-                                            ->maxLength(5),
-                                    ])
-                                    ->columns(1)
-                                    ->compact(),
-
-                                Forms\Components\Section::make('Четверг')
-                                    ->schema([
-                                        Forms\Components\Toggle::make('working_schedule.thursday.is_working')
-                                            ->label('Рабочий день'),
-                                        Forms\Components\TextInput::make('working_schedule.thursday.start')
-                                            ->label('Начало')
-                                            ->placeholder('10:00')
-                                            ->maxLength(5),
-                                        Forms\Components\TextInput::make('working_schedule.thursday.end')
-                                            ->label('Конец')
-                                            ->placeholder('19:00')
-                                            ->maxLength(5),
-                                    ])
-                                    ->columns(1)
-                                    ->compact(),
-
-                                Forms\Components\Section::make('Пятница')
-                                    ->schema([
-                                        Forms\Components\Toggle::make('working_schedule.friday.is_working')
-                                            ->label('Рабочий день'),
-                                        Forms\Components\TextInput::make('working_schedule.friday.start')
-                                            ->label('Начало')
-                                            ->placeholder('10:00')
-                                            ->maxLength(5),
-                                        Forms\Components\TextInput::make('working_schedule.friday.end')
-                                            ->label('Конец')
-                                            ->placeholder('19:00')
-                                            ->maxLength(5),
-                                    ])
-                                    ->columns(1)
-                                    ->compact(),
-
-                                Forms\Components\Section::make('Суббота')
-                                    ->schema([
-                                        Forms\Components\Toggle::make('working_schedule.saturday.is_working')
-                                            ->label('Рабочий день'),
-                                        Forms\Components\TextInput::make('working_schedule.saturday.start')
-                                            ->label('Начало')
-                                            ->placeholder('11:00')
-                                            ->maxLength(5),
-                                        Forms\Components\TextInput::make('working_schedule.saturday.end')
-                                            ->label('Конец')
-                                            ->placeholder('16:00')
-                                            ->maxLength(5),
-                                    ])
-                                    ->columns(1)
-                                    ->compact(),
-
-                                Forms\Components\Section::make('Воскресенье')
-                                    ->schema([
-                                        Forms\Components\Toggle::make('working_schedule.sunday.is_working')
-                                            ->label('Рабочий день'),
-                                        Forms\Components\TextInput::make('working_schedule.sunday.start')
-                                            ->label('Начало')
-                                            ->placeholder('10:00')
-                                            ->maxLength(5),
-                                        Forms\Components\TextInput::make('working_schedule.sunday.end')
-                                            ->label('Конец')
-                                            ->placeholder('19:00')
-                                            ->maxLength(5),
-                                    ])
-                                    ->columns(1)
-                                    ->compact(),
-                            ])
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Координаты')
-                    ->schema([
                         Forms\Components\TextInput::make('latitude')
                             ->label('Широта')
                             ->numeric()
-                            ->step(0.0000001),
+                            ->step(0.000001),
+
                         Forms\Components\TextInput::make('longitude')
                             ->label('Долгота')
                             ->numeric()
-                            ->step(0.0000001),
-                    ])
-                    ->columns(2),
+                            ->step(0.000001),
 
-                Forms\Components\Section::make('Настройки')
+                        Forms\Components\Textarea::make('description')
+                            ->label('Описание')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible(),
+
+                Forms\Components\Section::make('Статус')
                     ->schema([
                         Forms\Components\Toggle::make('is_active')
                             ->label('Активен')
                             ->default(true),
-                        Forms\Components\Toggle::make('is_main')
-                            ->label('Главный филиал'),
-                        Forms\Components\TextInput::make('sort_order')
-                            ->label('Порядок сортировки')
-                            ->numeric()
-                            ->default(0),
+
+                        Forms\Components\Toggle::make('is_deleted')
+                            ->label('Удален')
+                            ->default(false),
                     ])
-                    ->columns(2),
+                    ->collapsible(),
             ]);
     }
 
@@ -233,75 +111,105 @@ class BranchResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Название')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+
                 Tables\Columns\TextColumn::make('company.name')
                     ->label('Компания')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Название')
-                    ->searchable()
-                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('code')
                     ->label('Код')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable(),
+
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Телефон')
                     ->searchable()
-                    ->toggleable(),
+                    ->sortable()
+                    ->copyable(),
+
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('working_hours')
-                    ->label('Рабочие часы')
-                    ->searchable()
-                    ->toggleable(),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Активен')
-                    ->boolean()
-                    ->sortable(),
-                Tables\Columns\IconColumn::make('is_main')
-                    ->label('Главный')
-                    ->boolean()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('sort_order')
-                    ->label('Порядок')
-                    ->numeric()
                     ->sortable()
                     ->toggleable(),
+
+                Tables\Columns\BadgeColumn::make('is_active')
+                    ->label('Статус')
+                    ->colors([
+                        'success' => true,
+                        'danger' => false,
+                    ])
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Активен' : 'Неактивен'),
+
+                Tables\Columns\TextColumn::make('orders_count')
+                    ->label('Заказов')
+                    ->counts('orders')
+                    ->sortable()
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')
-                    ->dateTime()
+                    ->dateTime('d.m.Y H:i')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\IconColumn::make('is_deleted')
+                    ->label('Удален')
+                    ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('company_id')
                     ->label('Компания')
-                    ->relationship('company', 'name')
-                    ->searchable()
-                    ->preload(),
+                    ->relationship('company', 'name'),
+
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Статус')
                     ->placeholder('Все филиалы')
                     ->trueLabel('Только активные')
                     ->falseLabel('Только неактивные'),
-                Tables\Filters\TernaryFilter::make('is_main')
-                    ->label('Тип')
+
+                Tables\Filters\TernaryFilter::make('is_deleted')
+                    ->label('Удаленные')
                     ->placeholder('Все филиалы')
-                    ->trueLabel('Только главные')
-                    ->falseLabel('Только обычные'),
+                    ->trueLabel('Только удаленные')
+                    ->falseLabel('Только активные'),
+
+                Tables\Filters\Filter::make('has_orders')
+                    ->label('С заказами')
+                    ->query(fn (Builder $query): Builder => $query->has('orders')),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('view_orders')
+                    ->label('Заказы')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->url(fn (Branch $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[branch_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('mark_deleted')
+                        ->label('Пометить как удаленные')
+                        ->icon('heroicon-o-trash')
+                        ->action(function ($records): void {
+                            $records->each->update(['is_deleted' => true]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Филиалы помечены как удаленные')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ])
-            ->defaultSort('sort_order');
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -316,6 +224,7 @@ class BranchResource extends Resource
         return [
             'index' => Pages\ListBranches::route('/'),
             'create' => Pages\CreateBranch::route('/create'),
+            'view' => Pages\ViewBranch::route('/{record}'),
             'edit' => Pages\EditBranch::route('/{record}/edit'),
         ];
     }

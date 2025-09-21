@@ -17,7 +17,7 @@ return new class extends Migration
                 'earn_percent',
                 'expire_days',
                 'min_order_amount',
-                'max_bonus_per_order'
+                'max_bonus_per_order',
             ]);
 
             // Добавляем новые поля
@@ -51,7 +51,7 @@ return new class extends Migration
                 'expire_days',
                 'min_order_amount',
                 'max_bonus_per_order',
-                'created_at'
+                'created_at',
             ]);
 
             // Возвращаем старые поля

@@ -3,146 +3,167 @@
 namespace App\Filament\Resources\Manager;
 
 use App\Filament\Resources\Manager\BonusSettingsResource\Pages;
-use App\Filament\Resources\Manager\BonusSettingsResource\RelationManagers;
 use App\Models\BonusSettings;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BonusSettingsResource extends Resource
 {
     protected static ?string $model = BonusSettings::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
-    protected static ?string $navigationGroup = 'Бонусная система';
-    protected static ?string $pluralLabel = 'Настройки бонусов';
+
+    protected static ?string $navigationLabel = 'Настройки бонусов';
+
     protected static ?string $modelLabel = 'Настройка бонусов';
+
+    protected static ?string $pluralModelLabel = 'Настройки бонусов';
+
+    protected static ?string $navigationGroup = 'Настройки';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Начисления бонусов')
+                Forms\Components\Section::make('Основные настройки')
                     ->schema([
-                        Forms\Components\TextInput::make('percent_per_order')
-                            ->label('Процент от заказа (%)')
-                            ->required()
+                        Forms\Components\TextInput::make('birthday_bonus')
+                            ->label('Бонус на день рождения')
                             ->numeric()
-                            ->step(0.01)
-                            ->minValue(0)
-                            ->maxValue(100)
-                            ->helperText('Процент от суммы заказа, который начисляется как бонусы'),
-
-                        Forms\Components\TextInput::make('min_order_amount')
-                            ->label('Минимальная сумма заказа (₽)')
-                            ->required()
-                            ->numeric()
-                            ->step(0.01)
-                            ->minValue(0)
-                            ->helperText('Минимальная сумма заказа для начисления бонусов'),
-
-                        Forms\Components\TextInput::make('max_bonus_per_order')
-                            ->label('Максимальный бонус за заказ')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->helperText('Максимальное количество бонусов, которое можно начислить за один заказ'),
+                            ->suffix('бонусов')
+                            ->helperText('Количество бонусов, начисляемых клиенту на день рождения'),
 
                         Forms\Components\TextInput::make('first_order_bonus')
                             ->label('Бонус за первый заказ')
-                            ->required()
                             ->numeric()
-                            ->minValue(0)
-                            ->helperText('Дополнительный бонус за первый заказ клиента'),
-
-                        Forms\Components\TextInput::make('birthday_bonus')
-                            ->label('Бонус на день рождения')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->helperText('Бонус, который начисляется клиенту в день рождения'),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Использование бонусов')
-                    ->schema([
-                        Forms\Components\TextInput::make('min_order_sum_for_spending')
-                            ->label('Минимальная сумма для трат (₽)')
-                            ->required()
-                            ->numeric()
-                            ->step(0.01)
-                            ->minValue(0)
-                            ->helperText('Минимальная сумма заказа для возможности потратить бонусы'),
+                            ->suffix('бонусов')
+                            ->helperText('Количество бонусов, начисляемых за первый заказ'),
 
                         Forms\Components\TextInput::make('rate')
-                            ->label('Курс конвертации (₽ за бонус)')
-                            ->required()
+                            ->label('Курс конвертации')
                             ->numeric()
                             ->step(0.01)
-                            ->minValue(0.01)
-                            ->helperText('Сколько рублей стоит один бонус'),
+                            ->suffix('рублей за бонус')
+                            ->helperText('Сколько рублей стоит 1 бонус'),
+
+                        Forms\Components\TextInput::make('percent_per_order')
+                            ->label('Процент начислений с заказа')
+                            ->numeric()
+                            ->step(0.01)
+                            ->suffix('%')
+                            ->helperText('Какой процент от суммы заказа начисляется в виде бонусов'),
+
+                        Forms\Components\TextInput::make('min_order_sum_for_spending')
+                            ->label('Минимальная сумма для списания бонусов')
+                            ->numeric()
+                            ->step(0.01)
+                            ->prefix('₽')
+                            ->helperText('Минимальная сумма заказа, при которой можно тратить бонусы'),
+
+                        Forms\Components\TextInput::make('expire_days')
+                            ->label('Срок действия бонусов')
+                            ->numeric()
+                            ->suffix('дней')
+                            ->helperText('Через сколько дней бонусы сгорают'),
+
+                        Forms\Components\TextInput::make('min_order_amount')
+                            ->label('Минимальная сумма заказа для начисления')
+                            ->numeric()
+                            ->step(0.01)
+                            ->prefix('₽')
+                            ->helperText('Минимальная сумма заказа для начисления бонусов'),
+
+                        Forms\Components\TextInput::make('max_bonus_per_order')
+                            ->label('Максимальные бонусы за заказ')
+                            ->numeric()
+                            ->suffix('бонусов')
+                            ->helperText('Максимальное количество бонусов, которое можно получить за один заказ'),
                     ])
                     ->columns(2),
-
-                Forms\Components\Section::make('Срок действия')
-                    ->schema([
-                        Forms\Components\TextInput::make('expire_days')
-                            ->label('Срок действия бонусов (дней)')
-                            ->required()
-                            ->numeric()
-                            ->minValue(1)
-                            ->helperText('Через сколько дней бонусы становятся недействительными'),
-                    ])
-                    ->columns(1),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->query(BonusSettings::query())
             ->columns([
-                Tables\Columns\TextColumn::make('percent_per_order')
-                    ->label('Процент от заказа (%)')
+                Tables\Columns\TextColumn::make('birthday_bonus')
+                    ->label('Бонус на день рождения')
                     ->numeric()
-                    ->sortable(),
+                    ->suffix(' бонусов'),
 
-                Tables\Columns\TextColumn::make('min_order_amount')
-                    ->label('Мин. сумма заказа (₽)')
-                    ->money('RUB')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('max_bonus_per_order')
-                    ->label('Макс. бонус за заказ')
+                Tables\Columns\TextColumn::make('first_order_bonus')
+                    ->label('Бонус за первый заказ')
                     ->numeric()
-                    ->sortable(),
+                    ->suffix(' бонусов'),
 
                 Tables\Columns\TextColumn::make('rate')
-                    ->label('Курс (₽ за бонус)')
+                    ->label('Курс конвертации')
+                    ->money('RUB')
+                    ->suffix(' за бонус'),
+
+                Tables\Columns\TextColumn::make('percent_per_order')
+                    ->label('Процент начислений')
                     ->numeric()
-                    ->sortable(),
+                    ->suffix('%'),
+
+                Tables\Columns\TextColumn::make('min_order_sum_for_spending')
+                    ->label('Мин. сумма для списания')
+                    ->money('RUB'),
 
                 Tables\Columns\TextColumn::make('expire_days')
-                    ->label('Срок действия (дней)')
+                    ->label('Срок действия')
                     ->numeric()
-                    ->sortable(),
+                    ->suffix(' дней'),
+
+                Tables\Columns\TextColumn::make('min_order_amount')
+                    ->label('Мин. сумма заказа')
+                    ->money('RUB'),
+
+                Tables\Columns\TextColumn::make('max_bonus_per_order')
+                    ->label('Макс. бонусы за заказ')
+                    ->numeric()
+                    ->suffix(' бонусов'),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Обновлено')
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
-            ->filters([])
+            ->filters([
+                //
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('reset_to_defaults')
+                    ->label('Сбросить к умолчаниям')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->action(function (BonusSettings $record): void {
+                        $record->update([
+                            'birthday_bonus' => 0,
+                            'first_order_bonus' => 0,
+                            'rate' => 1.00,
+                            'percent_per_order' => 5.00,
+                            'min_order_sum_for_spending' => 1000.00,
+                            'expire_days' => 365,
+                            'min_order_amount' => 100.00,
+                            'max_bonus_per_order' => 1000,
+                        ]);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Настройки сброшены к значениям по умолчанию')
+                            ->success()
+                            ->send();
+                    }),
             ])
-            ->bulkActions([])
-            ->emptyStateHeading('Настройки бонусов не найдены')
-            ->emptyStateDescription('Настройки будут созданы автоматически при первом обращении');
+            ->bulkActions([
+                // Нет массовых действий для настроек
+            ])
+            ->defaultSort('updated_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -156,7 +177,12 @@ class BonusSettingsResource extends Resource
     {
         return [
             'index' => Pages\ListBonusSettings::route('/'),
-            'edit' => Pages\EditBonusSettings::route('/edit/{record}'),
+            'edit' => Pages\EditBonusSettings::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false; // Нельзя создавать новые настройки, только редактировать существующие
     }
 }

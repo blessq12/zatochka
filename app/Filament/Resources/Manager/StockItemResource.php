@@ -3,26 +3,27 @@
 namespace App\Filament\Resources\Manager;
 
 use App\Filament\Resources\Manager\StockItemResource\Pages;
-use App\Filament\Resources\Manager\StockItemResource\RelationManagers;
 use App\Models\StockItem;
-use App\Models\StockCategory;
-use App\Models\Warehouse;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class StockItemResource extends Resource
 {
     protected static ?string $model = StockItem::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cube';
-    protected static ?string $navigationGroup = 'Склад';
-    protected static ?string $pluralLabel = 'Товары';
-    protected static ?string $modelLabel = 'Товар';
+
+    protected static ?string $navigationLabel = 'Запчасти';
+
+    protected static ?string $modelLabel = 'Запчасть';
+
+    protected static ?string $pluralModelLabel = 'Запчасти';
+
+    protected static ?string $navigationGroup = 'Инвентарь';
 
     public static function form(Form $form): Form
     {
@@ -30,17 +31,22 @@ class StockItemResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Основная информация')
                     ->schema([
+                        Forms\Components\Select::make('category_id')
+                            ->label('Категория')
+                            ->relationship('category', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+
                         Forms\Components\TextInput::make('name')
-                            ->label('Название товара')
+                            ->label('Название')
                             ->required()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('sku')
-                            ->label('SKU/Артикул')
-                            ->required()
-                            ->maxLength(100)
-                            ->unique(StockItem::class, 'sku', ignoreRecord: true)
-                            ->helperText('Уникальный код товара'),
+                            ->label('Артикул')
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true),
 
                         Forms\Components\Textarea::make('description')
                             ->label('Описание')
@@ -49,35 +55,7 @@ class StockItemResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Классификация')
-                    ->schema([
-                        Forms\Components\Select::make('category_id')
-                            ->label('Категория товара')
-                            ->options(function () {
-                                return \App\Models\StockCategory::with('warehouse')
-                                    ->get()
-                                    ->mapWithKeys(function ($category) {
-                                        return [$category->id => $category->name . ' (' . $category->warehouse->name . ')'];
-                                    });
-                            })
-                            ->required()
-                            ->searchable()
-                            ->preload()
-                            ->helperText('Категория определяет склад для товара')
-                            ->live()
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                if ($state) {
-                                    $category = \App\Models\StockCategory::with('warehouse')->find($state);
-                                    if ($category) {
-                                        $set('warehouse_id', $category->warehouse_id);
-                                    }
-                                }
-                            }),
-
-                        Forms\Components\Hidden::make('warehouse_id'),
-                    ]),
-
-                Forms\Components\Section::make('Цены')
+                Forms\Components\Section::make('Цены и остатки')
                     ->schema([
                         Forms\Components\TextInput::make('purchase_price')
                             ->label('Закупочная цена')
@@ -90,45 +68,28 @@ class StockItemResource extends Resource
                             ->numeric()
                             ->prefix('₽')
                             ->step(0.01),
-                    ])
-                    ->columns(2),
 
-                Forms\Components\Section::make('Остатки')
-                    ->schema([
                         Forms\Components\TextInput::make('quantity')
-                            ->label('Количество на складе')
-                            ->required()
+                            ->label('Количество')
                             ->numeric()
+                            ->required()
                             ->default(0)
                             ->minValue(0),
 
                         Forms\Components\TextInput::make('min_stock')
                             ->label('Минимальный остаток')
-                            ->required()
                             ->numeric()
                             ->default(0)
                             ->minValue(0)
-                            ->helperText('При достижении этого количества будет показано предупреждение'),
+                            ->helperText('При достижении этого уровня будет предупреждение'),
 
-                        Forms\Components\Select::make('unit')
+                        Forms\Components\TextInput::make('unit')
                             ->label('Единица измерения')
-                            ->options([
-                                'шт' => 'Штуки',
-                                'кг' => 'Килограммы',
-                                'г' => 'Граммы',
-                                'л' => 'Литры',
-                                'мл' => 'Миллилитры',
-                                'м' => 'Метры',
-                                'см' => 'Сантиметры',
-                                'м²' => 'Квадратные метры',
-                                'м³' => 'Кубические метры',
-                                'компл' => 'Комплект',
-                                'упак' => 'Упаковка',
-                            ])
+                            ->maxLength(50)
                             ->default('шт')
-                            ->required(),
+                            ->helperText('шт, кг, м, л и т.д.'),
                     ])
-                    ->columns(3),
+                    ->columns(2),
 
                 Forms\Components\Section::make('Дополнительная информация')
                     ->schema([
@@ -144,15 +105,20 @@ class StockItemResource extends Resource
                             ->label('Модель')
                             ->maxLength(255),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->collapsible(),
 
                 Forms\Components\Section::make('Статус')
                     ->schema([
                         Forms\Components\Toggle::make('is_active')
-                            ->label('Активен')
-                            ->default(true)
-                            ->helperText('Неактивные товары не отображаются в выборе'),
-                    ]),
+                            ->label('Активна')
+                            ->default(true),
+
+                        Forms\Components\Toggle::make('is_deleted')
+                            ->label('Удалена')
+                            ->default(false),
+                    ])
+                    ->collapsible(),
             ]);
     }
 
@@ -161,111 +127,133 @@ class StockItemResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('sku')
-                    ->label('SKU')
+                    ->label('Артикул')
                     ->searchable()
                     ->sortable()
-                    ->copyable(),
+                    ->copyable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Название')
                     ->searchable()
                     ->sortable()
-                    ->limit(30)
-                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
-                        $state = $column->getState();
-                        return strlen($state) > 30 ? $state : null;
-                    }),
+                    ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Категория')
-                    ->badge()
-                    ->color(fn($record) => $record->category?->color ?? 'gray')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('warehouse.name')
-                    ->label('Склад')
+                    ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->badge()
+                    ->color(fn(StockItem $record): string => $record->category?->getDisplayColor() ?? 'gray'),
 
                 Tables\Columns\TextColumn::make('quantity')
                     ->label('Остаток')
-                    ->numeric()
                     ->sortable()
-                    ->color(fn($record) => $record->isLowStock() ? 'danger' : 'success')
-                    ->formatStateUsing(fn($state, $record) => $state . ' ' . $record->unit),
+                    ->formatStateUsing(function (int $state, StockItem $record): string {
+                        $unit = $record->unit ?? 'шт';
+                        $color = match (true) {
+                            $record->isOutOfStock() => 'danger',
+                            $record->isLowStock() => 'warning',
+                            default => 'success'
+                        };
+
+                        return "<span class='badge badge-{$color}'>{$state} {$unit}</span>";
+                    })
+                    ->html(),
 
                 Tables\Columns\TextColumn::make('min_stock')
                     ->label('Мин. остаток')
-                    ->numeric()
                     ->sortable()
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('purchase_price')
-                    ->label('Закупочная')
+                    ->label('Закупочная цена')
                     ->money('RUB')
                     ->sortable()
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('retail_price')
-                    ->label('Розничная')
+                    ->label('Розничная цена')
                     ->money('RUB')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('total_value')
+                    ->label('Общая стоимость')
+                    ->getStateUsing(fn(StockItem $record): float => $record->getTotalValue())
+                    ->money('RUB')
+                    ->sortable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('supplier')
                     ->label('Поставщик')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('manufacturer')
                     ->label('Производитель')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable()
+                    ->toggleable(),
 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Активен')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger'),
+                Tables\Columns\BadgeColumn::make('is_active')
+                    ->label('Статус')
+                    ->colors([
+                        'success' => true,
+                        'danger' => false,
+                    ])
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Активна' : 'Неактивна'),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Создан')
+                    ->label('Создана')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\IconColumn::make('is_deleted')
+                    ->label('Удалена')
+                    ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('category_id')
                     ->label('Категория')
-                    ->relationship('category', 'name')
-                    ->searchable()
-                    ->preload(),
-
-                Tables\Filters\SelectFilter::make('warehouse_id')
-                    ->label('Склад')
-                    ->relationship('warehouse', 'name')
-                    ->searchable()
-                    ->preload(),
+                    ->relationship('category', 'name'),
 
                 Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Активные')
+                    ->label('Статус')
                     ->placeholder('Все товары')
                     ->trueLabel('Только активные')
                     ->falseLabel('Только неактивные'),
 
+                Tables\Filters\TernaryFilter::make('is_deleted')
+                    ->label('Удаленные')
+                    ->placeholder('Все товары')
+                    ->trueLabel('Только удаленные')
+                    ->falseLabel('Только активные'),
+
                 Tables\Filters\Filter::make('low_stock')
-                    ->label('Низкий остаток')
-                    ->query(fn(Builder $query): Builder => $query->lowStock()),
+                    ->label('Низкие запасы')
+                    ->query(fn(Builder $query): Builder => $query->whereRaw('quantity <= min_stock')),
 
                 Tables\Filters\Filter::make('out_of_stock')
                     ->label('Нет в наличии')
                     ->query(fn(Builder $query): Builder => $query->where('quantity', '<=', 0)),
+
+                Tables\Filters\Filter::make('has_supplier')
+                    ->label('С поставщиком')
+                    ->query(fn(Builder $query): Builder => $query->whereNotNull('supplier')),
+
+                Tables\Filters\Filter::make('has_manufacturer')
+                    ->label('С производителем')
+                    ->query(fn(Builder $query): Builder => $query->whereNotNull('manufacturer')),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('adjust_stock')
-                    ->label('Изменить остаток')
+                    ->label('Корректировка остатка')
                     ->icon('heroicon-o-adjustments-horizontal')
                     ->color('warning')
                     ->form([
@@ -275,29 +263,73 @@ class StockItemResource extends Resource
                             ->required()
                             ->minValue(0),
                         Forms\Components\Textarea::make('reason')
-                            ->label('Причина изменения')
+                            ->label('Причина')
                             ->rows(2),
                     ])
                     ->action(function (StockItem $record, array $data): void {
                         $record->adjustStock($data['new_quantity'], $data['reason'] ?? '');
-                    })
-                    ->requiresConfirmation(),
+                        \Filament\Notifications\Notification::make()
+                            ->title('Остаток скорректирован')
+                            ->success()
+                            ->send();
+                    }),
+
+                Tables\Actions\Action::make('add_stock')
+                    ->label('Добавить')
+                    ->icon('heroicon-o-plus')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Количество для добавления')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1),
+                    ])
+                    ->action(function (StockItem $record, array $data): void {
+                        $record->addStock($data['amount']);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Товар добавлен на склад')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('mark_deleted')
+                        ->label('Пометить как удаленные')
+                        ->icon('heroicon-o-trash')
+                        ->action(function ($records): void {
+                            $records->each->update(['is_deleted' => true]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Товары помечены как удаленные')
+                                ->success()
+                                ->send();
+                        }),
+
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Активировать')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(fn($records) => $records->each->activate())
-                        ->requiresConfirmation(),
+                        ->action(function ($records): void {
+                            $records->each->activate();
+                            \Filament\Notifications\Notification::make()
+                                ->title('Товары активированы')
+                                ->success()
+                                ->send();
+                        }),
+
                     Tables\Actions\BulkAction::make('deactivate')
                         ->label('Деактивировать')
                         ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->action(fn($records) => $records->each->deactivate())
-                        ->requiresConfirmation(),
+                        ->color('warning')
+                        ->action(function ($records): void {
+                            $records->each->deactivate();
+                            \Filament\Notifications\Notification::make()
+                                ->title('Товары деактивированы')
+                                ->warning()
+                                ->send();
+                        }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -315,6 +347,7 @@ class StockItemResource extends Resource
         return [
             'index' => Pages\ListStockItems::route('/'),
             'create' => Pages\CreateStockItem::route('/create'),
+            'view' => Pages\ViewStockItem::route('/{record}'),
             'edit' => Pages\EditStockItem::route('/{record}/edit'),
         ];
     }

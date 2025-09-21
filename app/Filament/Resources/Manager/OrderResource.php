@@ -2,37 +2,27 @@
 
 namespace App\Filament\Resources\Manager;
 
-use App\Application\UseCases\Order\CreateOrderUseCase;
-use App\Application\UseCases\Order\UpdateOrderUseCase;
-use App\Application\UseCases\Order\DeleteOrderUseCase;
-use App\Domain\Order\Exception\OrderException;
 use App\Filament\Resources\Manager\OrderResource\Pages;
-use App\Filament\Resources\Manager\OrderResource\RelationManagers;
 use App\Models\Order;
-use App\Models\Client;
-use App\Models\Branch;
-use App\Domain\Order\Enum\OrderType;
-use App\Domain\Order\Enum\OrderStatus;
-use App\Domain\Order\Enum\OrderUrgency;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Notifications\Notification;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationGroup = 'Заказы';
-    protected static ?string $pluralLabel = 'Заказы';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
+    protected static ?string $navigationLabel = 'Заказы';
+
+    protected static ?string $modelLabel = 'Заказ';
+
+    protected static ?string $pluralModelLabel = 'Заказы';
+
+    protected static ?string $navigationGroup = 'Основные';
 
     public static function form(Form $form): Form
     {
@@ -48,153 +38,84 @@ class OrderResource extends Resource
                             ->required()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('full_name')
-                                    ->label('ФИО клиента')
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('phone')
-                                    ->label('Телефон')
-                                    ->tel()
                                     ->required()
-                                    ->maxLength(20),
-                                Forms\Components\TextInput::make('telegram')
-                                    ->label('Telegram')
+                                    ->tel()
+                                    ->unique(ignoreRecord: true),
+                                Forms\Components\TextInput::make('email')
+                                    ->email()
                                     ->maxLength(255),
                             ]),
-
-                        Forms\Components\Select::make('type')
-                            ->label('Тип услуги')
-                            ->options(OrderType::getOptions())
-                            ->default(OrderType::REPAIR)
-                            ->required(),
 
                         Forms\Components\Select::make('branch_id')
                             ->label('Филиал')
                             ->relationship('branch', 'name')
                             ->searchable()
                             ->preload()
-                            ->default(fn() => \App\Models\Branch::where('is_main', true)->first()?->id)
                             ->required(),
 
-                        Forms\Components\Select::make('manager_id')
-                            ->label('Менеджер')
-                            ->relationship('manager', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->default(fn() => \Illuminate\Support\Facades\Auth::id())
-                            ->required(),
-
-                        Forms\Components\Select::make('master_id')
-                            ->label('Мастер')
-                            ->relationship('master', 'name')
-                            ->searchable()
-                            ->preload(),
+                        Forms\Components\TextInput::make('order_number')
+                            ->label('Номер заказа')
+                            ->required()
+                            ->maxLength(255)
+                            ->default(fn() => Order::generateOrderNumber()),
                     ])
                     ->columns(2),
 
                 Forms\Components\Section::make('Детали заказа')
                     ->schema([
-                        Forms\Components\TextInput::make('order_number')
-                            ->label('Номер заказа')
-                            ->disabled()
-                            ->dehydrated(false),
+                        Forms\Components\Select::make('type')
+                            ->label('Тип заказа')
+                            ->options(Order::getAvailableTypes())
+                            ->required()
+                            ->default(Order::TYPE_REPAIR),
 
                         Forms\Components\Select::make('status')
                             ->label('Статус')
-                            ->options(OrderStatus::getOptions())
-                            ->default(OrderStatus::NEW)
-                            ->required(),
+                            ->options(Order::getAvailableStatuses())
+                            ->required()
+                            ->default(Order::STATUS_NEW),
 
                         Forms\Components\Select::make('urgency')
                             ->label('Срочность')
-                            ->options(OrderUrgency::getOptions())
-                            ->default(OrderUrgency::NORMAL)
-                            ->required(),
+                            ->options(Order::getAvailableUrgencies())
+                            ->default(Order::URGENCY_NORMAL),
 
-                        Forms\Components\Textarea::make('problem_description')
-                            ->label('Описание проблемы')
-                            ->rows(3)
-                            ->columnSpanFull()
-                            ->helperText('Описание проблемы от клиента'),
+                        Forms\Components\TextInput::make('estimated_price')
+                            ->label('Ориентировочная цена')
+                            ->numeric()
+                            ->prefix('₽')
+                            ->step(0.01),
 
-                        Forms\Components\Textarea::make('internal_notes')
-                            ->label('Внутренние примечания')
-                            ->rows(2)
-                            ->columnSpanFull()
-                            ->helperText('Примечания для внутреннего использования'),
+                        Forms\Components\TextInput::make('actual_price')
+                            ->label('Фактическая цена')
+                            ->numeric()
+                            ->prefix('₽')
+                            ->step(0.01),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Финансы')
+                Forms\Components\Section::make('Описание')
                     ->schema([
-                        Forms\Components\TextInput::make('total_amount')
-                            ->label('Общая сумма')
-                            ->numeric()
-                            ->prefix('₽')
-                            ->step(0.01),
+                        Forms\Components\Textarea::make('problem_description')
+                            ->label('Описание проблемы')
+                            ->rows(3)
+                            ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('final_price')
-                            ->label('Итоговая цена')
-                            ->numeric()
-                            ->prefix('₽')
-                            ->step(0.01),
+                        Forms\Components\Textarea::make('internal_notes')
+                            ->label('Внутренние заметки')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
 
-                        Forms\Components\TextInput::make('cost_price')
-                            ->label('Себестоимость')
-                            ->numeric()
-                            ->prefix('₽')
-                            ->step(0.01),
-
-                        Forms\Components\TextInput::make('profit')
-                            ->label('Прибыль')
-                            ->numeric()
-                            ->prefix('₽')
-                            ->step(0.01)
-                            ->disabled()
-                            ->dehydrated(false),
-
-                        Forms\Components\Toggle::make('is_paid')
-                            ->label('Оплачен')
+                Forms\Components\Section::make('Дополнительно')
+                    ->schema([
+                        Forms\Components\Toggle::make('is_deleted')
+                            ->label('Удален')
                             ->default(false),
-
-                        Forms\Components\DateTimePicker::make('paid_at')
-                            ->label('Дата оплаты')
-                            ->visible(fn(Forms\Get $get) => $get('is_paid')),
                     ])
-                    ->columns(3),
-
-                Forms\Components\Section::make('Фотографии')
-                    ->schema([
-                        SpatieMediaLibraryFileUpload::make('before_photos')
-                            ->label('Фото "До" (что принес клиент)')
-                            ->collection('before_photos')
-                            ->multiple()
-                            ->image()
-                            ->imageEditor()
-                            ->imageEditorAspectRatios([
-                                '16:9',
-                                '4:3',
-                                '1:1',
-                            ])
-                            ->maxFiles(10)
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->helperText('Загрузите фотографии устройства/проблемы до начала работ'),
-
-                        SpatieMediaLibraryFileUpload::make('after_photos')
-                            ->label('Фото "После" (результат работ)')
-                            ->collection('after_photos')
-                            ->multiple()
-                            ->image()
-                            ->imageEditor()
-                            ->imageEditorAspectRatios([
-                                '16:9',
-                                '4:3',
-                                '1:1',
-                            ])
-                            ->maxFiles(10)
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->helperText('Загрузите фотографии результата работ (можно добавить позже)'),
-                    ])
-                    ->columns(1)
                     ->collapsible(),
             ]);
     }
@@ -204,159 +125,134 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')
-                    ->label('№ заказа')
+                    ->label('Номер заказа')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable(),
 
                 Tables\Columns\TextColumn::make('client.full_name')
                     ->label('Клиент')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Тип услуги')
-                    ->formatStateUsing(fn(OrderType $state): string => $state->getLabel())
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Филиал')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('status')
+                Tables\Columns\BadgeColumn::make('type')
+                    ->label('Тип')
+                    ->colors([
+                        'primary' => Order::TYPE_REPAIR,
+                        'success' => Order::TYPE_SHARPENING,
+                        'warning' => Order::TYPE_DIAGNOSTIC,
+                        'info' => Order::TYPE_CONSULTATION,
+                        'secondary' => Order::TYPE_MAINTENANCE,
+                        'danger' => Order::TYPE_WARRANTY,
+                    ])
+                    ->formatStateUsing(fn(string $state): string => Order::getAvailableTypes()[$state] ?? $state),
+
+                Tables\Columns\BadgeColumn::make('status')
                     ->label('Статус')
-                    ->badge()
-                    ->formatStateUsing(fn(OrderStatus $state): string => $state->getLabel())
-                    ->color(fn(OrderStatus $state): string => match ($state) {
-                        OrderStatus::NEW => 'gray',
-                        OrderStatus::CONSULTATION => 'blue',
-                        OrderStatus::DIAGNOSTIC => 'yellow',
-                        OrderStatus::IN_WORK => 'warning',
-                        OrderStatus::WAITING_PARTS => 'orange',
-                        OrderStatus::READY => 'success',
-                        OrderStatus::ISSUED => 'info',
-                        OrderStatus::CANCELLED => 'danger',
-                    }),
+                    ->color(fn(string $state): string => match ($state) {
+                        Order::STATUS_NEW => 'primary',
+                        Order::STATUS_CONSULTATION => 'warning',
+                        Order::STATUS_DIAGNOSTIC => 'info',
+                        Order::STATUS_IN_WORK => 'secondary',
+                        Order::STATUS_WAITING_PARTS => 'danger',
+                        Order::STATUS_READY => 'success',
+                        Order::STATUS_ISSUED => 'gray',
+                        Order::STATUS_CANCELLED => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn(string $state): string => Order::getAvailableStatuses()[$state] ?? $state),
 
-                Tables\Columns\TextColumn::make('urgency')
+                Tables\Columns\BadgeColumn::make('urgency')
                     ->label('Срочность')
-                    ->badge()
-                    ->formatStateUsing(fn(OrderUrgency $state): string => $state->getLabel())
-                    ->color(fn(OrderUrgency $state): string => $state->getColor()),
+                    ->colors([
+                        'primary' => Order::URGENCY_NORMAL,
+                        'danger' => Order::URGENCY_URGENT,
+                    ])
+                    ->formatStateUsing(fn(string $state): string => Order::getAvailableUrgencies()[$state] ?? $state),
 
-                Tables\Columns\TextColumn::make('manager.name')
-                    ->label('Менеджер')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('master.name')
-                    ->label('Мастер')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('problem_description')
-                    ->label('Проблема')
-                    ->limit(50)
-                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
-                        $state = $column->getState();
-                        return strlen($state) > 50 ? $state : null;
-                    })
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('final_price')
-                    ->label('Сумма')
+                Tables\Columns\TextColumn::make('estimated_price')
+                    ->label('Ориентировочная цена')
                     ->money('RUB')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
 
-                Tables\Columns\IconColumn::make('is_paid')
-                    ->label('Оплачен')
-                    ->boolean(),
-
-                Tables\Columns\TextColumn::make('photos_count')
-                    ->label('Фото')
-                    ->formatStateUsing(function ($record) {
-                        $beforeCount = $record->getMedia('before_photos')->count();
-                        $afterCount = $record->getMedia('after_photos')->count();
-                        $total = $beforeCount + $afterCount;
-
-                        if ($total === 0) {
-                            return 'Нет фото';
-                        }
-
-                        return "📷 {$total} ({$beforeCount} до, {$afterCount} после)";
-                    })
-                    ->badge()
-                    ->color(fn($state) => str_contains($state, 'Нет') ? 'gray' : 'success'),
+                Tables\Columns\TextColumn::make('actual_price')
+                    ->label('Фактическая цена')
+                    ->money('RUB')
+                    ->sortable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')
-                    ->dateTime()
+                    ->dateTime('d.m.Y H:i')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\IconColumn::make('is_deleted')
+                    ->label('Удален')
+                    ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Статус')
-                    ->options(OrderStatus::getOptions()),
+                    ->options(Order::getAvailableStatuses()),
+
+                Tables\Filters\SelectFilter::make('type')
+                    ->label('Тип')
+                    ->options(Order::getAvailableTypes()),
 
                 Tables\Filters\SelectFilter::make('urgency')
                     ->label('Срочность')
-                    ->options(OrderUrgency::getOptions()),
+                    ->options(Order::getAvailableUrgencies()),
 
-                Tables\Filters\SelectFilter::make('manager_id')
-                    ->label('Менеджер')
-                    ->relationship('manager', 'name'),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->label('Филиал')
+                    ->relationship('branch', 'name'),
 
-                Tables\Filters\SelectFilter::make('master_id')
-                    ->label('Мастер')
-                    ->relationship('master', 'name'),
-
-                Tables\Filters\TernaryFilter::make('is_paid')
-                    ->label('Оплачен')
-                    ->boolean()
-                    ->trueLabel('Оплачен')
-                    ->falseLabel('Не оплачен')
-                    ->native(false),
+                Tables\Filters\TernaryFilter::make('is_deleted')
+                    ->label('Удаленные')
+                    ->placeholder('Все заказы')
+                    ->trueLabel('Только удаленные')
+                    ->falseLabel('Только активные'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->url(fn(Order $record): string => static::getUrl('view', ['record' => $record])),
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
-                    ->using(function (Order $record) {
-                        try {
-                            (new DeleteOrderUseCase())
-                                ->loadData(['id' => $record->id])
-                                ->validate()
-                                ->execute();
-
-                            Notification::make()
-                                ->title('Заказ удален')
-                                ->success()
-                                ->send();
-                        } catch (OrderException $e) {
-                            Notification::make()
-                                ->title('Ошибка удаления')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
+                Tables\Actions\Action::make('change_status')
+                    ->label('Изменить статус')
+                    ->icon('heroicon-o-arrow-path')
+                    ->form([
+                        Forms\Components\Select::make('status')
+                            ->label('Новый статус')
+                            ->options(Order::getAvailableStatuses())
+                            ->required(),
+                    ])
+                    ->action(function (Order $record, array $data): void {
+                        $record->update(['status' => $data['status']]);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Статус обновлен')
+                            ->success()
+                            ->send();
                     }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->using(function ($records) {
-                            foreach ($records as $record) {
-                                try {
-                                    (new DeleteOrderUseCase())
-                                        ->loadData(['id' => $record->id])
-                                        ->validate()
-                                        ->execute();
-                                } catch (OrderException $e) {
-                                    Notification::make()
-                                        ->title('Ошибка удаления заказа #' . $record->order_number)
-                                        ->body($e->getMessage())
-                                        ->danger()
-                                        ->send();
-                                }
-                            }
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('mark_deleted')
+                        ->label('Пометить как удаленные')
+                        ->icon('heroicon-o-trash')
+                        ->action(function ($records): void {
+                            $records->each->update(['is_deleted' => true]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Заказы помечены как удаленные')
+                                ->success()
+                                ->send();
                         }),
                 ]),
             ])
@@ -366,7 +262,7 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\ActivityLogsRelationManager::class,
+            //
         ];
     }
 

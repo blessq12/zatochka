@@ -11,6 +11,13 @@ export const useOrderStore = defineStore("order", {
         error: null,
         createOrderLoading: false,
         createOrderError: null,
+        pagination: {
+            current_page: 1,
+            last_page: 1,
+            per_page: 10,
+            total: 0,
+            has_more_pages: false,
+        },
     }),
 
     actions: {
@@ -38,16 +45,24 @@ export const useOrderStore = defineStore("order", {
             }
         },
 
-        async getClientOrders(token) {
+        async getClientOrders(token, page = 1, perPage = 10) {
             this.isLoading = true;
             this.error = null;
 
             try {
                 const response = await axios.get("/api/client/orders-get", {
                     headers: { Authorization: `Bearer ${token}` },
+                    params: { page, per_page: perPage },
                 });
 
                 this.orders = response.data.orders || [];
+                this.pagination = response.data.pagination || {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 0,
+                    has_more_pages: false,
+                };
                 return { success: true, data: response.data };
             } catch (error) {
                 this.error =

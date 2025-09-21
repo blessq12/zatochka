@@ -15,11 +15,11 @@ class CheckMasterRole
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login');
         }
 
-        if (!auth()->user()->hasRole('master')) {
+        if (! auth()->user()->hasRole('master')) {
             abort(403, 'Доступ запрещен. Требуется роль мастера.');
         }
 

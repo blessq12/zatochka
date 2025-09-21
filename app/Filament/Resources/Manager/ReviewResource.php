@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\Manager;
 
-use App\Application\UseCases\Review\UpdateReviewUseCase;
-use App\Application\UseCases\Review\DeleteReviewUseCase;
 use App\Filament\Resources\Manager\ReviewResource\Pages;
 use App\Models\Review;
 use Filament\Forms;
@@ -12,74 +10,80 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Notifications\Notification;
 
 class ReviewResource extends Resource
 {
-    protected static ?string $model = \App\Models\Review::class;
+    protected static ?string $model = Review::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
-    protected static ?string $navigationGroup = 'Заказы';
-    protected static ?string $pluralLabel = 'Отзывы';
-    protected static ?string $label = 'Отзыв';
+
+    protected static ?string $navigationLabel = 'Отзывы';
+
+    protected static ?string $modelLabel = 'Отзыв';
+
+    protected static ?string $pluralModelLabel = 'Отзывы';
+
+    protected static ?string $navigationGroup = 'Основные';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Основная информация')
+                Forms\Components\Section::make('Информация об отзыве')
                     ->schema([
                         Forms\Components\Select::make('client_id')
                             ->label('Клиент')
                             ->relationship('client', 'full_name')
                             ->searchable()
                             ->preload()
-                            ->required()
-                            ->disabled(fn($record) => $record !== null),
+                            ->required(),
 
                         Forms\Components\Select::make('order_id')
                             ->label('Заказ')
                             ->relationship('order', 'order_number')
                             ->searchable()
                             ->preload()
-                            ->required()
-                            ->disabled(fn($record) => $record !== null),
+                            ->required(),
 
                         Forms\Components\Select::make('rating')
-                            ->label('Оценка')
+                            ->label('Рейтинг')
                             ->options([
-                                1 => '1 звезда - Очень плохо',
-                                2 => '2 звезды - Плохо',
-                                3 => '3 звезды - Удовлетворительно',
-                                4 => '4 звезды - Хорошо',
-                                5 => '5 звезд - Отлично',
+                                1 => '1 звезда',
+                                2 => '2 звезды',
+                                3 => '3 звезды',
+                                4 => '4 звезды',
+                                5 => '5 звезд',
                             ])
                             ->required()
-                            ->disabled(fn($record) => $record !== null),
-
-                        Forms\Components\Textarea::make('comment')
-                            ->label('Комментарий')
-                            ->rows(4)
-                            ->required()
-                            ->disabled(fn($record) => $record !== null),
+                            ->default(5),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Модерация')
+                Forms\Components\Section::make('Содержание отзыва')
+                    ->schema([
+                        Forms\Components\Textarea::make('comment')
+                            ->label('Комментарий')
+                            ->required()
+                            ->rows(5)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Textarea::make('reply')
+                            ->label('Ответ менеджера')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Статус')
                     ->schema([
                         Forms\Components\Toggle::make('is_approved')
                             ->label('Одобрен')
-                            ->default(false)
-                            ->visible(fn($record) => $record !== null),
+                            ->helperText('Одобренные отзывы отображаются публично'),
 
-                        Forms\Components\Textarea::make('reply')
-                            ->label('Ответ на отзыв')
-                            ->rows(3)
-                            ->visible(fn($record) => $record !== null)
-                            ->helperText('Ответ будет отправлен клиенту'),
+                        Forms\Components\Toggle::make('is_deleted')
+                            ->label('Удален')
+                            ->default(false),
                     ])
-                    ->visible(fn($record) => $record !== null)
-                    ->columns(1),
+                    ->collapsible(),
             ]);
     }
 
@@ -87,10 +91,6 @@ class ReviewResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('client.full_name')
                     ->label('Клиент')
                     ->searchable()
@@ -99,29 +99,54 @@ class ReviewResource extends Resource
                 Tables\Columns\TextColumn::make('order.order_number')
                     ->label('Заказ')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable(),
 
                 Tables\Columns\TextColumn::make('rating')
-                    ->label('Оценка')
-                    ->formatStateUsing(fn(int $state): string => str_repeat('★', $state) . str_repeat('☆', 5 - $state))
+                    ->label('Рейтинг')
+                    ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state)." ({$state}/5)")
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('comment')
                     ->label('Комментарий')
-                    ->limit(50),
+                    ->limit(50)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+
+                        return strlen($state) > 50 ? $state : null;
+                    }),
+
+                Tables\Columns\TextColumn::make('reply')
+                    ->label('Ответ')
+                    ->limit(30)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+
+                        return $state && strlen($state) > 30 ? $state : null;
+                    })
+                    ->toggleable(),
 
                 Tables\Columns\IconColumn::make('is_approved')
                     ->label('Одобрен')
-                    ->boolean(),
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('warning'),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Создан')
-                    ->dateTime()
+                    ->label('Дата отзыва')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable(),
+
+                Tables\Columns\IconColumn::make('is_deleted')
+                    ->label('Удален')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('rating')
-                    ->label('Оценка')
+                    ->label('Рейтинг')
                     ->options([
                         1 => '1 звезда',
                         2 => '2 звезды',
@@ -131,10 +156,20 @@ class ReviewResource extends Resource
                     ]),
 
                 Tables\Filters\TernaryFilter::make('is_approved')
-                    ->label('Статус модерации')
-                    ->boolean()
-                    ->trueLabel('Одобренные')
-                    ->falseLabel('Неодобренные'),
+                    ->label('Статус одобрения')
+                    ->placeholder('Все отзывы')
+                    ->trueLabel('Только одобренные')
+                    ->falseLabel('Только неодобренные'),
+
+                Tables\Filters\TernaryFilter::make('is_deleted')
+                    ->label('Статус')
+                    ->placeholder('Все отзывы')
+                    ->trueLabel('Только удаленные')
+                    ->falseLabel('Только активные'),
+
+                Tables\Filters\Filter::make('has_reply')
+                    ->label('С ответом')
+                    ->query(fn (Builder $query): Builder => $query->whereNotNull('reply')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -143,155 +178,71 @@ class ReviewResource extends Resource
                     ->label('Одобрить')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn(Review $record): bool => !$record->is_approved)
-                    ->action(function (Review $record) {
-                        try {
-                            app(UpdateReviewUseCase::class)
-                                ->loadData(['id' => $record->id, 'is_approved' => true])
-                                ->validate()
-                                ->execute();
-
-                            Notification::make()
-                                ->title('Отзыв одобрен')
-                                ->success()
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Ошибка одобрения')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
+                    ->visible(fn (Review $record): bool => ! $record->is_approved)
+                    ->action(function (Review $record): void {
+                        $record->update(['is_approved' => true]);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Отзыв одобрен')
+                            ->success()
+                            ->send();
                     }),
 
-                Tables\Actions\Action::make('reject')
+                Tables\Actions\Action::make('disapprove')
                     ->label('Отклонить')
                     ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn(Review $record): bool => $record->is_approved)
-                    ->action(function (Review $record) {
-                        try {
-                            app(UpdateReviewUseCase::class)
-                                ->loadData(['id' => $record->id, 'is_approved' => false])
-                                ->validate()
-                                ->execute();
-
-                            Notification::make()
-                                ->title('Отзыв отклонен')
-                                ->success()
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Ошибка отклонения')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    }),
-
-                Tables\Actions\DeleteAction::make()
-                    ->using(function (Review $record) {
-                        try {
-                            app(DeleteReviewUseCase::class)
-                                ->loadData(['id' => $record->id])
-                                ->validate()
-                                ->execute();
-
-                            Notification::make()
-                                ->title('Отзыв удален')
-                                ->success()
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Ошибка удаления')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
+                    ->color('warning')
+                    ->visible(fn (Review $record): bool => $record->is_approved)
+                    ->action(function (Review $record): void {
+                        $record->update(['is_approved' => false]);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Отзыв отклонен')
+                            ->warning()
+                            ->send();
                     }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('approve')
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('approve_selected')
                         ->label('Одобрить выбранные')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(function ($records) {
-                            $count = 0;
-                            $errors = 0;
-
-                            foreach ($records as $record) {
-                                try {
-                                    app(UpdateReviewUseCase::class)
-                                        ->loadData(['id' => $record->id, 'is_approved' => true])
-                                        ->validate()
-                                        ->execute();
-                                    $count++;
-                                } catch (\Exception $e) {
-                                    $errors++;
-                                }
-                            }
-
-                            if ($count > 0) {
-                                Notification::make()
-                                    ->title("Одобрено отзывов: {$count}")
-                                    ->success()
-                                    ->send();
-                            }
-
-                            if ($errors > 0) {
-                                Notification::make()
-                                    ->title("Ошибок: {$errors}")
-                                    ->warning()
-                                    ->send();
-                            }
+                        ->action(function ($records): void {
+                            $records->each->update(['is_approved' => true]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Выбранные отзывы одобрены')
+                                ->success()
+                                ->send();
                         }),
 
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->using(function ($records) {
-                            $count = 0;
-                            $errors = 0;
-
-                            foreach ($records as $record) {
-                                try {
-                                    app(DeleteReviewUseCase::class)
-                                        ->loadData(['id' => $record->id])
-                                        ->validate()
-                                        ->execute();
-                                    $count++;
-                                } catch (\Exception $e) {
-                                    $errors++;
-                                }
-                            }
-
-                            if ($count > 0) {
-                                Notification::make()
-                                    ->title("Удалено отзывов: {$count}")
-                                    ->success()
-                                    ->send();
-                            }
-
-                            if ($errors > 0) {
-                                Notification::make()
-                                    ->title("Ошибок: {$errors}")
-                                    ->warning()
-                                    ->send();
-                            }
+                    Tables\Actions\BulkAction::make('disapprove_selected')
+                        ->label('Отклонить выбранные')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->action(function ($records): void {
+                            $records->each->update(['is_approved' => false]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Выбранные отзывы отклонены')
+                                ->warning()
+                                ->send();
                         }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
     }
 
-    public static function getEloquentQuery(): Builder
+    public static function getRelations(): array
     {
-        return parent::getEloquentQuery()->where('is_deleted', false);
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListReviews::route('/'),
+            'create' => Pages\CreateReview::route('/create'),
             'view' => Pages\ViewReview::route('/{record}'),
             'edit' => Pages\EditReview::route('/{record}/edit'),
         ];

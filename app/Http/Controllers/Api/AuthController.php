@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Application\UseCases\Auth\Api\ApiRegisterUseCase;
-use App\Application\UseCases\Auth\Api\ApiLoginUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -16,13 +15,19 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        try {
-            $useCase = app(ApiLoginUseCase::class);
-            $result = $useCase->loadData($request->all())->validate()->execute();
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+        $client = \App\Models\Client::where('phone', $request->phone)->first();
+
+        if (! $client) {
+            return response()->json(['message' => 'Client not found'], 404);
         }
+
+        if (! Hash::check($request->password, $client->password)) {
+            return response()->json(['message' => 'Invalid password'], 401);
+        }
+
+        $token = $client->createToken('auth_token')->plainTextToken;
+
+        return response()->json(['message' => 'Login successful', 'token' => $token, 'client' => $client]);
     }
 
     public function register(Request $request)
@@ -36,8 +41,9 @@ class AuthController extends Controller
         ]);
 
         try {
-            $useCase = app(ApiRegisterUseCase::class);
-            $result = $useCase->loadData($request->all())->validate()->execute();
+            $client = \App\Models\Client::create($request->all());
+            $result = $client;
+
             return response()->json($result);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);

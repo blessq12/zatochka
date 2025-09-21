@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\User;
+use Illuminate\Console\Command;
 use Ramsey\Uuid\Uuid;
 
 class FillUserUuids extends Command
@@ -18,6 +18,7 @@ class FillUserUuids extends Command
 
         if ($users->isEmpty()) {
             $this->info('All users already have UUIDs.');
+
             return 0;
         }
 
@@ -30,6 +31,7 @@ class FillUserUuids extends Command
         }
 
         $this->info('Successfully filled UUIDs for all users.');
+
         return 0;
     }
 }

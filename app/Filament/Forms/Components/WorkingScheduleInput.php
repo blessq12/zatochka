@@ -3,8 +3,6 @@
 namespace App\Filament\Forms\Components;
 
 use Filament\Forms\Components\Field;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 
 class WorkingScheduleInput extends Field
 {
@@ -21,6 +19,7 @@ class WorkingScheduleInput extends Field
 
         if (is_string($state)) {
             $decoded = json_decode($state, true);
+
             return is_array($decoded) ? $decoded : $this->getDefaultSchedule();
         }
 
@@ -38,44 +37,44 @@ class WorkingScheduleInput extends Field
                 'is_working' => true,
                 'start' => '09:00',
                 'end' => '18:00',
-                'note' => 'Рабочий день'
+                'note' => 'Рабочий день',
             ],
             'tuesday' => [
                 'is_working' => true,
                 'start' => '09:00',
                 'end' => '18:00',
-                'note' => 'Рабочий день'
+                'note' => 'Рабочий день',
             ],
             'wednesday' => [
                 'is_working' => true,
                 'start' => '09:00',
                 'end' => '18:00',
-                'note' => 'Рабочий день'
+                'note' => 'Рабочий день',
             ],
             'thursday' => [
                 'is_working' => true,
                 'start' => '09:00',
                 'end' => '18:00',
-                'note' => 'Рабочий день'
+                'note' => 'Рабочий день',
             ],
             'friday' => [
                 'is_working' => true,
                 'start' => '09:00',
                 'end' => '18:00',
-                'note' => 'Рабочий день'
+                'note' => 'Рабочий день',
             ],
             'saturday' => [
                 'is_working' => false,
                 'start' => null,
                 'end' => null,
-                'note' => 'Выходной'
+                'note' => 'Выходной',
             ],
             'sunday' => [
                 'is_working' => false,
                 'start' => null,
                 'end' => null,
-                'note' => 'Выходной'
-            ]
+                'note' => 'Выходной',
+            ],
         ];
     }
 
@@ -88,7 +87,7 @@ class WorkingScheduleInput extends Field
             'thursday' => 'Четверг',
             'friday' => 'Пятница',
             'saturday' => 'Суббота',
-            'sunday' => 'Воскресенье'
+            'sunday' => 'Воскресенье',
         ];
     }
 }

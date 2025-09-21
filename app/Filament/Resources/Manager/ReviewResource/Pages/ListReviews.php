@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Manager\ReviewResource\Pages;
 
 use App\Filament\Resources\Manager\ReviewResource;
-
+use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListReviews extends ListRecords
@@ -13,7 +13,7 @@ class ListReviews extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // Убираем создание отзывов - они создаются клиентами
+            Actions\CreateAction::make(),
         ];
     }
 }

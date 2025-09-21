@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -11,51 +14,105 @@ class Repair extends Model implements HasMedia
 {
     use HasFactory;
     use InteractsWithMedia;
+    use SoftDeletes;
 
     protected $fillable = [
         'order_id',
-        'description',
-        'used_materials',
-        'work_time_minutes',
+        'problem_description',
         'price',
-        'is_deleted',
+        'status',
+        'comments',
+        'completed_works',
     ];
 
     protected $casts = [
-        'used_materials' => 'array',
-        'work_time_minutes' => 'integer',
         'price' => 'decimal:2',
-        'is_deleted' => 'boolean',
+        'completed_works' => 'array',
     ];
 
-    // Связи
-    public function order()
+    // Relationships
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
-    // Scope для активных работ
-    public function scopeActive($query)
+    public function stockMovements(): HasMany
     {
-        return $query->where('is_deleted', false);
+        return $this->hasMany(StockMovement::class);
     }
 
-    // MediaLibrary конфигурация
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('status', '!=', 'cancelled');
+    }
+
+    public function scopeInProgress($query)
+    {
+        return $query->whereIn('status', ['diagnosis', 'in_progress', 'waiting_parts', 'testing']);
+    }
+
+    public function scopeOverdue($query)
+    {
+        return $query->where('estimated_completion', '<', now())
+            ->where('status', '!=', 'completed');
+    }
+
+    // Accessors & Mutators
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'pending' => 'Ожидает',
+            'diagnosis' => 'Диагностика',
+            'in_progress' => 'В работе',
+            'waiting_parts' => 'Ожидание запчастей',
+            'testing' => 'Тестирование',
+            'completed' => 'Завершен',
+            'cancelled' => 'Отменен',
+            default => $this->status,
+        };
+    }
+
+    public function getStatusColorAttribute(): string
+    {
+        return match ($this->status) {
+            'pending' => 'gray',
+            'diagnosis' => 'blue',
+            'in_progress' => 'yellow',
+            'waiting_parts' => 'orange',
+            'testing' => 'purple',
+            'completed' => 'green',
+            'cancelled' => 'red',
+            default => 'gray',
+        };
+    }
+
+    public function getIsOverdueAttribute(): bool
+    {
+        return $this->estimated_completion &&
+            $this->estimated_completion < now() &&
+            $this->status !== 'completed';
+    }
+
+    public function getDurationAttribute(): ?int
+    {
+        if (! $this->started_at || ! $this->completed_at) {
+            return null;
+        }
+
+        return $this->completed_at->diffInMinutes($this->started_at);
+    }
+
+    // Media collections
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('before_photos')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp'])
-            ->withResponsiveImages();
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+            ->singleFile(false);
 
         $this->addMediaCollection('after_photos')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp'])
-            ->withResponsiveImages();
-
-        $this->addMediaCollection('work_photos')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp'])
-            ->withResponsiveImages();
-
-        $this->addMediaCollection('documents')
-            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png']);
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+            ->singleFile(false);
     }
 }

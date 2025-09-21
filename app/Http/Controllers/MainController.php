@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class MainController extends Controller
@@ -77,8 +76,8 @@ class MainController extends Controller
             'socialMedia' => [
                 'telegram' => 'https://t.me/zatochka_tsk',
                 'instagram' => 'https://instagram.com/zatochka_tsk',
-                'vk' => 'https://vk.com/zatochka_tsk'
-            ]
+                'vk' => 'https://vk.com/zatochka_tsk',
+            ],
         ];
 
         return view('pages.help', compact('contacts'));

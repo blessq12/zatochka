@@ -8,34 +8,27 @@ alwaysApply: true
 
 ## Architecture
 
-### Domain-Driven Design + Event Sourcing
+### Simple Laravel Architecture
 
--   **Domain Layer**: Entities (readonly), AggregateRoots, Events (immutable), Repository interfaces, Mapper interfaces, Enums, Exceptions, DTOs, Services
--   **Application Layer**: Use Cases with Template Method pattern
--   **Infrastructure Layer**: Repository implementations, Mapper implementations
+-   **Models**: Eloquent models with business logic
+-   **Services**: Business logic and complex operations
+-   **Controllers**: API endpoints and request handling
+-   **Resources**: Filament admin panels
 
-### Event Sourcing Flow
+### Service Layer Pattern
 
--   Commands → UseCase → AggregateRoot → Events → Projectors (read models) + Reactors (side effects)
--   Queries: Use Repository (read models)
--   State Changes: Only through events
--   Business Rules: Managed by AggregateRoots
-
-### Use Cases Pattern
-
--   **Base Class**: `Base{Domain}UseCase` with constructor injecting ALL domain dependencies via `app()`
--   **Child Classes**: NO constructors, use inherited dependencies
--   **Chain**: `loadData() → validate() → execute()`
--   **Validation**: Abstract method `validateSpecificData()`
--   **Return**: Domain entities or data arrays
+-   **Services**: Contain business logic and complex operations
+-   **Models**: Data representation and simple business rules
+-   **Controllers**: Handle HTTP requests and responses
+-   **Resources**: Filament admin interface
 
 ## Stack
 
 ### Core
 
 -   **Laravel 12.0** + **PHP 8.2+**
--   **Event Sourcing** (Spatie 7.12) + **CQRS** + **DDD**
--   **Spatie Data 4.17** - типизированные объекты
+-   **Eloquent ORM** - работа с базой данных
+-   **Spatie Data 4.17** - типизированные объекты (если нужно)
 -   **Spatie Query Builder 6.3** - построение запросов
 
 ### Admin & API
@@ -58,58 +51,57 @@ alwaysApply: true
 
 ## Rules
 
-### Repository Pattern
+### Service Layer
 
--   Interface in Domain, Implementation in Infrastructure
--   Mappers isolate Domain from ORM
--   Soft Delete via `is_deleted` flag
--   Transactions in Use Cases, not Repository
+-   **Services**: Содержат бизнес-логику и сложные операции
+-   **Models**: Простые бизнес-правила и валидация
+-   **Controllers**: Обработка HTTP запросов
+-   **Soft Delete**: через `deleted_at` timestamp
 
 ### Filament Integration
 
--   Resources work with Eloquent models
--   Use Cases called in Pages for business logic
--   Override `handleRecordCreation()`, `mutateFormDataBeforeSave()`, `before()` with `halt()`
--   Always show success/error notifications
+-   **Resources**: Работают напрямую с Eloquent моделями
+-   **Services**: Вызываются в Pages для сложной бизнес-логики
+-   **Override**: `handleRecordCreation()`, `mutateFormDataBeforeSave()`, `before()` с `halt()`
+-   **Notifications**: Всегда показывать success/error уведомления
 
 ### API Controllers
 
--   Use Use Cases with proper chain `loadData()->validate()->execute()`
--   Laravel validation in controller, business validation in Use Cases
--   Try-catch with proper HTTP status codes
--   Return JSON with consistent structure
+-   **Validation**: Laravel validation в контроллерах
+-   **Services**: Вызов сервисов для бизнес-логики
+-   **Try-catch**: Обработка ошибок с правильными HTTP статусами
+-   **JSON**: Консистентная структура ответов
 
-### Reactors (Event Sourcing Side Effects)
+### Models
 
--   Inject repositories through constructor, NOT app()
--   Use Repository interfaces, NEVER direct Eloquent calls
--   Call Use Cases for business operations
--   Log errors, don't break event processing
+-   **Business Logic**: Простые методы в моделях
+-   **Relationships**: Eloquent relationships
+-   **Validation**: Model validation rules
+-   **Scopes**: Query scopes для переиспользования
 
 ## Naming Conventions
 
--   **Entities**: `{Domain}Entity` or `{Domain}`
--   **Events**: `{Domain}{Action}`
--   **Use Cases**: `{Action}{Domain}UseCase`
--   **Repositories**: `{Domain}Repository` (interface), `{Domain}RepositoryImpl` (implementation)
--   **Mappers**: `{Domain}Mapper` (interface), `{Domain}MapperImpl` (implementation)
+-   **Models**: `{Entity}` (Order, Client, Repair)
+-   **Services**: `{Entity}Service` (OrderService, ClientService)
+-   **Controllers**: `{Entity}Controller` (OrderController, ClientController)
+-   **Resources**: `{Entity}Resource` (OrderResource, ClientResource)
 
 ## Development Workflow
 
-1. **New Domain**: Domain structure → Entity → Events → AggregateRoot → Repository interfaces → Mapper interfaces → Use Cases → Infrastructure implementations → Filament Resource
-2. **Event Sourcing**: Command → UseCase → AggregateRoot → recordThat(Event) → Projector + Reactor
-3. **Error Handling**: Domain exceptions in Domain/Exception/, validation in Use Cases, Filament Notifications for UI
-4. **Testing**: Unit tests for Domain, Integration tests for Use Cases, Feature tests for API
+1. **New Feature**: Model → Service → Controller/Resource → Tests
+2. **Business Logic**: В Services, простые правила в Models
+3. **Error Handling**: Exceptions в Services, Notifications в UI
+4. **Testing**: Unit tests для Services, Feature tests для API/UI
 
 ## Anti-Patterns (НЕ ДЕЛАТЬ)
 
-❌ **Прямые вызовы Eloquent в Use Cases/Reactors**
-❌ **Бизнес-логика в Controllers или Resources**
-❌ **Изменение состояния через прямые SQL запросы**
-❌ **Смешивание Domain и Infrastructure слоев**
-❌ **Создание Events без AggregateRoot**
-❌ **Использование Eloquent моделей как Domain Entities**
-❌ **Создание конструкторов в дочерних Use Cases классов**
-❌ **Использование app() в дочерних классах Use Cases**
-❌ **Прямые Eloquent вызовы в Reactors**
-❌ **Неправильная цепочка вызова Use Cases в Controllers**
+❌ **Сложная архитектура для простых задач**
+❌ **Event Sourcing для CRUD операций**
+❌ **Use Cases для простой бизнес-логики**
+❌ **Repository pattern поверх Eloquent**
+❌ **Мапперы для простых моделей**
+❌ **Агрегаты для простых сущностей**
+❌ **Сложные DTO для простых данных**
+❌ **Интерфейсы без необходимости**
+❌ **Оверинжиниринг архитектуры**
+❌ **Игнорирование простоты Laravel**

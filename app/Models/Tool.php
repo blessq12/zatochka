@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -11,10 +12,10 @@ class Tool extends Model implements HasMedia
 {
     use HasFactory;
     use InteractsWithMedia;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
-        'tool_type_id',
         'equipment_type_id',
         'serial_number',
         'brand',
@@ -34,31 +35,15 @@ class Tool extends Model implements HasMedia
     ];
 
     // Связи
-    public function toolType()
-    {
-        return $this->belongsTo(ToolType::class);
-    }
-
     public function equipmentType()
     {
         return $this->belongsTo(EquipmentType::class);
-    }
-
-    public function orders()
-    {
-        return $this->belongsToMany(Order::class, 'order_tools');
     }
 
     // Scope для активных инструментов
     public function scopeActive($query)
     {
         return $query->where('is_deleted', false)->where('is_active', true);
-    }
-
-    // Scope для инструментов по типу
-    public function scopeByType($query, $toolTypeId)
-    {
-        return $query->where('tool_type_id', $toolTypeId);
     }
 
     // MediaLibrary конфигурация

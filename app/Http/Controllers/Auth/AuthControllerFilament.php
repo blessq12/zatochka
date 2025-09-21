@@ -37,6 +37,7 @@ class AuthControllerFilament extends Controller
                 return redirect('/master');
             } else {
                 Auth::logout();
+
                 return back()->withErrors(['email' => 'У пользователя не назначены роли']);
             }
         } catch (\InvalidArgumentException $e) {

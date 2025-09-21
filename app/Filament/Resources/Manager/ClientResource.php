@@ -2,11 +2,7 @@
 
 namespace App\Filament\Resources\Manager;
 
-use App\Application\UseCases\Client\GetClientUseCase;
-use App\Domain\Client\Entity\Client as ClientEntity;
-use App\Domain\Client\Repository\ClientRepository;
 use App\Filament\Resources\Manager\ClientResource\Pages;
-use App\Filament\Resources\Manager\ClientResource\RelationManagers;
 use App\Models\Client;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,23 +10,20 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ClientResource extends Resource
 {
     protected static ?string $model = Client::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $navigationGroup = 'Заказы';
-    protected static ?string $pluralLabel = 'Клиенты';
+
+    protected static ?string $navigationLabel = 'Клиенты';
+
     protected static ?string $modelLabel = 'Клиент';
 
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->where('is_deleted', false)
-            ->with('bonusAccount');
-    }
+    protected static ?string $pluralModelLabel = 'Клиенты';
+
+    protected static ?string $navigationGroup = 'Основные';
 
     public static function form(Form $form): Form
     {
@@ -45,49 +38,56 @@ class ClientResource extends Resource
 
                         Forms\Components\TextInput::make('phone')
                             ->label('Телефон')
+                            ->tel()
                             ->required()
-                            ->mask('+7 (999) 999-99-99')
-                            ->placeholder('+7 (###) ###-##-##')
-                            ->rules(['regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'])
-                            ->maxLength(20)
-                            ->unique(
-                                table: 'clients',
-                                column: 'phone',
-                                ignoreRecord: true,
-                                modifyRuleUsing: function ($rule, $livewire) {
-                                    return $rule->where('is_deleted', false);
-                                }
-                            ),
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true),
 
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
                             ->email()
                             ->maxLength(255)
-                            ->unique(
-                                table: 'clients',
-                                column: 'email',
-                                ignoreRecord: true,
-                                modifyRuleUsing: function ($rule, $livewire) {
-                                    return $rule->where('is_deleted', false);
-                                }
-                            ),
+                            ->unique(ignoreRecord: true),
 
                         Forms\Components\TextInput::make('telegram')
                             ->label('Telegram')
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->prefix('@'),
+                    ])
+                    ->columns(2),
 
+                Forms\Components\Section::make('Дополнительная информация')
+                    ->schema([
                         Forms\Components\DatePicker::make('birth_date')
                             ->label('Дата рождения')
                             ->displayFormat('d.m.Y'),
+
+                        Forms\Components\DateTimePicker::make('telegram_verified_at')
+                            ->label('Telegram подтвержден')
+                            ->displayFormat('d.m.Y H:i'),
 
                         Forms\Components\Textarea::make('delivery_address')
                             ->label('Адрес доставки')
                             ->rows(3)
                             ->columnSpanFull(),
                     ])
-                    ->columns(2),
+                    ->collapsible(),
 
+                Forms\Components\Section::make('Безопасность')
+                    ->schema([
+                        Forms\Components\TextInput::make('password')
+                            ->label('Пароль')
+                            ->password()
+                            ->required(fn (string $context): bool => $context === 'create')
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->dehydrateStateUsing(fn ($state) => bcrypt($state))
+                            ->maxLength(255),
 
+                        Forms\Components\Toggle::make('is_deleted')
+                            ->label('Удален')
+                            ->default(false),
+                    ])
+                    ->collapsible(),
             ]);
     }
 
@@ -103,22 +103,19 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Телефон')
                     ->searchable()
-                    ->copyable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable(),
 
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
-                    ->copyable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('telegram')
                     ->label('Telegram')
                     ->searchable()
-                    ->copyable()
-                    ->formatStateUsing(function ($state) {
-                        return '@' . $state;
-                    })
+                    ->formatStateUsing(fn (?string $state): ?string => $state ? "@{$state}" : null)
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('birth_date')
@@ -127,41 +124,80 @@ class ClientResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('bonusAccount.balance')
-                    ->label('Бонусы')
-                    ->formatStateUsing(function ($state) {
-                        return $state ? number_format($state) . ' бон.' : '0 бон.';
-                    })
-                    ->badge()
-                    ->color(fn($state) => $state > 0 ? 'success' : 'gray')
+                Tables\Columns\IconColumn::make('telegram_verified_at')
+                    ->label('Telegram')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('gray')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('orders_count')
+                    ->label('Заказов')
+                    ->counts('orders')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('is_deleted')
-                    ->label('Статус')
-                    ->formatStateUsing(fn($state) => $state ? 'Удален' : 'Активен')
-                    ->badge()
-                    ->color(fn($state) => $state ? 'danger' : 'success'),
+                Tables\Columns\TextColumn::make('bonusAccount.balance')
+                    ->label('Бонусы')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(),
 
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Регистрация')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\IconColumn::make('is_deleted')
+                    ->label('Удален')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\TernaryFilter::make('telegram_verified_at')
+                    ->label('Telegram подтвержден')
+                    ->placeholder('Все клиенты')
+                    ->trueLabel('Подтвержден')
+                    ->falseLabel('Не подтвержден'),
+
                 Tables\Filters\TernaryFilter::make('is_deleted')
                     ->label('Статус')
                     ->placeholder('Все клиенты')
-                    ->trueLabel('Удаленные')
-                    ->falseLabel('Активные')
-                    ->queries(
-                        true: fn(Builder $query) => $query->where('is_deleted', true),
-                        false: fn(Builder $query) => $query->where('is_deleted', false),
-                    ),
+                    ->trueLabel('Только удаленные')
+                    ->falseLabel('Только активные'),
+
+                Tables\Filters\Filter::make('has_orders')
+                    ->label('С заказами')
+                    ->query(fn (Builder $query): Builder => $query->has('orders')),
+
+                Tables\Filters\Filter::make('birthday_soon')
+                    ->label('День рождения скоро')
+                    ->query(fn (Builder $query): Builder => $query->whereRaw('DAYOFYEAR(birth_date) BETWEEN DAYOFYEAR(NOW()) AND DAYOFYEAR(NOW()) + 7')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('view_orders')
+                    ->label('Заказы')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->url(fn (Client $record): string => route('filament.manager.resources.manager.orders.index', ['tableFilters[client_id][value]' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('mark_deleted')
+                        ->label('Пометить как удаленные')
+                        ->icon('heroicon-o-trash')
+                        ->action(function ($records): void {
+                            $records->each->update(['is_deleted' => true]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Клиенты помечены как удаленные')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -170,7 +206,7 @@ class ClientResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // RelationManagers\OrdersRelationManager::class,
+            //
         ];
     }
 

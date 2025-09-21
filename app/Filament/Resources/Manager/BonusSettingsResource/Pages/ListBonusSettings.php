@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Manager\BonusSettingsResource\Pages;
 
 use App\Filament\Resources\Manager\BonusSettingsResource;
+use App\Models\BonusSettings;
 use Filament\Resources\Pages\ListRecords;
 
 class ListBonusSettings extends ListRecords
@@ -11,7 +12,15 @@ class ListBonusSettings extends ListRecords
 
     public function mount(): void
     {
-        $settings = \App\Models\BonusSettings::getSettings();
-        $this->redirect($this->getResource()::getUrl('edit', ['record' => $settings->id]));
+
+        $settings = BonusSettings::getSettings();
+        $this->redirect(static::getResource()::getUrl('edit', ['record' => $settings]));
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            // Убираем кнопку создания
+        ];
     }
 }
