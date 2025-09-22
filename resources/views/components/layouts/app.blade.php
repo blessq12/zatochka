@@ -32,6 +32,7 @@
 
         <!-- Footer -->
         <x-footer.main />
+        <callback-widget></callback-widget>
     </div>
 
     @stack('scripts')
