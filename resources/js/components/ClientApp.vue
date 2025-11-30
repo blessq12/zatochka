@@ -3,11 +3,10 @@ import { mapStores } from "pinia";
 import { useAuthStore } from "../stores/authStore.js";
 import { useOrderStore } from "../stores/orderStore.js";
 import AuthorizedApp from "./AuthorizedApp.vue";
-import Auth from "./Auth/Auth.vue";
 
 export default {
     name: "ClientApp",
-    components: { AuthorizedApp, Auth },
+    components: { AuthorizedApp },
     provide: {},
     data() {
         return {};
@@ -26,7 +25,16 @@ export default {
         <AuthorizedApp />
     </div>
     <div v-else>
-        <Auth />
+        <div class="min-h-screen bg-white dark:bg-dark-blue-500 flex items-center justify-center">
+            <div class="text-center px-8">
+                <h1 class="text-2xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-4">
+                    Требуется авторизация
+                </h1>
+                <p class="text-lg font-jost-regular text-dark-gray-500 dark:text-gray-200">
+                    Пожалуйста, войдите в систему
+                </p>
+            </div>
+        </div>
     </div>
 </template>
 

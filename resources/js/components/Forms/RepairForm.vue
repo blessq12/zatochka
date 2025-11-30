@@ -1,501 +1,330 @@
 <script>
-import * as yup from "yup";
-import { useAuthStore } from "../../stores/authStore.js";
-import { useOrderStore } from "../../stores/orderStore.js";
-
 export default {
     name: "RepairForm",
     data() {
         return {
             form: {
+                device_name: "",
+                equipment_type: "",
+                problem_description: "",
+                urgency_type: "standard", // radio кнопка - один выбор
+                needs_delivery: true,
                 name: "",
                 phone: "",
                 comment: "",
-                agreement: true,
+                delivery_agreement: true,
                 privacy_agreement: true,
-                equipment_name: "",
-                equipment_type: "",
-                problem_description: "",
-                urgency: "normal",
-                needs_delivery: false,
-                delivery_address: "",
             },
-            loading: false,
-            errors: {},
+            equipmentTypes: [
+                { value: "clipper", label: "Машинка для стрижки" },
+                { value: "trimmer", label: "Триммер" },
+                { value: "shaver", label: "Бритва" },
+                { value: "dryer", label: "Фен" },
+                { value: "other", label: "Другое" },
+            ],
         };
     },
-    computed: {
-        authStore() {
-            return useAuthStore();
-        },
-        orderStore() {
-            return useOrderStore();
-        },
-    },
-    watch: {
-        "authStore.user": {
-            handler() {
-                this.fillUserData();
-            },
-            immediate: true,
-        },
-    },
-    mounted() {
-        this.fillUserData();
-    },
     methods: {
-        fillUserData() {
-            if (this.authStore.isAuthenticated && this.authStore.user) {
-                this.form.name = this.authStore.user.full_name || "";
-                this.form.phone = this.authStore.user.phone || "";
-            }
-        },
-
-        async validateForm() {
-            const schema = yup.object({
-                name: yup
-                    .string()
-                    .required("Укажите ваше имя")
-                    .min(2, "Имя должно содержать минимум 2 символа"),
-                phone: yup
-                    .string()
-                    .required("Укажите номер телефона")
-                    .matches(
-                        /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/,
-                        "Введите корректный номер телефона"
-                    ),
-                equipment_name: yup
-                    .string()
-                    .required("Укажите наименование аппарата")
-                    .min(3, "Наименование должно содержать минимум 3 символа"),
-                equipment_type: yup
-                    .string()
-                    .required("Выберите тип оборудования")
-                    .oneOf(
-                        [
-                            "clipper",
-                            "dryer",
-                            "scissors",
-                            "trimmer",
-                            "ultrasonic",
-                            "razor",
-                            "shaver",
-                            "epilator",
-                            "other",
-                        ],
-                        "Выберите корректный тип оборудования"
-                    ),
-                problem_description: yup
-                    .string()
-                    .required("Опишите проблему")
-                    .min(10, "Описание должно содержать минимум 10 символов"),
-                urgency: yup
-                    .string()
-                    .required("Выберите срочность")
-                    .oneOf(
-                        ["normal", "urgent"],
-                        "Выберите корректную срочность"
-                    ),
-                delivery_address: yup.string().when("needs_delivery", {
-                    is: true,
-                    then: (schema) =>
-                        schema
-                            .required("Укажите адрес доставки")
-                            .min(
-                                10,
-                                "Адрес должен содержать минимум 10 символов"
-                            ),
-                    otherwise: (schema) => schema.nullable(),
-                }),
-                agreement: yup
-                    .boolean()
-                    .oneOf([true], "Необходимо согласие с условиями доставки"),
-                privacy_agreement: yup
-                    .boolean()
-                    .oneOf([true], "Необходимо согласие на обработку данных"),
-            });
-
-            try {
-                this.errors = {};
-                await schema.validate(this.form, { abortEarly: false });
-                return { valid: true };
-            } catch (e) {
-                const fieldErrors = {};
-                if (e.inner?.length) {
-                    e.inner.forEach((err) => {
-                        if (!fieldErrors[err.path]) {
-                            fieldErrors[err.path] = err.message;
-                        }
-                    });
-                } else if (e.path) {
-                    fieldErrors[e.path] = e.message;
-                }
-                this.errors = fieldErrors;
-                return { valid: false };
-            }
-        },
-
-        async submitForm() {
-            this.loading = true;
-            this.error = null;
-
-            try {
-                // Валидация
-                const { valid } = await this.validateForm();
-                if (!valid) {
-                    this.loading = false;
-                    return;
-                }
-
-                // Отправка заказа через стор
-                const result = await this.orderStore.createOrder(
-                    this.form,
-                    "repair"
-                );
-
-                this.loading = false;
-            } catch (err) {
-                this.loading = false;
-            }
+        submitForm() {
+            console.log("Form submitted:", this.form);
+            // Здесь будет логика отправки формы
         },
     },
 };
 </script>
 
 <template>
-    <div class="space-y-8">
-        <form @submit.prevent="submitForm" class="space-y-8">
-            <!-- Наименование аппарата -->
-            <div class="space-y-3">
-                <label
-                    class="block text-lg font-jost-medium text-gray-700 dark:text-white mb-3"
-                >
-                    Наименование аппарата
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 dark:bg-gray-800/60 dark:border-gray-600/30"
-                        :class="{
-                            'border-red-500':
-                                errors.equipment_name || !form.equipment_name,
-                        }"
-                        placeholder="Например: Машинка для стрижки"
-                        v-model="form.equipment_name"
-                    />
-                    <p
-                        v-if="errors.equipment_name"
-                        class="text-red-500 text-sm mt-2"
+    <div>
+        <!-- Секция формы -->
+        <section class="bg-white dark:bg-dark-blue-500 py-12 sm:py-16 lg:py-20">
+            <div class="max-w-3xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20">
+                <!-- Заголовок -->
+                <div class="mb-8 sm:mb-12">
+                    <h1
+                        class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-dark-blue-500 dark:text-white mb-4"
                     >
-                        {{ errors.equipment_name }}
-                    </p>
+                        Оставить заявку на ремонт инструментов
+                    </h1>
+                    <div class="h-px bg-[#C3006B] dark:bg-[#C3006B]"></div>
                 </div>
-            </div>
-
-            <!-- Тип оборудования -->
-            <div class="space-y-3">
-                <label
-                    class="block text-lg font-jost-medium text-gray-700 dark:text-white mb-3"
-                >
-                    Тип оборудования
-                </label>
-                <div class="relative">
-                    <select
-                        class="w-full px-6 py-4 pr-10 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 appearance-none text-gray-900 dark:text-white dark:bg-gray-800/60 dark:border-gray-600/30"
-                        :class="{
-                            'border-red-500':
-                                errors.equipment_type || !form.equipment_type,
-                        }"
-                        v-model="form.equipment_type"
-                    >
-                        <option value="">Выберите тип оборудования</option>
-                        <option value="clipper">Машинка для стрижки</option>
-                        <option value="dryer">Фен</option>
-                        <option value="scissors">Электрические ножницы</option>
-                        <option value="trimmer">Триммер</option>
-                        <option value="ultrasonic">Ультразвуковая ванна</option>
-                        <option value="razor">Бритва</option>
-                        <option value="shaver">Электробритва</option>
-                        <option value="epilator">Эпилятор</option>
-                        <option value="other">Другое</option>
-                    </select>
-                    <i
-                        class="mdi mdi-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none text-xl"
-                    ></i>
-                    <p
-                        v-if="errors.equipment_type"
-                        class="text-red-500 text-sm mt-2"
-                    >
-                        {{ errors.equipment_type }}
-                    </p>
-                </div>
-            </div>
-
-            <!-- Описание проблемы -->
-            <div class="space-y-3">
-                <label
-                    class="block text-lg font-jost-medium text-gray-700 dark:text-white mb-3"
-                >
-                    Описание проблемы
-                </label>
-                <div class="relative">
-                    <textarea
-                        class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 resize-y min-h-[120px] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 dark:bg-gray-800/60 dark:border-gray-600/30"
-                        :class="{
-                            'border-red-500':
-                                errors.problem_description ||
-                                !form.problem_description,
-                        }"
-                        rows="4"
-                        placeholder="Опишите что происходит с оборудованием"
-                        v-model="form.problem_description"
-                    ></textarea>
-                    <p
-                        v-if="errors.problem_description"
-                        class="text-red-500 text-sm mt-2"
-                    >
-                        {{ errors.problem_description }}
-                    </p>
-                </div>
-            </div>
-
-            <!-- Срочность -->
-            <div class="space-y-3">
-                <label
-                    class="block text-lg font-jost-medium text-gray-700 dark:text-white mb-3"
-                >
-                    Срочность ремонта
-                </label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label
-                        class="flex items-center p-6 border-2 border-gray-200 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg bg-white/60 backdrop-blur-md dark:bg-gray-800/60"
-                    >
+                <!-- Форма -->
+                <form @submit.prevent="submitForm" class="space-y-6">
+                    <!-- Наименование аппарата -->
+                    <div>
+                        <label
+                            class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
+                        >
+                            Наименование аппарата
+                        </label>
                         <input
-                            type="radio"
-                            name="urgency"
-                            value="normal"
-                            v-model="form.urgency"
-                            class="mr-4 w-6 h-6 text-blue-500 accent-blue-500"
-                        />
-                        <div>
-                            <div class="font-jost-bold text-lg dark:text-white">
-                                Обычный ремонт
-                            </div>
-                            <div
-                                class="text-sm text-gray-600 dark:text-gray-400 font-jost-regular"
-                            >
-                                1-5 дней
-                            </div>
-                        </div>
-                    </label>
-                    <label
-                        class="flex items-center p-6 border-2 border-gray-200 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg bg-white/60 backdrop-blur-md dark:bg-gray-800/60"
-                    >
-                        <input
-                            type="radio"
-                            name="urgency"
-                            value="urgent"
-                            v-model="form.urgency"
-                            class="mr-4 w-6 h-6 text-blue-500 accent-blue-500"
-                        />
-                        <div>
-                            <div class="font-jost-bold text-lg dark:text-white">
-                                Срочный ремонт
-                            </div>
-                            <div
-                                class="text-sm text-gray-600 dark:text-gray-400 font-jost-regular"
-                            >
-                                24 часа (+50%)
-                            </div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Нужна ли доставка -->
-            <div class="space-y-3">
-                <div
-                    class="flex items-center gap-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg dark:bg-gray-800/60 dark:border-gray-600/30"
-                >
-                    <input
-                        type="checkbox"
-                        class="w-6 h-6 text-blue-500 accent-blue-500"
-                        v-model="form.needs_delivery"
-                    />
-                    <label class="dark:text-white text-lg font-jost-medium"
-                        >Нужна доставка</label
-                    >
-                </div>
-            </div>
-
-            <!-- Адрес доставки (если нужна) -->
-            <div v-if="form.needs_delivery" class="space-y-3">
-                <label
-                    class="block text-lg font-jost-medium text-gray-700 dark:text-white mb-3"
-                >
-                    Адрес доставки
-                </label>
-                <div class="relative">
-                    <textarea
-                        class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 resize-y min-h-[120px] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 dark:bg-gray-800/60 dark:border-gray-600/30"
-                        :class="{
-                            'border-red-500':
-                                errors.delivery_address ||
-                                (form.needs_delivery && !form.delivery_address),
-                        }"
-                        rows="3"
-                        placeholder="Укажите полный адрес для доставки"
-                        v-model="form.delivery_address"
-                    ></textarea>
-                    <p
-                        v-if="errors.delivery_address"
-                        class="text-red-500 text-sm mt-2"
-                    >
-                        {{ errors.delivery_address }}
-                    </p>
-                </div>
-            </div>
-
-            <!-- Имя и телефон -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-3">
-                    <label
-                        class="block text-lg font-jost-medium text-gray-700 dark:text-white mb-3"
-                    >
-                        Ваше имя
-                    </label>
-                    <div class="relative">
-                        <input
+                            v-model="form.device_name"
                             type="text"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 dark:bg-gray-800/60 dark:border-gray-600/30"
-                            :class="{
-                                'border-red-500': errors.name || !form.name,
-                            }"
-                            v-model="form.name"
-                            placeholder="Введите ваше имя"
+                            placeholder="Например, машинка для стрижки"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                         />
-                        <p v-if="errors.name" class="text-red-500 text-sm mt-2">
-                            {{ errors.name }}
-                        </p>
                     </div>
-                </div>
 
-                <div class="space-y-3">
-                    <label
-                        class="block text-lg font-jost-medium text-gray-700 dark:text-white mb-3"
-                    >
-                        Телефон
-                    </label>
-                    <div class="relative">
+                    <!-- Тип оборудования -->
+                    <div>
+                        <label
+                            class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
+                        >
+                            Тип оборудования
+                        </label>
+                        <select
+                            v-model="form.equipment_type"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 appearance-none bg-no-repeat bg-right pr-12"
+                            style="
+                                background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23333%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e');
+                                background-position: right 1rem center;
+                                background-size: 1.5em 1.5em;
+                            "
+                        >
+                            <option value="" disabled>
+                                Выберите тип оборудования
+                            </option>
+                            <option
+                                v-for="type in equipmentTypes"
+                                :key="type.value"
+                                :value="type.value"
+                            >
+                                {{ type.label }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Описание проблемы -->
+                    <div>
+                        <label
+                            class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
+                        >
+                            Описание проблемы
+                        </label>
+                        <textarea
+                            v-model="form.problem_description"
+                            rows="4"
+                            placeholder="Опишите, что происходит с оборудованием"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 resize-none"
+                        ></textarea>
+                    </div>
+
+                    <!-- Срочность ремонта -->
+                    <div>
+                        <label
+                            class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-3"
+                        >
+                            Срочность ремонта
+                        </label>
+                        <div class="flex flex-row gap-6">
+                            <div class="flex items-center gap-3">
+                                <input
+                                    v-model="form.urgency_type"
+                                    type="radio"
+                                    value="standard"
+                                    id="urgency_standard"
+                                    class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B]"
+                                />
+                                <label
+                                    for="urgency_standard"
+                                    class="text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Обычный ремонт, 1-5 дней
+                                </label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input
+                                    v-model="form.urgency_type"
+                                    type="radio"
+                                    value="urgent"
+                                    id="urgency_urgent"
+                                    class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B]"
+                                />
+                                <label
+                                    for="urgency_urgent"
+                                    class="text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Срочный ремонт 24 часа (+50%)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Нужна доставка -->
+                    <div class="flex items-center gap-3">
                         <input
-                            type="tel"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 dark:bg-gray-800/60 dark:border-gray-600/30"
-                            :class="{
-                                'border-red-500': errors.phone || !form.phone,
-                            }"
-                            v-model="form.phone"
-                            v-maska
-                            data-maska="+7 (###) ###-##-##"
-                            placeholder="+7 (___) ___-__-__"
+                            v-model="form.needs_delivery"
+                            type="checkbox"
+                            id="needs_delivery"
+                            class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B]"
                         />
-                        <p
-                            v-if="errors.phone"
-                            class="text-red-500 text-sm mt-2"
+                        <label
+                            for="needs_delivery"
+                            class="text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200"
                         >
-                            {{ errors.phone }}
-                        </p>
+                            Нужна доставка
+                        </label>
                     </div>
-                </div>
-            </div>
 
-            <!-- Комментарий -->
-            <div class="space-y-3">
-                <label
-                    class="block text-lg font-jost-medium text-gray-700 dark:text-white mb-3"
-                >
-                    Комментарий
-                </label>
-                <div class="relative">
-                    <textarea
-                        class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 resize-y min-h-[120px] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 dark:bg-gray-800/60 dark:border-gray-600/30"
-                        rows="4"
-                        placeholder="Дополнительная информация о заказе"
-                        v-model="form.comment"
-                    ></textarea>
-                </div>
-            </div>
-
-            <!-- Согласия -->
-            <div class="space-y-4">
-                <div
-                    class="flex items-center gap-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg dark:bg-gray-800/60 dark:border-gray-600/30"
-                >
-                    <input
-                        type="checkbox"
-                        class="w-6 h-6 text-blue-500 accent-blue-500"
-                        v-model="form.agreement"
-                        required
-                    />
-                    <label class="dark:text-white text-lg font-jost-medium">
-                        Я ознакомлен с
-                        <a
-                            href="/delivery"
-                            target="_blank"
-                            class="text-blue-500 hover:underline font-jost-bold"
+                    <!-- Ваше имя -->
+                    <div>
+                        <label
+                            class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            условиями доставки
-                        </a>
-                    </label>
-                </div>
+                            Ваше имя
+                        </label>
+                        <input
+                            v-model="form.name"
+                            type="text"
+                            placeholder="Введите ваше имя"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                        />
+                    </div>
 
-                <div
-                    class="flex items-center gap-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg dark:bg-gray-800/60 dark:border-gray-600/30"
-                >
-                    <input
-                        type="checkbox"
-                        class="w-6 h-6 text-blue-500 accent-blue-500"
-                        v-model="form.privacy_agreement"
-                        required
-                    />
-                    <label class="dark:text-white text-lg font-jost-medium">
-                        Даю согласие на
-                        <a
-                            href="/privacy-policy"
-                            target="_blank"
-                            class="text-blue-500 hover:underline font-jost-bold"
+                    <!-- Телефон -->
+                    <div>
+                        <label
+                            class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            обработку персональных данных
-                        </a>
-                    </label>
-                </div>
-            </div>
+                            Телефон
+                        </label>
+                        <input
+                            v-model="form.phone"
+                            type="tel"
+                            v-maska="'+7 (###) ###-##-##'"
+                            placeholder="+7 (___) ___-__-__"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                        />
+                    </div>
 
-            <!-- Кнопка отправки -->
-            <button
-                type="submit"
-                class="w-full bg-gradient-to-r from-blue-500 to-dark-blue-500 text-white font-jost-bold py-5 px-10 rounded-2xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center text-xl"
-                :disabled="loading"
+                    <!-- Комментарий -->
+                    <div>
+                        <label
+                            class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
+                        >
+                            Комментарий
+                        </label>
+                        <input
+                            v-model="form.comment"
+                            type="text"
+                            placeholder=""
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                        />
+                    </div>
+
+                    <!-- Чекбоксы согласий -->
+                    <div class="space-y-4 pt-4">
+                        <div class="flex items-start gap-3">
+                            <input
+                                v-model="form.delivery_agreement"
+                                type="checkbox"
+                                id="delivery_agreement"
+                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                            />
+                            <label
+                                for="delivery_agreement"
+                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
+                            >
+                                Я ознакомлен с
+                                <span class="underline"
+                                    >условиями доставки</span
+                                >
+                            </label>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <input
+                                v-model="form.privacy_agreement"
+                                type="checkbox"
+                                id="privacy_agreement"
+                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                            />
+                            <label
+                                for="privacy_agreement"
+                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
+                            >
+                                Даю согласие на
+                                <span class="underline"
+                                    >обработку персональных данных</span
+                                >
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Кнопка отправки -->
+                    <div class="pt-6">
+                        <button
+                            type="submit"
+                            class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white border-2 border-white px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                        >
+                            ЗАКАЗАТЬ РЕМОНТ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Футер с контактами -->
+        <section
+            class="bg-dark-blue-500 dark:bg-dark-blue-500 py-12 sm:py-16 lg:py-20"
+        >
+            <div
+                class="max-w-3xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 text-center"
             >
-                {{ loading ? "Отправляем..." : "Заказать ремонт" }}
-            </button>
-        </form>
+                <!-- Декоративные иконки -->
+                <div
+                    class="flex justify-center items-center gap-6 mb-8 sm:mb-12"
+                >
+                    <svg
+                        width="98"
+                        height="33"
+                        viewBox="0 0 98 33"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M75.7866 25.0391C76.1404 22.0891 81.5193 15.1516 84.1059 11.8191C84.8709 10.8342 85.4733 10.0548 85.7889 9.60062C85.8701 9.48109 85.9562 9.36156 86.0423 9.23725C86.1283 9.36156 86.2144 9.48587 86.2957 9.60062C86.6065 10.0548 87.2136 10.8342 87.9786 11.8191C90.5652 15.1516 95.9393 22.0891 96.2979 25.0391C96.776 29.0074 94.7679 31.661 94.7488 31.6897L96.0302 32.689C96.1306 32.5599 98.4733 29.5047 97.9139 24.843C97.5362 21.7114 93.2523 15.9644 89.2648 10.8246C88.5141 9.8588 87.926 9.09381 87.6392 8.67785C87.5531 8.55354 87.4623 8.42445 87.3715 8.29057C87.2567 8.12801 87.1371 7.95589 87.0224 7.78377C87.7874 6.56457 88.5285 5.11109 88.7437 3.49026C88.8823 2.45275 88.4855 1.68776 88.2512 1.00405L86.3531 0C86.7786 1.22398 87.1993 2.8209 87.1371 3.27511C86.9937 4.33653 86.5682 5.33102 86.0566 6.24423C85.5403 5.33102 85.1147 4.33653 84.9761 3.27511C84.9187 2.8209 85.3347 1.22398 85.7602 0L83.9577 1.01839C83.7425 1.64473 83.3457 2.07982 83.3457 3.20817C83.3457 3.30858 83.3505 3.4042 83.36 3.49026C83.5752 5.11109 84.3115 6.55979 85.0813 7.78377C84.9617 7.95589 84.8422 8.12801 84.7322 8.29057C84.6414 8.42445 84.5505 8.55354 84.4645 8.67785C84.1776 9.09381 83.5895 9.8588 82.8388 10.8246C78.8513 15.9644 74.5674 21.7114 74.1945 24.843C74.1323 25.3403 74.1084 25.8184 74.1084 26.2774C74.1084 30.1215 75.9875 32.5694 76.0783 32.6842L77.3596 31.6849C77.3405 31.6562 75.3324 29.0027 75.8105 25.0343L75.7866 25.0391Z"
+                            fill="#C3006B"
+                        />
+                        <path
+                            d="M4.38435 30.4594C5.97648 30.4594 7.37259 29.6036 8.14236 28.3318C8.91213 29.6036 10.3082 30.4594 11.9004 30.4594C14.3149 30.4594 16.2847 28.4944 16.2847 26.0751C16.2847 23.804 14.5491 21.9298 12.3307 21.7147L8.82129 13.1659L10.9967 7.86356C11.231 7.32328 11.427 6.76867 11.5992 6.20927L10.5808 5.25781C10.3752 5.97499 10.1409 6.68261 9.84446 7.37588L8.14714 11.5116L6.44504 7.36631C6.1486 6.67782 5.91432 5.97021 5.70873 5.25781L4.69034 6.20927C4.86246 6.76389 5.05849 7.31372 5.28799 7.84921L7.46821 13.1611L3.95882 21.7099C1.73557 21.9346 0 23.8088 0 26.0799C0 28.4944 1.96507 30.4642 4.38435 30.4642V30.4594ZM15.0273 26.0751C15.0273 27.8011 13.6216 29.2068 11.8956 29.2068C10.1696 29.2068 8.76391 27.8011 8.76391 26.0751C8.76391 24.3491 10.1696 22.9434 11.8956 22.9434C13.6216 22.9434 15.0273 24.3491 15.0273 26.0751ZM8.14236 14.8154L11.0015 21.7864C9.79187 22.0398 8.76391 22.7952 8.14236 23.8232C7.52558 22.7952 6.49285 22.0398 5.28321 21.7864L8.14236 14.8154ZM4.38435 22.9434C6.11035 22.9434 7.51602 24.3491 7.51602 26.0751C7.51602 27.8011 6.11035 29.2068 4.38435 29.2068C2.65834 29.2068 1.25267 27.8011 1.25267 26.0751C1.25267 24.3491 2.65834 22.9434 4.38435 22.9434Z"
+                            fill="#C3006B"
+                        />
+                        <path
+                            d="M60.8165 10.5076V13.6584H67.6393C67.9309 13.6584 68.1652 13.8926 68.1652 14.1843C68.1652 14.4759 67.9309 14.7102 67.6393 14.7102H60.8165V17.861H67.6393C67.9309 17.861 68.1652 18.0953 68.1652 18.3869C68.1652 18.6786 67.9309 18.9129 67.6393 18.9129H60.8165V22.0637H67.6393C67.9309 22.0637 68.1652 22.298 68.1652 22.5896C68.1652 22.8813 67.9309 23.1155 67.6393 23.1155H60.8165V29.9383C60.8165 30.2299 60.5822 30.4642 60.2906 30.4642C59.9989 30.4642 59.7646 30.2299 59.7646 29.9383V8.93454C59.7646 6.90732 61.4142 5.25781 63.4414 5.25781H67.6393C67.9309 5.25781 68.1652 5.49209 68.1652 5.78374C68.1652 6.0754 67.9309 6.30967 67.6393 6.30967H63.4414C61.9927 6.30967 60.8165 7.48584 60.8165 8.93454V9.46047H67.6393C67.9309 9.46047 68.1652 9.69475 68.1652 9.9864C68.1652 10.2781 67.9309 10.5123 67.6393 10.5123H60.8165V10.5076Z"
+                            fill="#C3006B"
+                        />
+                        <path
+                            d="M24.7277 28.9486C24.4169 28.8482 24.0344 28.7047 23.6472 28.547C23.6472 28.131 23.6615 27.7246 23.6902 27.3995C23.7189 27.0744 23.8528 26.754 24.0679 26.4958C26.3964 23.7132 34.1658 11.8654 39.7167 7.84443C41.1081 6.84517 46.4773 6.55351 48.428 6.52961L46.1092 5.25781C43.7377 5.40603 40.257 5.77896 38.9231 6.73998C32.6741 11.2391 23.2599 25.334 22.6527 26.0703L22.5905 26.1468L22.5523 26.2329C22.2224 26.9883 22.2798 28.8816 22.3037 29.4458C22.8152 29.6849 24.546 30.4594 25.3684 30.4499H25.464L25.5549 30.4212C26.4681 30.1391 43.0444 26.7875 49.5994 22.7426C51.0003 21.882 52.6833 18.8077 53.7304 16.6753L53.4483 14.0456C52.6737 15.8386 50.3453 20.6867 48.887 21.5856C43.0397 25.1714 29.1694 27.8728 25.7031 28.9534C25.3827 29.0538 25.0433 29.0538 24.7229 28.9534L24.7277 28.9486Z"
+                            fill="#C3006B"
+                        />
+                    </svg>
+                </div>
+
+                <!-- Текст призыва -->
+                <p
+                    class="text-xl sm:text-2xl font-jost-regular text-white mb-8 sm:mb-12"
+                >
+                    Свяжитесь с нами для заказа доставки ваших инструментов
+                </p>
+
+                <!-- Кнопки контактов -->
+                <div
+                    class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8"
+                >
+                    <button
+                        class="bg-white hover:bg-gray-100 text-dark-blue-500 border-2 border-dark-blue-500 px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                    >
+                        ПОЗВОНИТЬ
+                    </button>
+                    <button
+                        class="bg-white hover:bg-gray-100 text-dark-blue-500 border-2 border-dark-blue-500 px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                    >
+                        НАПИСАТЬ
+                    </button>
+                </div>
+            </div>
+        </section>
     </div>
 </template>
 
-<style scoped>
-input,
-select,
-textarea {
-    transition: all 0.3s ease;
-}
-
-input[type="radio"]:checked + div {
-    transform: scale(1.02);
-    transition: transform 0.2s ease;
-}
-
-input[type="checkbox"]:checked {
-    transform: scale(1.1);
-    transition: transform 0.2s ease;
-}
-</style>
+<style scoped></style>
