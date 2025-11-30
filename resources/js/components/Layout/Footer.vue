@@ -8,7 +8,7 @@ export default {
     },
     computed: {
         logoColor() {
-            return this.isDark ? "#C3006B" : "#003859";
+            return this.isDark ? "#C20A6C" : "#003859";
         },
     },
     mounted() {
@@ -32,7 +32,7 @@ export default {
 
 <template>
     <footer
-        class="bg-white/85 backdrop-blur-2xl border-t border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25 mt-auto"
+        class="bg-white/85 backdrop-blur-2xl border-t border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25 mt-auto"
     >
         <div
             class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 lg:py-20"
