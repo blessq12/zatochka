@@ -39,7 +39,7 @@ export default {
             this.$emit("close");
         },
         updateThemeState() {
-            this.isDark = document.documentElement.classList.contains("dark");
+            this.isDark = true;
         },
     },
 };
