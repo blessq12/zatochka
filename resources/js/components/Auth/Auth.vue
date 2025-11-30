@@ -29,7 +29,7 @@ export default {
         class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-8 sm:py-12 lg:py-16"
     >
         <div
-            class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
+            class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
         >
             <div class="flex items-center justify-between mb-8">
                 <h1

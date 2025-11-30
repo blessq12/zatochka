@@ -130,7 +130,7 @@ export default {
 
 <template>
     <div
-        class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25 mt-12"
+        class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25 mt-12"
     >
         <!-- Заголовок секции -->
         <div class="flex items-center mb-8">

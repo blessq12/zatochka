@@ -38,7 +38,7 @@ export default {
 
 <template>
     <div
-        class="relative overflow-hidden bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
+        class="relative overflow-hidden bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
     >
         <div class="flex items-center justify-between mb-10 sm:mb-12 lg:mb-14">
             <div>
@@ -73,7 +73,7 @@ export default {
             class="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10 lg:gap-12 mb-12 sm:mb-14 lg:mb-16"
         >
             <div
-                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
+                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
             >
                 <div class="text-center">
                     <div
@@ -88,7 +88,7 @@ export default {
             </div>
 
             <div
-                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
+                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
             >
                 <div class="text-center">
                     <div
@@ -101,7 +101,7 @@ export default {
             </div>
 
             <div
-                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
+                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
             >
                 <div class="text-center">
                     <div
@@ -117,7 +117,7 @@ export default {
         <!-- Дополнительные данные пользователя -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10 lg:gap-12">
             <div
-                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
+                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
             >
                 <div class="text-center">
                     <div
@@ -130,7 +130,7 @@ export default {
             </div>
 
             <div
-                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
+                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
             >
                 <div class="text-center">
                     <div
@@ -148,7 +148,7 @@ export default {
             </div>
 
             <div
-                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-gray-900/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
+                class="bg-white/85 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/25 dark:bg-dark-blue-500/85 dark:backdrop-blur-2xl dark:border-gray-800/25"
             >
                 <div class="text-center">
                     <div

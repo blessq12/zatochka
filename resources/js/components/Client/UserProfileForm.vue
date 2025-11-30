@@ -178,7 +178,7 @@ export default {
         >
             <aside
                 v-if="open"
-                class="w-full sm:w-[480px] h-full min-h-0 bg-white/85 dark:bg-gray-900/85 backdrop-blur-2xl border-l border-white/25 dark:border-gray-800/25 shadow-2xl p-8 sm:p-10 lg:p-12 text-gray-900 dark:text-gray-100 flex flex-col overflow-y-auto z-10 ml-auto pointer-events-auto"
+                class="w-full sm:w-[480px] h-full min-h-0 bg-white/85 dark:bg-dark-blue-500/85 backdrop-blur-2xl border-l border-white/25 dark:border-gray-800/25 shadow-2xl p-8 sm:p-10 lg:p-12 text-gray-900 dark:text-gray-100 flex flex-col overflow-y-auto z-10 ml-auto pointer-events-auto"
             >
                 <header class="mb-10 sm:mb-12">
                     <h2

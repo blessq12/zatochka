@@ -23,6 +23,7 @@
         "gsap": "^3.13.0",
         "maska": "^3.2.0",
         "pinia": "^3.0.3",
+        "vue-router": "^4.6.3",
         "vue-toastification": "^2.0.0-rc.5",
         "yup": "^1.7.0"
     }
