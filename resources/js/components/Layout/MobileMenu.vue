@@ -146,7 +146,7 @@ export default {
 
             <!-- Средняя часть - Навигационные ссылки -->
             <nav
-                class="flex-1 flex flex-col justify-left items-center space-y-6 px-6 mt-24"
+                class="flex-1 flex flex-col justify-left items-center space-y-6 px-6 mt-12"
             >
                 <router-link
                     to="/"
@@ -200,13 +200,13 @@ export default {
             </nav>
 
             <!-- Нижняя часть - Социальные иконки и инструменты -->
-            <div class="relative pb-8">
+            <div class="relative pb-8 mt-auto">
                 <div
-                    class="absolute -bottom-1/2 left-1/2 -translate-x-1/2 w-[150%] h-[200%] bg-white rounded-full"
-                    style="border-radius: 50%"
+                    class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[120%] h-[150px] bg-white rounded-t-full"
+                    style="border-radius: 50% 50% 0 0 / 100% 100% 0 0"
                 ></div>
 
-                <div class="relative px-6 pt-8">
+                <div class="relative px-6 pt-8 z-10">
                     <!-- Социальные иконки -->
                     <div
                         class="flex justify-center items-center space-x-4 mb-6"
