@@ -10,6 +10,7 @@ import { createApp } from "vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import "./bootstrap";
+import axios from "axios";
 
 //services
 import themeTogglerService from "./services/themeTogglerService";
@@ -23,6 +24,17 @@ import App from "./App.vue";
  */
 
 themeTogglerService.init();
+
+// Настройка axios interceptor для обработки 403 ошибок
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 403) {
+            router.push({ name: "Forbidden" });
+        }
+        return Promise.reject(error);
+    }
+);
 
 const app = createApp(App);
 const pinia = createPinia();

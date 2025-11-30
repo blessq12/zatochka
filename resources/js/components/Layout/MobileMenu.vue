@@ -177,14 +177,14 @@ export default {
                     ДОСТАВКА
                 </router-link>
                 <router-link
-                    to="/price"
+                    to="/prices"
                     @click="closeMenu"
                     class="text-white text-2xl font-jost-bold transition-all duration-300 hover:scale-105"
                 >
                     ПРАЙС
                 </router-link>
                 <router-link
-                    to="/schedule"
+                    to="/work-schedule"
                     @click="closeMenu"
                     class="text-white text-2xl font-jost-bold transition-all duration-300 hover:scale-105"
                 >
