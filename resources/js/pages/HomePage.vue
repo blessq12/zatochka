@@ -138,17 +138,17 @@ export default {
                 class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 lg:py-20"
             >
                 <div
-                    class="mx-auto bg-dark-blue-500 text-white rounded-full w-full max-w-[480px] aspect-square flex flex-col items-center justify-center shadow-2xl"
+                    class="mx-auto bg-dark-blue-500 text-white rounded-full w-full max-w-[480px] aspect-square flex flex-col items-center justify-center shadow-2xl p-8 sm:p-12"
                 >
                     <!-- Иконки услуг в SVG, как на бренд-макете -->
-                    <div class="flex items-center justify-center">
+                    <div class="flex items-center justify-center mb-4 sm:mb-6">
                         <svg
                             width="98"
                             height="33"
                             viewBox="0 0 98 33"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            class="w-30 h-30"
+                            class="w-20 h-7 sm:w-24 sm:h-8"
                         >
                             <path
                                 d="M75.7866 25.0391C76.1404 22.0891 81.5193 15.1516 84.1059 11.8191C84.8709 10.8342 85.4733 10.0548 85.7889 9.60062C85.8701 9.48109 85.9562 9.36156 86.0423 9.23725C86.1283 9.36156 86.2144 9.48587 86.2957 9.60062C86.6065 10.0548 87.2136 10.8342 87.9786 11.8191C90.5652 15.1516 95.9393 22.0891 96.2979 25.0391C96.776 29.0074 94.7679 31.661 94.7488 31.6897L96.0302 32.689C96.1306 32.5599 98.4733 29.5047 97.9139 24.843C97.5362 21.7114 93.2523 15.9644 89.2648 10.8246C88.5141 9.8588 87.926 9.09381 87.6392 8.67785C87.5531 8.55354 87.4623 8.42445 87.3715 8.29057C87.2567 8.12801 87.1371 7.95589 87.0224 7.78377C87.7874 6.56457 88.5285 5.11109 88.7437 3.49026C88.8823 2.45275 88.4855 1.68776 88.2512 1.00405L86.3531 0C86.7786 1.22398 87.1993 2.8209 87.1371 3.27511C86.9937 4.33653 86.5682 5.33102 86.0566 6.24423C85.5403 5.33102 85.1147 4.33653 84.9761 3.27511C84.9187 2.8209 85.3347 1.22398 85.7602 0L83.9577 1.01839C83.7425 1.64473 83.3457 2.07982 83.3457 3.20817C83.3457 3.30858 83.3505 3.4042 83.36 3.49026C83.5752 5.11109 84.3115 6.55979 85.0813 7.78377C84.9617 7.95589 84.8422 8.12801 84.7322 8.29057C84.6414 8.42445 84.5505 8.55354 84.4645 8.67785C84.1776 9.09381 83.5895 9.8588 82.8388 10.8246C78.8513 15.9644 74.5674 21.7114 74.1945 24.843C74.1323 25.3403 74.1084 25.8184 74.1084 26.2774C74.1084 30.1215 75.9875 32.5694 76.0783 32.6842L77.3596 31.6849C77.3405 31.6562 75.3324 29.0027 75.8105 25.0343L75.7866 25.0391Z"
@@ -169,12 +169,12 @@ export default {
                         </svg>
                     </div>
                     <h2
-                        class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-center mb-4"
+                        class="text-2xl sm:text-3xl lg:text-4xl font-jost-bold text-center mb-3 sm:mb-4"
                     >
                         НАШИ УСЛУГИ
                     </h2>
                     <p
-                        class="text-sm sm:text-base lg:text-lg font-jost-regular text-center max-w-md mx-auto"
+                        class="text-xs sm:text-sm lg:text-base font-jost-regular text-center px-4"
                     >
                         ПОЛНЫЙ СПЕКТР УСЛУГ ПО ЗАТОЧКЕ, РЕМОНТУ И ВОССТАНОВЛЕНИЮ
                         ИНСТРУМЕНТОВ
