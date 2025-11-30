@@ -13,6 +13,9 @@ import "./bootstrap";
 
 //services
 import themeTogglerService from "./services/themeTogglerService";
+import router from "./router";
+import App from "./App.vue";
+
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
@@ -21,12 +24,13 @@ import themeTogglerService from "./services/themeTogglerService";
 
 themeTogglerService.init();
 
-const app = createApp({});
+const app = createApp(App);
 const pinia = createPinia();
 
 app.directive("maska", vMaska);
 app.provide("themeTogglerService", themeTogglerService);
 app.use(pinia);
+app.use(router);
 app.use(Toast, {
     position: "top-right",
     timeout: 4000,
@@ -50,6 +54,9 @@ app.use(Toast, {
 
 Object.entries(import.meta.glob("./**/*.vue", { eager: true })).forEach(
     ([path, definition]) => {
+        // Пропускаем App.vue, так как он уже импортирован
+        if (path.includes("App.vue")) return;
+
         app.component(
             path
                 .split("/")

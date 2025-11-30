@@ -25,7 +25,7 @@ export default {
 <template>
     <button
         @click="toggleTheme"
-        class="relative w-12 h-12 bg-white/85 backdrop-blur-2xl border border-white/25 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 ease-out hover:bg-white/95 hover:backdrop-blur-3xl dark:bg-gray-900/85 dark:border-gray-800/25 dark:hover:bg-gray-900/95 dark:focus:ring-blue-400/50 dark:focus:border-blue-400/50 flex items-center justify-center font-jost"
+        class="relative w-10 h-10 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg transition-all duration-300"
         :title="
             isDark
                 ? 'Переключить на светлую тему'
@@ -35,9 +35,10 @@ export default {
         <!-- Солнце для переключения на светлую тему (когда темная активна) -->
         <svg
             v-if="isDark"
-            class="w-6 h-6 text-pink-600 dark:text-pink-400 transition-all duration-300 ease-out hover:animate-spin hover:drop-shadow-lg"
+            class="w-6 h-6 text-white transition-all duration-300 ease-out hover:animate-spin"
             fill="none"
             stroke="currentColor"
+            stroke-width="2"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
         >
@@ -55,9 +56,10 @@ export default {
         <!-- Луна для переключения на темную тему (когда светлая активна) -->
         <svg
             v-else
-            class="w-6 h-6 text-gray-700 dark:text-gray-300 transition-all duration-300 ease-out hover:animate-pulse hover:drop-shadow-lg"
+            class="w-6 h-6 text-black transition-all duration-300 ease-out hover:animate-pulse"
             fill="none"
             stroke="currentColor"
+            stroke-width="2"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
         >
