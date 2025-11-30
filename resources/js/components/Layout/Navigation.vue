@@ -1,14 +1,12 @@
 <script>
 import { mapStores } from "pinia";
 import { useAuthStore } from "../../stores/authStore.js";
-import DashboardButton from "../Support/DashboardButton.vue";
 import ThemeToggler from "../Support/ThemeToggler.vue";
 import MobileMenu from "./MobileMenu.vue";
 
 export default {
     name: "Navigation",
     components: {
-        DashboardButton,
         ThemeToggler,
         MobileMenu,
     },
@@ -36,47 +34,48 @@ export default {
 
 <template>
     <nav class="bg-[#C20A6C] sticky top-0 z-50">
-        <div class="container mx-auto px-6 sm:px-8 lg:px-12">
-            <div class="flex justify-between items-center py-4">
+        <div class="container mx-auto">
+            <div
+                class="flex justify-between items-center py-4 h-20 px-6 sm:px-8 lg:px-12"
+            >
                 <!-- Логотип -->
                 <router-link
                     to="/"
                     class="flex items-center space-x-2 sm:space-x-3 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] rounded-xl p-2 -m-2 flex-shrink-0"
                 >
                     <!-- Иконка логотипа -->
-                    <div
-                        class="w-12 h-12 sm:w-14 sm:h-14 bg-[#003859] rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 flex-shrink-0"
+                    <svg
+                        width="36"
+                        height="25"
+                        viewBox="0 0 36 25"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-12 h-8 sm:w-14 sm:h-10 flex-shrink-0 group-hover:scale-105 transition-all duration-300"
                     >
-                        <!-- SVG иконка лезвия/заточки (форма похожая на "3" или изогнутое лезвие) -->
-                        <svg
-                            class="w-6 h-6 sm:w-7 sm:h-7"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                d="M6 4C6 4 4 6 4 10C4 14 6 16 6 20M18 4C18 4 20 6 20 10C20 14 18 16 18 20M6 4L18 4M6 20L18 20"
-                                stroke="white"
-                                stroke-width="2.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            />
-                            <path
-                                d="M8 8C8 8 7 9 7 11C7 13 8 14 8 16M16 8C16 8 17 9 17 11C17 13 16 14 16 16"
-                                stroke="white"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            />
-                        </svg>
-                    </div>
+                        <path
+                            d="M25.3397 12.1789C25.3397 11.6708 24.9268 11.2578 24.4186 11.2578C23.9105 11.2578 23.4976 11.6708 23.4976 12.1789C23.4976 12.687 23.9105 13.1 24.4186 13.1C24.9268 13.1 25.3397 12.6889 25.3397 12.1789Z"
+                            fill="#003859"
+                        />
+                        <path
+                            d="M32.9363 12.1868C32.9363 12.1868 32.9421 12.183 32.944 12.181C32.9421 12.1791 32.9382 12.1772 32.9363 12.1753C34.5178 11.0221 35.5988 9.27314 35.6558 6.92665C35.5493 2.4487 31.7241 0.147881 27.7847 0.0108596V0.00515036C27.7847 0.00515036 23.3239 -0.24225 20.5264 2.6923L23.1697 4.37272C25.0842 2.77032 27.9579 3.01963 27.9579 3.01963C29.0997 3.09004 32.0952 3.96926 32.2246 6.92474C32.0762 10.3217 27.3775 10.396 26.896 10.396V13.9661C27.3755 13.9661 32.0762 14.0404 32.2246 17.4374C32.0971 20.3909 29.1016 21.2721 27.9579 21.3425C27.9579 21.3425 25.0842 21.5918 23.1697 19.9894L20.5264 21.6698C23.3258 24.6043 27.7847 24.3569 27.7847 24.3569V24.3512C31.7241 24.2142 35.5512 21.9153 35.6577 17.4374C35.6007 15.0909 34.5197 13.3419 32.9382 12.1887L32.9363 12.1868Z"
+                            fill="#003859"
+                        />
+                        <path
+                            d="M13.352 17.2355L10.4098 17.245L18.8043 12.1847H18.7986L18.8043 12.179L10.4098 7.1187L13.352 7.12821L22.0396 10.6679C21.2955 5.2632 16.7052 1.08594 11.0969 1.08594C4.96704 1.08594 0 6.05297 0 12.1809C0 18.3088 4.96704 23.2777 11.0969 23.2777C16.7052 23.2777 21.2955 19.1005 22.0396 13.6957L13.352 17.2355Z"
+                            fill="#003859"
+                        />
+                    </svg>
 
                     <!-- Текст логотипа -->
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-jost-regular text-white leading-tight">
+                        <span
+                            class="text-[10px] font-jost-regular text-white leading-tight"
+                        >
                             ОСНОВАНО 2020
                         </span>
-                        <span class="text-lg sm:text-xl font-jost-bold text-white leading-tight">
+                        <span
+                            class="text-lg sm:text-xl font-jost-bold text-white leading-tight"
+                        >
                             ЗАТОЧКА<span class="text-[#003859]">.</span>ТСК
                         </span>
                         <span
@@ -88,41 +87,15 @@ export default {
                 </router-link>
 
                 <!-- Правая часть - десктоп -->
-                <div class="hidden lg:flex items-center space-x-3 flex-shrink-0">
+                <div
+                    class="hidden lg:flex items-center space-x-3 flex-shrink-0"
+                >
                     <ThemeToggler />
-                    <router-link
-                        v-if="authStore.isAuthenticated"
-                        to="/client/dashboard"
-                        class="bg-[#003859] hover:bg-[#002c4e] text-white px-5 py-2.5 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] whitespace-nowrap"
-                    >
-                        В панель
-                    </router-link>
-                    <router-link
-                        v-else
-                        to="/client/dashboard"
-                        class="bg-[#003859] hover:bg-[#002c4e] text-white px-5 py-2.5 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] whitespace-nowrap"
-                    >
-                        Войти
-                    </router-link>
                 </div>
 
                 <!-- Правая часть - мобильный -->
                 <div class="flex lg:hidden items-center space-x-3">
                     <ThemeToggler />
-                    <router-link
-                        v-if="authStore.isAuthenticated"
-                        to="/client/dashboard"
-                        class="bg-[#003859] hover:bg-[#002c4e] text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C]"
-                    >
-                        В панель
-                    </router-link>
-                    <router-link
-                        v-else
-                        to="/client/dashboard"
-                        class="bg-[#003859] hover:bg-[#002c4e] text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C]"
-                    >
-                        Войти
-                    </router-link>
                     <button
                         @click="toggleMobileMenu"
                         class="w-10 h-10 flex flex-col justify-center items-center space-y-1.5 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg"
@@ -155,4 +128,3 @@ export default {
 </template>
 
 <style scoped></style>
-
