@@ -52,11 +52,6 @@ const routes = [
         component: () => import("../pages/TermsOfServicePage.vue"),
     },
     {
-        path: "/help",
-        name: "help",
-        component: () => import("../components/HelpPage.vue"),
-    },
-    {
         path: "/403",
         name: "Forbidden",
         component: () => import("../pages/ForbiddenPage.vue"),

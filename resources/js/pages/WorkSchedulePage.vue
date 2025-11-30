@@ -81,14 +81,14 @@ export default {
                 <div
                     v-for="(day, index) in schedule"
                     :key="index"
-                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-white dark:backdrop-blur-xl"
+                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
                 >
                     <!-- Название дня в верхней границе (слева) -->
                     <h2
-                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-white"
+                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-dark-blue-500"
                     >
                         <span
-                            class="text-sm sm:text-base font-jost-bold text-[#C3006B] dark:text-[#C3006B] leading-tight"
+                            class="text-sm sm:text-base font-jost-bold text-[#C3006B] dark:text-white leading-tight"
                         >
                             {{ day.day }}
                         </span>
@@ -98,7 +98,7 @@ export default {
                         <!-- Выходной день -->
                         <p
                             v-if="day.isDayOff"
-                            class="text-base sm:text-lg font-jost-bold text-[#C3006B] dark:text-[#C3006B]"
+                            class="text-base sm:text-lg font-jost-bold text-[#C3006B] dark:text-white"
                         >
                             {{ day.dayOffText }}
                         </p>
@@ -106,7 +106,7 @@ export default {
                         <!-- Обычный день -->
                         <template v-else>
                             <p
-                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-dark-gray-500"
+                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-white"
                             >
                                 {{ day.workshop }}
                             </p>

@@ -4,18 +4,18 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
+import axios from "axios";
 import { vMaska } from "maska/vue";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import "./bootstrap";
-import axios from "axios";
 
 //services
-import themeTogglerService from "./services/themeTogglerService";
-import router from "./router";
 import App from "./App.vue";
+import router from "./router";
+import themeTogglerService from "./services/themeTogglerService";
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin

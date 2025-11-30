@@ -1,6 +1,11 @@
 <script>
+import RepairForm from "../components/Forms/RepairForm.vue";
+
 export default {
     name: "RepairPage",
+    components: {
+        RepairForm,
+    },
     data() {
         return {
             priceBlocks: [
@@ -108,11 +113,11 @@ export default {
                 <div
                     v-for="(block, index) in priceBlocks"
                     :key="index"
-                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-white dark:backdrop-blur-xl"
+                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
                 >
                     <!-- Заголовок -->
                     <h2
-                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-white"
+                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-dark-blue-500"
                     >
                         <span
                             class="text-sm sm:text-base font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] leading-tight"
@@ -129,7 +134,7 @@ export default {
                         >
                             <div class="flex-1">
                                 <p
-                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-dark-gray-500"
+                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-white"
                                 >
                                     {{ item.name }}
                                 </p>
@@ -153,13 +158,13 @@ export default {
                 <!-- Статичный текст -->
                 <div class="mt-10">
                     <h2
-                        class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-4 sm:mb-6"
+                        class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-[#C20A6C] mb-4 sm:mb-6"
                     >
                         РЕМОНТ ОСТАЛЬНЫХ ПРОБЛЕМ – ПОСЛЕ ЧИСТКИ И ДИАГНОСТИКИ
                     </h2>
                     <div class="flex items-center gap-2">
                         <p
-                            class="text-base sm:text-lg font-jost-regular text-dark-gray-500 dark:text-dark-gray-500"
+                            class="text-base sm:text-lg font-jost-regular text-dark-gray-500 dark:text-white"
                         >
                             При ремонте чистка в подарок
                         </p>
@@ -220,6 +225,11 @@ export default {
                     </svg>
                 </div>
             </div>
+        </section>
+
+        <!-- Форма заказа -->
+        <section class="bg-white dark:bg-dark-blue-500">
+            <RepairForm />
         </section>
     </div>
 </template>
