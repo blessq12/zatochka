@@ -32,6 +32,16 @@ const routes = [
         component: () => import("../components/ClientApp.vue"),
     },
     {
+        path: "/work-schedule",
+        name: "workSchedule",
+        component: () => import("../pages/WorkSchedulePage.vue"),
+    },
+    {
+        path: "/prices",
+        name: "prices",
+        component: () => import("../pages/PricePage.vue"),
+    },
+    {
         path: "/privacy-policy",
         name: "privacy-policy",
         component: () => import("../pages/PrivacyPolicyPage.vue"),
@@ -45,6 +55,16 @@ const routes = [
         path: "/help",
         name: "help",
         component: () => import("../components/HelpPage.vue"),
+    },
+    {
+        path: "/403",
+        name: "Forbidden",
+        component: () => import("../pages/ForbiddenPage.vue"),
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        name: "PageNotFound",
+        component: () => import("../pages/PageNotFound.vue"),
     },
 ];
 
