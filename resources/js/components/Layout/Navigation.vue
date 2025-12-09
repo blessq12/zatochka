@@ -41,7 +41,7 @@ export default {
                 <!-- Логотип -->
                 <router-link
                     to="/"
-                    class="flex items-center space-x-2 sm:space-x-3 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] rounded-xl p-2 -m-2 flex-shrink-0"
+                    class="flex items-center space-x-2 sm:space-x-3 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] rounded-xl -m-2 flex-shrink-0"
                 >
                     <!-- Иконка логотипа -->
                     <svg
@@ -86,11 +86,79 @@ export default {
                     </div>
                 </router-link>
 
-                <!-- Правая часть - десктоп -->
+                <!-- Центральная часть - навигационные ссылки (десктоп) -->
+                <nav
+                    class="hidden lg:flex items-center space-x-1 xl:space-x-2 flex-1 justify-center mx-8"
+                >
+                    <router-link
+                        to="/"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        active-class="bg-white/30 font-jost-bold"
+                    >
+                        ГЛАВНАЯ
+                    </router-link>
+                    <router-link
+                        to="/sharpening"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        active-class="bg-white/30 font-jost-bold"
+                    >
+                        ЗАТОЧКА
+                    </router-link>
+                    <router-link
+                        to="/repair"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        active-class="bg-white/30 font-jost-bold"
+                    >
+                        РЕМОНТ
+                    </router-link>
+                    <router-link
+                        to="/delivery"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        active-class="bg-white/30 font-jost-bold"
+                    >
+                        ДОСТАВКА
+                    </router-link>
+                    <router-link
+                        to="/prices"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        active-class="bg-white/30 font-jost-bold"
+                    >
+                        ПРАЙС
+                    </router-link>
+                    <router-link
+                        to="/work-schedule"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        active-class="bg-white/30 font-jost-bold"
+                    >
+                        ГРАФИК
+                    </router-link>
+                    <router-link
+                        to="/contacts"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        active-class="bg-white/30 font-jost-bold"
+                    >
+                        КОНТАКТЫ
+                    </router-link>
+                </nav>
+
                 <div
                     class="hidden lg:flex items-center space-x-3 flex-shrink-0"
                 >
                     <ThemeToggler />
+                    <router-link
+                        v-if="authStore.isAuthenticated"
+                        to="/client/dashboard"
+                        class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                    >
+                        В ПАНЕЛЬ
+                    </router-link>
+                    <router-link
+                        v-else
+                        to="/client/dashboard"
+                        class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                    >
+                        ВОЙТИ
+                    </router-link>
                 </div>
 
                 <!-- Правая часть - мобильный -->

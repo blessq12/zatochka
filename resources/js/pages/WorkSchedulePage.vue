@@ -1,6 +1,11 @@
 <script>
+import PageHero from "../components/Layout/PageHero.vue";
+
 export default {
     name: "WorkSchedulePage",
+    components: {
+        PageHero,
+    },
     data() {
         return {
             schedule: [
@@ -53,24 +58,7 @@ export default {
 <template>
     <div class="min-h-screen bg-white dark:bg-dark-blue-500">
         <!-- Секция заголовка -->
-        <section
-            class="relative overflow-hidden text-white pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-20 lg:pb-24"
-        >
-            <!-- Закругленный низ секции -->
-            <div
-                class="absolute w-200 h-200 sm:w-200 sm:h-200 lg:w-[400px] lg:h-[400px] bg-dark-blue-500 dark:bg-white bottom-0 left-1/2 -translate-x-1/2 rounded-full"
-            ></div>
-
-            <div
-                class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 relative z-10"
-            >
-                <h1
-                    class="text-4xl sm:text-5xl lg:text-6xl font-jost-bold text-white text-center mb-8 sm:mb-12 dark:text-dark-blue-500"
-                >
-                    ГРАФИК РАБОТЫ
-                </h1>
-            </div>
-        </section>
+        <PageHero title="ГРАФИК РАБОТЫ" />
 
         <!-- Секция графика -->
         <section class="bg-white dark:bg-dark-blue-500 py-12 sm:py-16 lg:py-20">

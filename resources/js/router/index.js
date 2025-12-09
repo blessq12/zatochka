@@ -51,6 +51,7 @@ const routes = [
         name: "terms-of-service",
         component: () => import("../pages/TermsOfServicePage.vue"),
     },
+
     {
         path: "/403",
         name: "Forbidden",
@@ -66,6 +67,14 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+    scrollBehavior(to, from, savedPosition) {
+        // Если есть сохраненная позиция (например, при использовании кнопки "Назад")
+        if (savedPosition) {
+            return savedPosition;
+        }
+        // Иначе прокручиваем в начало страницы
+        return { top: 0, behavior: "smooth" };
+    },
 });
 
 export default router;
