@@ -260,7 +260,7 @@ export default {
                             href="https://instagram.com/zatochka_tsk"
                             target="_blank"
                             rel="noopener"
-                            class="w-10 h-10 bg-[#003859] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300"
+                            class="w-12 h-12 bg-[#003859] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300"
                         >
                             <svg
                                 class="w-5 h-5 text-white"
@@ -278,7 +278,7 @@ export default {
                             href="https://t.me/zatochka_tsk"
                             target="_blank"
                             rel="noopener"
-                            class="w-10 h-10 bg-[#003859] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300"
+                            class="w-12 h-12 bg-[#003859] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300"
                         >
                             <svg
                                 class="w-5 h-5 text-white"
@@ -296,7 +296,7 @@ export default {
                             href="https://vk.com/zatochka_tsk"
                             target="_blank"
                             rel="noopener"
-                            class="w-10 h-10 bg-[#003859] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300"
+                            class="w-12 h-12 bg-[#003859] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300"
                         >
                             <svg
                                 class="w-5 h-5 text-white"

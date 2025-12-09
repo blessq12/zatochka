@@ -40,11 +40,13 @@ export default {
                 <!-- Заголовок -->
                 <div class="mb-8 sm:mb-12">
                     <h1
-                        class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-dark-blue-500 dark:text-[#C3006B] mb-4"
+                        class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-4"
                     >
                         Оставить заявку на заточку инструментов
                     </h1>
-                    <div class="h-px bg-[#C3006B]"></div>
+                    <div
+                        class="h-px bg-dark-blue-500 dark:bg-dark-blue-300"
+                    ></div>
                 </div>
 
                 <!-- Форма -->
@@ -61,7 +63,7 @@ export default {
                             type="number"
                             min="1"
                             placeholder="Введите количество"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                         />
                     </div>
 
@@ -74,7 +76,7 @@ export default {
                         </label>
                         <select
                             v-model="form.tool_type"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 appearance-none bg-no-repeat bg-right pr-12"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 appearance-none bg-no-repeat bg-right pr-12"
                             style="
                                 background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23333%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e');
                                 background-position: right 1rem center;
@@ -100,7 +102,7 @@ export default {
                             v-model="form.needs_delivery"
                             type="checkbox"
                             id="needs_delivery"
-                            class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B]"
+                            class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B]"
                         />
                         <label
                             for="needs_delivery"
@@ -121,7 +123,7 @@ export default {
                             v-model="form.name"
                             type="text"
                             placeholder="Введите ваше имя"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                         />
                     </div>
 
@@ -137,7 +139,7 @@ export default {
                             type="tel"
                             v-maska="'+7 (###) ###-##-##'"
                             placeholder="+7 (___) ___-__-__"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                         />
                     </div>
 
@@ -152,7 +154,7 @@ export default {
                             v-model="form.comment"
                             rows="4"
                             placeholder="Дополнительная информация"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 resize-none"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 resize-none"
                         ></textarea>
                     </div>
 
@@ -163,7 +165,7 @@ export default {
                                 v-model="form.delivery_agreement"
                                 type="checkbox"
                                 id="delivery_agreement"
-                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
                             />
                             <label
                                 for="delivery_agreement"
@@ -181,7 +183,7 @@ export default {
                                 v-model="form.privacy_agreement"
                                 type="checkbox"
                                 id="privacy_agreement"
-                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
                             />
                             <label
                                 for="privacy_agreement"
@@ -199,7 +201,7 @@ export default {
                                 v-model="form.delivery_conditions_agreement"
                                 type="checkbox"
                                 id="delivery_conditions_agreement"
-                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
                             />
                             <label
                                 for="delivery_conditions_agreement"
@@ -218,7 +220,7 @@ export default {
                     <div class="pt-6">
                         <button
                             type="submit"
-                            class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                            class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
                         >
                             ЗАКАЗАТЬ ЗАТОЧКУ
                         </button>
@@ -276,12 +278,12 @@ export default {
                     class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8"
                 >
                     <button
-                        class="bg-white hover:bg-gray-100 text-dark-blue-500 px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                        class="bg-white hover:bg-gray-100 text-dark-blue-500 px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
                     >
                         ПОЗВОНИТЬ
                     </button>
                     <button
-                        class="bg-white hover:bg-gray-100 text-dark-blue-500 px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                        class="bg-white hover:bg-gray-100 text-dark-blue-500 px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
                     >
                         НАПИСАТЬ
                     </button>

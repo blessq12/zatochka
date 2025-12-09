@@ -1,6 +1,11 @@
 <script>
+import PageHero from "../components/Layout/PageHero.vue";
+
 export default {
     name: "DeliveryPage",
+    components: {
+        PageHero,
+    },
     data() {
         return {
             freeDeliveryConditions: [
@@ -33,54 +38,20 @@ export default {
 <template>
     <div class="min-h-screen bg-white dark:bg-dark-blue-500">
         <!-- Секция заголовка -->
-        <section
-            class="relative overflow-hidden text-white pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-20 lg:pb-24"
-        >
-            <!-- Закругленный низ секции -->
-            <div
-                class="absolute w-200 h-200 sm:w-200 sm:h-200 lg:w-[400px] lg:h-[400px] bg-dark-blue-500 dark:bg-white bottom-0 left-1/2 -translate-x-1/2 rounded-full"
-            ></div>
-
-            <div
-                class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 relative z-10"
-            >
-                <h1
-                    class="text-4xl sm:text-5xl lg:text-6xl font-jost-bold text-white text-center mb-8 sm:mb-12 dark:text-dark-blue-500"
-                >
-                    ДОСТАВКА
-                </h1>
-            </div>
-        </section>
+        <PageHero title="ДОСТАВКА" />
 
         <!-- Секция контента -->
         <section class="bg-white dark:bg-dark-blue-500 py-12 sm:py-16 lg:py-20">
             <div
                 class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 space-y-10"
             >
-                <!-- Блок УСЛОВИЯ ДОСТАВКИ -->
-                <div
-                    class="relative border border-dark-blue-500/30 dark:border-dark-blue-500/30 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-white dark:backdrop-blur-xl"
-                >
-                    <!-- Заголовок -->
-                    <h2
-                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-white"
+                <div class="flex justify-center pt-4">
+                    <button
+                        class="bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-10 py-8 w-full font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+                        id="high"
                     >
-                        <span
-                            class="text-sm sm:text-base font-jost-bold text-dark-blue-500 dark:text-dark-blue-500 leading-tight"
-                        >
-                            УСЛОВИЯ ДОСТАВКИ
-                        </span>
-                    </h2>
-
-                    <div class="mt-4">
-                        <p
-                            class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-dark-gray-500"
-                        >
-                            Удобная доставка ваших инструментов для заточки и
-                            ремонта. Бесплатная доставка при заказе от
-                            определенного количества инструментов
-                        </p>
-                    </div>
+                        Заказать
+                    </button>
                 </div>
 
                 <!-- Блок БЕСПЛАТНАЯ ДОСТАВКА -->
@@ -185,6 +156,7 @@ export default {
                 <div class="flex justify-center pt-4">
                     <button
                         class="bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+                        id="low"
                     >
                         ОСТАВИТЬ ЗАЯВКУ
                     </button>
@@ -247,4 +219,42 @@ export default {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+#high {
+    animation: pulseHigh infinite ease-in-out 2s;
+}
+
+#low {
+    animation: pulseLow infinite ease-in-out 2.5s;
+}
+
+@keyframes pulseHigh {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.02);
+        filter: brightness(1.15);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
+@keyframes pulseLow {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.02);
+        filter: brightness(1.1);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+</style>
