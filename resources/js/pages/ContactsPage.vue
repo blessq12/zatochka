@@ -53,7 +53,7 @@ export default {
         <!-- Секция АДРЕС -->
         <section class="bg-white dark:bg-dark-blue-500 py-12 sm:py-16 lg:py-20">
             <div class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20">
-                <div class="flex items-center space-x-3 mb-6 sm:mb-8">
+                <div class="flex items-center justify-center space-x-3 mb-6 sm:mb-8">
                     <svg
                         width="24"
                         height="24"
@@ -76,13 +76,13 @@ export default {
 
                 <!-- Основной адрес -->
                 <p
-                    class="text-xl sm:text-2xl lg:text-3xl font-jost-bold text-dark-blue-500 dark:text-white mb-4 sm:mb-6"
+                    class="text-xl sm:text-2xl lg:text-3xl font-jost-bold text-dark-blue-500 dark:text-white mb-4 sm:mb-6 text-center"
                 >
                     {{ address.main }}
                 </p>
 
                 <!-- Описание как добраться -->
-                <div class="space-y-2 mb-8 sm:mb-12">
+                <div class="space-y-2 mb-8 sm:mb-12 text-center">
                     <p
                         v-for="(detail, index) in address.details"
                         :key="index"
@@ -93,10 +93,10 @@ export default {
                 </div>
 
                 <!-- Фото и карта -->
-                <div class="flex sm:gap-8">
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
                     <!-- Фото входа -->
                     <div
-                        class="relative min-h-[200px] overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-700 aspect-[4/3] bg-cover bg-center bg-no-repeat"
+                        class="relative w-full sm:w-auto min-h-[200px] overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-700 aspect-[4/3] bg-cover bg-center bg-no-repeat max-w-md"
                         :style="{
                             backgroundImage: `url('/images/entrance.png')`,
                         }"
@@ -104,7 +104,7 @@ export default {
 
                     <!-- Карта -->
                     <div
-                        class="relative min-h-[200px] overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-700 aspect-[4/3] bg-cover bg-center bg-no-repeat"
+                        class="relative w-full sm:w-auto min-h-[200px] overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-700 aspect-[4/3] bg-cover bg-center bg-no-repeat max-w-md"
                         :style="{ backgroundImage: `url('/images/map.png')` }"
                     ></div>
                 </div>
