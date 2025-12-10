@@ -149,13 +149,36 @@ export default {
 
             <!-- Информация об ИП -->
             <div
-                class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm font-jost-regular text-gray-500 dark:text-gray-400"
+                class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm font-jost-regular text-gray-500 dark:text-gray-400 mb-4"
             >
-                <p>ИП Митькин</p>
+                <p>ИП Митькин Максим Игоревич</p>
                 <span class="hidden sm:inline">•</span>
                 <p>ИНН: 701744164429</p>
                 <span class="hidden sm:inline">•</span>
                 <p>ОГРН: 323700000001333</p>
+            </div>
+
+            <!-- Адреса -->
+            <div
+                class="flex flex-col items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-jost-regular text-gray-500 dark:text-gray-400"
+            >
+                <div
+                    class="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4"
+                >
+                    <p>
+                        <span class="font-jost-medium">Юридический адрес:</span>
+                        634033, Томская обл., г. Томск, ул. Короленко, д. 17,
+                        кв. 12
+                    </p>
+                </div>
+                <div
+                    class="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4"
+                >
+                    <p>
+                        <span class="font-jost-medium">Фактический адрес:</span>
+                        пер. Карповский, 12 / пр. Ленина, 169
+                    </p>
+                </div>
             </div>
         </div>
     </footer>

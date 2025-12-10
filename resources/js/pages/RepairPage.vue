@@ -95,7 +95,7 @@ export default {
                 class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 flex items-center gap-2 sm:gap-3 justify-center"
             >
                 <h2
-                    class="text-2xl sm:text-3xl lg:text-4xl font-jost-bold text-dark-gray-500 dark:text-white text-center"
+                    class="text-2xl sm:text-3xl lg:text-4xl font-jost-bold text-dark-blue-500 dark:text-white text-center uppercase"
                 >
                     При ремонте чистка в подарок
                 </h2>
