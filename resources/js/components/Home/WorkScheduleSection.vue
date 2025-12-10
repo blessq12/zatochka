@@ -65,7 +65,7 @@ export default {
             <div class="mt-10 flex justify-center">
                 <router-link
                     to="/delivery"
-                    class="bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 text-white px-10 py-4 font-jost-bold text-lg tracking-wide transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1"
+                    class="bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 text-white px-10 py-4 font-jost-bold text-lg tracking-wide transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1 text-center w-full sm:w-auto"
                 >
                     ЗАКАЗАТЬ ДОСТАВКУ
                 </router-link>
