@@ -29,7 +29,6 @@ export default {
     <div
         class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-8 sm:py-12 lg:py-16"
     >
-        <!-- Показываем загрузку пока получаем данные клиента -->
         <div
             v-if="authStore.isLoading"
             class="flex items-center justify-center min-h-96"
@@ -51,20 +50,6 @@ export default {
             >
                 <h2 class="text-xl font-bold mb-2">Доступ запрещен</h2>
                 <p>Для доступа к этой странице необходимо авторизоваться</p>
-            </div>
-        </div>
-
-        <!-- Основной контент приложения -->
-        <div v-else>
-            <!-- Информация о пользователе и бонусном аккаунте -->
-            <QuickActions />
-            <UserInfoCard />
-            <TelegramVerify />
-            <!-- Заказы и быстрые действия -->
-            <div
-                class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 mt-8 sm:mt-10 lg:mt-12"
-            >
-                <OrdersList />
             </div>
         </div>
     </div>

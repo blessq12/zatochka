@@ -148,14 +148,14 @@ export default {
                     <router-link
                         v-if="authStore.isAuthenticated"
                         to="/client/dashboard"
-                        class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
                     >
                         В ПАНЕЛЬ
                     </router-link>
                     <router-link
                         v-else
                         to="/client/dashboard"
-                        class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                        class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
                     >
                         ВОЙТИ
                     </router-link>
