@@ -22,7 +22,7 @@ export default {
         v-if="isAuthenticated"
         to="/client/dashboard"
         :title="'Перейти в дашборд'"
-        class="bg-[#003859] hover:bg-[#002c4e] text-white px-6 py-3 rounded-xl font-jost-bold text-base transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] inline-block text-center"
+        class="bg-[#003859] hover:bg-[#002c4e] text-white px-6 py-3 font-jost-bold text-base transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] inline-block text-center"
     >
         В панель
     </router-link>
@@ -30,7 +30,7 @@ export default {
         v-else
         to="/client/dashboard"
         :title="'Войти в систему'"
-        class="bg-[#003859] hover:bg-[#002c4e] text-white px-6 py-3 rounded-xl font-jost-bold text-base transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] inline-block text-center"
+        class="bg-[#003859] hover:bg-[#002c4e] text-white px-6 py-3 font-jost-bold text-base transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] inline-block text-center"
     >
         Войти
     </router-link>
