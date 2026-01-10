@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\Components\MapPicker;
 use App\Filament\Resources\BranchResource\Pages;
 use App\Filament\Resources\BranchResource\RelationManagers;
 use App\Models\Branch;
@@ -67,10 +68,10 @@ class BranchResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('phone')
                             ->label('Телефон')
-                            ->tel()
                             ->required()
                             ->maxLength(255)
-                            ->placeholder('+7 (999) 123-45-67'),
+                            ->placeholder('+7 (999) 123-45-67')
+                            ->helperText('Можно ввести телефон в любом формате'),
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
                             ->email()
@@ -113,7 +114,8 @@ class BranchResource extends Resource
                                         'sunday' => 'Воскресенье',
                                     ])
                                     ->required()
-                                    ->unique(ignoreRecord: true)
+                                    ->disabled()
+                                    ->dehydrated()
                                     ->columnSpan(1),
                                 Forms\Components\Toggle::make('is_working')
                                     ->label('Рабочий день')
@@ -148,6 +150,9 @@ class BranchResource extends Resource
                                 'sunday' => 'Воскресенье',
                                 default => null,
                             })
+                            ->reorderable(false)
+                            ->addable(false)
+                            ->deletable(false)
                             ->formatStateUsing(function ($state) {
                                 if (is_array($state)) {
                                     // Преобразуем массив в структуру для Repeater
@@ -168,7 +173,20 @@ class BranchResource extends Resource
                                     }
                                     return $result;
                                 }
-                                return [];
+                                
+                                // Если нет данных, создаем дефолтные значения для всех дней
+                                $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                                $result = [];
+                                foreach ($days as $day) {
+                                    $result[] = [
+                                        'day' => $day,
+                                        'is_working' => in_array($day, ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
+                                        'start' => in_array($day, ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']) ? '09:00' : null,
+                                        'end' => in_array($day, ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']) ? '18:00' : null,
+                                        'note' => in_array($day, ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']) ? 'Рабочий день' : 'Выходной',
+                                    ];
+                                }
+                                return $result;
                             })
                             ->dehydrateStateUsing(function ($state) {
                                 if (!is_array($state)) {
@@ -198,16 +216,22 @@ class BranchResource extends Resource
                             ->label('Широта')
                             ->numeric()
                             ->step(0.000001)
-                            ->placeholder('55.7558')
-                            ->helperText('Например: 55.7558 для Москвы'),
+                            ->hiddenLabel()
+                            ->visible(false)
+                            ->dehydrated(),
                         Forms\Components\TextInput::make('longitude')
                             ->label('Долгота')
                             ->numeric()
                             ->step(0.000001)
-                            ->placeholder('37.6173')
-                            ->helperText('Например: 37.6173 для Москвы'),
+                            ->hiddenLabel()
+                            ->visible(false)
+                            ->dehydrated(),
+                        MapPicker::make('location')
+                            ->label('Выберите местоположение на карте')
+                            ->latitude('latitude')
+                            ->longitude('longitude')
+                            ->columnSpanFull(),
                     ])
-                    ->columns(2)
                     ->collapsible(),
 
                 Forms\Components\Section::make('Статус и настройки')
