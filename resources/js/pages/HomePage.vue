@@ -318,7 +318,7 @@ export default {
                 class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 lg:py-20"
             >
                 <div
-                    class="mx-auto bg-dark-blue-500 text-white rounded-full w-full max-w-[480px] aspect-square flex flex-col items-center justify-center shadow-2xl"
+                    class="mx-auto bg-dark-blue-500 dark:bg-white text-white dark:text-dark-blue-500 rounded-full w-full max-w-[480px] aspect-square flex flex-col items-center justify-center shadow-2xl"
                 >
                     <!-- Иконки услуг в SVG, как на бренд-макете -->
                     <div class="flex items-center justify-center">
@@ -349,12 +349,12 @@ export default {
                         </svg>
                     </div>
                     <h2
-                        class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-center mb-4"
+                        class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-white dark:text-dark-blue-500 text-center mb-4"
                     >
                         НАШИ УСЛУГИ
                     </h2>
                     <p
-                        class="text-sm sm:text-base lg:text-lg font-jost-regular text-center max-w-md mx-auto"
+                        class="text-sm sm:text-base lg:text-lg font-jost-regular text-white dark:text-dark-blue-500 text-center max-w-md mx-auto"
                     >
                         ПОЛНЫЙ СПЕКТР УСЛУГ ПО ЗАТОЧКЕ, РЕМОНТУ И ВОССТАНОВЛЕНИЮ
                         ИНСТРУМЕНТОВ

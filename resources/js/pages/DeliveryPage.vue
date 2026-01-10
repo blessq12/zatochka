@@ -56,7 +56,7 @@ export default {
 
                 <!-- Блок БЕСПЛАТНАЯ ДОСТАВКА -->
                 <div
-                    class="px-6 pt-6 pb-6 sm:px-10 sm:pt-8 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-white dark:backdrop-blur-xl space-y-6"
+                    class="px-6 pt-6 pb-6 sm:px-10 sm:pt-8 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl space-y-6"
                 >
                     <div class="flex items-center justify-start gap-4">
                         <svg
@@ -87,7 +87,7 @@ export default {
                         <p
                             v-for="(condition, index) in freeDeliveryConditions"
                             :key="index"
-                            class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-dark-gray-500 text-start"
+                            class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200 text-start"
                         >
                             {{ condition }}
                         </p>
@@ -96,7 +96,7 @@ export default {
 
                 <!-- Блок ПЛАТНАЯ ДОСТАВКА -->
                 <div
-                    class="px-6 pt-6 pb-6 sm:px-10 sm:pt-8 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-white dark:backdrop-blur-xl space-y-6"
+                    class="px-6 pt-6 pb-6 sm:px-10 sm:pt-8 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl space-y-6"
                 >
                     <!-- Иконка и заголовок в строку -->
                     <div class="flex items-center justify-start gap-4">
@@ -144,7 +144,7 @@ export default {
                     </div>
 
                     <p
-                        class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-dark-gray-500 text-start"
+                        class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200 text-start"
                     >
                         Если количество инструментов меньше указанного Оплата
                         доставки производится курьеру наличными или переводом на
@@ -164,11 +164,11 @@ export default {
 
                 <!-- Блок ПРЕИМУЩЕСТВА НАШЕЙ ДОСТАВКИ -->
                 <div
-                    class="relative border border-dark-blue-500/30 dark:border-dark-blue-500/30 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-white dark:backdrop-blur-xl mt-24"
+                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl mt-24"
                 >
                     <!-- Заголовок -->
                     <h2
-                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-white"
+                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-dark-blue-500"
                     >
                         <span
                             class="text-sm sm:text-base font-jost-bold text-[#C3006B] dark:text-[#C3006B] leading-tight"
@@ -201,12 +201,12 @@ export default {
 
                             <div>
                                 <p
-                                    class="text-sm sm:text-base font-jost-bold text-dark-gray-500 dark:text-dark-gray-500"
+                                    class="text-sm sm:text-base font-jost-bold text-dark-gray-500 dark:text-gray-200"
                                 >
                                     {{ advantage.title }}
                                 </p>
                                 <p
-                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-dark-gray-500 mt-1"
+                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300 mt-1"
                                 >
                                     {{ advantage.description }}
                                 </p>

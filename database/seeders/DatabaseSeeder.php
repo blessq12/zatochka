@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             UserRolesSeeder::class,
             BonusSettingsSeeder::class,
             CompanyAndBranchSeeder::class,
+            PriceItemSeeder::class,
         ]);
     }
 }

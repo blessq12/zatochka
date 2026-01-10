@@ -1,7 +1,7 @@
 <script>
 import PageHero from "../components/Layout/PageHero.vue";
-
 import RepairForm from "../components/Forms/RepairForm.vue";
+import { usePriceStore } from "../stores/priceStore.js";
 
 export default {
     name: "RepairPage",
@@ -11,39 +11,23 @@ export default {
     },
     data() {
         return {
-            priceBlocks: [
-                {
-                    title: "ЧИСТКА И ДИАГНОСТИКА",
-                    items: [{ name: "Ручки/блока", price: "500" }],
-                },
-                {
-                    title: "FIX PRICE",
-                    items: [
-                        {
-                            name: "Поломки блока управления",
-                            description:
-                                "(Ремонт регулятора скорости, гнезда ручки, реверс, кроме замены трансформатора)",
-                            price: "1000",
-                        },
-                    ],
-                },
-                {
-                    title: "ЗАМЕНА",
-                    items: [
-                        { name: "Трансформатора", price: "4500" },
-                        {
-                            name: "2х подшипников (ДЕТАЛИ + работа)",
-                            price: "1700",
-                        },
-                        {
-                            name: "4х подшипников (ДЕТАЛИ + работа)",
-                            price: "2900",
-                        },
-                        { name: "Щёток наши/ваши", price: "800/400" },
-                    ],
-                },
-            ],
+            priceBlocks: [],
+            isLoading: false,
         };
+    },
+    async mounted() {
+        await this.loadPrices();
+    },
+    methods: {
+        async loadPrices() {
+            this.isLoading = true;
+            const priceStore = usePriceStore();
+            const result = await priceStore.fetchRepairPrices();
+            if (result.success) {
+                this.priceBlocks = priceStore.repairBlocks;
+            }
+            this.isLoading = false;
+        },
     },
 };
 </script>
@@ -140,7 +124,7 @@ export default {
                 <div
                     v-for="(block, index) in priceBlocks"
                     :key="index"
-                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-white dark:backdrop-blur-xl"
+                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
                 >
                     <!-- Заголовок -->
                     <h2
@@ -161,13 +145,13 @@ export default {
                         >
                             <div class="flex-1">
                                 <p
-                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-dark-gray-500"
+                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
                                 >
                                     {{ item.name }}
                                 </p>
                                 <p
                                     v-if="item.description"
-                                    class="text-xs sm:text-sm font-jost-regular text-dark-gray-400 dark:text-dark-gray-400 mt-1"
+                                    class="text-xs sm:text-sm font-jost-regular text-dark-gray-400 dark:text-gray-300 mt-1"
                                 >
                                     {{ item.description }}
                                 </p>

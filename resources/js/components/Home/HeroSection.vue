@@ -32,7 +32,7 @@ export default {
 
 <template>
     <div
-        class="container mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 lg:py-20"
+        class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 lg:py-20"
     >
         <div class="flex flex-col items-center text-center space-y-4 mb-10">
             <div class="flex flex-col items-center space-y-3">
@@ -75,7 +75,7 @@ export default {
         </div>
 
         <div
-            class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 mb-10 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500/90 dark:backdrop-blur-xl mt-16"
+            class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 mb-10 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500/90 dark:backdrop-blur-xl mt-16 max-w-5xl mx-auto"
         >
             <!-- Заголовок-бейдж поверх обводки -->
             <h1

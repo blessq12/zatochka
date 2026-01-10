@@ -6,6 +6,7 @@ use App\Filament\Resources\BranchResource;
 use App\Filament\Resources\ClientResource;
 use App\Filament\Resources\CompanyResource;
 use App\Filament\Resources\OrderResource;
+use App\Filament\Resources\PriceItemResource;
 use App\Filament\Resources\UserResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -65,6 +66,8 @@ class AdminPanelProvider extends PanelProvider
                 CompanyResource::class,
                 BranchResource::class,
                 UserResource::class,
+                // Справочники
+                PriceItemResource::class,
             ])
             ->middleware([
                 EncryptCookies::class,
