@@ -31,15 +31,15 @@ class AdminPanelProvider extends PanelProvider
     {
         FilamentView::registerRenderHook(
             PanelsRenderHook::HEAD_START,
-            fn (): string => '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />'
+            fn(): string => '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />'
         );
-        
+
         FilamentView::registerRenderHook(
             PanelsRenderHook::BODY_END,
-            fn (): string => '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
+            fn(): string => '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
         );
     }
-    
+
     public function panel(Panel $panel): Panel
     {
         return $panel
