@@ -25,6 +25,14 @@ Route::controller(\App\Http\Controllers\Api\TelegramController::class)->group(fu
     Route::post('/telegram/webhook', 'webhook');
 });
 
+Route::middleware('auth:client')->group(function () {
+    Route::controller(\App\Http\Controllers\Api\TelegramController::class)->group(function () {
+        Route::post('/telegram/send-verification-code', 'sendVerificationCode');
+        Route::post('/telegram/verify-code', 'verifyCode');
+        Route::post('/telegram/check-chat-is-exists', 'checkChatExists');
+    });
+});
+
 
 
 Route::middleware('auth:client')->group(function () {
