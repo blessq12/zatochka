@@ -91,26 +91,26 @@ class TelegramController extends Controller
     {
         $client = auth('client')->user();
 
-        if (!$client) {
-            return response()->json([
-                'success' => false,
+            if (!$client) {
+                return response()->json([
+                    'success' => false,
                 'message' => 'Unauthorized',
-            ], 401);
-        }
+                ], 401);
+            }
 
         if (!$client->telegram) {
-            return response()->json([
-                'success' => false,
+                return response()->json([
+                    'success' => false,
                 'message' => 'Telegram username not specified in profile',
-            ], 400);
-        }
+                ], 400);
+            }
 
         if ($client->telegram_verified_at) {
-            return response()->json([
-                'success' => false,
+                return response()->json([
+                    'success' => false,
                 'message' => 'Telegram already verified',
-            ], 400);
-        }
+                ], 400);
+            }
 
         // Генерируем 6-значный код
         $code = str_pad((string) rand(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -152,24 +152,24 @@ class TelegramController extends Controller
     public function verifyCode(Request $request): JsonResponse
     {
         $request->validate([
-            'code' => 'required|string|size:6',
-        ]);
+                'code' => 'required|string|size:6',
+            ]);
 
         $client = auth('client')->user();
 
-        if (!$client) {
-            return response()->json([
-                'success' => false,
+            if (!$client) {
+                return response()->json([
+                    'success' => false,
                 'message' => 'Unauthorized',
-            ], 401);
-        }
+                ], 401);
+            }
 
         if (!$client->telegram) {
-            return response()->json([
-                'success' => false,
+                return response()->json([
+                    'success' => false,
                 'message' => 'Telegram username not specified',
-            ], 400);
-        }
+                ], 400);
+            }
 
         $code = $request->input('code');
 
@@ -178,18 +178,18 @@ class TelegramController extends Controller
         $cachedData = Cache::get($cacheKey);
 
         if (!$cachedData || $cachedData['code'] !== $code) {
-            return response()->json([
-                'success' => false,
+                return response()->json([
+                    'success' => false,
                 'message' => 'Invalid or expired verification code',
-            ], 400);
-        }
+                ], 400);
+            }
 
         // Находим чат
         $telegramChat = TelegramChat::byUsername($client->telegram)->active()->first();
 
         if (!$telegramChat) {
-            return response()->json([
-                'success' => false,
+                return response()->json([
+                    'success' => false,
                 'message' => 'Telegram chat not found',
             ], 404);
         }
@@ -200,9 +200,9 @@ class TelegramController extends Controller
         ]);
 
         // Обновляем клиента
-        $client->update([
-            'telegram_verified_at' => now(),
-        ]);
+            $client->update([
+                'telegram_verified_at' => now(),
+            ]);
 
         // Удаляем код из кеша
         Cache::forget($cacheKey);
@@ -211,13 +211,13 @@ class TelegramController extends Controller
         $botToken = config('services.telegram.bot_token');
         $this->sendMessage($botToken, $telegramChat->chat_id, "✅ Telegram успешно подтвержден! Теперь вы будете получать уведомления о заказах.");
 
-        return response()->json([
-            'success' => true,
+            return response()->json([
+                'success' => true,
             'message' => 'Telegram verified successfully',
             'telegram_username' => $client->telegram,
             'verified_at' => $client->telegram_verified_at->toIso8601String(),
-            'client' => $client->fresh(),
-        ]);
+                'client' => $client->fresh(),
+            ]);
     }
 
     /**
@@ -227,12 +227,12 @@ class TelegramController extends Controller
     {
         $client = auth('client')->user();
 
-        if (!$client) {
-            return response()->json([
+            if (!$client) {
+                return response()->json([
                 'chat_exists' => false,
                 'message' => 'Unauthorized',
-            ], 401);
-        }
+                ], 401);
+            }
 
         if (!$client->telegram) {
             return response()->json([
@@ -267,10 +267,30 @@ class TelegramController extends Controller
             $client = Client::where('telegram', $username)->first();
         }
 
+        $command = trim(strtolower($text));
+
         // Обрабатываем команду /start
-        if (trim($text) === '/start') {
+        if ($command === '/start') {
             $this->handleStartCommand($botToken, $chatId, $client, $username);
             return;
+        }
+
+        // Команды только для подтвержденных пользователей
+        if ($client && $client->telegram_verified_at) {
+            if ($command === '/account' || $command === '/profile') {
+                $this->handleAccountCommand($botToken, $chatId, $client);
+                return;
+            }
+
+            if ($command === '/orders' || $command === '/active') {
+                $this->handleActiveOrdersCommand($botToken, $chatId, $client);
+                return;
+            }
+
+            if ($command === '/history' || $command === '/archive') {
+                $this->handleHistoryOrdersCommand($botToken, $chatId, $client);
+                return;
+            }
         }
 
         // Проверяем, является ли сообщение 6-значным кодом
@@ -301,7 +321,12 @@ class TelegramController extends Controller
 
         if ($client->telegram_verified_at) {
             // Telegram подтвержден
-            $message = "✅ Ваш Telegram уже подтвержден!\n\nТеперь вы будете получать уведомления о статусе ваших заказов.\n\nЕсли у вас есть вопросы, обращайтесь в поддержку.";
+            $message = "✅ Ваш Telegram уже подтвержден!\n\n";
+            $message .= "📱 <b>Доступные команды:</b>\n\n";
+            $message .= "/account - Информация об аккаунте\n";
+            $message .= "/orders - Активные заказы\n";
+            $message .= "/history - История заказов\n\n";
+            $message .= "Теперь вы будете получать уведомления о статусе ваших заказов автоматически.";
             $this->sendMessage($botToken, $chatId, $message);
             return;
         }
@@ -332,8 +357,13 @@ class TelegramController extends Controller
         }
 
         if ($client->telegram_verified_at) {
-            // Telegram подтвержден - нормальная работа
-            $message = "✅ Ваш Telegram подтвержден. Вы будете получать уведомления о заказах автоматически.\n\nЕсли нужна помощь, обращайтесь в поддержку.";
+            // Telegram подтвержден - показываем доступные команды
+            $message = "📱 <b>Доступные команды:</b>\n\n";
+            $message .= "/account - Информация об аккаунте\n";
+            $message .= "/orders - Активные заказы\n";
+            $message .= "/history - История заказов\n";
+            $message .= "/start - Главное меню\n\n";
+            $message .= "Или просто отправьте любое сообщение для помощи.";
             $this->sendMessage($botToken, $chatId, $message);
             return;
         }
@@ -397,6 +427,162 @@ class TelegramController extends Controller
         Cache::forget($cacheKey);
 
         $this->sendMessage($botToken, $chatId, "✅ Telegram успешно подтвержден!\n\nТеперь вы будете получать уведомления о статусе ваших заказов автоматически.");
+    }
+
+    /**
+     * Обработка команды /account - информация об аккаунте
+     */
+    private function handleAccountCommand(string $botToken, int $chatId, Client $client): void
+    {
+        $message = "👤 <b>Информация об аккаунте</b>\n\n";
+        $message .= "Имя: {$client->full_name}\n";
+        
+        if ($client->phone) {
+            $message .= "Телефон: {$client->phone}\n";
+        }
+        
+        if ($client->email) {
+            $message .= "Email: {$client->email}\n";
+        }
+        
+        if ($client->telegram) {
+            $message .= "Telegram: @{$client->telegram}\n";
+        }
+        
+        if ($client->delivery_address) {
+            $message .= "Адрес доставки: {$client->delivery_address}\n";
+        }
+        
+        if ($client->birth_date) {
+            $birthDate = is_string($client->birth_date) 
+                ? \Carbon\Carbon::parse($client->birth_date)->format('d.m.Y')
+                : $client->birth_date->format('d.m.Y');
+            $message .= "Дата рождения: {$birthDate}\n";
+        }
+
+        if ($client->telegram_verified_at) {
+            $verifiedDate = $client->telegram_verified_at instanceof \Carbon\Carbon
+                ? $client->telegram_verified_at->format('d.m.Y H:i')
+                : \Carbon\Carbon::parse($client->telegram_verified_at)->format('d.m.Y H:i');
+            $message .= "\n✅ Telegram подтвержден: {$verifiedDate}";
+        }
+
+        $this->sendMessage($botToken, $chatId, $message);
+    }
+
+    /**
+     * Обработка команды /orders - активные заказы
+     */
+    private function handleActiveOrdersCommand(string $botToken, int $chatId, Client $client): void
+    {
+        // Получаем активные заказы (статус не issued и не cancelled)
+        $activeOrders = $client->orders()
+            ->whereNotIn('status', [\App\Models\Order::STATUS_ISSUED, \App\Models\Order::STATUS_CANCELLED])
+            ->where('is_deleted', false)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        if ($activeOrders->isEmpty()) {
+            $message = "📋 <b>Активные заказы</b>\n\nУ вас нет активных заказов.";
+            $this->sendMessage($botToken, $chatId, $message);
+            return;
+        }
+
+        $message = "📋 <b>Активные заказы</b> (" . $activeOrders->count() . ")\n\n";
+
+        foreach ($activeOrders as $order) {
+            $statusLabels = \App\Models\Order::getAvailableStatuses();
+            $typeLabels = \App\Models\Order::getAvailableTypes();
+            $statusLabel = $statusLabels[$order->status] ?? $order->status;
+            $typeLabel = $typeLabels[$order->type] ?? $order->type;
+
+            $message .= "🔹 <b>{$order->order_number}</b>\n";
+            $message .= "Тип: {$typeLabel}\n";
+            $message .= "Статус: {$statusLabel}\n";
+            
+            if ($order->estimated_price) {
+                $price = $this->formatPrice($order->estimated_price);
+                if ($price) {
+                    $message .= "Цена: {$price}\n";
+                }
+            }
+            
+            $message .= "Создан: " . $order->created_at->format('d.m.Y H:i') . "\n\n";
+        }
+
+        $this->sendMessage($botToken, $chatId, $message);
+    }
+
+    /**
+     * Обработка команды /history - архивные заказы
+     */
+    private function handleHistoryOrdersCommand(string $botToken, int $chatId, Client $client): void
+    {
+        // Получаем архивные заказы (статус issued или cancelled)
+        $archivedOrders = $client->orders()
+            ->whereIn('status', [\App\Models\Order::STATUS_ISSUED, \App\Models\Order::STATUS_CANCELLED])
+            ->where('is_deleted', false)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        if ($archivedOrders->isEmpty()) {
+            $message = "📚 <b>История заказов</b>\n\nУ вас нет завершенных заказов.";
+            $this->sendMessage($botToken, $chatId, $message);
+            return;
+        }
+
+        $message = "📚 <b>История заказов</b> (" . $archivedOrders->count() . ")\n\n";
+
+        foreach ($archivedOrders as $order) {
+            $statusLabels = \App\Models\Order::getAvailableStatuses();
+            $typeLabels = \App\Models\Order::getAvailableTypes();
+            $statusLabel = $statusLabels[$order->status] ?? $order->status;
+            $typeLabel = $typeLabels[$order->type] ?? $order->type;
+
+            $statusIcon = $order->status === \App\Models\Order::STATUS_ISSUED ? '✅' : '❌';
+            
+            $message .= "{$statusIcon} <b>{$order->order_number}</b>\n";
+            $message .= "Тип: {$typeLabel}\n";
+            $message .= "Статус: {$statusLabel}\n";
+            
+            if ($order->actual_price) {
+                $price = $this->formatPrice($order->actual_price);
+                if ($price) {
+                    $message .= "Итоговая цена: {$price}\n";
+                }
+            } elseif ($order->estimated_price) {
+                $price = $this->formatPrice($order->estimated_price);
+                if ($price) {
+                    $message .= "Цена: {$price}\n";
+                }
+            }
+            
+            $message .= "Завершен: " . $order->updated_at->format('d.m.Y H:i') . "\n\n";
+        }
+
+        $this->sendMessage($botToken, $chatId, $message);
+    }
+
+    /**
+     * Форматирование цены для отображения
+     */
+    private function formatPrice($price): ?string
+    {
+        if (!$price || $price === '0' || $price === 0) {
+            return null;
+        }
+
+        $priceFloat = (float) $price;
+
+        // Если цена целое число - без копеек
+        if ((int) $priceFloat == $priceFloat) {
+            return number_format($priceFloat, 0, '', ' ') . '₽';
+        }
+
+        // С копейками
+        return number_format($priceFloat, 2, ',', ' ') . '₽';
     }
 
     /**
