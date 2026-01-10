@@ -12,7 +12,7 @@ class LoginResponse implements LoginResponseContract
 
         // Перенаправляем в единую админ-панель
         if ($user) {
-            return redirect('/admin');
+            return redirect('/cp');
         }
 
         return redirect()->intended('/');

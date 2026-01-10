@@ -67,7 +67,7 @@ class FortifyServiceProvider extends ServiceProvider
 
             // Редирект в админ-панель для авторизованных пользователей
             if ($user) {
-                return '/admin';
+                return '/cp';
             }
 
             return '/';
