@@ -21,6 +21,10 @@ Route::controller(PriceController::class)->group(function () {
     Route::get('/prices/all', 'all');
 });
 
+Route::controller(\App\Http\Controllers\Api\TelegramController::class)->group(function () {
+    Route::post('/telegram/webhook', 'webhook');
+});
+
 
 
 Route::middleware('auth:client')->group(function () {
