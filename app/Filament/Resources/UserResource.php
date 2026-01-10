@@ -31,28 +31,53 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('role'),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Toggle::make('is_deleted')
-                    ->required(),
-                Forms\Components\Textarea::make('two_factor_secret')
-                    ->columnSpanFull(),
-                Forms\Components\Textarea::make('two_factor_recovery_codes')
-                    ->columnSpanFull(),
-                Forms\Components\DateTimePicker::make('two_factor_confirmed_at'),
-                Forms\Components\TextInput::make('branch_id')
-                    ->numeric(),
+                Forms\Components\Section::make('Основная информация')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Имя')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Имя пользователя'),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->required()
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true)
+                            ->placeholder('email@example.com'),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Безопасность')
+                    ->schema([
+                        Forms\Components\TextInput::make('password')
+                            ->label('Пароль')
+                            ->password()
+                            ->maxLength(255)
+                            ->required()
+                            ->helperText('Минимум 6 символов')
+                            ->visible(fn ($operation) => $operation === 'create')
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('password')
+                            ->label('Новый пароль')
+                            ->password()
+                            ->maxLength(255)
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->helperText('Оставьте пустым, чтобы не менять пароль. Минимум 6 символов.')
+                            ->visible(fn ($operation) => $operation === 'edit')
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible(),
+
+
+                Forms\Components\Section::make('Статус')
+                    ->schema([
+                        Forms\Components\Toggle::make('is_deleted')
+                            ->label('Удален')
+                            ->default(false)
+                            ->helperText('Пометить пользователя как удаленного'),
+                    ])
+                    ->collapsible(),
             ]);
     }
 
@@ -61,31 +86,36 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Имя')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
+                    ->label('Email')
+                    ->searchable()
+                    ->sortable()
+                    ->copyable(),
                 Tables\Columns\IconColumn::make('is_deleted')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('two_factor_confirmed_at')
-                    ->dateTime()
-                    ->sortable(),
+                    ->label('Удален')
+                    ->boolean()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Создан')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Обновлен')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('branch_id')
-                    ->numeric()
-                    ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('is_deleted')
+                    ->label('Удаленные')
+                    ->placeholder('Все пользователи')
+                    ->trueLabel('Только удаленные')
+                    ->falseLabel('Только активные'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -95,7 +125,8 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

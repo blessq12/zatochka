@@ -53,7 +53,10 @@ class OrderResource extends Resource
                                 Forms\Components\TextInput::make('email')
                                     ->label('Email')
                                     ->email()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->unique('clients', 'email', ignoreRecord: true)
+                                    ->nullable()
+                                    ->placeholder('email@example.com'),
                             ]),
 
                         Forms\Components\Select::make('branch_id')
