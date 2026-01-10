@@ -1,4 +1,9 @@
 <script>
+import { mapStores } from "pinia";
+import * as yup from "yup";
+import { useOrderStore } from "../../stores/orderStore.js";
+import { useAuthStore } from "../../stores/authStore.js";
+
 export default {
     name: "SharpeningForm",
     data() {
@@ -10,10 +15,12 @@ export default {
                 name: "",
                 phone: "",
                 comment: "",
-                delivery_agreement: true,
-                privacy_agreement: true,
-                delivery_conditions_agreement: true,
+                delivery_address: "",
+                delivery_agreement: false,
+                privacy_agreement: false,
+                delivery_conditions_agreement: false,
             },
+            errors: {},
             toolTypes: [
                 { value: "manicure", label: "Маникюрные" },
                 { value: "hair", label: "Парикмахерские" },
@@ -21,12 +28,137 @@ export default {
                 { value: "barber", label: "Барберские" },
                 { value: "other", label: "Другие" },
             ],
+            schema: yup.object().shape({
+                tools_count: yup
+                    .number()
+                    .required("Количество инструментов обязательно")
+                    .min(1, "Минимум 1 инструмент"),
+                tool_type: yup
+                    .string()
+                    .required("Выберите тип инструментов"),
+                name: yup
+                    .string()
+                    .required("Имя обязательно")
+                    .min(2, "Минимум 2 символа"),
+                phone: yup
+                    .string()
+                    .required("Телефон обязателен")
+                    .min(18, "Номер телефона должен быть 18 символов")
+                    .max(18, "Номер телефона должен быть 18 символов"),
+                delivery_agreement: yup
+                    .boolean()
+                    .oneOf([true], "Необходимо согласие с условиями доставки"),
+                privacy_agreement: yup
+                    .boolean()
+                    .oneOf([true], "Необходимо согласие на обработку персональных данных"),
+            }),
         };
     },
+    computed: {
+        ...mapStores(useOrderStore, useAuthStore),
+    },
+    async mounted() {
+        // Проверяем авторизацию и загружаем данные пользователя
+        if (this.authStore.isAuthenticated && !this.authStore.user) {
+            await this.authStore.checkAuth();
+        }
+        
+        // Автозаполняем форму данными пользователя, если он авторизован
+        if (this.authStore.isAuthenticated && this.authStore.user) {
+            this.fillUserData();
+        }
+    },
     methods: {
-        submitForm() {
-            console.log("Form submitted:", this.form);
-            // Здесь будет логика отправки формы
+        fillUserData() {
+            const user = this.authStore.user;
+            if (!user) return;
+            
+            // Заполняем имя
+            if (user.full_name) {
+                this.form.name = user.full_name;
+            }
+            
+            // Заполняем телефон (формат +7 (###) ###-##-##)
+            if (user.phone) {
+                // Если телефон уже в нужном формате, используем как есть
+                if (user.phone.match(/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/)) {
+                    this.form.phone = user.phone;
+                } else {
+                    // Убираем все нецифровые символы, кроме +
+                    let cleanPhone = user.phone.replace(/[^\d+]/g, '');
+                    // Если нет +, добавляем +7
+                    if (!cleanPhone.startsWith('+')) {
+                        // Убираем ведущую 7 или 8, добавляем +7
+                        cleanPhone = cleanPhone.replace(/^[78]/, '');
+                        cleanPhone = '+7' + cleanPhone;
+                    } else if (cleanPhone.startsWith('+')) {
+                        // Если есть +, но не 7, заменяем
+                        cleanPhone = cleanPhone.replace(/^\+[^7]/, '+7');
+                    }
+                    
+                    // Форматируем в +7 (###) ###-##-## (10 цифр после +7)
+                    const digits = cleanPhone.replace(/\+7/, '').replace(/\D/g, '');
+                    if (digits.length === 10) {
+                        const match = digits.match(/^(\d{3})(\d{3})(\d{2})(\d{2})$/);
+                        if (match) {
+                            this.form.phone = `+7 (${match[1]}) ${match[2]}-${match[3]}-${match[4]}`;
+                        } else {
+                            this.form.phone = user.phone;
+                        }
+                    } else {
+                        this.form.phone = user.phone;
+                    }
+                }
+            }
+            
+            // Заполняем адрес доставки, если указан
+            if (user.delivery_address) {
+                this.form.delivery_address = user.delivery_address;
+            }
+        },
+        async submitForm() {
+            this.errors = {};
+            try {
+                await this.schema.validate(this.form, {
+                    abortEarly: false,
+                });
+
+                const result = await this.orderStore.createOrder(
+                    this.form,
+                    "sharpening"
+                );
+
+                if (result.success) {
+                    // Сброс формы после успешной отправки
+                    this.form = {
+                        tools_count: "",
+                        tool_type: "",
+                        needs_delivery: true,
+                        name: "",
+                        phone: "",
+                        comment: "",
+                        delivery_address: "",
+                        delivery_agreement: false,
+                        privacy_agreement: false,
+                        delivery_conditions_agreement: false,
+                    };
+                    
+                    // Повторно заполняем данные пользователя, если он авторизован
+                    if (this.authStore.isAuthenticated && this.authStore.user) {
+                        this.fillUserData();
+                    }
+                } else {
+                    this.errors.general = result.error;
+                }
+            } catch (error) {
+                if (error.inner) {
+                    error.inner.forEach((err) => {
+                        this.errors[err.path] = err.message;
+                    });
+                } else {
+                    this.errors.general = error.message;
+                }
+            }
         },
     },
 };
@@ -51,20 +183,37 @@ export default {
 
                 <!-- Форма -->
                 <form @submit.prevent="submitForm" class="space-y-6">
+                    <!-- Общая ошибка -->
+                    <div
+                        v-if="errors.general"
+                        class="bg-red-50/80 backdrop-blur-lg border border-red-300/50 text-red-700 px-6 py-4 dark:bg-red-900/30 dark:border-red-600/50 dark:text-red-400"
+                    >
+                        {{ errors.general }}
+                    </div>
+
                     <!-- Количество инструментов -->
                     <div>
                         <label
                             class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            Количество инструментов
+                            Количество инструментов <span class="text-red-500">*</span>
                         </label>
                         <input
-                            v-model="form.tools_count"
+                            v-model.number="form.tools_count"
                             type="number"
                             min="1"
                             placeholder="Введите количество"
                             class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            :class="{
+                                'border-red-500': errors.tools_count,
+                            }"
                         />
+                        <p
+                            v-if="errors.tools_count"
+                            class="mt-2 text-sm text-red-600 dark:text-red-400"
+                        >
+                            {{ errors.tools_count }}
+                        </p>
                     </div>
 
                     <!-- Тип инструментов -->
@@ -72,11 +221,14 @@ export default {
                         <label
                             class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            Тип инструментов
+                            Тип инструментов <span class="text-red-500">*</span>
                         </label>
                         <select
                             v-model="form.tool_type"
                             class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 appearance-none bg-no-repeat bg-right pr-12"
+                            :class="{
+                                'border-red-500': errors.tool_type,
+                            }"
                             style="
                                 background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23333%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e');
                                 background-position: right 1rem center;
@@ -94,6 +246,12 @@ export default {
                                 {{ type.label }}
                             </option>
                         </select>
+                        <p
+                            v-if="errors.tool_type"
+                            class="mt-2 text-sm text-red-600 dark:text-red-400"
+                        >
+                            {{ errors.tool_type }}
+                        </p>
                     </div>
 
                     <!-- Нужна доставка -->
@@ -112,19 +270,43 @@ export default {
                         </label>
                     </div>
 
+                    <!-- Адрес доставки (показывается только если нужна доставка) -->
+                    <div v-if="form.needs_delivery">
+                        <label
+                            class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
+                        >
+                            Адрес доставки
+                        </label>
+                        <input
+                            v-model="form.delivery_address"
+                            type="text"
+                            placeholder="Введите адрес доставки"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                        />
+                    </div>
+
                     <!-- Ваше имя -->
                     <div>
                         <label
                             class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            Ваше имя
+                            Ваше имя <span class="text-red-500">*</span>
                         </label>
                         <input
                             v-model="form.name"
                             type="text"
                             placeholder="Введите ваше имя"
                             class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            :class="{
+                                'border-red-500': errors.name,
+                            }"
                         />
+                        <p
+                            v-if="errors.name"
+                            class="mt-2 text-sm text-red-600 dark:text-red-400"
+                        >
+                            {{ errors.name }}
+                        </p>
                     </div>
 
                     <!-- Телефон -->
@@ -132,15 +314,25 @@ export default {
                         <label
                             class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            Телефон
+                            Телефон <span class="text-red-500">*</span>
                         </label>
                         <input
                             v-model="form.phone"
+                            v-maska
+                            data-maska="+7 (###) ###-##-##"
                             type="tel"
-                            v-maska="'+7 (###) ###-##-##'"
                             placeholder="+7 (___) ___-__-__"
                             class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            :class="{
+                                'border-red-500': errors.phone,
+                            }"
                         />
+                        <p
+                            v-if="errors.phone"
+                            class="mt-2 text-sm text-red-600 dark:text-red-400"
+                        >
+                            {{ errors.phone }}
+                        </p>
                     </div>
 
                     <!-- Комментарий -->
@@ -166,6 +358,9 @@ export default {
                                 type="checkbox"
                                 id="delivery_agreement"
                                 class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                :class="{
+                                    'border-red-500': errors.delivery_agreement,
+                                }"
                             />
                             <label
                                 for="delivery_agreement"
@@ -175,8 +370,15 @@ export default {
                                 <span class="underline"
                                     >условиями доставки</span
                                 >
+                                <span class="text-red-500">*</span>
                             </label>
                         </div>
+                        <p
+                            v-if="errors.delivery_agreement"
+                            class="text-sm text-red-600 dark:text-red-400 ml-8"
+                        >
+                            {{ errors.delivery_agreement }}
+                        </p>
 
                         <div class="flex items-start gap-3">
                             <input
@@ -184,6 +386,9 @@ export default {
                                 type="checkbox"
                                 id="privacy_agreement"
                                 class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                :class="{
+                                    'border-red-500': errors.privacy_agreement,
+                                }"
                             />
                             <label
                                 for="privacy_agreement"
@@ -193,8 +398,15 @@ export default {
                                 <span class="underline"
                                     >обработку персональных данных</span
                                 >
+                                <span class="text-red-500">*</span>
                             </label>
                         </div>
+                        <p
+                            v-if="errors.privacy_agreement"
+                            class="text-sm text-red-600 dark:text-red-400 ml-8"
+                        >
+                            {{ errors.privacy_agreement }}
+                        </p>
 
                         <div class="flex items-start gap-3">
                             <input
@@ -220,9 +432,11 @@ export default {
                     <div class="pt-6">
                         <button
                             type="submit"
-                            class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                            :disabled="orderStore.createOrderLoading"
+                            class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
-                            ЗАКАЗАТЬ ЗАТОЧКУ
+                            <span v-if="orderStore.createOrderLoading">Отправка...</span>
+                            <span v-else>ЗАКАЗАТЬ ЗАТОЧКУ</span>
                         </button>
                     </div>
                 </form>

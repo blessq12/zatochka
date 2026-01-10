@@ -6,32 +6,91 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Telegram\Bot\Laravel\Facades\Telegram;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
     public function createOrder(Request $request)
     {
-        $client = \App\Models\Client::where('phone', $request->client_phone)->first();
+        // Проверяем, авторизован ли клиент
+        $authenticatedClient = auth('sanctum')->user();
+        
+        // Валидация входящих данных (для неавторизованных клиентов поля обязательны)
+        $rules = [
+            'service_type' => 'required|string|in:sharpening,repair',
+            'urgency' => 'nullable|string|in:normal,urgent',
+            'problem_description' => 'nullable|string|max:5000',
+        ];
+        
+        // Если клиент не авторизован, имя и телефон обязательны
+        if (!$authenticatedClient) {
+            $rules['client_name'] = 'required|string|min:2|max:255';
+            $rules['client_phone'] = 'required|string|min:18|max:18';
+        }
+        
+        $validator = Validator::make($request->all(), $rules);
 
-        if (! $client) {
-            $client = \App\Models\Client::create([
-                'full_name' => $request->client_name,
-                'phone' => $request->client_phone,
-            ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
-        $order = $client->orders()->create([
-            'type' => $request->service_type ?? Order::TYPE_REPAIR,
+        // Если клиент авторизован - используем его данные
+        if ($authenticatedClient) {
+            $client = $authenticatedClient;
+        } else {
+            // Если клиент не авторизован - находим или создаем по телефону
+            $phone = preg_replace('/[^0-9+]/', '', $request->client_phone);
+            if (!str_starts_with($phone, '+')) {
+                $phone = '+7' . preg_replace('/^7/', '', $phone);
+            }
+
+            $client = \App\Models\Client::where('phone', $phone)->first();
+
+            if (!$client) {
+                $client = \App\Models\Client::create([
+                    'full_name' => $request->client_name,
+                    'phone' => $phone,
+                    'email' => $request->email ?? null,
+                ]);
+            }
+        }
+
+        // Получаем первый филиал (или первый доступный)
+        $branch = \App\Models\Branch::first();
+        if (!$branch) {
+            return response()->json([
+                'message' => 'No branch available',
+            ], 500);
+        }
+
+        // Определяем тип заказа
+        $orderType = $request->service_type === 'sharpening' 
+            ? Order::TYPE_SHARPENING 
+            : Order::TYPE_REPAIR;
+
+        // Определяем срочность
+        $urgency = $request->urgency === 'urgent' 
+            ? Order::URGENCY_URGENT 
+            : Order::URGENCY_NORMAL;
+
+        // Подготавливаем данные для создания заказа
+        $orderData = [
+            'type' => $orderType,
             'status' => Order::STATUS_NEW,
-            'urgency' => Order::URGENCY_NORMAL,
+            'urgency' => $urgency,
             'client_id' => $client->id,
-            'branch_id' => \App\Models\Branch::first()->id,
-            ...$request->all(),
-        ]);
+            'branch_id' => $branch->id,
+            'problem_description' => $request->problem_description ?? null,
+        ];
+
+        // Создаем заказ
+        $order = $client->orders()->create($orderData);
 
         // Отправляем уведомление в Telegram, если у клиента подтвержден Telegram
-        if ($client->telegram_verified_at && $client->telegramChats()->active()->exists()) {
+        if ($client->telegram_verified_at && $client->telegram) {
             $this->sendOrderNotification($client, $order);
         }
 
@@ -47,42 +106,12 @@ class OrderController extends Controller
     private function sendOrderNotification($client, $order)
     {
         try {
-            $telegramChat = $client->telegramChats()->active()->first();
-
-            if (!$telegramChat) {
-                return;
-            }
-
-            $message = "🎉 *Новый заказ создан!*\n\n";
-            $message .= "📋 *Номер заказа:* {$order->order_number}\n";
-            $message .= "👤 *Клиент:* {$client->full_name}\n";
-            $message .= "📞 *Телефон:* {$client->phone}\n";
-            $message .= "🔧 *Тип услуги:* " . Order::getAvailableTypes()[$order->type] . "\n";
-            $message .= "📊 *Статус:* " . Order::getAvailableStatuses()[$order->status] . "\n";
-
-            if ($order->estimated_price) {
-                $message .= "💰 *Предварительная цена:* " . number_format($order->estimated_price, 2, ',', ' ') . " ₽\n";
-            }
-
-            if ($order->problem_description) {
-                $message .= "📝 *Описание проблемы:* {$order->problem_description}\n";
-            }
-
-            $message .= "\n⏰ *Дата создания:* " . $order->created_at->format('d.m.Y H:i');
-
-            // Отправляем сообщение
-            Telegram::sendMessage([
-                'chat_id' => $telegramChat->chat_id,
-                'text' => $message,
-                'parse_mode' => 'Markdown',
-            ]);
-
-            // Сохраняем сообщение в базу данных
-            $telegramChat->messages()->create([
+            // TODO: Реализовать отправку уведомлений через Telegram Bot API
+            // Пока просто логируем
+            Log::info('Order notification for client', [
                 'client_id' => $client->id,
-                'content' => $message,
-                'direction' => 'outgoing',
-                'sent_at' => now(),
+                'order_id' => $order->id,
+                'telegram' => $client->telegram,
             ]);
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем выполнение

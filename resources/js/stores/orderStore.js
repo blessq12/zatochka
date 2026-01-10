@@ -3,6 +3,7 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import createOrderRequestDto from "../dto/form/orderRequestDto.js";
 import createReviewRequestDto from "../dto/review/createReviewRequestDto.js";
 import { toastService } from "../services/toastService.js";
+import { useAuthStore } from "./authStore.js";
 
 export const useOrderStore = defineStore("order", {
     state: () => ({
@@ -36,7 +37,16 @@ export const useOrderStore = defineStore("order", {
                     formData,
                 });
 
-                const response = await axios.post("/api/order/create", payload);
+                // Проверяем, авторизован ли клиент, и добавляем токен в заголовки
+                const authStore = useAuthStore();
+                const headers = {};
+                if (authStore.isAuthenticated && authStore.token) {
+                    headers.Authorization = `Bearer ${authStore.token}`;
+                }
+
+                const response = await axios.post("/api/order/create", payload, {
+                    headers,
+                });
 
                 toastService.success("Заказ успешно создан!");
                 return { success: true, data: response.data };
