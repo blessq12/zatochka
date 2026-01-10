@@ -70,10 +70,22 @@ export const useAuthStore = defineStore("auth", {
         },
 
         async logout() {
-            this.token = null;
-            this.user = null;
-            this.error = null;
-            localStorage.removeItem("auth_token");
+            try {
+                if (this.token) {
+                    await axios.post("/api/logout", {}, {
+                        headers: { Authorization: `Bearer ${this.token}` },
+                    });
+                }
+            } catch (error) {
+                console.error("Logout error:", error);
+            } finally {
+                this.token = null;
+                this.user = null;
+                this.bonusAccount = null;
+                this.error = null;
+                this.telegramVerified = false;
+                localStorage.removeItem("auth_token");
+            }
         },
 
         async checkAuth() {
