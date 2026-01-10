@@ -35,12 +35,14 @@ class ClientResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('phone')
-                    ->tel()
+                    ->label('Телефон')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->placeholder('+7 (999) 123-45-67'),
                 Forms\Components\TextInput::make('telegram')
-                    ->tel()
-                    ->maxLength(255),
+                    ->label('Telegram')
+                    ->maxLength(255)
+                    ->placeholder('@username'),
                 Forms\Components\DatePicker::make('birth_date'),
                 Forms\Components\Textarea::make('delivery_address')
                     ->columnSpanFull(),

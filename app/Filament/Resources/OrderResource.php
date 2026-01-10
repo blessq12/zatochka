@@ -41,13 +41,17 @@ class OrderResource extends Resource
                             ->required()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('full_name')
+                                    ->label('ФИО')
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('phone')
+                                    ->label('Телефон')
                                     ->required()
-                                    ->tel()
-                                    ->unique(ignoreRecord: true),
+                                    ->maxLength(255)
+                                    ->placeholder('+7 (999) 123-45-67')
+                                    ->unique('clients', 'phone', ignoreRecord: true),
                                 Forms\Components\TextInput::make('email')
+                                    ->label('Email')
                                     ->email()
                                     ->maxLength(255),
                             ]),

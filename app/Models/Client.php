@@ -51,15 +51,6 @@ class Client extends Model
         return \Carbon\Carbon::parse($value)->format('Y-m-d');
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-        static::created(function ($client) {
-            $client->bonusAccount()->create([
-                'balance' => 0,
-            ]);
-        });
-    }
 
     // Связи
     public function orders()
@@ -67,30 +58,6 @@ class Client extends Model
         return $this->hasMany(Order::class);
     }
 
-    public function reviews()
-    {
-        return $this->hasMany(Review::class);
-    }
-
-    public function bonusTransactions()
-    {
-        return $this->hasMany(BonusTransaction::class);
-    }
-
-    public function bonusAccount()
-    {
-        return $this->hasOne(BonusAccount::class);
-    }
-
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class);
-    }
-
-    public function telegramChats()
-    {
-        return $this->hasMany(TelegramChat::class);
-    }
 
     // Scope для активных клиентов
     public function scopeActive($query)
