@@ -8,7 +8,6 @@ import { toastService } from "../services/toastService.js";
 export const useAuthStore = defineStore("auth", {
     state: () => ({
         user: null,
-        bonusAccount: null,
         token: null,
         isLoading: false,
         error: null,
@@ -81,7 +80,6 @@ export const useAuthStore = defineStore("auth", {
             } finally {
                 this.token = null;
                 this.user = null;
-                this.bonusAccount = null;
                 this.error = null;
                 this.telegramVerified = false;
                 localStorage.removeItem("auth_token");
@@ -101,7 +99,6 @@ export const useAuthStore = defineStore("auth", {
                 });
 
                 this.user = response.data.client;
-                this.bonusAccount = response.data.bonusAccount;
 
                 // Инициализируем статус Telegram на основе данных пользователя
                 this.telegramVerified =

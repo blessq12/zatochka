@@ -19,6 +19,7 @@ class Client extends Model
         'telegram_verified_at',
         'birth_date',
         'delivery_address',
+        'bonus_points',
         'password',
         'remember_token',
         'is_deleted',
@@ -33,6 +34,7 @@ class Client extends Model
         'birth_date' => 'date',
         'telegram_verified_at' => 'datetime',
         'is_deleted' => 'boolean',
+        'bonus_points' => 'integer',
     ];
 
     // Accessor для форматирования даты рождения
