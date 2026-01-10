@@ -39,6 +39,10 @@ export default {
         setActiveTab(tab) {
             this.activeTab = tab;
         },
+        async handleLogout() {
+            await this.authStore.logout();
+            this.$router.push({ name: "home" });
+        },
     },
 };
 </script>
@@ -78,11 +82,19 @@ export default {
             <div v-else>
                 <!-- Заголовок -->
                 <div class="mb-8 sm:mb-12">
-                    <h1
-                        class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-4"
-                    >
-                        Личный кабинет
-                    </h1>
+                    <div class="flex items-center justify-between mb-4">
+                        <h1
+                            class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
+                        >
+                            Личный кабинет
+                        </h1>
+                        <button
+                            @click="handleLogout"
+                            class="bg-[#C3006B] hover:bg-[#A8005A] text-white px-6 py-3 font-jost-bold text-base sm:text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-[#C3006B]/50"
+                        >
+                            Выход
+                        </button>
+                    </div>
                     <div
                         class="h-px bg-dark-blue-500/30 dark:bg-dark-gray-200/90"
                     ></div>
