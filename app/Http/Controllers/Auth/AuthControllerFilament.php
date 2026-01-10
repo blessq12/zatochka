@@ -24,19 +24,9 @@ class AuthControllerFilament extends Controller
             // Простая авторизация через стандартный Laravel Auth
             if (Auth::attempt($credentials)) {
                 $user = Auth::user();
-                $userRoles = $user->getRoles();
-
-                // Проверяем роли и перенаправляем
-                if (in_array('manager', $userRoles) && in_array('master', $userRoles)) {
-                    return redirect('/manager');
-                } elseif (in_array('manager', $userRoles)) {
-                    return redirect('/manager');
-                } elseif (in_array('master', $userRoles)) {
-                    return redirect('/master');
-                } else {
-                    Auth::logout();
-                    return back()->withErrors(['email' => 'У пользователя не назначены роли']);
-                }
+                
+                // Перенаправляем в единую админ-панель
+                return redirect('/admin');
             } else {
                 return back()->withErrors(['email' => 'Неверные учетные данные']);
             }

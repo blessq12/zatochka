@@ -108,7 +108,7 @@ return [
     */
 
     'auth' => [
-        'guard' => 'admin',
+        'guard' => 'web',
     ],
 
 ];
