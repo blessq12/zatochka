@@ -17,4 +17,14 @@ class EditUser extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Если пароль пустой, удаляем его из данных, чтобы не перезаписывать существующий
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
+
+        return $data;
+    }
 }

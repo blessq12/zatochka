@@ -17,8 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'role.manager' => \App\Http\Middleware\CheckManagerRole::class,
-            'role.master' => \App\Http\Middleware\CheckMasterRole::class,
             'refresh.db' => \App\Http\Middleware\RefreshDatabaseConnection::class,
         ]);
     })
