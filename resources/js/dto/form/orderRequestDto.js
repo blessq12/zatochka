@@ -25,17 +25,25 @@ export default function createOrderRequestDto({
                 problem_description: formData.comment || "",
                 needs_delivery: formData.needs_delivery || false,
                 delivery_address: formData.delivery_address || "",
+                email: formData.email || null,
             };
 
         case "repair":
+            // Маппинг urgency_type -> urgency
+            let urgency = "normal";
+            if (formData.urgency_type === "urgent") {
+                urgency = "urgent";
+            }
+            
             return {
                 ...basePayload,
                 equipment_type: formData.equipment_type || "",
-                equipment_name: formData.equipment_name || "",
+                equipment_name: formData.device_name || "",
                 problem_description: formData.problem_description || "",
-                urgency: formData.urgency || "normal",
+                urgency: urgency,
                 needs_delivery: formData.needs_delivery || false,
                 delivery_address: formData.delivery_address || "",
+                email: formData.email || null,
             };
 
         case "delivery":
