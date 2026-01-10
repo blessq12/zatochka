@@ -65,11 +65,9 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::redirects('login', function () {
             $user = Auth::user();
 
-            if ($user->hasRole('manager')) {
-                return '/panel/manager';
-            }
-            if ($user->hasRole('master')) {
-                return '/panel/master';
+            // Редирект в админ-панель для авторизованных пользователей
+            if ($user) {
+                return '/admin';
             }
 
             return '/';

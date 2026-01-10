@@ -4,8 +4,7 @@ return [
     App\Providers\AppServiceProvider::class,
     App\Providers\MiddlewareServiceProvider::class,
     // filament panels providers
-    App\Providers\Filament\ManagerPanelProvider::class,
-    App\Providers\Filament\MasterPanelProvider::class,
+    App\Providers\Filament\AdminPanelProvider::class,
 
     // fortify service provider
     App\Providers\FortifyServiceProvider::class,
