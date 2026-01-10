@@ -26,7 +26,7 @@ class AuthControllerFilament extends Controller
                 $user = Auth::user();
                 
                 // Перенаправляем в единую админ-панель
-                return redirect('/admin');
+                return redirect('/cp');
             } else {
                 return back()->withErrors(['email' => 'Неверные учетные данные']);
             }
