@@ -1,5 +1,6 @@
 <script>
 import PageHero from "../components/Layout/PageHero.vue";
+import { usePriceStore } from "../stores/priceStore.js";
 
 export default {
     name: "PricePage",
@@ -8,63 +9,25 @@ export default {
     },
     data() {
         return {
-            sharpeningBlocks: [
-                {
-                    title: "ИНСТРУМЕНТЫ ДЛЯ МАНИКЮРА / ПЕДИКЮРА",
-                    items: [
-                        { name: "Ножницы/кусачки", price: "350" },
-                        { name: "Пушеры", price: "150" },
-                    ],
-                },
-                {
-                    title: "ДЛЯ ПАРИКМАХЕРОВ / БАРБЕРОВ / ГРУМЕРОВ",
-                    items: [
-                        { name: "Любые ножницы", price: "600" },
-                        { name: "Любые ножевые блоки", price: "600" },
-                    ],
-                },
-                {
-                    title: "ДЛЯ БРОВИСТОВ / ЛЭШМЕЙКЕРОВ",
-                    items: [{ name: "Пинцет", price: "400" }],
-                },
-                {
-                    title: "БЫТОВЫЕ / ПОРТНОВСКИЕ НОЖНИЦЫ",
-                    items: [{ name: "Ножницы", price: "300" }],
-                },
-            ],
-            repairBlocks: [
-                {
-                    title: "ЧИСТКА И ДИАГНОСТИКА",
-                    items: [{ name: "Ручки/блока", price: "500" }],
-                },
-                {
-                    title: "FIX PRICE",
-                    items: [
-                        {
-                            name: "Поломки блока управления",
-                            description:
-                                "(Ремонт регулятора скорости, гнезда ручки, реверс, кроме замены трансформатора)",
-                            price: "1000",
-                        },
-                    ],
-                },
-                {
-                    title: "ЗАМЕНА",
-                    items: [
-                        { name: "Трансформатора", price: "4500" },
-                        {
-                            name: "2х подшипников (ДЕТАЛИ + работа)",
-                            price: "1700",
-                        },
-                        {
-                            name: "4х подшипников (ДЕТАЛИ + работа)",
-                            price: "2900",
-                        },
-                        { name: "Щёток наши/ваши", price: "800/400" },
-                    ],
-                },
-            ],
+            sharpeningBlocks: [],
+            repairBlocks: [],
+            isLoading: false,
         };
+    },
+    async mounted() {
+        await this.loadPrices();
+    },
+    methods: {
+        async loadPrices() {
+            this.isLoading = true;
+            const priceStore = usePriceStore();
+            const result = await priceStore.fetchAllPrices();
+            if (result.success) {
+                this.sharpeningBlocks = priceStore.sharpeningBlocks;
+                this.repairBlocks = priceStore.repairBlocks;
+            }
+            this.isLoading = false;
+        },
     },
 };
 </script>
@@ -221,7 +184,7 @@ export default {
                                 </p>
                                 <p
                                     v-if="item.description"
-                                    class="text-xs sm:text-sm font-jost-regular text-dark-gray-400 dark:text-dark-gray-400 mt-1"
+                                    class="text-xs sm:text-sm font-jost-regular text-dark-gray-400 dark:text-gray-300 mt-1"
                                 >
                                     {{ item.description }}
                                 </p>

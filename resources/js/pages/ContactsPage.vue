@@ -38,12 +38,12 @@ export default {
         <PageHero title="НАШИ КОНТАКТЫ">
             <div class="text-center space-y-4">
                 <p
-                    class="text-2xl sm:text-3xl lg:text-4xl font-jost-bold text-white dark:text-dark-blue-500"
+                    class="text-2xl sm:text-3xl lg:text-4xl font-jost-bold text-white dark:text-white"
                 >
                     {{ contact.name }}
                 </p>
                 <p
-                    class="text-xl sm:text-2xl lg:text-3xl font-jost-regular text-white dark:text-dark-blue-500"
+                    class="text-xl sm:text-2xl lg:text-3xl font-jost-regular text-white dark:text-white"
                 >
                     {{ contact.phone }}
                 </p>

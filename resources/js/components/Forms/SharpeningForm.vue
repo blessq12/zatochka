@@ -492,12 +492,12 @@ export default {
                     class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8"
                 >
                     <button
-                        class="bg-white hover:bg-gray-100 text-dark-blue-500 px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                        class="bg-white dark:bg-dark-blue-500 hover:bg-gray-100 dark:hover:bg-dark-blue-400 text-dark-blue-500 dark:text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
                     >
                         ПОЗВОНИТЬ
                     </button>
                     <button
-                        class="bg-white hover:bg-gray-100 text-dark-blue-500 px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                        class="bg-white dark:bg-dark-blue-500 hover:bg-gray-100 dark:hover:bg-dark-blue-400 text-dark-blue-500 dark:text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
                     >
                         НАПИСАТЬ
                     </button>

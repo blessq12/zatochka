@@ -1,6 +1,7 @@
 <script>
 import SharpeningForm from "../components/Forms/SharpeningForm.vue";
 import PageHero from "../components/Layout/PageHero.vue";
+import { usePriceStore } from "../stores/priceStore.js";
 
 export default {
     name: "SharpeningPage",
@@ -10,31 +11,23 @@ export default {
     },
     data() {
         return {
-            priceBlocks: [
-                {
-                    title: "ИНСТРУМЕНТЫ ДЛЯ МАНИКЮРА / ПЕДИКЮРА",
-                    items: [
-                        { name: "Ножницы/кусачки", price: "350" },
-                        { name: "Пушеры", price: "150" },
-                    ],
-                },
-                {
-                    title: "ДЛЯ ПАРИКМАХЕРОВ / БАРБЕРОВ / ГРУМЕРОВ",
-                    items: [
-                        { name: "Любые ножницы", price: "600" },
-                        { name: "Любые ножевые блоки", price: "600" },
-                    ],
-                },
-                {
-                    title: "ДЛЯ БРОВИСТОВ / ЛЭШМЕЙКЕРОВ",
-                    items: [{ name: "Пинцет", price: "400" }],
-                },
-                {
-                    title: "БЫТОВЫЕ / ПОРТНОВСКИЕ НОЖНИЦЫ",
-                    items: [{ name: "Ножницы", price: "300" }],
-                },
-            ],
+            priceBlocks: [],
+            isLoading: false,
         };
+    },
+    async mounted() {
+        await this.loadPrices();
+    },
+    methods: {
+        async loadPrices() {
+            this.isLoading = true;
+            const priceStore = usePriceStore();
+            const result = await priceStore.fetchSharpeningPrices();
+            if (result.success) {
+                this.priceBlocks = priceStore.sharpeningBlocks;
+            }
+            this.isLoading = false;
+        },
     },
 };
 </script>
