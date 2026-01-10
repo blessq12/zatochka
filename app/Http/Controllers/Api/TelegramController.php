@@ -207,9 +207,10 @@ class TelegramController extends Controller
         // Удаляем код из кеша
         Cache::forget($cacheKey);
 
-        // Отправляем подтверждение в Telegram
+        // Отправляем подтверждение в Telegram с клавиатурой
         $botToken = config('services.telegram.bot_token');
-        $this->sendMessage($botToken, $telegramChat->chat_id, "✅ Telegram успешно подтвержден! Теперь вы будете получать уведомления о заказах.");
+        $message = "✅ Telegram успешно подтвержден!\n\nТеперь вы будете получать уведомления о заказах автоматически.\n\nИспользуйте кнопки ниже для навигации:";
+        $this->sendMessage($botToken, $telegramChat->chat_id, $message, true);
 
             return response()->json([
                 'success' => true,
@@ -277,6 +278,7 @@ class TelegramController extends Controller
 
         // Команды только для подтвержденных пользователей
         if ($client && $client->telegram_verified_at) {
+            // Обработка команд через текст (старые команды)
             if ($command === '/account' || $command === '/profile') {
                 $this->handleAccountCommand($botToken, $chatId, $client);
                 return;
@@ -288,6 +290,23 @@ class TelegramController extends Controller
             }
 
             if ($command === '/history' || $command === '/archive') {
+                $this->handleHistoryOrdersCommand($botToken, $chatId, $client);
+                return;
+            }
+
+            // Обработка нажатий кнопок клавиатуры
+            $buttonText = trim($text);
+            if ($buttonText === '👤 Аккаунт' || $buttonText === 'Аккаунт') {
+                $this->handleAccountCommand($botToken, $chatId, $client);
+                return;
+            }
+
+            if ($buttonText === '📋 Активные заказы' || $buttonText === 'Активные заказы') {
+                $this->handleActiveOrdersCommand($botToken, $chatId, $client);
+                return;
+            }
+
+            if ($buttonText === '📚 История заказов' || $buttonText === 'История заказов') {
                 $this->handleHistoryOrdersCommand($botToken, $chatId, $client);
                 return;
             }
@@ -320,14 +339,11 @@ class TelegramController extends Controller
         }
 
         if ($client->telegram_verified_at) {
-            // Telegram подтвержден
+            // Telegram подтвержден - показываем клавиатуру
             $message = "✅ Ваш Telegram уже подтвержден!\n\n";
-            $message .= "📱 <b>Доступные команды:</b>\n\n";
-            $message .= "/account - Информация об аккаунте\n";
-            $message .= "/orders - Активные заказы\n";
-            $message .= "/history - История заказов\n\n";
-            $message .= "Теперь вы будете получать уведомления о статусе ваших заказов автоматически.";
-            $this->sendMessage($botToken, $chatId, $message);
+            $message .= "Теперь вы будете получать уведомления о статусе ваших заказов автоматически.\n\n";
+            $message .= "Используйте кнопки ниже для навигации:";
+            $this->sendMessage($botToken, $chatId, $message, true);
             return;
         }
 
@@ -357,14 +373,9 @@ class TelegramController extends Controller
         }
 
         if ($client->telegram_verified_at) {
-            // Telegram подтвержден - показываем доступные команды
-            $message = "📱 <b>Доступные команды:</b>\n\n";
-            $message .= "/account - Информация об аккаунте\n";
-            $message .= "/orders - Активные заказы\n";
-            $message .= "/history - История заказов\n";
-            $message .= "/start - Главное меню\n\n";
-            $message .= "Или просто отправьте любое сообщение для помощи.";
-            $this->sendMessage($botToken, $chatId, $message);
+            // Telegram подтвержден - показываем клавиатуру и подсказку
+            $message = "Используйте кнопки ниже для навигации или отправьте /start для главного меню.";
+            $this->sendMessage($botToken, $chatId, $message, true);
             return;
         }
 
@@ -393,8 +404,8 @@ class TelegramController extends Controller
 
         if ($client->telegram_verified_at) {
             // Уже подтвержден
-            $message = "✅ Ваш Telegram уже подтвержден! Вы будете получать уведомления о заказах автоматически.";
-            $this->sendMessage($botToken, $chatId, $message);
+            $message = "✅ Ваш Telegram уже подтвержден! Вы будете получать уведомления о заказах автоматически.\n\nИспользуйте кнопки ниже для навигации:";
+            $this->sendMessage($botToken, $chatId, $message, true);
             return;
         }
 
@@ -426,7 +437,8 @@ class TelegramController extends Controller
         // Удаляем код из кеша
         Cache::forget($cacheKey);
 
-        $this->sendMessage($botToken, $chatId, "✅ Telegram успешно подтвержден!\n\nТеперь вы будете получать уведомления о статусе ваших заказов автоматически.");
+        $message = "✅ Telegram успешно подтвержден!\n\nТеперь вы будете получать уведомления о статусе ваших заказов автоматически.\n\nИспользуйте кнопки ниже для навигации:";
+        $this->sendMessage($botToken, $chatId, $message, true);
     }
 
     /**
@@ -467,7 +479,7 @@ class TelegramController extends Controller
             $message .= "\n✅ Telegram подтвержден: {$verifiedDate}";
         }
 
-        $this->sendMessage($botToken, $chatId, $message);
+        $this->sendMessage($botToken, $chatId, $message, true);
     }
 
     /**
@@ -485,7 +497,7 @@ class TelegramController extends Controller
 
         if ($activeOrders->isEmpty()) {
             $message = "📋 <b>Активные заказы</b>\n\nУ вас нет активных заказов.";
-            $this->sendMessage($botToken, $chatId, $message);
+            $this->sendMessage($botToken, $chatId, $message, true);
             return;
         }
 
@@ -511,7 +523,7 @@ class TelegramController extends Controller
             $message .= "Создан: " . $order->created_at->format('d.m.Y H:i') . "\n\n";
         }
 
-        $this->sendMessage($botToken, $chatId, $message);
+        $this->sendMessage($botToken, $chatId, $message, true);
     }
 
     /**
@@ -529,7 +541,7 @@ class TelegramController extends Controller
 
         if ($archivedOrders->isEmpty()) {
             $message = "📚 <b>История заказов</b>\n\nУ вас нет завершенных заказов.";
-            $this->sendMessage($botToken, $chatId, $message);
+            $this->sendMessage($botToken, $chatId, $message, true);
             return;
         }
 
@@ -562,7 +574,27 @@ class TelegramController extends Controller
             $message .= "Завершен: " . $order->updated_at->format('d.m.Y H:i') . "\n\n";
         }
 
-        $this->sendMessage($botToken, $chatId, $message);
+        $this->sendMessage($botToken, $chatId, $message, true);
+    }
+
+    /**
+     * Получение клавиатуры для подтвержденных пользователей
+     */
+    private function getMainKeyboard(): array
+    {
+        return [
+            'keyboard' => [
+                [
+                    ['text' => '👤 Аккаунт'],
+                ],
+                [
+                    ['text' => '📋 Активные заказы'],
+                    ['text' => '📚 История заказов'],
+                ],
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false,
+        ];
     }
 
     /**
@@ -588,7 +620,7 @@ class TelegramController extends Controller
     /**
      * Отправка сообщения через Telegram Bot API
      */
-    private function sendMessage(string $botToken, int $chatId, string $text): void
+    private function sendMessage(string $botToken, int $chatId, string $text, bool $showKeyboard = false): void
     {
         $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
 
@@ -597,6 +629,11 @@ class TelegramController extends Controller
             'text' => $text,
             'parse_mode' => 'HTML',
         ];
+
+        // Добавляем клавиатуру если нужно
+        if ($showKeyboard) {
+            $data['reply_markup'] = $this->getMainKeyboard();
+        }
 
         try {
             $ch = curl_init($url);
