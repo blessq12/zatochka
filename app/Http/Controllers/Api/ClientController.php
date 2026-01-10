@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Review;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -50,11 +49,9 @@ class ClientController extends Controller
     public function clientSelf()
     {
         $client = auth('sanctum')->user();
-        $bonusAccount = $client->bonusAccount;
 
         return response()->json([
             'client' => $client,
-            'bonusAccount' => $bonusAccount,
         ]);
     }
 
@@ -74,38 +71,4 @@ class ClientController extends Controller
         }
     }
 
-    public function createReview(Request $request)
-    {
-        $request->validate([
-            'order_id' => 'required|exists:orders,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|max:1000',
-        ]);
-
-        try {
-            $client = auth('sanctum')->user();
-
-            // Проверяем что заказ принадлежит клиенту
-            $order = $client->orders()->findOrFail($request->order_id);
-
-            // Проверяем что заказ завершен
-            if ($order->status !== \App\Models\Order::STATUS_ISSUED) {
-                return response()->json(['message' => 'Order must be completed to leave a review'], 400);
-            }
-
-            $review = Review::create([
-                'client_id' => $client->id,
-                'order_id' => $request->order_id,
-                'rating' => $request->rating,
-                'comment' => $request->comment,
-            ]);
-
-            return response()->json([
-                'review' => $review,
-                'message' => 'Review created successfully',
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
-        }
-    }
 }

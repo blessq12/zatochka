@@ -98,25 +98,6 @@ class Order extends Model implements HasMedia
         return $this->belongsTo(User::class, 'manager_id');
     }
 
-    public function discount()
-    {
-        return $this->belongsTo(DiscountRule::class, 'discount_id');
-    }
-
-    public function repair()
-    {
-        return $this->hasOne(Repair::class);
-    }
-
-    public function reviews()
-    {
-        return $this->hasMany(Review::class);
-    }
-
-    public function bonusTransactions()
-    {
-        return $this->hasMany(BonusTransaction::class);
-    }
 
     public function activities()
     {
