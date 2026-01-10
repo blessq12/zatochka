@@ -43,9 +43,6 @@ export default {
         user() {
             return this.authStore.user || {};
         },
-        bonusAccount() {
-            return this.authStore.bonusAccount || {};
-        },
     },
     watch: {
         user: {
@@ -140,7 +137,7 @@ export default {
                 <p
                     class="text-3xl sm:text-4xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-2"
                 >
-                    {{ bonusAccount.balance || 0 }} ₽
+                    {{ user.bonus_points || 0 }}
                 </p>
                 <p
                     class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"

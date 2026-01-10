@@ -479,6 +479,10 @@ class TelegramController extends Controller
             $message .= "\n✅ Telegram подтвержден: {$verifiedDate}";
         }
 
+        // Добавляем информацию о бонусах
+        $bonusPoints = $client->bonus_points ?? 0;
+        $message .= "\n\n🎁 <b>Бонусные баллы:</b> {$bonusPoints}";
+
         $this->sendMessage($botToken, $chatId, $message, true);
     }
 
