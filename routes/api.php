@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\PriceController;
 use Illuminate\Support\Facades\Route;
 Route::controller(AuthController::class)->group(function () {
@@ -40,5 +41,19 @@ Route::middleware('auth:client')->group(function () {
         Route::get('/client/self', 'clientSelf');
         Route::get('/client/orders-get', 'clientOrdersGet');
         Route::post('/client/update', 'clientUpdate');
+    });
+});
+
+// POS API для мастеров
+Route::prefix('pos')->controller(PosController::class)->group(function () {
+    Route::post('/login', 'login');
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('pos')->controller(PosController::class)->group(function () {
+        Route::post('/logout', 'logout');
+        Route::get('/me', 'me');
+        Route::get('/orders', 'orders');
+        Route::get('/warehouse/items', 'warehouseItems');
     });
 });

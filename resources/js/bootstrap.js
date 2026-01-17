@@ -10,6 +10,37 @@ import axios from 'axios';
 window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.withCredentials = true;
+
+// Interceptor для автоматической подстановки токенов авторизации
+window.axios.interceptors.request.use(
+    (config) => {
+        // Не добавляем токен, если он уже установлен вручную
+        if (config.headers.Authorization) {
+            return config;
+        }
+
+        // Если запрос к POS API, добавляем POS токен
+        if (config.url?.startsWith('/api/pos/') && !config.url.includes('/login')) {
+            const posToken = localStorage.getItem('pos_token');
+            if (posToken) {
+                config.headers.Authorization = `Bearer ${posToken}`;
+            }
+        }
+        // Если запрос к клиентскому API (не POS), добавляем клиентский токен
+        else if (config.url?.startsWith('/api/') && !config.url.startsWith('/api/pos/')) {
+            const clientToken = localStorage.getItem('auth_token');
+            if (clientToken) {
+                config.headers.Authorization = `Bearer ${clientToken}`;
+            }
+        }
+
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
