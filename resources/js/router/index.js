@@ -51,7 +51,57 @@ const routes = [
         name: "terms-of-service",
         component: () => import("../pages/TermsOfServicePage.vue"),
     },
-
+    {
+        path: "/pos",
+        name: "pos",
+        component: () => import("../pages/PosPage.vue"),
+        children: [
+            {
+                path: "orders/new",
+                name: "pos.orders.new",
+                component: () => import("../pages/Pos/OrdersNewPage.vue"),
+            },
+            {
+                path: "orders/active",
+                name: "pos.orders.active",
+                component: () => import("../pages/Pos/OrdersActivePage.vue"),
+            },
+            {
+                path: "orders/waiting-parts",
+                name: "pos.orders.waiting-parts",
+                component: () => import("../pages/Pos/OrdersWaitingPartsPage.vue"),
+            },
+            {
+                path: "orders/in-work/:id",
+                name: "pos.orders.in-work",
+                component: () => import("../pages/Pos/OrderInWorkPage.vue"),
+            },
+            {
+                path: "orders/completed",
+                name: "pos.orders.completed",
+                component: () => import("../pages/Pos/OrdersCompletedPage.vue"),
+            },
+            {
+                path: "warehouse",
+                name: "pos.warehouse.index",
+                component: () => import("../pages/Pos/WarehousePage.vue"),
+            },
+            {
+                path: "settings/profile",
+                name: "pos.settings.profile",
+                component: () => import("../pages/Pos/SettingsProfilePage.vue"),
+            },
+            {
+                path: "settings/telegram",
+                name: "pos.settings.telegram",
+                component: () => import("../pages/Pos/SettingsTelegramPage.vue"),
+            },
+            {
+                path: "",
+                redirect: { name: "pos.orders.new" },
+            },
+        ],
+    },
     {
         path: "/403",
         name: "Forbidden",

@@ -25,7 +25,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid password'], 401);
         }
 
-        $token = $client->createToken('auth_token')->plainTextToken;
+        // Создаем токен через Sanctum с уникальным именем для клиента
+        $token = $client->createToken('client_auth_token')->plainTextToken;
 
         return response()->json(['message' => 'Login successful', 'token' => $token, 'client' => $client]);
     }
@@ -44,7 +45,8 @@ class AuthController extends Controller
             $clientData['password'] = Hash::make($request->password);
 
             $client = \App\Models\Client::create($clientData);
-            $token = $client->createToken('auth_token')->plainTextToken;
+            // Создаем токен через Sanctum с уникальным именем для клиента
+        $token = $client->createToken('client_auth_token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Registration successful',

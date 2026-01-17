@@ -58,7 +58,7 @@ class TelegramController extends Controller
                     if (isset($message['chat']['last_name'])) {
                         $metadata['last_name'] = $message['chat']['last_name'];
                     }
-                    
+
                     $telegramChat->update([
                         'username' => $username,
                         'metadata' => $metadata,
@@ -91,26 +91,26 @@ class TelegramController extends Controller
     {
         $client = auth('client')->user();
 
-            if (!$client) {
-                return response()->json([
-                    'success' => false,
+        if (!$client) {
+            return response()->json([
+                'success' => false,
                 'message' => 'Unauthorized',
-                ], 401);
-            }
+            ], 401);
+        }
 
         if (!$client->telegram) {
-                return response()->json([
-                    'success' => false,
+            return response()->json([
+                'success' => false,
                 'message' => 'Telegram username not specified in profile',
-                ], 400);
-            }
+            ], 400);
+        }
 
         if ($client->telegram_verified_at) {
-                return response()->json([
-                    'success' => false,
+            return response()->json([
+                'success' => false,
                 'message' => 'Telegram already verified',
-                ], 400);
-            }
+            ], 400);
+        }
 
         // Генерируем 6-значный код
         $code = str_pad((string) rand(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -152,24 +152,24 @@ class TelegramController extends Controller
     public function verifyCode(Request $request): JsonResponse
     {
         $request->validate([
-                'code' => 'required|string|size:6',
-            ]);
+            'code' => 'required|string|size:6',
+        ]);
 
         $client = auth('client')->user();
 
-            if (!$client) {
-                return response()->json([
-                    'success' => false,
+        if (!$client) {
+            return response()->json([
+                'success' => false,
                 'message' => 'Unauthorized',
-                ], 401);
-            }
+            ], 401);
+        }
 
         if (!$client->telegram) {
-                return response()->json([
-                    'success' => false,
+            return response()->json([
+                'success' => false,
                 'message' => 'Telegram username not specified',
-                ], 400);
-            }
+            ], 400);
+        }
 
         $code = $request->input('code');
 
@@ -178,18 +178,18 @@ class TelegramController extends Controller
         $cachedData = Cache::get($cacheKey);
 
         if (!$cachedData || $cachedData['code'] !== $code) {
-                return response()->json([
-                    'success' => false,
+            return response()->json([
+                'success' => false,
                 'message' => 'Invalid or expired verification code',
-                ], 400);
-            }
+            ], 400);
+        }
 
         // Находим чат
         $telegramChat = TelegramChat::byUsername($client->telegram)->active()->first();
 
         if (!$telegramChat) {
-                return response()->json([
-                    'success' => false,
+            return response()->json([
+                'success' => false,
                 'message' => 'Telegram chat not found',
             ], 404);
         }
@@ -200,9 +200,9 @@ class TelegramController extends Controller
         ]);
 
         // Обновляем клиента
-            $client->update([
-                'telegram_verified_at' => now(),
-            ]);
+        $client->update([
+            'telegram_verified_at' => now(),
+        ]);
 
         // Удаляем код из кеша
         Cache::forget($cacheKey);
@@ -212,13 +212,13 @@ class TelegramController extends Controller
         $message = "✅ Telegram успешно подтвержден!\n\nТеперь вы будете получать уведомления о заказах автоматически.\n\nИспользуйте кнопки ниже для навигации:";
         $this->sendMessage($botToken, $telegramChat->chat_id, $message, true);
 
-            return response()->json([
-                'success' => true,
+        return response()->json([
+            'success' => true,
             'message' => 'Telegram verified successfully',
             'telegram_username' => $client->telegram,
             'verified_at' => $client->telegram_verified_at->toIso8601String(),
-                'client' => $client->fresh(),
-            ]);
+            'client' => $client->fresh(),
+        ]);
     }
 
     /**
@@ -228,12 +228,12 @@ class TelegramController extends Controller
     {
         $client = auth('client')->user();
 
-            if (!$client) {
-                return response()->json([
+        if (!$client) {
+            return response()->json([
                 'chat_exists' => false,
                 'message' => 'Unauthorized',
-                ], 401);
-            }
+            ], 401);
+        }
 
         if (!$client->telegram) {
             return response()->json([
@@ -259,7 +259,7 @@ class TelegramController extends Controller
 
         // Определяем статус пользователя: сначала по client_id из чата, потом по username
         $client = null;
-        
+
         if ($chat->client_id) {
             // Если чат уже привязан к клиенту
             $client = Client::find($chat->client_id);
@@ -448,25 +448,25 @@ class TelegramController extends Controller
     {
         $message = "👤 <b>Информация об аккаунте</b>\n\n";
         $message .= "Имя: {$client->full_name}\n";
-        
+
         if ($client->phone) {
             $message .= "Телефон: {$client->phone}\n";
         }
-        
+
         if ($client->email) {
             $message .= "Email: {$client->email}\n";
         }
-        
+
         if ($client->telegram) {
             $message .= "Telegram: @{$client->telegram}\n";
         }
-        
+
         if ($client->delivery_address) {
             $message .= "Адрес доставки: {$client->delivery_address}\n";
         }
-        
+
         if ($client->birth_date) {
-            $birthDate = is_string($client->birth_date) 
+            $birthDate = is_string($client->birth_date)
                 ? \Carbon\Carbon::parse($client->birth_date)->format('d.m.Y')
                 : $client->birth_date->format('d.m.Y');
             $message .= "Дата рождения: {$birthDate}\n";
@@ -511,19 +511,19 @@ class TelegramController extends Controller
             $statusLabels = \App\Models\Order::getAvailableStatuses();
             $typeLabels = \App\Models\Order::getAvailableTypes();
             $statusLabel = $statusLabels[$order->status] ?? $order->status;
-            $typeLabel = $typeLabels[$order->type] ?? $order->type;
+            $typeLabel = $typeLabels[$order->service_type] ?? $order->service_type;
 
             $message .= "🔹 <b>{$order->order_number}</b>\n";
             $message .= "Тип: {$typeLabel}\n";
             $message .= "Статус: {$statusLabel}\n";
-            
+
             if ($order->estimated_price) {
                 $price = $this->formatPrice($order->estimated_price);
                 if ($price) {
                     $message .= "Цена: {$price}\n";
                 }
             }
-            
+
             $message .= "Создан: " . $order->created_at->format('d.m.Y H:i') . "\n\n";
         }
 
@@ -555,14 +555,14 @@ class TelegramController extends Controller
             $statusLabels = \App\Models\Order::getAvailableStatuses();
             $typeLabels = \App\Models\Order::getAvailableTypes();
             $statusLabel = $statusLabels[$order->status] ?? $order->status;
-            $typeLabel = $typeLabels[$order->type] ?? $order->type;
+            $typeLabel = $typeLabels[$order->service_type] ?? $order->service_type;
 
             $statusIcon = $order->status === \App\Models\Order::STATUS_ISSUED ? '✅' : '❌';
-            
+
             $message .= "{$statusIcon} <b>{$order->order_number}</b>\n";
             $message .= "Тип: {$typeLabel}\n";
             $message .= "Статус: {$statusLabel}\n";
-            
+
             if ($order->actual_price) {
                 $price = $this->formatPrice($order->actual_price);
                 if ($price) {
@@ -574,7 +574,7 @@ class TelegramController extends Controller
                     $message .= "Цена: {$price}\n";
                 }
             }
-            
+
             $message .= "Завершен: " . $order->updated_at->format('d.m.Y H:i') . "\n\n";
         }
 
