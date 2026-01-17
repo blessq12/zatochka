@@ -12,286 +12,224 @@
                 </div>
                 <div v-else class="order-details">
                     <!-- Основная информация -->
-                    <div class="detail-section">
-                        <h3 class="section-title">Основная информация</h3>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Номер заказа:</span>
-                                <span class="detail-value">{{
-                                    order.order_number
-                                }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Статус:</span>
-                                <span class="detail-value">
-                                    <span
-                                        class="status-badge"
-                                        :class="getStatusClass(order.status)"
-                                    >
-                                        {{ getStatusLabel(order.status) }}
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Тип услуги:</span>
-                                <span class="detail-value">{{
-                                    getTypeLabel(order.service_type)
-                                }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Срочность:</span>
-                                <span class="detail-value">
+                    <table class="info-table">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="table-header">
+                                    <div class="header-content">
+                                        <span>Заказ №{{ order.order_number }}</span>
+                                        <span
+                                            class="status-badge"
+                                            :class="getStatusClass(order.status)"
+                                        >
+                                            {{ getStatusLabel(order.status) }}
+                                        </span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-label">Тип услуги</td>
+                                <td class="table-value">{{ getTypeLabel(order.service_type) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-label">Срочность</td>
+                                <td class="table-value">
                                     <span
                                         class="urgency-badge"
-                                        :class="
-                                            order.urgency === 'urgent'
-                                                ? 'urgent'
-                                                : 'normal'
-                                        "
+                                        :class="order.urgency === 'urgent' ? 'urgent' : 'normal'"
                                     >
-                                        {{
-                                            order.urgency === "urgent"
-                                                ? "Срочный"
-                                                : "Обычный"
-                                        }}
+                                        {{ order.urgency === "urgent" ? "Срочный" : "Обычный" }}
                                     </span>
-                                </span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Дата создания:</span>
-                                <span class="detail-value">{{
-                                    formatDate(order.created_at)
-                                }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"
-                                    >Последнее обновление:</span
-                                >
-                                <span class="detail-value">{{
-                                    formatDate(order.updated_at)
-                                }}</span>
-                            </div>
-                        </div>
-                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="table-label">Филиал</td>
+                                <td class="table-value">{{ order.branch?.name || "—" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-label">Дата создания</td>
+                                <td class="table-value">{{ formatDate(order.created_at) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-label">Последнее обновление</td>
+                                <td class="table-value">{{ formatDate(order.updated_at) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                    <!-- Информация о клиенте -->
-                    <div class="detail-section">
-                        <h3 class="section-title">Клиент</h3>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">ФИО:</span>
-                                <span class="detail-value">{{
-                                    order.client?.full_name || "—"
-                                }}</span>
-                            </div>
-                            <div v-if="order.client?.phone" class="detail-item">
-                                <span class="detail-label">Телефон:</span>
-                                <span class="detail-value">{{
-                                    order.client.phone
-                                }}</span>
-                            </div>
-                            <div v-if="order.client?.email" class="detail-item">
-                                <span class="detail-label">Email:</span>
-                                <span class="detail-value">{{
-                                    order.client.email
-                                }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Информация о филиале -->
-                    <div class="detail-section">
-                        <h3 class="section-title">Филиал</h3>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Название:</span>
-                                <span class="detail-value">{{
-                                    order.branch?.name || "—"
-                                }}</span>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Клиент -->
+                    <table class="info-table">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="table-header">Клиент</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-label">ФИО</td>
+                                <td class="table-value">{{ order.client?.full_name || "—" }}</td>
+                            </tr>
+                            <tr v-if="order.client?.phone">
+                                <td class="table-label">Телефон</td>
+                                <td class="table-value">{{ order.client.phone }}</td>
+                            </tr>
+                            <tr v-if="order.client?.email">
+                                <td class="table-label">Email</td>
+                                <td class="table-value">{{ order.client.email }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
                     <!-- Оборудование -->
-                    <div class="detail-section">
-                        <h3 class="section-title">Оборудование</h3>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Название:</span>
-                                <span class="detail-value">{{
-                                    order.equipment_name || "—"
-                                }}</span>
-                            </div>
-                            <div
-                                v-if="order.equipment_serial_number"
-                                class="detail-item"
-                            >
-                                <span class="detail-label"
-                                    >Серийный номер:</span
-                                >
-                                <span class="detail-value">{{
-                                    order.equipment_serial_number
-                                }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Финансовая информация -->
-                    <div class="detail-section">
-                        <h3 class="section-title">Финансовая информация</h3>
-                        <div class="detail-grid">
-                            <div
-                                v-if="order.estimated_price"
-                                class="detail-item"
-                            >
-                                <span class="detail-label"
-                                    >Ориентировочная цена:</span
-                                >
-                                <span class="detail-value price"
-                                    >{{
-                                        formatPrice(order.estimated_price)
-                                    }}
-                                    ₽</span
-                                >
-                            </div>
-                            <div v-if="order.actual_price" class="detail-item">
-                                <span class="detail-label"
-                                    >Фактическая цена:</span
-                                >
-                                <span class="detail-value price"
-                                    >{{
-                                        formatPrice(order.actual_price)
-                                    }}
-                                    ₽</span
-                                >
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Тип оплаты:</span>
-                                <span class="detail-value">
-                                    {{
-                                        order.order_payment_type === "paid"
-                                            ? "Оплачен"
-                                            : "Гарантия"
-                                    }}
-                                </span>
-                            </div>
-                            <div v-if="order.delivery_cost" class="detail-item">
-                                <span class="detail-label"
-                                    >Стоимость доставки:</span
-                                >
-                                <span class="detail-value price"
-                                    >{{
-                                        formatPrice(order.delivery_cost)
-                                    }}
-                                    ₽</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Доставка -->
-                    <div v-if="order.delivery_address" class="detail-section">
-                        <h3 class="section-title">Доставка</h3>
-                        <div class="detail-grid">
-                            <div class="detail-item full-width">
-                                <span class="detail-label"
-                                    >Адрес доставки:</span
-                                >
-                                <span class="detail-value">{{
-                                    order.delivery_address
-                                }}</span>
-                            </div>
-                        </div>
-                    </div>
+                    <table class="info-table">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="table-header">Оборудование</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-label">Название</td>
+                                <td class="table-value">{{ order.equipment_name || "—" }}</td>
+                            </tr>
+                            <tr v-if="order.equipment_serial_number">
+                                <td class="table-label">Серийный номер</td>
+                                <td class="table-value">{{ order.equipment_serial_number }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
                     <!-- Описание проблемы -->
-                    <div
-                        v-if="order.problem_description"
-                        class="detail-section"
-                    >
-                        <h3 class="section-title">Описание проблемы</h3>
-                        <div class="detail-text">
-                            {{ order.problem_description }}
-                        </div>
-                    </div>
+                    <table v-if="order.problem_description" class="info-table">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Описание проблемы</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-text">{{ order.problem_description }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                    <!-- Внутренние заметки -->
-                    <div v-if="order.internal_notes" class="detail-section">
-                        <h3 class="section-title">Внутренние заметки</h3>
-                        <div class="detail-text">
-                            {{ order.internal_notes }}
-                        </div>
-                    </div>
+                    <!-- Работы -->
+                    <table v-if="order.order_works && order.order_works.length > 0" class="info-table">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Описание работы</th>
+                                <th class="table-header text-right">Стоимость</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="work in order.order_works" :key="work.id">
+                                <td class="table-value">{{ work.description }}</td>
+                                <td class="table-value text-right price">{{ formatPrice(work.work_price || 0) }} ₽</td>
+                            </tr>
+                            <tr class="table-total">
+                                <td class="table-label">Итого работ</td>
+                                <td class="table-value text-right price">{{ formatPrice(totalWorksPrice) }} ₽</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                    <!-- Выполненные работы -->
-                    <div v-if="order.order_works && order.order_works.length > 0" class="detail-section">
-                        <h3 class="section-title">Выполненные работы</h3>
-                        <div class="works-list">
-                            <div
-                                v-for="work in order.order_works"
-                                :key="work.id"
-                                class="work-item"
-                            >
-                                <div class="work-header">
-                                    <span class="work-price">{{ formatPrice(work.work_price || 0) }} ₽</span>
-                                </div>
-                                <div class="work-description">{{ work.description }}</div>
-                                <div v-if="work.warehouse_items && work.warehouse_items.length > 0" class="work-materials">
-                                    <div class="materials-title">Материалы:</div>
-                                    <div class="materials-list">
-                                        <div
-                                            v-for="material in work.warehouse_items"
-                                            :key="material.id"
-                                            class="material-item"
-                                        >
-                                            <span class="material-name">{{ material.name }}</span>
-                                            <span v-if="material.article" class="material-article">Арт: {{ material.article }}</span>
-                                            <span class="material-quantity">Количество: {{ material.pivot?.quantity || 0 }}</span>
-                                            <span class="material-price">Цена: {{ formatPrice(material.pivot?.price || 0) }} ₽</span>
-                                            <span class="material-total">Сумма: {{ formatPrice((material.pivot?.quantity || 0) * (material.pivot?.price || 0)) }} ₽</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="works-summary">
-                            <div class="summary-row">
-                                <span class="summary-label">Стоимость работ:</span>
-                                <span class="summary-value">{{ formatPrice(totalWorksPrice) }} ₽</span>
-                            </div>
-                            <div class="summary-row">
-                                <span class="summary-label">Стоимость материалов:</span>
-                                <span class="summary-value">{{ formatPrice(totalMaterialsPrice) }} ₽</span>
-                            </div>
-                            <div class="summary-row total">
-                                <span class="summary-label">Итого:</span>
-                                <span class="summary-value">{{ formatPrice(totalWorksPrice + totalMaterialsPrice) }} ₽</span>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Материалы -->
+                    <table v-if="order.order_works && order.order_works.some(w => w.warehouse_items && w.warehouse_items.length > 0)" class="info-table">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Название</th>
+                                <th class="table-header">Артикул</th>
+                                <th class="table-header text-right">Количество</th>
+                                <th class="table-header text-right">Цена</th>
+                                <th class="table-header text-right">Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-for="work in order.order_works" :key="work.id">
+                                <tr v-for="material in work.warehouse_items" :key="material.id">
+                                    <td class="table-value">{{ material.name }}</td>
+                                    <td class="table-value">{{ material.article || "—" }}</td>
+                                    <td class="table-value text-right">{{ material.pivot?.quantity || 0 }} {{ material.unit || "шт" }}</td>
+                                    <td class="table-value text-right">{{ formatPrice(material.pivot?.price || 0) }} ₽</td>
+                                    <td class="table-value text-right price">{{ formatPrice((material.pivot?.quantity || 0) * (material.pivot?.price || 0)) }} ₽</td>
+                                </tr>
+                            </template>
+                            <tr class="table-total">
+                                <td colspan="4" class="table-label">Итого материалов</td>
+                                <td class="table-value text-right price">{{ formatPrice(totalMaterialsPrice) }} ₽</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Финансовая информация -->
+                    <table class="info-table">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="table-header">Финансовая информация</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="order.estimated_price">
+                                <td class="table-label">Ориентировочная цена</td>
+                                <td class="table-value price">{{ formatPrice(order.estimated_price) }} ₽</td>
+                            </tr>
+                            <tr v-if="order.actual_price">
+                                <td class="table-label">Фактическая цена</td>
+                                <td class="table-value price">{{ formatPrice(order.actual_price) }} ₽</td>
+                            </tr>
+                            <tr>
+                                <td class="table-label">Тип оплаты</td>
+                                <td class="table-value">
+                                    {{ order.order_payment_type === "paid" ? "Оплачен" : "Гарантия" }}
+                                </td>
+                            </tr>
+                            <tr v-if="order.delivery_cost">
+                                <td class="table-label">Стоимость доставки</td>
+                                <td class="table-value price">{{ formatPrice(order.delivery_cost) }} ₽</td>
+                            </tr>
+                            <tr v-if="order.delivery_address">
+                                <td class="table-label">Адрес доставки</td>
+                                <td class="table-value">{{ order.delivery_address }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
                     <!-- Ответственные -->
-                    <div class="detail-section">
-                        <h3 class="section-title">Ответственные</h3>
-                        <div class="detail-grid">
-                            <div v-if="order.manager" class="detail-item">
-                                <span class="detail-label">Менеджер:</span>
-                                <span class="detail-value">{{
-                                    order.manager.name
-                                }}</span>
-                            </div>
-                            <div v-if="order.master" class="detail-item">
-                                <span class="detail-label">Мастер:</span>
-                                <span class="detail-value">
-                                    {{
-                                        order.master.surname
-                                            ? `${order.master.surname} ${order.master.name}`
-                                            : order.master.name
-                                    }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    <table v-if="order.manager || order.master" class="info-table">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="table-header">Ответственные</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="order.manager">
+                                <td class="table-label">Менеджер</td>
+                                <td class="table-value">{{ order.manager.name }}</td>
+                            </tr>
+                            <tr v-if="order.master">
+                                <td class="table-label">Мастер</td>
+                                <td class="table-value">
+                                    {{ order.master.surname ? `${order.master.surname} ${order.master.name}` : order.master.name }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Внутренние заметки -->
+                    <table v-if="order.internal_notes" class="info-table">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Внутренние заметки</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-text">{{ order.internal_notes }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -534,82 +472,130 @@ export default {
     gap: 1.5rem;
 }
 
-.detail-section {
-    background: #f9fafb;
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
-    padding: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
 }
 
-.section-title {
-    font-size: 1.125rem;
+.info-table thead {
+    background: #003859;
+    color: white;
+}
+
+.info-table thead th {
+    text-align: left;
+}
+
+.table-header {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: #003859;
-    margin: 0 0 1rem 0;
+    text-align: left;
     font-family: "Jost", sans-serif;
 }
 
-.detail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 0.875rem;
-}
-
-.detail-item {
+.header-content {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.detail-item.full-width {
-    grid-column: 1 / -1;
+.info-table tbody tr {
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.detail-label {
-    font-size: 0.8125rem;
+.info-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.info-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.table-label {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    width: 40%;
+    vertical-align: top;
 }
 
-.detail-value {
+.table-value {
+    padding: 0.875rem 1.25rem;
     font-size: 0.9375rem;
     color: #1f2937;
     font-weight: 500;
+    vertical-align: top;
 }
 
-.detail-value.price {
+.table-value.price {
     font-weight: 700;
     color: #003859;
     font-size: 1rem;
 }
 
+.table-text {
+    padding: 1rem 1.25rem;
+    font-size: 0.9375rem;
+    color: #374151;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.table-total {
+    background: #f9fafb;
+    font-weight: 700;
+}
+
+.table-total .table-label {
+    color: #003859;
+    font-size: 0.9375rem;
+}
+
+.table-total .table-value {
+    color: #003859;
+    font-size: 1.125rem;
+}
+
 .status-badge {
     padding: 0.375rem 0.75rem;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: 700;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .status-new {
-    background: #dbeafe;
-    color: #1e40af;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .status-consultation {
-    background: #fef3c7;
-    color: #92400e;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .status-diagnostic {
-    background: #dbeafe;
-    color: #1e40af;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .status-in-work {
-    background: #fef3c7;
-    color: #92400e;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .status-waiting-parts {
@@ -633,9 +619,9 @@ export default {
 }
 
 .urgency-badge {
-    padding: 0.375rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.8125rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
     font-weight: 600;
     display: inline-block;
 }
@@ -650,129 +636,4 @@ export default {
     color: #1e40af;
 }
 
-.detail-text {
-    color: #374151;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    font-size: 0.9375rem;
-}
-
-.works-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.work-item {
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 1rem;
-    background: white;
-}
-
-.work-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.work-price {
-    font-weight: 600;
-    color: #059669;
-    font-size: 1.125rem;
-}
-
-.work-description {
-    color: #374151;
-    margin-bottom: 0.75rem;
-    line-height: 1.5;
-}
-
-.work-materials {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.materials-title {
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.materials-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.material-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.5rem;
-    background: #f9fafb;
-    border-radius: 4px;
-    font-size: 0.8125rem;
-}
-
-.material-name {
-    font-weight: 600;
-    color: #374151;
-}
-
-.material-article {
-    color: #6b7280;
-}
-
-.material-quantity,
-.material-price,
-.material-total {
-    color: #6b7280;
-}
-
-.material-total {
-    font-weight: 600;
-    color: #046490;
-}
-
-.works-summary {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 2px solid #e5e7eb;
-}
-
-.works-summary .summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    font-size: 0.875rem;
-}
-
-.works-summary .summary-row.total {
-    font-weight: 600;
-    font-size: 1rem;
-    color: #003859;
-    padding-top: 0.75rem;
-    border-top: 1px solid #e5e7eb;
-    margin-top: 0.5rem;
-}
-
-.works-summary .summary-label {
-    color: #6b7280;
-}
-
-.works-summary .summary-value {
-    color: #374151;
-    font-weight: 600;
-}
-
-.works-summary .summary-row.total .summary-value {
-    color: #003859;
-    font-size: 1.125rem;
-}
 </style>

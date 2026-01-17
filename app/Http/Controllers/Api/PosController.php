@@ -363,7 +363,45 @@ class PosController extends Controller
             ]),
         ]);
 
-        $order->update(['status' => $request->status]);
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+
+        // Обработка списания/возврата товаров при изменении статуса заказа
+        $works = $order->orderWorks()->where('is_deleted', false)->get();
+        
+        // Если заказ переводится в статус ready или issued - списываем товары
+        if (in_array($newStatus, [Order::STATUS_READY, Order::STATUS_ISSUED]) && 
+            !in_array($oldStatus, [Order::STATUS_READY, Order::STATUS_ISSUED])) {
+            // Списываем товары со склада
+            foreach ($works as $work) {
+                foreach ($work->warehouseItems as $material) {
+                    $warehouseItem = \App\Models\WarehouseItem::find($material->id);
+                    if ($warehouseItem) {
+                        $quantity = $material->pivot->quantity;
+                        // Списание автоматически уменьшает и reserved_quantity, и quantity
+                        $warehouseItem->decreaseQuantity($quantity);
+                    }
+                }
+            }
+        }
+        // Если заказ переводится обратно из ready/issued в другой статус - возвращаем товары
+        elseif (in_array($oldStatus, [Order::STATUS_READY, Order::STATUS_ISSUED]) && 
+                 !in_array($newStatus, [Order::STATUS_READY, Order::STATUS_ISSUED])) {
+            // Возвращаем товары на склад (увеличиваем quantity)
+            foreach ($works as $work) {
+                foreach ($work->warehouseItems as $material) {
+                    $warehouseItem = \App\Models\WarehouseItem::find($material->id);
+                    if ($warehouseItem) {
+                        $quantity = $material->pivot->quantity;
+                        // Возвращаем товар на склад и резервируем его снова
+                        $warehouseItem->increaseQuantity($quantity);
+                        $warehouseItem->reserve($quantity);
+                    }
+                }
+            }
+        }
+
+        $order->update(['status' => $newStatus]);
 
         return response()->json([
             'message' => 'Order status updated',
@@ -385,17 +423,35 @@ class PosController extends Controller
             ], 401);
         }
 
-        $type = $request->get('type'); // parts, materials
+        $perPage = (int) $request->get('per_page', 20);
+        $page = (int) $request->get('page', 1);
 
         $query = \App\Models\WarehouseItem::with('category')
             ->where('is_active', true);
 
-        // TODO: Реализовать фильтрацию по типу, если в категориях есть поле type
-        // Пока возвращаем все активные товары
-        $items = $query->orderBy('name')->get();
+        // Поиск по названию или артикулу
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('article', 'like', "%{$search}%")
+                    ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                        $categoryQuery->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $items = $query->orderBy('name')->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'items' => $items,
+            'items' => $items->items(),
+            'pagination' => [
+                'current_page' => $items->currentPage(),
+                'last_page' => $items->lastPage(),
+                'per_page' => $items->perPage(),
+                'total' => $items->total(),
+                'from' => $items->firstItem(),
+                'to' => $items->lastItem(),
+            ],
         ]);
     }
 
@@ -548,6 +604,20 @@ class PosController extends Controller
             return response()->json(['message' => 'Work not found'], 404);
         }
 
+        // Получаем материалы работы перед удалением для снятия резерва
+        $workMaterials = $work->warehouseItems()->get();
+        
+        // Снимаем резерв со всех материалов, если заказ еще не завершен
+        if (!in_array($order->status, [Order::STATUS_READY, Order::STATUS_ISSUED])) {
+            foreach ($workMaterials as $material) {
+                $warehouseItem = \App\Models\WarehouseItem::find($material->id);
+                if ($warehouseItem) {
+                    $quantityToRelease = $material->pivot->quantity;
+                    $warehouseItem->releaseReserve($quantityToRelease);
+                }
+            }
+        }
+
         $work->update(['is_deleted' => 1]);
 
         return response()->json(['message' => 'Work deleted successfully']);
@@ -634,22 +704,41 @@ class PosController extends Controller
         ]);
 
         $warehouseItem = \App\Models\WarehouseItem::find($request->warehouse_item_id);
-        
+
         if (!$warehouseItem || !$warehouseItem->is_active) {
             return response()->json(['message' => 'Warehouse item not found or inactive'], 404);
         }
 
         // Проверяем наличие на складе
-        if ($warehouseItem->available_quantity < $request->quantity) {
+        $neededQuantity = $request->quantity;
+        
+        // Проверяем, был ли материал уже добавлен к этой работе
+        $existingPivot = $work->warehouseItems()->where('warehouse_items.id', $request->warehouse_item_id)->first();
+        if ($existingPivot) {
+            // Если материал уже добавлен, нужно снять старый резерв и зарезервировать новое количество
+            $oldQuantity = $existingPivot->pivot->quantity;
+            // Снимаем старый резерв
+            $warehouseItem->releaseReserve($oldQuantity);
+            $neededQuantity = $request->quantity; // Новое количество
+        }
+        
+        if ($warehouseItem->available_quantity < $neededQuantity) {
             return response()->json([
                 'message' => 'Not enough stock. Available: ' . $warehouseItem->available_quantity,
+            ], 400);
+        }
+
+        // Резервируем товар на складе
+        if (!$warehouseItem->reserve($neededQuantity)) {
+            return response()->json([
+                'message' => 'Failed to reserve item. Available: ' . $warehouseItem->available_quantity,
             ], 400);
         }
 
         // Используем цену из запроса или из товара
         $price = $request->price ?? $warehouseItem->price;
 
-        // Присоединяем материал к работе
+        // Присоединяем материал к работе (syncWithoutDetaching обновит существующую связь)
         $work->warehouseItems()->syncWithoutDetaching([
             $request->warehouse_item_id => [
                 'quantity' => $request->quantity,
@@ -663,6 +752,9 @@ class PosController extends Controller
             \Illuminate\Support\Facades\DB::raw('work_warehouse_items.quantity * work_warehouse_items.price')
         );
         $work->update(['materials_cost' => $totalMaterialsCost]);
+
+        // Обновляем данные товара
+        $warehouseItem->refresh();
 
         return response()->json([
             'message' => 'Material added successfully',
@@ -702,6 +794,20 @@ class PosController extends Controller
 
         if (!$work) {
             return response()->json(['message' => 'Work not found'], 404);
+        }
+
+        // Находим материал перед удалением для снятия резерва
+        $material = $work->warehouseItems()->where('warehouse_items.id', $materialId)->first();
+        
+        if ($material) {
+            $quantityToRelease = $material->pivot->quantity;
+            $warehouseItem = \App\Models\WarehouseItem::find($materialId);
+            
+            // Снимаем резерв только если заказ еще не завершен
+            // Если заказ в статусе ready/issued, товар уже списан и резерв не нужно снимать
+            if ($warehouseItem && !in_array($order->status, [Order::STATUS_READY, Order::STATUS_ISSUED])) {
+                $warehouseItem->releaseReserve($quantityToRelease);
+            }
         }
 
         $work->warehouseItems()->detach($materialId);

@@ -1,10 +1,16 @@
 <template>
     <div class="order-card">
-        <div class="order-card-content" @click="$emit('view-details', order.id)">
+        <div
+            class="order-card-content"
+            @click="$emit('view-details', order.id)"
+        >
             <div class="order-header">
                 <span class="order-number">{{ order.order_number }}</span>
                 <div class="order-header-badges">
-                    <span class="order-status" :class="getStatusClass(order.status)">
+                    <span
+                        class="order-status"
+                        :class="getStatusClass(order.status)"
+                    >
                         {{ getStatusLabel(order.status) }}
                     </span>
                     <span
@@ -17,33 +23,57 @@
             </div>
             <div class="order-info">
                 <div class="info-row">
-                    <p><strong>Клиент:</strong> {{ order.client?.full_name }}</p>
+                    <p>
+                        <strong>Клиент:</strong> {{ order.client?.full_name }}
+                    </p>
                     <p v-if="order.client?.phone">
                         <strong>Телефон:</strong> {{ order.client.phone }}
                     </p>
                 </div>
                 <div class="info-row">
-                    <p><strong>Тип:</strong> {{ getTypeLabel(order.service_type) }}</p>
+                    <p>
+                        <strong>Тип:</strong>
+                        {{ getTypeLabel(order.service_type) }}
+                    </p>
                     <p v-if="order.branch?.name">
                         <strong>Филиал:</strong> {{ order.branch.name }}
                     </p>
                 </div>
                 <div v-if="order.equipment_name" class="info-row">
-                    <p><strong>Оборудование:</strong> {{ order.equipment_name }}</p>
+                    <p>
+                        <strong>Оборудование:</strong>
+                        {{ order.equipment_name }}
+                    </p>
                     <p v-if="order.equipment_serial_number">
-                        <strong>Серийный №:</strong> {{ order.equipment_serial_number }}
+                        <strong>Серийный №:</strong>
+                        {{ order.equipment_serial_number }}
                     </p>
                 </div>
                 <div class="info-row">
-                    <p><strong>Дата создания:</strong> {{ formatDate(order.created_at) }}</p>
-                    <p v-if="order.estimated_price || order.actual_price" class="price-info">
-                        <strong>Цена:</strong> 
-                        <span class="price-value">{{ formatPrice(order.actual_price || order.estimated_price) }} ₽</span>
+                    <p>
+                        <strong>Дата создания:</strong>
+                        {{ formatDate(order.created_at) }}
+                    </p>
+                    <p
+                        v-if="order.estimated_price || order.actual_price"
+                        class="price-info"
+                    >
+                        <strong>Цена:</strong>
+                        <span class="price-value"
+                            >{{
+                                formatPrice(
+                                    order.actual_price || order.estimated_price
+                                )
+                            }}
+                            ₽</span
+                        >
                     </p>
                 </div>
                 <div v-if="order.problem_description" class="problem-preview">
                     <p><strong>Проблема:</strong></p>
-                    <p class="problem-text">{{ truncateText(order.problem_description, 100) }}</p>
+                    <p class="problem-text">
+                        {{ truncateText(order.problem_description, 100) }}
+                    </p>
                 </div>
             </div>
         </div>
@@ -56,7 +86,9 @@
                     class="btn-primary-action"
                     :class="primaryActionClass"
                 >
-                    <span v-if="isLoading?.[order.id]">{{ primaryActionLoadingText }}</span>
+                    <span v-if="isLoading?.[order.id]">{{
+                        primaryActionLoadingText
+                    }}</span>
                     <span v-else>{{ primaryActionText }}</span>
                 </button>
             </slot>

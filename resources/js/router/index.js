@@ -82,14 +82,9 @@ const routes = [
                 component: () => import("../pages/Pos/OrdersCompletedPage.vue"),
             },
             {
-                path: "warehouse/parts",
-                name: "pos.warehouse.parts",
-                component: () => import("../pages/Pos/WarehousePartsPage.vue"),
-            },
-            {
-                path: "warehouse/materials",
-                name: "pos.warehouse.materials",
-                component: () => import("../pages/Pos/WarehouseMaterialsPage.vue"),
+                path: "warehouse",
+                name: "pos.warehouse.index",
+                component: () => import("../pages/Pos/WarehousePage.vue"),
             },
             {
                 path: "settings/profile",

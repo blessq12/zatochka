@@ -56,7 +56,8 @@ export default {
         const selectedOrderId = ref(null);
         const isUpdatingStatus = reactive({});
         const posStore = usePosStore();
-        const { setNavigationItems, setCustomContent, reset } = useHeaderNavigation();
+        const { setNavigationItems, setCustomContent, reset } =
+            useHeaderNavigation();
 
         const fetchOrders = async () => {
             isLoading.value = true;
@@ -76,16 +77,17 @@ export default {
             try {
                 await orderService.updateOrderStatus(orderId, "in_work");
                 toastService.success("Заказ взят в работу");
-                
+
                 // Обновляем список заказов
                 await fetchOrders();
-                
+
                 // Обновляем счетчики
                 await posStore.getOrdersCount();
             } catch (error) {
                 console.error("Error updating order status:", error);
                 toastService.error(
-                    error.response?.data?.message || "Ошибка при изменении статуса заказа"
+                    error.response?.data?.message ||
+                        "Ошибка при изменении статуса заказа"
                 );
             } finally {
                 isUpdatingStatus[orderId] = false;

@@ -9,6 +9,8 @@ use App\Filament\Resources\MasterResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PriceItemResource;
 use App\Filament\Resources\UserResource;
+use App\Filament\Resources\WarehouseCategoryResource;
+use App\Filament\Resources\WarehouseItemResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -70,6 +72,9 @@ class AdminPanelProvider extends PanelProvider
                 MasterResource::class,
                 // Справочники
                 PriceItemResource::class,
+                // Склад
+                WarehouseCategoryResource::class,
+                WarehouseItemResource::class,
             ])
             ->middleware([
                 EncryptCookies::class,

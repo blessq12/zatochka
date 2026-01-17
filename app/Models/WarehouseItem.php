@@ -33,6 +33,77 @@ class WarehouseItem extends Model
     ];
 
     /**
+     * Генерирует уникальный артикул товара
+     */
+    public static function generateArticle(): string
+    {
+        $prefix = 'ART';
+        $maxAttempts = 100;
+        $attempt = 0;
+
+        do {
+            // Генерируем артикул: ART-YYYYMMDD-NNNN
+            $date = date('Ymd');
+            $count = static::whereDate('created_at', today())->count() + 1;
+            $article = $prefix . '-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+
+            // Проверяем уникальность
+            $exists = static::where('article', $article)->exists();
+            $attempt++;
+
+            if (!$exists) {
+                return $article;
+            }
+
+            // Если артикул существует, увеличиваем счетчик
+            $count++;
+        } while ($attempt < $maxAttempts);
+
+        // Если не удалось за 100 попыток, добавляем случайное число
+        return $prefix . '-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT) . '-' . rand(100, 999);
+    }
+
+    /**
+     * Boot метод для автоматической генерации артикула и форматирования названия
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($item) {
+            if (empty($item->article)) {
+                $item->article = static::generateArticle();
+            }
+            // Делаем первую букву названия заглавной
+            if (!empty($item->name)) {
+                $item->name = static::capitalizeFirstLetter($item->name);
+            }
+        });
+
+        static::updating(function ($item) {
+            // Делаем первую букву названия заглавной при обновлении
+            if ($item->isDirty('name') && !empty($item->name)) {
+                $item->name = static::capitalizeFirstLetter($item->name);
+            }
+        });
+    }
+
+    /**
+     * Делает первую букву строки заглавной (поддержка UTF-8)
+     */
+    protected static function capitalizeFirstLetter(string $string): string
+    {
+        if (empty($string)) {
+            return $string;
+        }
+
+        $firstChar = mb_substr($string, 0, 1, 'UTF-8');
+        $rest = mb_substr($string, 1, null, 'UTF-8');
+        
+        return mb_strtoupper($firstChar, 'UTF-8') . mb_strtolower($rest, 'UTF-8');
+    }
+
+    /**
      * Связь с категорией
      */
     public function category()
@@ -137,7 +208,7 @@ class WarehouseItem extends Model
 
         $this->reserved_quantity -= $fromReserve;
         $this->quantity -= $fromQuantity;
-        
+
         return $this->save();
     }
 

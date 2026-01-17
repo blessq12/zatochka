@@ -3,7 +3,7 @@
         <div class="page-header">
             <h1>Расходные материалы</h1>
         </div>
-        
+
         <!-- Строка поиска -->
         <div class="search-section">
             <input
@@ -18,7 +18,9 @@
             <!-- Результаты -->
             <div v-if="isLoading" class="loading">Загрузка...</div>
             <div v-else-if="filteredItems.length === 0" class="empty-state">
-                <p v-if="searchQuery">Ничего не найдено по запросу "{{ searchQuery }}"</p>
+                <p v-if="searchQuery">
+                    Ничего не найдено по запросу "{{ searchQuery }}"
+                </p>
                 <p v-else>Расходных материалов нет</p>
             </div>
             <div v-else class="items-list">
@@ -29,12 +31,17 @@
                 >
                     <div class="item-header">
                         <span class="item-name">{{ item.name }}</span>
-                        <span class="item-quantity">{{ item.quantity }} {{ item.unit }}</span>
+                        <span class="item-quantity"
+                            >{{ item.quantity }} {{ item.unit }}</span
+                        >
                     </div>
                     <div class="item-info">
-                        <p v-if="item.sku"><strong>Артикул:</strong> {{ item.sku }}</p>
+                        <p v-if="item.sku">
+                            <strong>Артикул:</strong> {{ item.sku }}
+                        </p>
                         <p v-if="item.retail_price">
-                            <strong>Цена:</strong> {{ formatPrice(item.retail_price) }} ₽
+                            <strong>Цена:</strong>
+                            {{ formatPrice(item.retail_price) }} ₽
                         </p>
                     </div>
                 </div>
@@ -69,7 +76,9 @@ export default {
             const query = searchQuery.value.trim().toLowerCase();
             return items.value.filter((item) => {
                 const nameMatch = item.name?.toLowerCase().includes(query);
-                const articleMatch = item.article?.toLowerCase().includes(query);
+                const articleMatch = item.article
+                    ?.toLowerCase()
+                    .includes(query);
                 return nameMatch || articleMatch;
             });
         });

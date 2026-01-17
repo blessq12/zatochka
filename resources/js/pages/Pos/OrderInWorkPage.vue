@@ -16,54 +16,86 @@
                         <button
                             @click="setInWorkStatus"
                             class="btn-in-work"
-                            :disabled="isChangingStatus || order.status === 'in_work'"
+                            :disabled="
+                                isChangingStatus || order.status === 'in_work'
+                            "
                         >
-                            <span v-if="isChangingStatus && changingToStatus === 'in_work'">Сохранение...</span>
+                            <span
+                                v-if="
+                                    isChangingStatus &&
+                                    changingToStatus === 'in_work'
+                                "
+                                >Сохранение...</span
+                            >
                             <span v-else>В работе</span>
                         </button>
                         <button
                             @click="setWaitingPartsStatus"
                             class="btn-waiting-parts"
-                            :disabled="isChangingStatus || order.status === 'waiting_parts'"
+                            :disabled="
+                                isChangingStatus ||
+                                order.status === 'waiting_parts'
+                            "
                         >
-                            <span v-if="isChangingStatus && changingToStatus === 'waiting_parts'">Сохранение...</span>
+                            <span
+                                v-if="
+                                    isChangingStatus &&
+                                    changingToStatus === 'waiting_parts'
+                                "
+                                >Сохранение...</span
+                            >
                             <span v-else>Ожидание запчастей</span>
                         </button>
                         <button
                             @click="completeOrder"
                             class="btn-complete"
-                            :disabled="isCompletingOrder || order.status === 'ready'"
+                            :disabled="
+                                isCompletingOrder || order.status === 'ready'
+                            "
                         >
                             <span v-if="isCompletingOrder">Сохранение...</span>
                             <span v-else>Завершить заказ</span>
                         </button>
-                        <router-link :to="{ name: 'pos.orders.active' }" class="btn-back">
+                        <router-link
+                            :to="{ name: 'pos.orders.active' }"
+                            class="btn-back"
+                        >
                             ← Назад
                         </router-link>
                     </div>
                 </div>
-                
+
                 <!-- Краткая информация о заказе (аналогично модалке, но упрощенно) -->
                 <div class="order-summary">
                     <div class="summary-row">
                         <span class="summary-label">Клиент:</span>
-                        <span class="summary-value">{{ order.client?.full_name || "—" }}</span>
+                        <span class="summary-value">{{
+                            order.client?.full_name || "—"
+                        }}</span>
                     </div>
                     <div class="summary-row">
                         <span class="summary-label">Телефон:</span>
-                        <span class="summary-value">{{ order.client?.phone || "—" }}</span>
+                        <span class="summary-value">{{
+                            order.client?.phone || "—"
+                        }}</span>
                     </div>
                     <div class="summary-row">
                         <span class="summary-label">Тип услуги:</span>
-                        <span class="summary-value">{{ getTypeLabel(order.service_type) }}</span>
+                        <span class="summary-value">{{
+                            getTypeLabel(order.service_type)
+                        }}</span>
                     </div>
                     <div class="summary-row" v-if="order.equipment_name">
                         <span class="summary-label">Оборудование:</span>
-                        <span class="summary-value">{{ order.equipment_name }}</span>
+                        <span class="summary-value">{{
+                            order.equipment_name
+                        }}</span>
                     </div>
                     <div class="summary-row" v-if="order.problem_description">
                         <span class="summary-label">Проблема:</span>
-                        <span class="summary-value">{{ order.problem_description }}</span>
+                        <span class="summary-value">{{
+                            order.problem_description
+                        }}</span>
                     </div>
                 </div>
 
@@ -74,12 +106,16 @@
                     </div>
                     <div class="comments-list" v-if="order.internal_notes">
                         <div class="comment-item">
-                            <div class="comment-content">{{ order.internal_notes }}</div>
+                            <div class="comment-content">
+                                {{ order.internal_notes }}
+                            </div>
                         </div>
                     </div>
                     <form @submit.prevent="saveComment" class="comment-form">
                         <div class="form-group">
-                            <label class="form-label">Добавить комментарий</label>
+                            <label class="form-label"
+                                >Добавить комментарий</label
+                            >
                             <textarea
                                 v-model="commentForm.internal_notes"
                                 class="form-textarea"
@@ -87,7 +123,11 @@
                                 placeholder="Введите комментарий к заказу..."
                             ></textarea>
                         </div>
-                        <button type="submit" class="btn-primary btn-save-comment" :disabled="isSavingComment">
+                        <button
+                            type="submit"
+                            class="btn-primary btn-save-comment"
+                            :disabled="isSavingComment"
+                        >
                             <span v-if="isSavingComment">Сохранение...</span>
                             <span v-else>Сохранить комментарий</span>
                         </button>
@@ -103,14 +143,15 @@
 
                 <!-- Список работ -->
                 <div v-if="worksLoading" class="loading">Загрузка работ...</div>
-                <div v-if="!worksLoading && works.length > 0" class="works-list">
-                    <div
-                        v-for="work in works"
-                        :key="work.id"
-                        class="work-item"
-                    >
+                <div
+                    v-if="!worksLoading && works.length > 0"
+                    class="works-list"
+                >
+                    <div v-for="work in works" :key="work.id" class="work-item">
                         <div class="work-header">
-                            <span class="work-price">{{ formatPrice(work.work_price || 0) }} ₽</span>
+                            <span class="work-price"
+                                >{{ formatPrice(work.work_price || 0) }} ₽</span
+                            >
                             <button
                                 @click="deleteWork(work.id)"
                                 class="btn-delete"
@@ -119,7 +160,9 @@
                                 Удалить
                             </button>
                         </div>
-                        <div class="work-description">{{ work.description }}</div>
+                        <div class="work-description">
+                            {{ work.description }}
+                        </div>
                     </div>
                 </div>
 
@@ -128,7 +171,9 @@
                     <form @submit.prevent="addWork" class="work-form">
                         <div class="form-row-inline">
                             <div class="form-group flex-1">
-                                <label class="form-label">Описание работы *</label>
+                                <label class="form-label"
+                                    >Описание работы *</label
+                                >
                                 <input
                                     v-model="workForm.description"
                                     type="text"
@@ -150,7 +195,11 @@
                                 />
                             </div>
                         </div>
-                        <button type="submit" class="btn-primary btn-add-work" :disabled="isAddingWork">
+                        <button
+                            type="submit"
+                            class="btn-primary btn-add-work"
+                            :disabled="isAddingWork"
+                        >
                             <span v-if="isAddingWork">Сохранение...</span>
                             <span v-else>+ Добавить работу</span>
                         </button>
@@ -165,26 +214,56 @@
                 </div>
 
                 <!-- Список материалов -->
-                <div v-if="materialsLoading" class="loading">Загрузка материалов...</div>
-                <div v-if="!materialsLoading && materials.length > 0" class="materials-list">
+                <div v-if="materialsLoading" class="loading">
+                    Загрузка материалов...
+                </div>
+                <div
+                    v-if="!materialsLoading && materials.length > 0"
+                    class="materials-list"
+                >
                     <div
                         v-for="material in materials"
                         :key="`${material.work_id}-${material.warehouse_item_id}`"
                         class="material-item"
                     >
                         <div class="material-info">
-                            <span class="material-name">{{ material.name }}</span>
-                            <span v-if="material.article" class="material-article">Арт: {{ material.article }}</span>
+                            <span class="material-name">{{
+                                material.name
+                            }}</span>
+                            <span
+                                v-if="material.article"
+                                class="material-article"
+                                >Арт: {{ material.article }}</span
+                            >
                         </div>
                         <div class="material-details">
                             <span>Количество: {{ material.quantity }}</span>
-                            <span>Цена: {{ formatPrice(material.price) }} ₽</span>
-                            <span>Сумма: {{ formatPrice(material.quantity * material.price) }} ₽</span>
+                            <span
+                                >Цена: {{ formatPrice(material.price) }} ₽</span
+                            >
+                            <span
+                                >Сумма:
+                                {{
+                                    formatPrice(
+                                        material.quantity * material.price
+                                    )
+                                }}
+                                ₽</span
+                            >
                         </div>
                         <button
-                            @click="removeMaterial(material.work_id, material.warehouse_item_id)"
+                            @click="
+                                removeMaterial(
+                                    material.work_id,
+                                    material.warehouse_item_id
+                                )
+                            "
                             class="btn-delete"
-                            :disabled="isRemovingMaterial[`${material.work_id}-${material.warehouse_item_id}`]"
+                            :disabled="
+                                isRemovingMaterial[
+                                    `${material.work_id}-${material.warehouse_item_id}`
+                                ]
+                            "
                         >
                             Удалить
                         </button>
@@ -194,68 +273,132 @@
                 <!-- Форма добавления материала -->
                 <div class="add-material-form">
                     <form @submit.prevent="addMaterial" class="material-form">
-                        <div class="form-row-inline">
-                            <div class="form-group flex-1">
-                                <label class="form-label">Поиск *</label>
-                                <div class="search-wrapper">
-                                    <input
-                                        v-model="materialSearchQuery"
-                                        type="text"
-                                        class="form-input"
-                                        placeholder="Введите название материала/запчасти"
-                                        @input="handleMaterialSearch"
-                                        @focus="showMaterialResults = materialSearchResults.length > 0"
-                                        @blur="setTimeout(() => { showMaterialResults = false; }, 200)"
-                                    />
-                                    <input
-                                        v-model="materialForm.warehouse_item_id"
-                                        type="hidden"
-                                    />
-                                    <div
-                                        v-if="showMaterialResults && materialSearchResults.length > 0"
-                                        class="search-results"
-                                    >
-                                        <div
-                                            v-for="item in materialSearchResults"
-                                            :key="item.id"
-                                            class="search-result-item"
-                                            @mousedown.prevent="selectMaterial(item)"
-                                        >
-                                            <div class="result-name">{{ item.name }}</div>
-                                            <div class="result-details">
-                                                <span v-if="item.article">Арт: {{ item.article }}</span>
-                                                <span>Доступно: {{ (item.quantity - item.reserved_quantity) || 0 }} {{ item.unit }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div
-                                        v-if="showMaterialResults && materialSearchQuery && materialSearchResults.length === 0"
-                                        class="search-results"
-                                    >
-                                        <div class="search-result-item no-results">
-                                            Ничего не найдено
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="material-form-row">
+                            <div class="material-form-search">
+                                <label class="form-label">Материал или запчасть *</label>
+                                <button
+                                    type="button"
+                                    class="btn-select-material"
+                                    @click="openMaterialSearchModal"
+                                >
+                                    <span v-if="selectedMaterialName">
+                                        {{ selectedMaterialName }}
+                                    </span>
+                                    <span v-else class="placeholder-text">
+                                        Выберите материал...
+                                    </span>
+                                    <span class="btn-select-arrow">▼</span>
+                                </button>
+                                <input
+                                    v-model="materialForm.warehouse_item_id"
+                                    type="hidden"
+                                />
                             </div>
-                            <div class="form-group form-group-quantity">
+                            <div class="material-form-quantity">
                                 <label class="form-label">Количество *</label>
                                 <input
                                     v-model.number="materialForm.quantity"
                                     type="number"
                                     step="0.001"
                                     min="0.001"
-                                    class="form-input"
-                                    placeholder="1"
+                                    class="form-input quantity-input"
+                                    placeholder="1.000"
                                     required
                                 />
                             </div>
                         </div>
-                        <button type="submit" class="btn-primary btn-add-material" :disabled="isAddingMaterial">
+                        <button
+                            type="submit"
+                            class="btn-primary btn-add-material"
+                            :disabled="isAddingMaterial || !materialForm.warehouse_item_id"
+                        >
                             <span v-if="isAddingMaterial">Сохранение...</span>
                             <span v-else>+ Добавить запчасть/материал</span>
                         </button>
                     </form>
+                </div>
+
+                <!-- Модалка поиска материалов -->
+                <div
+                    v-if="showMaterialSearchModal"
+                    class="modal-overlay"
+                    @click.self="closeMaterialSearchModal"
+                >
+                    <div class="modal-container material-search-modal">
+                        <div class="modal-header">
+                            <h2 class="modal-title">Поиск материала</h2>
+                            <button
+                                @click="closeMaterialSearchModal"
+                                class="modal-close-btn"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="search-input-wrapper">
+                                <input
+                                    v-model="materialSearchQuery"
+                                    type="text"
+                                    class="form-input search-input-full"
+                                    placeholder="Введите название материала или артикул..."
+                                    @input="handleMaterialSearch"
+                                    autofocus
+                                />
+                                <div v-if="isSearching" class="search-loading">
+                                    Поиск...
+                                </div>
+                            </div>
+
+                            <div
+                                v-if="materialSearchResults.length > 0"
+                                class="search-results-list"
+                            >
+                                <div
+                                    v-for="item in materialSearchResults"
+                                    :key="item.id"
+                                    class="search-result-item-modal"
+                                    @click="selectMaterialFromModal(item)"
+                                >
+                                    <div class="result-header">
+                                        <div class="result-name">{{ item.name }}</div>
+                                        <div v-if="item.article" class="result-article">
+                                            Арт: {{ item.article }}
+                                        </div>
+                                    </div>
+                                    <div class="result-footer">
+                                        <span class="result-category">
+                                            {{ item.category?.name || "—" }}
+                                        </span>
+                                        <span class="result-available">
+                                            Доступно:
+                                            {{
+                                                item.quantity - item.reserved_quantity || 0
+                                            }}
+                                            {{ item.unit }}
+                                        </span>
+                                        <span class="result-price" v-if="item.price">
+                                            {{ formatPrice(item.price) }} ₽
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                v-else-if="
+                                    materialSearchQuery.trim() &&
+                                    !isSearching
+                                "
+                                class="no-results-message"
+                            >
+                                Ничего не найдено
+                            </div>
+                            <div
+                                v-else-if="!materialSearchQuery.trim()"
+                                class="no-results-message"
+                            >
+                                Введите название материала или артикул для поиска
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -266,6 +409,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { orderService } from "../../services/pos/OrderService.js";
+import { warehouseService } from "../../services/pos/WarehouseService.js";
 import { usePosStore } from "../../stores/posStore.js";
 import axios from "axios";
 import { toastService } from "../../services/toastService.js";
@@ -297,7 +441,10 @@ export default {
 
         const materialSearchQuery = ref("");
         const materialSearchResults = ref([]);
-        const showMaterialResults = ref(false);
+        const showMaterialSearchModal = ref(false);
+        const selectedMaterialName = ref("");
+        const isSearching = ref(false);
+        let searchDebounceTimer = null;
 
         const isAddingWork = ref(false);
         const isAddingMaterial = ref(false);
@@ -315,7 +462,9 @@ export default {
         const fetchOrder = async () => {
             isLoading.value = true;
             try {
-                const orderData = await orderService.getOrderById(orderId.value);
+                const orderData = await orderService.getOrderById(
+                    orderId.value
+                );
                 order.value = orderData;
             } catch (error) {
                 console.error("Error fetching order:", error);
@@ -328,7 +477,9 @@ export default {
         const fetchWorks = async () => {
             worksLoading.value = true;
             try {
-                const response = await axios.get(`/api/pos/orders/${orderId.value}/works`);
+                const response = await axios.get(
+                    `/api/pos/orders/${orderId.value}/works`
+                );
                 works.value = response.data.works || [];
             } catch (error) {
                 console.error("Error fetching works:", error);
@@ -341,7 +492,9 @@ export default {
         const fetchMaterials = async () => {
             materialsLoading.value = true;
             try {
-                const response = await axios.get(`/api/pos/orders/${orderId.value}/materials`);
+                const response = await axios.get(
+                    `/api/pos/orders/${orderId.value}/materials`
+                );
                 materials.value = response.data.materials || [];
             } catch (error) {
                 console.error("Error fetching materials:", error);
@@ -360,56 +513,78 @@ export default {
             }
         };
 
-        const handleMaterialSearch = () => {
-            const query = materialSearchQuery.value.trim().toLowerCase();
-            
+        const handleMaterialSearch = async () => {
+            const query = materialSearchQuery.value.trim();
+
+            // Очищаем предыдущий таймер
+            if (searchDebounceTimer) {
+                clearTimeout(searchDebounceTimer);
+            }
+
             if (!query) {
                 materialSearchResults.value = [];
-                showMaterialResults.value = false;
-                materialForm.warehouse_item_id = "";
                 return;
             }
 
-            // Фильтруем товары по запросу
-            const results = warehouseItems.value
-                .filter((item) => {
-                    const nameMatch = item.name.toLowerCase().includes(query);
-                    const articleMatch = item.article && item.article.toLowerCase().includes(query);
-                    return nameMatch || articleMatch;
-                })
-                .slice(0, 5); // Максимум 5 результатов
+            // Дебаунс поиска - ждем 300мс после последнего ввода
+            searchDebounceTimer = setTimeout(async () => {
+                isSearching.value = true;
+                try {
+                    // Ищем через API по всем элементам склада
+                    const result = await warehouseService.getAllItems(
+                        1,
+                        50, // Лимит для модалки
+                        query
+                    );
 
-            materialSearchResults.value = results;
-            showMaterialResults.value = true;
-
-            // Если результат один и точно совпадает - выбираем его автоматически
-            if (results.length === 1 && results[0].name.toLowerCase() === query) {
-                selectMaterial(results[0]);
-            }
+                    materialSearchResults.value = result.items;
+                } catch (error) {
+                    console.error("Error searching materials:", error);
+                    materialSearchResults.value = [];
+                } finally {
+                    isSearching.value = false;
+                }
+            }, 300);
         };
 
-        const selectMaterial = (item) => {
+        const openMaterialSearchModal = () => {
+            showMaterialSearchModal.value = true;
+            materialSearchQuery.value = "";
+            materialSearchResults.value = [];
+        };
+
+        const closeMaterialSearchModal = () => {
+            showMaterialSearchModal.value = false;
+            materialSearchQuery.value = "";
+            materialSearchResults.value = [];
+        };
+
+        const selectMaterialFromModal = (item) => {
             materialForm.warehouse_item_id = item.id;
-            materialSearchQuery.value = item.name;
-            showMaterialResults.value = false;
+            selectedMaterialName.value = item.name;
+            closeMaterialSearchModal();
         };
 
         const addWork = async () => {
             isAddingWork.value = true;
             try {
-                await axios.post(`/api/pos/orders/${orderId.value}/works`, workForm);
+                await axios.post(
+                    `/api/pos/orders/${orderId.value}/works`,
+                    workForm
+                );
                 toastService.success("Работа добавлена");
-                
+
                 // Очищаем форму
                 workForm.description = "";
                 workForm.work_price = null;
-                
+
                 // Обновляем список работ
                 await fetchWorks();
             } catch (error) {
                 console.error("Error adding work:", error);
                 toastService.error(
-                    error.response?.data?.message || "Ошибка при добавлении работы"
+                    error.response?.data?.message ||
+                        "Ошибка при добавлении работы"
                 );
             } finally {
                 isAddingWork.value = false;
@@ -421,7 +596,9 @@ export default {
 
             isDeletingWork[workId] = true;
             try {
-                await axios.delete(`/api/pos/orders/${orderId.value}/works/${workId}`);
+                await axios.delete(
+                    `/api/pos/orders/${orderId.value}/works/${workId}`
+                );
                 toastService.success("Работа удалена");
                 await fetchWorks();
                 await fetchMaterials(); // Обновляем материалы, так как они привязаны к работам
@@ -439,27 +616,14 @@ export default {
                 return;
             }
 
-            // Используем первую работу, если есть, иначе создаем новую работу
-            let workId = null;
-            
+            // Проверяем наличие работ
             if (works.value.length === 0) {
-                // Создаем работу автоматически
-                try {
-                    const workResponse = await axios.post(`/api/pos/orders/${orderId.value}/works`, {
-                        description: "Работа с материалами",
-                        work_price: 0,
-                    });
-                    workId = workResponse.data.work.id;
-                    await fetchWorks(); // Обновляем список работ
-                } catch (error) {
-                    console.error("Error creating work:", error);
-                    toastService.error("Ошибка при создании работы");
-                    return;
-                }
-            } else {
-                // Используем первую работу
-                workId = works.value[0].id;
+                toastService.error("Сначала добавьте работу к заказу");
+                return;
             }
+
+            // Используем первую работу
+            const workId = works.value[0].id;
 
             isAddingMaterial.value = true;
             try {
@@ -471,21 +635,20 @@ export default {
                     }
                 );
                 toastService.success("Материал добавлен");
-                
+
                 // Очищаем форму
                 materialForm.warehouse_item_id = "";
                 materialForm.quantity = 1;
-                materialSearchQuery.value = "";
-                materialSearchResults.value = [];
-                showMaterialResults.value = false;
-                
+                selectedMaterialName.value = "";
+
                 // Обновляем список материалов
                 await fetchMaterials();
                 await fetchWarehouseItems(); // Обновляем остатки на складе
             } catch (error) {
                 console.error("Error adding material:", error);
                 toastService.error(
-                    error.response?.data?.message || "Ошибка при добавлении материала"
+                    error.response?.data?.message ||
+                        "Ошибка при добавлении материала"
                 );
             } finally {
                 isAddingMaterial.value = false;
@@ -522,17 +685,18 @@ export default {
             try {
                 await orderService.updateOrderStatus(orderId.value, "in_work");
                 toastService.success("Заказ переведен в работу");
-                
+
                 // Обновляем данные заказа
                 await fetchOrder();
-                
+
                 // Обновляем счетчики заказов
                 const posStore = usePosStore();
                 await posStore.getOrdersCount();
             } catch (error) {
                 console.error("Error updating order status:", error);
                 toastService.error(
-                    error.response?.data?.message || "Ошибка при изменении статуса заказа"
+                    error.response?.data?.message ||
+                        "Ошибка при изменении статуса заказа"
                 );
             } finally {
                 isChangingStatus.value = false;
@@ -548,19 +712,23 @@ export default {
             isChangingStatus.value = true;
             changingToStatus.value = "waiting_parts";
             try {
-                await orderService.updateOrderStatus(orderId.value, "waiting_parts");
+                await orderService.updateOrderStatus(
+                    orderId.value,
+                    "waiting_parts"
+                );
                 toastService.success("Заказ переведен в ожидание запчастей");
-                
+
                 // Обновляем данные заказа
                 await fetchOrder();
-                
+
                 // Обновляем счетчики заказов
                 const posStore = usePosStore();
                 await posStore.getOrdersCount();
             } catch (error) {
                 console.error("Error updating order status:", error);
                 toastService.error(
-                    error.response?.data?.message || "Ошибка при изменении статуса заказа"
+                    error.response?.data?.message ||
+                        "Ошибка при изменении статуса заказа"
                 );
             } finally {
                 isChangingStatus.value = false;
@@ -575,16 +743,17 @@ export default {
                     internal_notes: commentForm.internal_notes,
                 });
                 toastService.success("Комментарий сохранен");
-                
+
                 // Обновляем данные заказа
                 await fetchOrder();
-                
+
                 // Очищаем форму после сохранения
                 commentForm.internal_notes = "";
             } catch (error) {
                 console.error("Error saving comment:", error);
                 toastService.error(
-                    error.response?.data?.message || "Ошибка при сохранении комментария"
+                    error.response?.data?.message ||
+                        "Ошибка при сохранении комментария"
                 );
             } finally {
                 isSavingComment.value = false;
@@ -592,7 +761,11 @@ export default {
         };
 
         const completeOrder = async () => {
-            if (!confirm("Завершить заказ? Заказ будет переведен в статус 'Готов'.")) {
+            if (
+                !confirm(
+                    "Завершить заказ? Заказ будет переведен в статус 'Готов'."
+                )
+            ) {
                 return;
             }
 
@@ -600,14 +773,14 @@ export default {
             try {
                 await orderService.updateOrderStatus(orderId.value, "ready");
                 toastService.success("Заказ завершен");
-                
+
                 // Обновляем данные заказа
                 await fetchOrder();
-                
+
                 // Обновляем счетчики заказов
                 const posStore = usePosStore();
                 await posStore.getOrdersCount();
-                
+
                 // Перенаправляем на страницу активных заказов через небольшую задержку
                 setTimeout(() => {
                     router.push({ name: "pos.orders.active" });
@@ -615,13 +788,13 @@ export default {
             } catch (error) {
                 console.error("Error completing order:", error);
                 toastService.error(
-                    error.response?.data?.message || "Ошибка при завершении заказа"
+                    error.response?.data?.message ||
+                        "Ошибка при завершении заказа"
                 );
             } finally {
                 isCompletingOrder.value = false;
             }
         };
-
 
         // Следим за изменениями заказа и обновляем форму комментариев
         const updateCommentForm = () => {
@@ -637,7 +810,7 @@ export default {
                 fetchMaterials(),
                 fetchWarehouseItems(),
             ]);
-            
+
             // Заполняем форму комментариев существующим значением
             updateCommentForm();
         });
@@ -654,9 +827,13 @@ export default {
             materialForm,
             materialSearchQuery,
             materialSearchResults,
-            showMaterialResults,
+            showMaterialSearchModal,
+            selectedMaterialName,
+            isSearching,
             handleMaterialSearch,
-            selectMaterial,
+            openMaterialSearchModal,
+            closeMaterialSearchModal,
+            selectMaterialFromModal,
             isAddingWork,
             isAddingMaterial,
             isDeletingWork,
@@ -857,9 +1034,79 @@ export default {
     max-width: 150px;
 }
 
+.material-form-row {
+    display: grid;
+    grid-template-columns: 1fr 160px;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    align-items: start;
+}
+
+.material-form-search {
+    display: flex;
+    flex-direction: column;
+}
+
+.material-form-quantity {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.search-input:focus {
+    border-color: #003859;
+    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.quantity-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: center;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.quantity-input:focus {
+    border-color: #003859;
+    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
 .btn-add-material {
     width: 100%;
-    margin-top: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.btn-add-material:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .search-wrapper {
@@ -917,6 +1164,234 @@ export default {
     gap: 1rem;
     font-size: 0.75rem;
     color: #6b7280;
+}
+
+.btn-select-material {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: #374151;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-select-material:hover {
+    border-color: #003859;
+    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
+}
+
+.btn-select-material .placeholder-text {
+    color: #9ca3af;
+}
+
+.btn-select-arrow {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 2rem;
+    animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.material-search-modal {
+    max-width: 700px;
+    width: 100%;
+    max-height: 85vh;
+}
+
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #003859;
+    margin: 0;
+    font-family: "Jost", sans-serif;
+}
+
+.modal-close-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f3f4f6;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Jost", sans-serif;
+}
+
+.modal-close-btn:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.modal-body {
+    padding: 2rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.search-input-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.search-input-full {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.search-input-full:focus {
+    border-color: #003859;
+    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
+    outline: none;
+}
+
+.search-loading {
+    margin-top: 0.5rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.search-result-item-modal {
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.search-result-item-modal:hover {
+    border-color: #003859;
+    background: #f9fafb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+    gap: 1rem;
+}
+
+.result-name {
+    font-weight: 700;
+    color: #003859;
+    font-size: 1rem;
+    flex: 1;
+}
+
+.result-article {
+    font-size: 0.875rem;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.result-footer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    flex-wrap: wrap;
+}
+
+.result-category {
+    padding: 0.25rem 0.5rem;
+    background: #f3f4f6;
+    border-radius: 4px;
+}
+
+.result-available {
+    color: #059669;
+    font-weight: 600;
+}
+
+.result-price {
+    margin-left: auto;
+    color: #003859;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.no-results-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #6b7280;
+    font-size: 0.9375rem;
 }
 
 .form-group {

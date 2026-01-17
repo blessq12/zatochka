@@ -22,7 +22,11 @@
                 </router-link>
             </div>
             <div class="header-custom-content" v-if="customContent">
-                <component :is="customContent.component" v-bind="customContent.props || {}" :key="customContentKey" />
+                <component
+                    :is="customContent.component"
+                    v-bind="customContent.props || {}"
+                    :key="customContentKey"
+                />
             </div>
         </div>
         <div class="header-actions">
@@ -34,11 +38,11 @@
 </template>
 
 <script>
-import { computed, resolveComponent, onUnmounted } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { usePosStore } from "../../stores/posStore.js";
 import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
 import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
+import { usePosStore } from "../../stores/posStore.js";
 
 export default {
     name: "PosHeader",
@@ -76,7 +80,9 @@ export default {
 
         // Ключ для принудительного обновления компонента
         const customContentKey = computed(() => {
-            return customContent.value ? JSON.stringify(customContent.value) : null;
+            return customContent.value
+                ? JSON.stringify(customContent.value)
+                : null;
         });
 
         return {
@@ -155,7 +161,6 @@ export default {
     border-color: #003859;
 }
 
-
 .user-avatar {
     width: 40px;
     height: 40px;
@@ -231,7 +236,6 @@ export default {
         align-items: stretch;
         gap: 1rem;
     }
-
 
     .header-actions {
         width: 100%;

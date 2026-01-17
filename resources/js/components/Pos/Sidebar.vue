@@ -6,7 +6,7 @@ export default {
     name: "PosSidebar",
     setup() {
         const route = useRoute();
-        
+
         const isActiveSection = (sectionName) => {
             const routeName = route.name || "";
             return routeName.startsWith(`pos.${sectionName}`);
@@ -50,7 +50,7 @@ export default {
 
             <!-- Склад -->
             <router-link
-                :to="{ name: 'pos.warehouse.parts' }"
+                :to="{ name: 'pos.warehouse.index' }"
                 class="nav-section-header"
                 :class="{ active: isActiveSection('warehouse') }"
             >
