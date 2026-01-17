@@ -218,7 +218,7 @@ class PosController extends Controller
         }
 
         // Новые заказы (new, consultation, diagnostic)
-        $newCount = Order::where('is_deleted', false)
+        $newCount = Order::where('is_deleted', 0)
             ->where('master_id', $master->id)
             ->whereIn('status', [
                 Order::STATUS_NEW,
@@ -228,7 +228,7 @@ class PosController extends Controller
             ->count();
 
         // Заказы в работе (in_work, waiting_parts)
-        $inWorkCount = Order::where('is_deleted', false)
+        $inWorkCount = Order::where('is_deleted', 0)
             ->where('master_id', $master->id)
             ->whereIn('status', [
                 Order::STATUS_IN_WORK,
@@ -239,6 +239,36 @@ class PosController extends Controller
         return response()->json([
             'new' => $newCount,
             'in_work' => $inWorkCount,
+        ]);
+    }
+
+    /**
+     * Получить детали заказа по ID
+     */
+    public function order(Request $request, $id)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $order = Order::with(['client', 'branch', 'master', 'manager'])
+            ->where('is_deleted', false)
+            ->where('master_id', $master->id)
+            ->find($id);
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'order' => $order,
         ]);
     }
 

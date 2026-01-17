@@ -96,9 +96,15 @@ export const usePosStore = defineStore("pos", {
          */
         async getOrdersCount() {
             try {
-                this.ordersCount = await orderService.getOrdersCount();
+                const counts = await orderService.getOrdersCount();
+                // Обновляем состояние явно
+                this.ordersCount.new = counts.new || 0;
+                this.ordersCount.in_work = counts.in_work || 0;
             } catch (error) {
                 console.error("Failed to fetch orders count:", error);
+                // Сбрасываем на 0 при ошибке
+                this.ordersCount.new = 0;
+                this.ordersCount.in_work = 0;
             }
         },
 
@@ -154,6 +160,10 @@ export const usePosStore = defineStore("pos", {
                 this.token = null;
                 this.user = null;
                 this.error = null;
+                this.ordersCount = {
+                    new: 0,
+                    in_work: 0,
+                };
                 localStorage.removeItem("pos_token");
             }
         },
