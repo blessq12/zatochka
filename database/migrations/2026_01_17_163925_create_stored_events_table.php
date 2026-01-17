@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (!Schema::hasTable('stored_events')) {
+            Schema::create('stored_events', function (Blueprint $table) {
+                $table->id();
+                $table->char('aggregate_uuid', 36)->nullable();
+                $table->unsignedBigInteger('aggregate_version')->nullable();
+                $table->unsignedTinyInteger('event_version')->default(1);
+                $table->string('event_class');
+                $table->json('event_properties');
+                $table->json('meta_data');
+                $table->timestamp('created_at');
+
+                $table->unique(['aggregate_uuid', 'aggregate_version']);
+                $table->index('event_class');
+                $table->index('aggregate_uuid');
+            });
+        }
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('stored_events');
+    }
+};
