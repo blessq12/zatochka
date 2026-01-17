@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('masters', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->boolean('is_deleted')->default(false);
-            $table->rememberToken();
-            $table->timestamps();
+        if (!Schema::hasTable('masters')) {
+            Schema::create('masters', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('email')->unique();
+                $table->timestamp('email_verified_at')->nullable();
+                $table->string('password');
+                $table->boolean('is_deleted')->default(false);
+                $table->rememberToken();
+                $table->timestamps();
 
-            $table->index('is_deleted');
-            $table->index('email');
-        });
+                $table->index('is_deleted');
+                $table->index('email');
+            });
+        }
     }
 
     /**

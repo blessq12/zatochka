@@ -192,7 +192,6 @@ class PosController extends Controller
         } elseif ($status === 'completed') {
             $query->whereIn('status', [
                 Order::STATUS_READY,
-                Order::STATUS_ISSUED,
                 Order::STATUS_CANCELLED,
             ]);
         }
@@ -832,9 +831,9 @@ class PosController extends Controller
         // Находим материал перед удалением для снятия резерва
         // materialId может быть как ID из order_work_materials, так и warehouse_item_id для обратной совместимости
         $material = $work->materials()
-            ->where(function($query) use ($materialId) {
+            ->where(function ($query) use ($materialId) {
                 $query->where('id', $materialId)
-                      ->orWhere('warehouse_item_id', $materialId);
+                    ->orWhere('warehouse_item_id', $materialId);
             })
             ->first();
 

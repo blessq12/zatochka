@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -83,24 +84,55 @@ class OrderController extends Controller
             ? Order::URGENCY_URGENT
             : Order::URGENCY_NORMAL;
 
-        // Подготавливаем данные для создания заказа
-        $orderData = [
-            'service_type' => $orderType,
-            'status' => Order::STATUS_NEW,
-            'urgency' => $urgency,
-            'client_id' => $client->id,
-            'branch_id' => $branch->id,
-            'problem_description' => $request->problem_description ?? null,
-            'tool_type' => $request->tool_type ?? null,
-            'total_tools_count' => $request->total_tools_count ?? null,
-            'equipment_type' => $request->equipment_type ?? null,
-            'equipment_name' => $request->equipment_name ?? null,
-            'needs_delivery' => $request->boolean('needs_delivery', false),
-            'delivery_address' => $request->delivery_address ?? null,
-        ];
+        // Создаем заказ с повторными попытками при дубликате номера
+        $maxAttempts = 10;
+        $attempt = 0;
+        $order = null;
 
-        // Создаем заказ
-        $order = $client->orders()->create($orderData);
+        while ($attempt < $maxAttempts) {
+            try {
+                $order = DB::transaction(function () use ($client, $orderType, $urgency, $request, $branch) {
+                    // Генерируем уникальный номер заказа в транзакции
+                    $orderNumber = Order::generateOrderNumber();
+                    
+                    // Подготавливаем данные для создания заказа
+                    $orderData = [
+                        'order_number' => $orderNumber,
+                        'service_type' => $orderType,
+                        'status' => Order::STATUS_NEW,
+                        'urgency' => $urgency,
+                        'client_id' => $client->id,
+                        'branch_id' => $branch->id,
+                        'problem_description' => $request->problem_description ?? null,
+                        'tool_type' => $request->tool_type ?? null,
+                        'total_tools_count' => $request->total_tools_count ?? null,
+                        'equipment_type' => $request->equipment_type ?? null,
+                        'equipment_name' => $request->equipment_name ?? null,
+                        'needs_delivery' => $request->boolean('needs_delivery', false),
+                        'delivery_address' => $request->delivery_address ?? null,
+                    ];
+
+                    // Создаем заказ
+                    return $client->orders()->create($orderData);
+                });
+                
+                // Если успешно создали, выходим из цикла
+                break;
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Если ошибка дубликата номера заказа, пробуем снова
+                if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'Duplicate entry')) {
+                    $attempt++;
+                    if ($attempt >= $maxAttempts) {
+                        throw new \Exception('Не удалось создать заказ: слишком много попыток генерации уникального номера');
+                    }
+                    // Небольшая задержка перед повторной попыткой
+                    usleep(100000); // 0.1 секунды
+                    continue;
+                }
+                // Если другая ошибка, пробрасываем дальше
+                throw $e;
+            }
+        }
 
         // Отправляем уведомление в Telegram, если у клиента подтвержден Telegram
         if ($client->telegram_verified_at && $client->telegram) {

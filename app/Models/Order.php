@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -309,26 +310,47 @@ class Order extends Model implements HasMedia
 
     /**
      * Генерирует уникальный номер заказа
+     * Должен вызываться внутри транзакции!
      */
     public static function generateOrderNumber(): string
     {
         $date = date('Ymd');
-        $count = static::whereDate('created_at', today())->count() + 1;
+        
+        // Используем SELECT FOR UPDATE для блокировки всех строк с номерами за сегодня
+        // Это гарантирует, что другие транзакции будут ждать
+        $lastOrder = DB::table('orders')
+            ->where('order_number', 'like', 'ORD-'.$date.'-%')
+            ->orderBy('order_number', 'desc')
+            ->lockForUpdate()
+            ->first();
 
-        return 'ORD-'.$date.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
+        if ($lastOrder && preg_match('/ORD-'.$date.'-(\d+)/', $lastOrder->order_number, $matches)) {
+            $count = (int) $matches[1] + 1;
+        } else {
+            $count = 1;
+        }
+
+        $orderNumber = 'ORD-'.$date.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
+        
+        // Дополнительная проверка уникальности
+        $exists = static::where('order_number', $orderNumber)->lockForUpdate()->exists();
+        
+        if ($exists) {
+            // Если номер все равно существует, увеличиваем счетчик
+            $count++;
+            $orderNumber = 'ORD-'.$date.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $orderNumber;
     }
 
     /**
      * Boot метод для автоматической генерации номера заказа
+     * Убрано из события creating, теперь номер генерируется в контроллере в транзакции
      */
     protected static function boot()
     {
         parent::boot();
-
-        static::creating(function ($order) {
-            if (empty($order->order_number)) {
-                $order->order_number = static::generateOrderNumber();
-            }
-        });
+        // Генерация номера перенесена в контроллер для предотвращения race condition
     }
 }
