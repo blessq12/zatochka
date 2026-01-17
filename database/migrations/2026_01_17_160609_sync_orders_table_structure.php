@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,6 +13,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
+            // Обрабатываем старое поле type (заменено на service_type)
+            // Если поле type существует, делаем его nullable через прямой SQL
+            if (Schema::hasColumn('orders', 'type')) {
+                try {
+                    // Пытаемся изменить поле type на nullable через прямой SQL
+                    DB::statement("ALTER TABLE `orders` MODIFY COLUMN `type` VARCHAR(255) NULL DEFAULT NULL");
+                } catch (\Exception $e) {
+                    // Если не получилось, пытаемся удалить
+                    try {
+                        $table->dropColumn('type');
+                    } catch (\Exception $e2) {
+                        // Если и удаление не сработало, игнорируем
+                    }
+                }
+            }
+
             // Добавляем service_type, если его нет (самое важное поле!)
             if (!Schema::hasColumn('orders', 'service_type')) {
                 $table->string('service_type')->after('order_number');
