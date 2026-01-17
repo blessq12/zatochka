@@ -4,7 +4,7 @@ SET @materials_category_id = (SELECT id FROM warehouse_categories WHERE slug = '
 
 -- Создание 20 запчастей
 INSERT INTO warehouse_items (warehouse_category_id, name, article, description, unit, quantity, reserved_quantity, min_quantity, price, location, is_active, created_at, updated_at)
-VALUES 
+VALUES
     (@parts_category_id, 'Шестерня для точила', NULL, 'Шестерня ведущая для настольного точила', 'шт', 15, 0, 5, 450.00, 'А-1-12', 1, NOW(), NOW()),
     (@parts_category_id, 'Подшипник 6205', NULL, 'Подшипник шариковый 6205 для шпинделя', 'шт', 25, 2, 10, 280.00, 'А-2-05', 1, NOW(), NOW()),
     (@parts_category_id, 'Ремень приводной А710', NULL, 'Ремень клиновой А710 для точильного станка', 'шт', 12, 1, 5, 320.00, 'А-1-18', 1, NOW(), NOW()),
@@ -28,7 +28,7 @@ VALUES
 
 -- Создание 20 расходных материалов
 INSERT INTO warehouse_items (warehouse_category_id, name, article, description, unit, quantity, reserved_quantity, min_quantity, price, location, is_active, created_at, updated_at)
-VALUES 
+VALUES
     (@materials_category_id, 'Полировальная паста ГОИ', NULL, 'Паста полировальная ГОИ средняя зернистость', 'г', 500, 50, 200, 350.00, 'Д-1-05', 1, NOW(), NOW()),
     (@materials_category_id, 'Алмазная паста 1мкм', NULL, 'Алмазная паста для доводки 1мкм', 'г', 200, 20, 100, 1200.00, 'Д-1-08', 1, NOW(), NOW()),
     (@materials_category_id, 'Масло для заточки', NULL, 'Масло минеральное для заточных станков', 'л', 25, 3, 10, 450.00, 'Д-2-12', 1, NOW(), NOW()),

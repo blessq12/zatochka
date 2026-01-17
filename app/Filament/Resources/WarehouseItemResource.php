@@ -18,13 +18,13 @@ class WarehouseItemResource extends Resource
     protected static ?string $model = WarehouseItem::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cube';
-    
+
     protected static ?string $navigationLabel = 'Товары склада';
-    
+
     protected static ?string $modelLabel = 'Товар';
-    
+
     protected static ?string $pluralModelLabel = 'Товары склада';
-    
+
     protected static ?string $navigationGroup = 'Склад';
 
     public static function form(Form $form): Form
@@ -146,16 +146,16 @@ class WarehouseItemResource extends Resource
                     ->numeric(
                         decimalPlaces: 3,
                     )
-                    ->suffix(fn ($record) => ' ' . $record->unit)
+                    ->suffix(fn($record) => ' ' . $record->unit)
                     ->sortable()
-                    ->color(fn ($record) => $record->isLowStock() ? 'danger' : null),
+                    ->color(fn($record) => $record->isLowStock() ? 'danger' : null),
 
                 Tables\Columns\TextColumn::make('min_quantity')
                     ->label('Мин. кол-во')
                     ->numeric(
                         decimalPlaces: 3,
                     )
-                    ->suffix(fn ($record) => ' ' . $record->unit)
+                    ->suffix(fn($record) => ' ' . $record->unit)
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('price')
@@ -194,11 +194,11 @@ class WarehouseItemResource extends Resource
 
                 Tables\Filters\Filter::make('low_stock')
                     ->label('Низкий остаток')
-                    ->query(fn ($query) => $query->lowStock()),
+                    ->query(fn($query) => $query->lowStock()),
 
                 Tables\Filters\Filter::make('in_stock')
                     ->label('В наличии')
-                    ->query(fn ($query) => $query->inStock()),
+                    ->query(fn($query) => $query->inStock()),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -220,7 +220,7 @@ class WarehouseItemResource extends Resource
                     ->action(function (WarehouseItem $record, array $data): void {
                         $change = (float) $data['quantity_change'];
                         $record->quantity += $change;
-                        
+
                         if ($record->quantity < 0) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Ошибка')
@@ -229,9 +229,9 @@ class WarehouseItemResource extends Resource
                                 ->send();
                             return;
                         }
-                        
+
                         $record->save();
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->title('Количество обновлено')
                             ->success()

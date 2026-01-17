@@ -48,7 +48,16 @@ class OrderWork extends Model
     }
 
     /**
-     * Связь с товарами склада (списанные материалы)
+     * Связь с материалами работы (snapshot данных)
+     */
+    public function materials()
+    {
+        return $this->hasMany(OrderWorkMaterial::class, 'work_id');
+    }
+
+    /**
+     * Старая связь для обратной совместимости (deprecated)
+     * @deprecated Используйте materials() вместо warehouseItems()
      */
     public function warehouseItems()
     {

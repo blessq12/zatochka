@@ -16,13 +16,13 @@ class WarehouseCategoryResource extends Resource
     protected static ?string $model = WarehouseCategory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';
-    
+
     protected static ?string $navigationLabel = 'Категории склада';
-    
+
     protected static ?string $modelLabel = 'Категория';
-    
+
     protected static ?string $pluralModelLabel = 'Категории склада';
-    
+
     protected static ?string $navigationGroup = 'Склад';
 
     public static function form(Form $form): Form
@@ -36,7 +36,7 @@ class WarehouseCategoryResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
+                            ->afterStateUpdated(fn($state, callable $set) => $set('slug', Str::slug($state))),
 
                         Forms\Components\TextInput::make('slug')
                             ->label('URL-ключ (slug)')

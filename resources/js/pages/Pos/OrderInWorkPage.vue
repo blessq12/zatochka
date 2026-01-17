@@ -223,7 +223,7 @@
                 >
                     <div
                         v-for="material in materials"
-                        :key="`${material.work_id}-${material.warehouse_item_id}`"
+                        :key="`${material.work_id}-${material.id}`"
                         class="material-item"
                     >
                         <div class="material-info">
@@ -255,13 +255,13 @@
                             @click="
                                 removeMaterial(
                                     material.work_id,
-                                    material.warehouse_item_id
+                                    material.id
                                 )
                             "
                             class="btn-delete"
                             :disabled="
                                 isRemovingMaterial[
-                                    `${material.work_id}-${material.warehouse_item_id}`
+                                    `${material.work_id}-${material.id}`
                                 ]
                             "
                         >

@@ -99,7 +99,7 @@ class WarehouseItem extends Model
 
         $firstChar = mb_substr($string, 0, 1, 'UTF-8');
         $rest = mb_substr($string, 1, null, 'UTF-8');
-        
+
         return mb_strtoupper($firstChar, 'UTF-8') . mb_strtolower($rest, 'UTF-8');
     }
 

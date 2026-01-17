@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\ActivityLogRelationManager;
+use App\Filament\Resources\OrderResource\RelationManagers\OrderWorksRelationManager;
+use App\Filament\Resources\OrderResource\RelationManagers\OrderMaterialsRelationManager;
 use App\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -367,6 +369,8 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
+            OrderWorksRelationManager::class,
+            OrderMaterialsRelationManager::class,
             ActivityLogRelationManager::class,
         ];
     }

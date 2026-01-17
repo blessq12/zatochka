@@ -126,6 +126,14 @@ class Order extends Model implements HasMedia
         return $this->orderWorks();
     }
 
+    /**
+     * Получить все материалы всех работ заказа
+     */
+    public function orderMaterials()
+    {
+        return $this->hasMany(OrderWorkMaterial::class, 'order_id');
+    }
+
     public function activities()
     {
         return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject');

@@ -136,7 +136,7 @@
                     </table>
 
                     <!-- Материалы -->
-                    <table v-if="order.order_works && order.order_works.some(w => w.warehouse_items && w.warehouse_items.length > 0)" class="info-table">
+                    <table v-if="order.order_works && order.order_works.some(w => w.materials && w.materials.length > 0)" class="info-table">
                         <thead>
                             <tr>
                                 <th class="table-header">Название</th>
@@ -148,12 +148,12 @@
                         </thead>
                         <tbody>
                             <template v-for="work in order.order_works" :key="work.id">
-                                <tr v-for="material in work.warehouse_items" :key="material.id">
+                                <tr v-for="material in work.materials" :key="material.id">
                                     <td class="table-value">{{ material.name }}</td>
                                     <td class="table-value">{{ material.article || "—" }}</td>
-                                    <td class="table-value text-right">{{ material.pivot?.quantity || 0 }} {{ material.unit || "шт" }}</td>
-                                    <td class="table-value text-right">{{ formatPrice(material.pivot?.price || 0) }} ₽</td>
-                                    <td class="table-value text-right price">{{ formatPrice((material.pivot?.quantity || 0) * (material.pivot?.price || 0)) }} ₽</td>
+                                    <td class="table-value text-right">{{ material.quantity || 0 }} {{ material.unit || "шт" }}</td>
+                                    <td class="table-value text-right">{{ formatPrice(material.price || 0) }} ₽</td>
+                                    <td class="table-value text-right price">{{ formatPrice((material.quantity || 0) * (material.price || 0)) }} ₽</td>
                                 </tr>
                             </template>
                             <tr class="table-total">
@@ -268,10 +268,10 @@ export default {
             if (!order.value?.order_works) return 0;
             let total = 0;
             order.value.order_works.forEach((work) => {
-                if (work.warehouse_items) {
-                    work.warehouse_items.forEach((material) => {
-                        const quantity = parseFloat(material.pivot?.quantity) || 0;
-                        const price = parseFloat(material.pivot?.price) || 0;
+                if (work.materials) {
+                    work.materials.forEach((material) => {
+                        const quantity = parseFloat(material.quantity) || 0;
+                        const price = parseFloat(material.price) || 0;
                         total += quantity * price;
                     });
                 }

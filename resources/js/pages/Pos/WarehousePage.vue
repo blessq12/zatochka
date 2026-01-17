@@ -43,14 +43,23 @@
                                 class="table-row"
                             >
                                 <td class="item-name-cell">
-                                    <span class="item-name">{{ item.name }}</span>
+                                    <span class="item-name">{{
+                                        item.name
+                                    }}</span>
                                 </td>
                                 <td class="item-article-cell">
-                                    <span v-if="item.article" class="item-article">{{ item.article }}</span>
+                                    <span
+                                        v-if="item.article"
+                                        class="item-article"
+                                        >{{ item.article }}</span
+                                    >
                                     <span v-else class="text-muted">—</span>
                                 </td>
                                 <td class="item-category-cell">
-                                    <span v-if="item.category" class="item-category">
+                                    <span
+                                        v-if="item.category"
+                                        class="item-category"
+                                    >
                                         {{ item.category.name }}
                                     </span>
                                     <span v-else class="text-muted">—</span>
@@ -58,15 +67,22 @@
                                 <td class="item-quantity-cell">
                                     <span
                                         :class="{
-                                            'quantity-low': item.quantity <= item.min_quantity && item.quantity > 0,
-                                            'quantity-zero': item.quantity === 0,
+                                            'quantity-low':
+                                                item.quantity <=
+                                                    item.min_quantity &&
+                                                item.quantity > 0,
+                                            'quantity-zero':
+                                                item.quantity === 0,
                                         }"
                                     >
-                                        {{ formatQuantity(item.quantity) }} {{ item.unit }}
+                                        {{ formatQuantity(item.quantity) }}
+                                        {{ item.unit }}
                                     </span>
                                 </td>
                                 <td class="item-price-cell">
-                                    <span class="item-price">{{ formatPrice(item.price) }} ₽</span>
+                                    <span class="item-price"
+                                        >{{ formatPrice(item.price) }} ₽</span
+                                    >
                                 </td>
                             </tr>
                         </tbody>
@@ -74,14 +90,20 @@
                 </div>
 
                 <!-- Пагинация -->
-                <div v-if="pagination && pagination.last_page > 1" class="pagination-wrapper">
+                <div
+                    v-if="pagination && pagination.last_page > 1"
+                    class="pagination-wrapper"
+                >
                     <div class="pagination-info">
-                        Показано {{ pagination.from }}-{{ pagination.to }} из {{ pagination.total }}
+                        Показано {{ pagination.from }}-{{ pagination.to }} из
+                        {{ pagination.total }}
                     </div>
                     <div class="pagination-controls">
                         <button
                             @click="goToPage(pagination.current_page - 1)"
-                            :disabled="pagination.current_page === 1 || isLoading"
+                            :disabled="
+                                pagination.current_page === 1 || isLoading
+                            "
                             class="pagination-btn"
                         >
                             ← Назад
@@ -91,7 +113,13 @@
                                 v-for="page in visiblePages"
                                 :key="page"
                                 @click="goToPage(page)"
-                                :class="['pagination-page-btn', { active: page === pagination.current_page }]"
+                                :class="[
+                                    'pagination-page-btn',
+                                    {
+                                        active:
+                                            page === pagination.current_page,
+                                    },
+                                ]"
                                 :disabled="isLoading || page === '...'"
                             >
                                 {{ page }}
@@ -99,7 +127,10 @@
                         </div>
                         <button
                             @click="goToPage(pagination.current_page + 1)"
-                            :disabled="pagination.current_page === pagination.last_page || isLoading"
+                            :disabled="
+                                pagination.current_page ===
+                                    pagination.last_page || isLoading
+                            "
                             class="pagination-btn"
                         >
                             Вперед →
@@ -136,7 +167,7 @@ export default {
             const current = pagination.value.current_page;
             const last = pagination.value.last_page;
             const pages = [];
-            
+
             if (last <= 7) {
                 // Если страниц меньше 7, показываем все
                 for (let i = 1; i <= last; i++) {
@@ -146,17 +177,18 @@ export default {
                 // Показываем первую, последнюю и текущую с соседями
                 if (current <= 3) {
                     for (let i = 1; i <= 4; i++) pages.push(i);
-                    pages.push('...');
+                    pages.push("...");
                     pages.push(last);
                 } else if (current >= last - 2) {
                     pages.push(1);
-                    pages.push('...');
+                    pages.push("...");
                     for (let i = last - 3; i <= last; i++) pages.push(i);
                 } else {
                     pages.push(1);
-                    pages.push('...');
-                    for (let i = current - 1; i <= current + 1; i++) pages.push(i);
-                    pages.push('...');
+                    pages.push("...");
+                    for (let i = current - 1; i <= current + 1; i++)
+                        pages.push(i);
+                    pages.push("...");
                     pages.push(last);
                 }
             }
@@ -167,7 +199,11 @@ export default {
             isLoading.value = true;
             try {
                 const search = searchQuery.value.trim() || null;
-                const result = await warehouseService.getAllItems(page, perPage.value, search);
+                const result = await warehouseService.getAllItems(
+                    page,
+                    perPage.value,
+                    search
+                );
                 items.value = result.items;
                 pagination.value = result.pagination;
                 currentPage.value = page;
@@ -179,7 +215,11 @@ export default {
         };
 
         const goToPage = (page) => {
-            if (page < 1 || (pagination.value && page > pagination.value.last_page) || page === '...') {
+            if (
+                page < 1 ||
+                (pagination.value && page > pagination.value.last_page) ||
+                page === "..."
+            ) {
                 return;
             }
             fetchItems(page);
@@ -210,11 +250,15 @@ export default {
         };
 
         // Автообновление товаров склада каждые 20 секунд (только если не активен поиск)
-        useAutoRefresh(() => {
-            if (!searchQuery.value.trim()) {
-                fetchItems(currentPage.value);
-            }
-        }, 20000, true);
+        useAutoRefresh(
+            () => {
+                if (!searchQuery.value.trim()) {
+                    fetchItems(currentPage.value);
+                }
+            },
+            20000,
+            true
+        );
 
         // Регистрация элементов навигации в Header
         onMounted(() => {
