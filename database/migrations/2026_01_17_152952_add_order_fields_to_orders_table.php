@@ -14,30 +14,30 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             // Проверяем и добавляем equipment_name, если его нет
             if (!Schema::hasColumn('orders', 'equipment_name')) {
-                $table->string('equipment_name')->nullable()->after('problem_description');
+                $table->string('equipment_name')->nullable();
             }
             
             // Поля для ремонта
             if (!Schema::hasColumn('orders', 'equipment_type')) {
-                $table->string('equipment_type')->nullable()->after('equipment_name');
+                $table->string('equipment_type')->nullable();
             }
             
             // Поля для заточки
             if (!Schema::hasColumn('orders', 'tool_type')) {
-                $table->string('tool_type')->nullable()->after('equipment_type');
+                $table->string('tool_type')->nullable();
             }
             if (!Schema::hasColumn('orders', 'total_tools_count')) {
-                $table->integer('total_tools_count')->nullable()->after('tool_type');
+                $table->integer('total_tools_count')->nullable();
             }
             
             // Проверяем и добавляем delivery_address, если его нет
             if (!Schema::hasColumn('orders', 'delivery_address')) {
-                $table->text('delivery_address')->nullable()->after('total_tools_count');
+                $table->text('delivery_address')->nullable();
             }
             
             // Поле для доставки
             if (!Schema::hasColumn('orders', 'needs_delivery')) {
-                $table->boolean('needs_delivery')->default(false)->after('delivery_address');
+                $table->boolean('needs_delivery')->default(false);
             }
         });
     }
