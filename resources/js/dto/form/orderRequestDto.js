@@ -38,7 +38,7 @@ export default function createOrderRequestDto({
             return {
                 ...basePayload,
                 equipment_type: formData.equipment_type || "",
-                equipment_name: formData.device_name || "",
+                equipment_name: formData.device_name || formData.equipment_name || "",
                 problem_description: formData.problem_description || "",
                 urgency: urgency,
                 needs_delivery: formData.needs_delivery || false,

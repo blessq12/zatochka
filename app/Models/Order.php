@@ -77,7 +77,11 @@ class Order extends Model implements HasMedia
         'delivery_address',
         'delivery_cost',
         'equipment_name',
+        'equipment_type',
         'equipment_serial_number',
+        'tool_type',
+        'total_tools_count',
+        'needs_delivery',
         'order_payment_type',
         'is_deleted',
     ];

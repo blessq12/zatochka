@@ -20,6 +20,13 @@ class OrderController extends Controller
             'service_type' => 'required|string|in:sharpening,repair',
             'urgency' => 'nullable|string|in:normal,urgent',
             'problem_description' => 'nullable|string|max:5000',
+            'tool_type' => 'nullable|string|max:255',
+            'total_tools_count' => 'nullable|integer|min:1',
+            'equipment_type' => 'nullable|string|max:255',
+            'equipment_name' => 'nullable|string|max:255',
+            'needs_delivery' => 'nullable|boolean',
+            'delivery_address' => 'nullable|string|max:1000',
+            'email' => 'nullable|email|max:255',
         ];
 
         // Если клиент не авторизован, имя и телефон обязательны
@@ -84,6 +91,12 @@ class OrderController extends Controller
             'client_id' => $client->id,
             'branch_id' => $branch->id,
             'problem_description' => $request->problem_description ?? null,
+            'tool_type' => $request->tool_type ?? null,
+            'total_tools_count' => $request->total_tools_count ?? null,
+            'equipment_type' => $request->equipment_type ?? null,
+            'equipment_name' => $request->equipment_name ?? null,
+            'needs_delivery' => $request->boolean('needs_delivery', false),
+            'delivery_address' => $request->delivery_address ?? null,
         ];
 
         // Создаем заказ
