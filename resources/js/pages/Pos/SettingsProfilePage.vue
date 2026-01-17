@@ -77,7 +77,8 @@
                                     type="text"
                                     class="form-input"
                                     :class="{
-                                        'form-input-error': errors.telegram_username,
+                                        'form-input-error':
+                                            errors.telegram_username,
                                     }"
                                     placeholder="username"
                                 />
@@ -156,7 +157,10 @@ export default {
                 .string()
                 .required("Имя обязательно для заполнения")
                 .max(255, "Имя слишком длинное"),
-            surname: yup.string().nullable().max(255, "Фамилия слишком длинная"),
+            surname: yup
+                .string()
+                .nullable()
+                .max(255, "Фамилия слишком длинная"),
             phone: yup.string().nullable().max(255, "Телефон слишком длинный"),
             telegram_username: yup
                 .string()
@@ -172,7 +176,8 @@ export default {
                     surname: user.value.surname || "",
                     phone: user.value.phone || "",
                     telegram_username: user.value.telegram_username || "",
-                    notifications_enabled: user.value.notifications_enabled ?? true,
+                    notifications_enabled:
+                        user.value.notifications_enabled ?? true,
                 };
                 originalData.value = JSON.parse(JSON.stringify(formData.value));
             }
@@ -180,7 +185,10 @@ export default {
 
         const hasChanges = computed(() => {
             if (!formData.value || !originalData.value) return false;
-            return JSON.stringify(formData.value) !== JSON.stringify(originalData.value);
+            return (
+                JSON.stringify(formData.value) !==
+                JSON.stringify(originalData.value)
+            );
         });
 
         const handleSubmit = async () => {
@@ -208,12 +216,15 @@ export default {
 
                 if (result.success) {
                     // Обновляем originalData после успешного сохранения
-                    originalData.value = JSON.parse(JSON.stringify(formData.value));
+                    originalData.value = JSON.parse(
+                        JSON.stringify(formData.value)
+                    );
                 } else {
                     if (result.errors) {
                         Object.assign(errors, result.errors);
                     } else {
-                        errors.general = result.error || "Ошибка обновления профиля";
+                        errors.general =
+                            result.error || "Ошибка обновления профиля";
                     }
                 }
             } catch (error) {

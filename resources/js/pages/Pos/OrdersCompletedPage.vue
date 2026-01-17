@@ -20,7 +20,7 @@
                     </div>
                     <div class="order-info">
                         <p><strong>Клиент:</strong> {{ order.client?.full_name }}</p>
-                        <p><strong>Тип:</strong> {{ getTypeLabel(order.type) }}</p>
+                        <p><strong>Тип:</strong> {{ getTypeLabel(order.service_type) }}</p>
                         <p v-if="order.actual_price">
                             <strong>Цена:</strong> {{ formatPrice(order.actual_price) }} ₽
                         </p>
@@ -33,7 +33,7 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import axios from "axios";
+import { orderService } from "../../services/pos/OrderService.js";
 
 export default {
     name: "OrdersCompletedPage",
@@ -44,37 +44,12 @@ export default {
         const fetchOrders = async () => {
             isLoading.value = true;
             try {
-                const response = await axios.get("/api/pos/orders", {
-                    params: { status: "completed" },
-                });
-                orders.value = response.data.orders || [];
+                orders.value = await orderService.getCompletedOrders();
             } catch (error) {
                 console.error("Error fetching orders:", error);
             } finally {
                 isLoading.value = false;
             }
-        };
-
-        const getStatusLabel = (status) => {
-            const statuses = {
-                ready: "Готов",
-                issued: "Выдан",
-                cancelled: "Отменен",
-            };
-            return statuses[status] || status;
-        };
-
-        const getTypeLabel = (type) => {
-            const types = {
-                repair: "Ремонт",
-                sharpening: "Заточка",
-                diagnostic: "Диагностика",
-            };
-            return types[type] || type;
-        };
-
-        const formatPrice = (price) => {
-            return new Intl.NumberFormat("ru-RU").format(price);
         };
 
         onMounted(() => {
@@ -84,9 +59,9 @@ export default {
         return {
             orders,
             isLoading,
-            getStatusLabel,
-            getTypeLabel,
-            formatPrice,
+            getStatusLabel: orderService.getStatusLabel,
+            getTypeLabel: orderService.getTypeLabel,
+            formatPrice: orderService.formatPrice,
         };
     },
 };

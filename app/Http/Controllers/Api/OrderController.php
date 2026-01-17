@@ -78,7 +78,7 @@ class OrderController extends Controller
 
         // Подготавливаем данные для создания заказа
         $orderData = [
-            'type' => $orderType,
+            'service_type' => $orderType,
             'status' => Order::STATUS_NEW,
             'urgency' => $urgency,
             'client_id' => $client->id,

@@ -35,7 +35,7 @@ class Order extends Model implements HasMedia
 
     public const STATUS_CANCELLED = 'cancelled';
 
-    // Константы типов заказов
+    // Константы типов услуг (service_type)
     public const TYPE_REPAIR = 'repair';
 
     public const TYPE_SHARPENING = 'sharpening';
@@ -50,6 +50,11 @@ class Order extends Model implements HasMedia
 
     public const TYPE_WARRANTY = 'warranty';
 
+    // Константы типов оплаты
+    public const PAYMENT_TYPE_PAID = 'paid';
+
+    public const PAYMENT_TYPE_WARRANTY = 'warranty';
+
     // Константы срочности
     public const URGENCY_NORMAL = 'normal';
 
@@ -59,8 +64,9 @@ class Order extends Model implements HasMedia
         'client_id',
         'branch_id',
         'manager_id',
+        'master_id',
         'order_number',
-        'type',
+        'service_type',
         'status',
         'urgency',
         'discount_id',
@@ -68,12 +74,18 @@ class Order extends Model implements HasMedia
         'actual_price',
         'internal_notes',
         'problem_description',
+        'delivery_address',
+        'delivery_cost',
+        'equipment_name',
+        'equipment_serial_number',
+        'order_payment_type',
         'is_deleted',
     ];
 
     protected $casts = [
         'estimated_price' => 'decimal:2',
         'actual_price' => 'decimal:2',
+        'delivery_cost' => 'decimal:2',
         'is_deleted' => 'boolean',
     ];
 
@@ -248,13 +260,19 @@ class Order extends Model implements HasMedia
                 'client_id',
                 'branch_id',
                 'manager_id',
-                'type',
+                'master_id',
+                'service_type',
                 'status',
                 'urgency',
                 'estimated_price',
                 'actual_price',
                 'internal_notes',
                 'problem_description',
+                'delivery_address',
+                'delivery_cost',
+                'equipment_name',
+                'equipment_serial_number',
+                'order_payment_type',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()

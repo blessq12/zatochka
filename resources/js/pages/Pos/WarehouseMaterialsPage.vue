@@ -32,7 +32,8 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import axios from "axios";
+import { warehouseService } from "../../services/pos/WarehouseService.js";
+import { orderService } from "../../services/pos/OrderService.js";
 
 export default {
     name: "WarehouseMaterialsPage",
@@ -43,19 +44,12 @@ export default {
         const fetchItems = async () => {
             isLoading.value = true;
             try {
-                const response = await axios.get("/api/pos/warehouse/items", {
-                    params: { type: "materials" },
-                });
-                items.value = response.data.items || [];
+                items.value = await warehouseService.getMaterials();
             } catch (error) {
                 console.error("Error fetching items:", error);
             } finally {
                 isLoading.value = false;
             }
-        };
-
-        const formatPrice = (price) => {
-            return new Intl.NumberFormat("ru-RU").format(price);
         };
 
         onMounted(() => {
@@ -65,7 +59,7 @@ export default {
         return {
             items,
             isLoading,
-            formatPrice,
+            formatPrice: orderService.formatPrice,
         };
     },
 };

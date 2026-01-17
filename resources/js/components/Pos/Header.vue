@@ -61,7 +61,9 @@ export default {
             const surname = user.value.surname || "";
             const firstInitial = name.charAt(0).toUpperCase();
             const secondInitial = surname.charAt(0).toUpperCase();
-            return secondInitial ? `${firstInitial}${secondInitial}` : firstInitial || "M";
+            return secondInitial
+                ? `${firstInitial}${secondInitial}`
+                : firstInitial || "M";
         });
 
         const handleLogout = async () => {

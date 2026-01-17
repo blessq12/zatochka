@@ -29,10 +29,10 @@
 <script>
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { usePosStore } from "../stores/posStore.js";
+import PosHeader from "../components/Pos/Header.vue";
 import PosLoginForm from "../components/Pos/LoginForm.vue";
 import PosSidebar from "../components/Pos/Sidebar.vue";
-import PosHeader from "../components/Pos/Header.vue";
+import { usePosStore } from "../stores/posStore.js";
 
 export default {
     name: "PosPage",
@@ -87,12 +87,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(
-        135deg,
-        #003859 0%,
-        #046490 50%,
-        #c3006b 100%
-    );
+    background: linear-gradient(135deg, #003859 0%, #046490 50%, #c3006b 100%);
     padding: 2rem;
 }
 
@@ -119,12 +114,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(
-        135deg,
-        #003859 0%,
-        #046490 50%,
-        #c3006b 100%
-    );
+    background: linear-gradient(135deg, #003859 0%, #046490 50%, #c3006b 100%);
 }
 
 .pos-loader {
@@ -155,4 +145,3 @@ export default {
     }
 }
 </style>
-

@@ -511,7 +511,7 @@ class TelegramController extends Controller
             $statusLabels = \App\Models\Order::getAvailableStatuses();
             $typeLabels = \App\Models\Order::getAvailableTypes();
             $statusLabel = $statusLabels[$order->status] ?? $order->status;
-            $typeLabel = $typeLabels[$order->type] ?? $order->type;
+            $typeLabel = $typeLabels[$order->service_type] ?? $order->service_type;
 
             $message .= "🔹 <b>{$order->order_number}</b>\n";
             $message .= "Тип: {$typeLabel}\n";
@@ -555,7 +555,7 @@ class TelegramController extends Controller
             $statusLabels = \App\Models\Order::getAvailableStatuses();
             $typeLabels = \App\Models\Order::getAvailableTypes();
             $statusLabel = $statusLabels[$order->status] ?? $order->status;
-            $typeLabel = $typeLabels[$order->type] ?? $order->type;
+            $typeLabel = $typeLabels[$order->service_type] ?? $order->service_type;
 
             $statusIcon = $order->status === \App\Models\Order::STATUS_ISSUED ? '✅' : '❌';
             

@@ -76,8 +76,8 @@ class OrderResource extends Resource
 
                 Forms\Components\Section::make('Детали заказа')
                     ->schema([
-                        Forms\Components\Select::make('type')
-                            ->label('Тип заказа')
+                        Forms\Components\Select::make('service_type')
+                            ->label('Тип услуги')
                             ->options(Order::getAvailableTypes())
                             ->required()
                             ->default(Order::TYPE_REPAIR),
@@ -104,8 +104,49 @@ class OrderResource extends Resource
                             ->numeric()
                             ->prefix('₽')
                             ->step(0.01),
+
+                        Forms\Components\Select::make('order_payment_type')
+                            ->label('Тип оплаты')
+                            ->options([
+                                Order::PAYMENT_TYPE_PAID => 'Оплачен',
+                                Order::PAYMENT_TYPE_WARRANTY => 'Гарантия',
+                            ])
+                            ->default(Order::PAYMENT_TYPE_PAID)
+                            ->required(),
                     ])
                     ->columns(2),
+
+                Forms\Components\Section::make('Оборудование')
+                    ->schema([
+                        Forms\Components\TextInput::make('equipment_name')
+                            ->label('Название оборудования')
+                            ->required()
+                            ->maxLength(255),
+
+                        Forms\Components\TextInput::make('equipment_serial_number')
+                            ->label('Серийный номер')
+                            ->maxLength(255)
+                            ->nullable(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Доставка')
+                    ->schema([
+                        Forms\Components\Textarea::make('delivery_address')
+                            ->label('Адрес доставки')
+                            ->rows(2)
+                            ->maxLength(65535)
+                            ->nullable(),
+
+                        Forms\Components\TextInput::make('delivery_cost')
+                            ->label('Стоимость доставки')
+                            ->numeric()
+                            ->prefix('₽')
+                            ->step(0.01)
+                            ->nullable(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
 
                 Forms\Components\Section::make('Описание')
                     ->schema([
@@ -119,6 +160,25 @@ class OrderResource extends Resource
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
+
+                Forms\Components\Section::make('Ответственные')
+                    ->schema([
+                        Forms\Components\Select::make('manager_id')
+                            ->label('Менеджер')
+                            ->relationship('manager', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->nullable(),
+
+                        Forms\Components\Select::make('master_id')
+                            ->label('Мастер')
+                            ->relationship('master', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->nullable(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
 
                 Forms\Components\Section::make('Дополнительно')
                     ->schema([
@@ -150,8 +210,8 @@ class OrderResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Тип')
+                Tables\Columns\TextColumn::make('service_type')
+                    ->label('Тип услуги')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         Order::TYPE_REPAIR => 'primary',
@@ -202,6 +262,32 @@ class OrderResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
+                Tables\Columns\TextColumn::make('master.name')
+                    ->label('Мастер')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('equipment_name')
+                    ->label('Оборудование')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('order_payment_type')
+                    ->label('Тип оплаты')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        Order::PAYMENT_TYPE_PAID => 'success',
+                        Order::PAYMENT_TYPE_WARRANTY => 'warning',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        Order::PAYMENT_TYPE_PAID => 'Оплачен',
+                        Order::PAYMENT_TYPE_WARRANTY => 'Гарантия',
+                        default => $state,
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')
                     ->dateTime('d.m.Y H:i')
@@ -218,9 +304,13 @@ class OrderResource extends Resource
                     ->label('Статус')
                     ->options(Order::getAvailableStatuses()),
 
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('Тип')
+                Tables\Filters\SelectFilter::make('service_type')
+                    ->label('Тип услуги')
                     ->options(Order::getAvailableTypes()),
+
+                Tables\Filters\SelectFilter::make('master_id')
+                    ->label('Мастер')
+                    ->relationship('master', 'name'),
 
                 Tables\Filters\SelectFilter::make('urgency')
                     ->label('Срочность')

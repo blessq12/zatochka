@@ -1,6 +1,7 @@
 import axios from "axios";
 import { defineStore } from "pinia";
 import { toastService } from "../services/toastService.js";
+import { orderService } from "../services/pos/OrderService.js";
 
 export const usePosStore = defineStore("pos", {
     state: () => ({
@@ -95,13 +96,7 @@ export const usePosStore = defineStore("pos", {
          */
         async getOrdersCount() {
             try {
-                const response = await axios.get("/api/pos/orders/count");
-                if (response.data.new !== undefined && response.data.in_work !== undefined) {
-                    this.ordersCount = {
-                        new: response.data.new,
-                        in_work: response.data.in_work,
-                    };
-                }
+                this.ordersCount = await orderService.getOrdersCount();
             } catch (error) {
                 console.error("Failed to fetch orders count:", error);
             }
