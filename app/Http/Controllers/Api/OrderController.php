@@ -14,20 +14,20 @@ class OrderController extends Controller
     {
         // Проверяем, авторизован ли клиент
         $authenticatedClient = auth('sanctum')->user();
-        
+
         // Валидация входящих данных (для неавторизованных клиентов поля обязательны)
         $rules = [
             'service_type' => 'required|string|in:sharpening,repair',
             'urgency' => 'nullable|string|in:normal,urgent',
             'problem_description' => 'nullable|string|max:5000',
         ];
-        
+
         // Если клиент не авторизован, имя и телефон обязательны
         if (!$authenticatedClient) {
             $rules['client_name'] = 'required|string|min:2|max:255';
             $rules['client_phone'] = 'required|string|min:18|max:18';
         }
-        
+
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
@@ -67,13 +67,13 @@ class OrderController extends Controller
         }
 
         // Определяем тип заказа
-        $orderType = $request->service_type === 'sharpening' 
-            ? Order::TYPE_SHARPENING 
+        $orderType = $request->service_type === 'sharpening'
+            ? Order::TYPE_SHARPENING
             : Order::TYPE_REPAIR;
 
         // Определяем срочность
-        $urgency = $request->urgency === 'urgent' 
-            ? Order::URGENCY_URGENT 
+        $urgency = $request->urgency === 'urgent'
+            ? Order::URGENCY_URGENT
             : Order::URGENCY_NORMAL;
 
         // Подготавливаем данные для создания заказа

@@ -57,6 +57,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/orders', 'orders');
         Route::get('/orders/count', 'ordersCount'); // Должен быть ПЕРЕД /orders/{id}
         Route::get('/orders/{id}', 'order');
+        Route::patch('/orders/{id}/update', 'updateOrder');
+        Route::patch('/orders/{id}/status', 'updateOrderStatus');
+        
+        // Работы заказа
+        Route::get('/orders/{id}/works', 'getOrderWorks');
+        Route::post('/orders/{id}/works', 'createOrderWork');
+        Route::patch('/orders/{orderId}/works/{workId}', 'updateOrderWork');
+        Route::delete('/orders/{orderId}/works/{workId}', 'deleteOrderWork');
+        
+        // Материалы заказа
+        Route::get('/orders/{id}/materials', 'getOrderMaterials');
+        Route::post('/orders/{orderId}/works/{workId}/materials', 'addOrderMaterial');
+        Route::delete('/orders/{orderId}/works/{workId}/materials/{materialId}', 'removeOrderMaterial');
+        
         Route::get('/warehouse/items', 'warehouseItems');
+        
+        // Telegram для мастеров
+        Route::post('/telegram/send-verification-code', 'sendTelegramVerificationCode');
+        Route::post('/telegram/verify-code', 'verifyTelegramCode');
     });
 });

@@ -20,6 +20,7 @@ class Master extends Authenticatable
         'phone',
         'telegram_username',
         'notifications_enabled',
+        'telegram_verified_at',
         'password',
         'is_deleted',
     ];
@@ -31,6 +32,7 @@ class Master extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'telegram_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_deleted' => 'boolean',
         'notifications_enabled' => 'boolean',

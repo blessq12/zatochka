@@ -67,6 +67,16 @@ const routes = [
                 component: () => import("../pages/Pos/OrdersActivePage.vue"),
             },
             {
+                path: "orders/waiting-parts",
+                name: "pos.orders.waiting-parts",
+                component: () => import("../pages/Pos/OrdersWaitingPartsPage.vue"),
+            },
+            {
+                path: "orders/in-work/:id",
+                name: "pos.orders.in-work",
+                component: () => import("../pages/Pos/OrderInWorkPage.vue"),
+            },
+            {
                 path: "orders/completed",
                 name: "pos.orders.completed",
                 component: () => import("../pages/Pos/OrdersCompletedPage.vue"),
@@ -85,6 +95,11 @@ const routes = [
                 path: "settings/profile",
                 name: "pos.settings.profile",
                 component: () => import("../pages/Pos/SettingsProfilePage.vue"),
+            },
+            {
+                path: "settings/telegram",
+                name: "pos.settings.telegram",
+                component: () => import("../pages/Pos/SettingsTelegramPage.vue"),
             },
             {
                 path: "",

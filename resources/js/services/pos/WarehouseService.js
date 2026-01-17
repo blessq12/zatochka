@@ -12,7 +12,9 @@ export const warehouseService = {
     async getWarehouseItems(type = null) {
         try {
             const params = type ? { type } : {};
-            const response = await axios.get("/api/pos/warehouse/items", { params });
+            const response = await axios.get("/api/pos/warehouse/items", {
+                params,
+            });
             return response.data.items || [];
         } catch (error) {
             console.error("Error fetching warehouse items:", error);

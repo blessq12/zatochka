@@ -1,45 +1,57 @@
 <template>
     <div class="pos-page-content">
-        <div class="page-header">
-            <h1>Активные заказы</h1>
-        </div>
         <div class="page-body">
             <div v-if="isLoading" class="loading">Загрузка...</div>
             <div v-else-if="orders.length === 0" class="empty-state">
                 <p>Активных заказов нет</p>
             </div>
             <div v-else class="orders-list">
-                <div
+                <OrderCard
                     v-for="order in orders"
                     :key="order.id"
-                    class="order-card"
-                >
-                    <div class="order-header">
-                        <span class="order-number">{{ order.order_number }}</span>
-                        <span class="order-status">{{ getStatusLabel(order.status) }}</span>
-                    </div>
-                    <div class="order-info">
-                        <p><strong>Клиент:</strong> {{ order.client?.full_name }}</p>
-                        <p><strong>Тип:</strong> {{ getTypeLabel(order.service_type) }}</p>
-                        <p v-if="order.estimated_price">
-                            <strong>Цена:</strong> {{ formatPrice(order.estimated_price) }} ₽
-                        </p>
-                    </div>
-                </div>
+                    :order="order"
+                    :primary-action="true"
+                    primary-action-text="В работу"
+                    primary-action-class="btn-work"
+                    @view-details="openOrderDetails"
+                    @primary-action="goToOrderEdit"
+                />
             </div>
+
+            <OrderDetailsModal
+                :is-open="isModalOpen"
+                :order-id="selectedOrderId"
+                @close="closeOrderDetails"
+            />
         </div>
     </div>
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { orderService } from "../../services/pos/OrderService.js";
+import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
+import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
+import OrderDetailsModal from "../../components/Pos/OrderDetailsModal.vue";
+import OrderCard from "../../components/Pos/OrderCard.vue";
+import OrderStats from "../../components/Pos/OrderStats.vue";
 
 export default {
     name: "OrdersActivePage",
+    components: {
+        OrderDetailsModal,
+        OrderCard,
+        OrderStats,
+    },
     setup() {
+        const router = useRouter();
+        const route = useRoute();
         const orders = ref([]);
         const isLoading = ref(false);
+        const isModalOpen = ref(false);
+        const selectedOrderId = ref(null);
+        const { setNavigationItems, setCustomContent, reset } = useHeaderNavigation();
 
         const fetchOrders = async () => {
             isLoading.value = true;
@@ -52,16 +64,43 @@ export default {
             }
         };
 
+        const goToOrderEdit = (orderId) => {
+            router.push({ name: "pos.orders.in-work", params: { id: orderId } });
+        };
+
+        const openOrderDetails = (orderId) => {
+            selectedOrderId.value = orderId;
+            isModalOpen.value = true;
+        };
+
+        const closeOrderDetails = () => {
+            isModalOpen.value = false;
+            selectedOrderId.value = null;
+        };
+
+        // Автообновление заказов каждые 20 секунд
+        useAutoRefresh(fetchOrders, 20000, true);
+
+        // Регистрация кастомного управления (кнопки со счетчиками) для экрана заказов
         onMounted(() => {
-            fetchOrders();
+            setCustomContent({
+                component: OrderStats,
+                props: {},
+            });
+        });
+
+        onUnmounted(() => {
+            reset();
         });
 
         return {
             orders,
             isLoading,
-            getStatusLabel: orderService.getStatusLabel,
-            getTypeLabel: orderService.getTypeLabel,
-            formatPrice: orderService.formatPrice,
+            isModalOpen,
+            selectedOrderId,
+            goToOrderEdit,
+            openOrderDetails,
+            closeOrderDetails,
         };
     },
 };
@@ -75,14 +114,6 @@ export default {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.page-header h1 {
-    font-size: 2rem;
-    font-weight: 900;
-    color: #003859;
-    margin: 0 0 2rem 0;
-    font-family: "Jost", sans-serif;
-}
-
 .loading,
 .empty-state {
     text-align: center;
@@ -94,48 +125,5 @@ export default {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
-}
-
-.order-card {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 1.5rem;
-    transition: all 0.2s;
-}
-
-.order-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-}
-
-.order-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e5e7eb;
-}
-
-.order-number {
-    font-weight: 700;
-    font-size: 1.125rem;
-    color: #046490;
-}
-
-.order-status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.order-info p {
-    margin: 0.5rem 0;
-    color: #374151;
-    font-size: 0.875rem;
 }
 </style>

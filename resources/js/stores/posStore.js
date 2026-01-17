@@ -12,6 +12,8 @@ export const usePosStore = defineStore("pos", {
         ordersCount: {
             new: 0,
             in_work: 0,
+            waiting_parts: 0,
+            ready: 0,
         },
     }),
 
@@ -100,11 +102,15 @@ export const usePosStore = defineStore("pos", {
                 // Обновляем состояние явно
                 this.ordersCount.new = counts.new || 0;
                 this.ordersCount.in_work = counts.in_work || 0;
+                this.ordersCount.waiting_parts = counts.waiting_parts || 0;
+                this.ordersCount.ready = counts.ready || 0;
             } catch (error) {
                 console.error("Failed to fetch orders count:", error);
                 // Сбрасываем на 0 при ошибке
                 this.ordersCount.new = 0;
                 this.ordersCount.in_work = 0;
+                this.ordersCount.waiting_parts = 0;
+                this.ordersCount.ready = 0;
             }
         },
 
@@ -163,6 +169,8 @@ export const usePosStore = defineStore("pos", {
                 this.ordersCount = {
                     new: 0,
                     in_work: 0,
+                    waiting_parts: 0,
+                    ready: 0,
                 };
                 localStorage.removeItem("pos_token");
             }

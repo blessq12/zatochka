@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Master;
 use App\Models\Order;
+use App\Models\TelegramChat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -170,7 +172,7 @@ class PosController extends Controller
             ], 401);
         }
 
-        $status = $request->get('status'); // new, active, completed
+        $status = $request->get('status'); // new, active, waiting_parts, completed
 
         $query = Order::with(['client', 'branch', 'master'])
             ->where('is_deleted', false)
@@ -184,10 +186,9 @@ class PosController extends Controller
                 Order::STATUS_DIAGNOSTIC,
             ]);
         } elseif ($status === 'active') {
-            $query->whereIn('status', [
-                Order::STATUS_IN_WORK,
-                Order::STATUS_WAITING_PARTS,
-            ]);
+            $query->where('status', Order::STATUS_IN_WORK);
+        } elseif ($status === 'waiting_parts') {
+            $query->where('status', Order::STATUS_WAITING_PARTS);
         } elseif ($status === 'completed') {
             $query->whereIn('status', [
                 Order::STATUS_READY,
@@ -227,18 +228,29 @@ class PosController extends Controller
             ])
             ->count();
 
-        // Заказы в работе (in_work, waiting_parts)
+        // Заказы в работе (in_work)
         $inWorkCount = Order::where('is_deleted', 0)
             ->where('master_id', $master->id)
-            ->whereIn('status', [
-                Order::STATUS_IN_WORK,
-                Order::STATUS_WAITING_PARTS,
-            ])
+            ->where('status', Order::STATUS_IN_WORK)
+            ->count();
+
+        // Ожидание запчастей (waiting_parts)
+        $waitingPartsCount = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->where('status', Order::STATUS_WAITING_PARTS)
+            ->count();
+
+        // Готовые заказы (ready)
+        $readyCount = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->where('status', Order::STATUS_READY)
             ->count();
 
         return response()->json([
             'new' => $newCount,
             'in_work' => $inWorkCount,
+            'waiting_parts' => $waitingPartsCount,
+            'ready' => $readyCount,
         ]);
     }
 
@@ -256,7 +268,13 @@ class PosController extends Controller
             ], 401);
         }
 
-        $order = Order::with(['client', 'branch', 'master', 'manager'])
+        $order = Order::with([
+            'client',
+            'branch',
+            'master',
+            'manager',
+            'orderWorks.warehouseItems',
+        ])
             ->where('is_deleted', false)
             ->where('master_id', $master->id)
             ->find($id);
@@ -269,6 +287,87 @@ class PosController extends Controller
 
         return response()->json([
             'order' => $order,
+        ]);
+    }
+
+    /**
+     * Обновить заказ (комментарии и другие поля)
+     */
+    public function updateOrder(Request $request, $id)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($id);
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order not found',
+            ], 404);
+        }
+
+        $request->validate([
+            'internal_notes' => 'nullable|string|max:5000',
+        ]);
+
+        $order->update($request->only(['internal_notes']));
+
+        return response()->json([
+            'message' => 'Order updated',
+            'order' => $order->fresh(['client', 'branch', 'master']),
+        ]);
+    }
+
+    /**
+     * Обновить статус заказа
+     */
+    public function updateOrderStatus(Request $request, $id)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($id);
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order not found',
+            ], 404);
+        }
+
+        $request->validate([
+            'status' => 'required|string|in:' . implode(',', [
+                Order::STATUS_NEW,
+                Order::STATUS_CONSULTATION,
+                Order::STATUS_DIAGNOSTIC,
+                Order::STATUS_IN_WORK,
+                Order::STATUS_WAITING_PARTS,
+                Order::STATUS_READY,
+                Order::STATUS_ISSUED,
+                Order::STATUS_CANCELLED,
+            ]),
+        ]);
+
+        $order->update(['status' => $request->status]);
+
+        return response()->json([
+            'message' => 'Order status updated',
+            'order' => $order->fresh(['client', 'branch', 'master']),
         ]);
     }
 
@@ -288,10 +387,507 @@ class PosController extends Controller
 
         $type = $request->get('type'); // parts, materials
 
-        // TODO: Реализовать получение товаров склада
-        // Пока возвращаем заглушку
+        $query = \App\Models\WarehouseItem::with('category')
+            ->where('is_active', true);
+
+        // TODO: Реализовать фильтрацию по типу, если в категориях есть поле type
+        // Пока возвращаем все активные товары
+        $items = $query->orderBy('name')->get();
+
         return response()->json([
-            'items' => [],
+            'items' => $items,
         ]);
+    }
+
+    /**
+     * Получить работы заказа
+     */
+    public function getOrderWorks(Request $request, $id)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($id);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $works = \App\Models\OrderWork::where('order_id', $order->id)
+            ->where('is_deleted', 0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json(['works' => $works]);
+    }
+
+    /**
+     * Создать работу для заказа
+     */
+    public function createOrderWork(Request $request, $id)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($id);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $request->validate([
+            'description' => 'required|string|max:1000',
+            'work_price' => 'required|numeric|min:0',
+        ]);
+
+        $work = \App\Models\OrderWork::create([
+            'order_id' => $order->id,
+            'work_type' => 'repair', // По умолчанию
+            'description' => $request->description,
+            'quantity' => 1,
+            'work_price' => $request->work_price,
+        ]);
+
+        return response()->json([
+            'message' => 'Work created successfully',
+            'work' => $work->fresh(),
+        ], 201);
+    }
+
+    /**
+     * Обновить работу заказа
+     */
+    public function updateOrderWork(Request $request, $orderId, $workId)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($orderId);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $work = \App\Models\OrderWork::where('order_id', $order->id)
+            ->where('id', $workId)
+            ->where('is_deleted', 0)
+            ->first();
+
+        if (!$work) {
+            return response()->json(['message' => 'Work not found'], 404);
+        }
+
+        $request->validate([
+            'work_type' => 'sometimes|string|in:repair,sharpening,diagnostic',
+            'description' => 'sometimes|string|max:1000',
+            'quantity' => 'sometimes|integer|min:1',
+            'unit_price' => 'sometimes|numeric|min:0',
+            'work_price' => 'sometimes|numeric|min:0',
+            'work_time_minutes' => 'sometimes|integer|min:0',
+        ]);
+
+        $work->update($request->only([
+            'work_type',
+            'description',
+            'quantity',
+            'unit_price',
+            'work_price',
+            'work_time_minutes',
+        ]));
+
+        return response()->json([
+            'message' => 'Work updated successfully',
+            'work' => $work->fresh(),
+        ]);
+    }
+
+    /**
+     * Удалить работу заказа
+     */
+    public function deleteOrderWork(Request $request, $orderId, $workId)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($orderId);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $work = \App\Models\OrderWork::where('order_id', $order->id)
+            ->where('id', $workId)
+            ->where('is_deleted', 0)
+            ->first();
+
+        if (!$work) {
+            return response()->json(['message' => 'Work not found'], 404);
+        }
+
+        $work->update(['is_deleted' => 1]);
+
+        return response()->json(['message' => 'Work deleted successfully']);
+    }
+
+    /**
+     * Получить материалы заказа
+     */
+    public function getOrderMaterials(Request $request, $id)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($id);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $works = \App\Models\OrderWork::where('order_id', $order->id)
+            ->where('is_deleted', 0)
+            ->with(['warehouseItems'])
+            ->get();
+
+        $materials = [];
+        foreach ($works as $work) {
+            foreach ($work->warehouseItems as $item) {
+                $materials[] = [
+                    'id' => $item->id,
+                    'work_id' => $work->id,
+                    'warehouse_item_id' => $item->id,
+                    'name' => $item->name,
+                    'article' => $item->article,
+                    'quantity' => $item->pivot->quantity,
+                    'price' => $item->pivot->price,
+                    'notes' => $item->pivot->notes,
+                ];
+            }
+        }
+
+        return response()->json(['materials' => $materials]);
+    }
+
+    /**
+     * Добавить материал к работе заказа
+     */
+    public function addOrderMaterial(Request $request, $orderId, $workId)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($orderId);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $work = \App\Models\OrderWork::where('order_id', $order->id)
+            ->where('id', $workId)
+            ->where('is_deleted', 0)
+            ->first();
+
+        if (!$work) {
+            return response()->json(['message' => 'Work not found'], 404);
+        }
+
+        $request->validate([
+            'warehouse_item_id' => 'required|exists:warehouse_items,id',
+            'quantity' => 'required|numeric|min:0.001',
+            'price' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $warehouseItem = \App\Models\WarehouseItem::find($request->warehouse_item_id);
+        
+        if (!$warehouseItem || !$warehouseItem->is_active) {
+            return response()->json(['message' => 'Warehouse item not found or inactive'], 404);
+        }
+
+        // Проверяем наличие на складе
+        if ($warehouseItem->available_quantity < $request->quantity) {
+            return response()->json([
+                'message' => 'Not enough stock. Available: ' . $warehouseItem->available_quantity,
+            ], 400);
+        }
+
+        // Используем цену из запроса или из товара
+        $price = $request->price ?? $warehouseItem->price;
+
+        // Присоединяем материал к работе
+        $work->warehouseItems()->syncWithoutDetaching([
+            $request->warehouse_item_id => [
+                'quantity' => $request->quantity,
+                'price' => $price,
+                'notes' => $request->notes,
+            ],
+        ]);
+
+        // Обновляем стоимость материалов в работе
+        $totalMaterialsCost = $work->warehouseItems()->sum(
+            \Illuminate\Support\Facades\DB::raw('work_warehouse_items.quantity * work_warehouse_items.price')
+        );
+        $work->update(['materials_cost' => $totalMaterialsCost]);
+
+        return response()->json([
+            'message' => 'Material added successfully',
+            'material' => [
+                'warehouse_item_id' => $warehouseItem->id,
+                'name' => $warehouseItem->name,
+                'quantity' => $request->quantity,
+                'price' => $price,
+            ],
+        ]);
+    }
+
+    /**
+     * Удалить материал из работы заказа
+     */
+    public function removeOrderMaterial(Request $request, $orderId, $workId, $materialId)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $order = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id)
+            ->find($orderId);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $work = \App\Models\OrderWork::where('order_id', $order->id)
+            ->where('id', $workId)
+            ->where('is_deleted', 0)
+            ->first();
+
+        if (!$work) {
+            return response()->json(['message' => 'Work not found'], 404);
+        }
+
+        $work->warehouseItems()->detach($materialId);
+
+        // Обновляем стоимость материалов в работе
+        $totalMaterialsCost = $work->warehouseItems()->sum(
+            \Illuminate\Support\Facades\DB::raw('work_warehouse_items.quantity * work_warehouse_items.price')
+        );
+        $work->update(['materials_cost' => $totalMaterialsCost]);
+
+        return response()->json(['message' => 'Material removed successfully']);
+    }
+
+    /**
+     * Отправить код верификации Telegram для мастера
+     */
+    public function sendTelegramVerificationCode(Request $request)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if (!$master->telegram_username) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Telegram username not specified in profile',
+            ], 400);
+        }
+
+        // Проверяем, не подтвержден ли уже Telegram
+        if ($master->telegram_verified_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Telegram already verified',
+            ], 400);
+        }
+
+        // Генерируем 6-значный код
+        $code = str_pad((string) rand(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Сохраняем код в кеш на 5 минут (ключ: master_id + username)
+        $cacheKey = "telegram_verification_master:{$master->id}:{$master->telegram_username}";
+        Cache::put($cacheKey, [
+            'code' => $code,
+            'master_id' => $master->id,
+            'username' => $master->telegram_username,
+        ], now()->addMinutes(5));
+
+        // Находим чат по username
+        $telegramChat = TelegramChat::byUsername($master->telegram_username)->active()->first();
+
+        if (!$telegramChat) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chat not found. Please send /start to the bot first',
+            ], 404);
+        }
+
+        // Отправляем код в Telegram
+        $botToken = config('services.telegram.bot_token');
+        $message = "🔐 Код верификации: <b>{$code}</b>\n\nВведите этот код в панели мастера или отправьте мне для подтверждения.";
+        $this->sendTelegramMessage($botToken, $telegramChat->chat_id, $message);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verification code sent',
+            'telegram_username' => $master->telegram_username,
+            'expires_in_minutes' => 5,
+        ]);
+    }
+
+    /**
+     * Проверка кода верификации Telegram для мастера
+     */
+    public function verifyTelegramCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ]);
+
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if (!$master->telegram_username) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Telegram username not specified',
+            ], 400);
+        }
+
+        $code = $request->input('code');
+
+        // Проверяем код в кеше
+        $cacheKey = "telegram_verification_master:{$master->id}:{$master->telegram_username}";
+        $cachedData = Cache::get($cacheKey);
+
+        if (!$cachedData || $cachedData['code'] !== $code) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired verification code',
+            ], 400);
+        }
+
+        // Находим чат
+        $telegramChat = TelegramChat::byUsername($master->telegram_username)->active()->first();
+
+        if (!$telegramChat) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Telegram chat not found',
+            ], 404);
+        }
+
+        // Обновляем мастера
+        $master->update([
+            'telegram_verified_at' => now(),
+        ]);
+
+        // Удаляем код из кеша
+        Cache::forget($cacheKey);
+
+        // Отправляем подтверждение в Telegram
+        $botToken = config('services.telegram.bot_token');
+        $message = "✅ Telegram успешно подтвержден!\n\nТеперь вы будете получать уведомления о заказах автоматически.";
+        $this->sendTelegramMessage($botToken, $telegramChat->chat_id, $message);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Telegram verified successfully',
+            'telegram_username' => $master->telegram_username,
+            'verified_at' => $master->telegram_verified_at->toIso8601String(),
+            'user' => $master->fresh(),
+        ]);
+    }
+
+    /**
+     * Отправить сообщение в Telegram
+     */
+    private function sendTelegramMessage(string $botToken, int $chatId, string $message, bool $withKeyboard = false): void
+    {
+        $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
+
+        $data = [
+            'chat_id' => $chatId,
+            'text' => $message,
+            'parse_mode' => 'HTML',
+        ];
+
+        if ($withKeyboard) {
+            $keyboard = [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '👤 Аккаунт', 'callback_data' => 'account'],
+                        ['text' => '📋 Активные заказы', 'callback_data' => 'active_orders'],
+                    ],
+                    [
+                        ['text' => '📚 История заказов', 'callback_data' => 'history_orders'],
+                    ],
+                ],
+            ];
+            $data['reply_markup'] = json_encode($keyboard);
+        }
+
+        try {
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_exec($ch);
+            curl_close($ch);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Telegram send message error: ' . $e->getMessage());
+        }
     }
 }

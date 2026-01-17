@@ -10,21 +10,19 @@
                     <div class="user-email">{{ user?.email }}</div>
                 </div>
             </div>
-            <div class="orders-stats">
+            <div class="header-navigation" v-if="navigationItems.length > 0">
                 <router-link
-                    :to="{ name: 'pos.orders.new' }"
-                    class="stat-item stat-item-new"
+                    v-for="item in navigationItems"
+                    :key="item.name"
+                    :to="item.to"
+                    class="nav-btn"
+                    :class="{ active: item.active }"
                 >
-                    <span class="stat-label">Новых</span>
-                    <span class="stat-value">{{ ordersCount.new }}</span>
+                    {{ item.label }}
                 </router-link>
-                <router-link
-                    :to="{ name: 'pos.orders.active' }"
-                    class="stat-item stat-item-active"
-                >
-                    <span class="stat-label">В работе</span>
-                    <span class="stat-value">{{ ordersCount.in_work }}</span>
-                </router-link>
+            </div>
+            <div class="header-custom-content" v-if="customContent">
+                <component :is="customContent.component" v-bind="customContent.props || {}" :key="customContentKey" />
             </div>
         </div>
         <div class="header-actions">
@@ -36,18 +34,20 @@
 </template>
 
 <script>
-import { computed, onMounted } from "vue";
+import { computed, resolveComponent, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { usePosStore } from "../../stores/posStore.js";
+import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
+import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
 
 export default {
     name: "PosHeader",
     setup() {
         const router = useRouter();
         const posStore = usePosStore();
+        const { navigationItems, customContent } = useHeaderNavigation();
 
         const user = computed(() => posStore.user);
-        const ordersCount = computed(() => posStore.ordersCount);
 
         const fullName = computed(() => {
             if (!user.value) return "";
@@ -71,16 +71,21 @@ export default {
             router.push("/pos");
         };
 
-        onMounted(() => {
-            // Загружаем счетчики заказов при монтировании
-            posStore.getOrdersCount();
+        // Автообновление счетчиков заказов каждые 20 секунд
+        useAutoRefresh(() => posStore.getOrdersCount(), 20000, true);
+
+        // Ключ для принудительного обновления компонента
+        const customContentKey = computed(() => {
+            return customContent.value ? JSON.stringify(customContent.value) : null;
         });
 
         return {
             user,
             fullName,
             userInitials,
-            ordersCount,
+            navigationItems,
+            customContent,
+            customContentKey,
             handleLogout,
         };
     },
@@ -113,58 +118,43 @@ export default {
     gap: 1rem;
 }
 
-.orders-stats {
+.header-navigation {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     align-items: center;
 }
 
-.stat-item {
+.header-custom-content {
     display: flex;
-    flex-direction: row;
     align-items: center;
     gap: 0.5rem;
+}
+
+.nav-btn {
     padding: 0.5rem 1rem;
     background: #f9fafb;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
     text-decoration: none;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-.stat-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.stat-item-new {
-    border-left: 3px solid #3b82f6;
-}
-
-.stat-item-new:hover {
-    background: #eff6ff;
-}
-
-.stat-item-active {
-    border-left: 3px solid #f59e0b;
-}
-
-.stat-item-active:hover {
-    background: #fffbeb;
-}
-
-.stat-label {
-    font-size: 0.75rem;
     color: #6b7280;
+    font-size: 0.875rem;
     font-weight: 500;
-}
-
-.stat-value {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: #003859;
+    transition: all 0.2s;
     font-family: "Jost", sans-serif;
 }
+
+.nav-btn:hover {
+    background: #f3f4f6;
+    color: #003859;
+    border-color: #d1d5db;
+}
+
+.nav-btn.active {
+    background: #003859;
+    color: white;
+    border-color: #003859;
+}
+
 
 .user-avatar {
     width: 40px;
@@ -242,10 +232,6 @@ export default {
         gap: 1rem;
     }
 
-    .orders-stats {
-        width: 100%;
-        justify-content: space-around;
-    }
 
     .header-actions {
         width: 100%;

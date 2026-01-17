@@ -135,14 +135,18 @@
 </template>
 
 <script>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { usePosStore } from "../../stores/posStore.js";
+import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
 import * as yup from "yup";
 
 export default {
     name: "SettingsProfilePage",
     setup() {
+        const route = useRoute();
         const posStore = usePosStore();
+        const { setNavigationItems, reset } = useHeaderNavigation();
 
         const user = computed(() => posStore.user);
         const isLoading = computed(() => posStore.isLoading);
@@ -254,6 +258,22 @@ export default {
         };
 
         onMounted(async () => {
+            // Регистрация элементов навигации в Header
+            setNavigationItems([
+                {
+                    name: "profile",
+                    label: "Профиль",
+                    to: { name: "pos.settings.profile" },
+                    active: route.name === "pos.settings.profile",
+                },
+                {
+                    name: "telegram",
+                    label: "Telegram",
+                    to: { name: "pos.settings.telegram" },
+                    active: route.name === "pos.settings.telegram",
+                },
+            ]);
+
             // Проверяем авторизацию при загрузке
             if (!posStore.isAuthenticated) {
                 await posStore.getMe();
@@ -262,6 +282,10 @@ export default {
             if (user.value) {
                 initializeForm();
             }
+        });
+
+        onUnmounted(() => {
+            reset();
         });
 
         // Следим за изменениями user для инициализации формы

@@ -115,6 +115,17 @@ class Order extends Model implements HasMedia
         return $this->belongsTo(\App\Models\Master::class, 'master_id');
     }
 
+    public function orderWorks()
+    {
+        return $this->hasMany(OrderWork::class, 'order_id')->where('is_deleted', false);
+    }
+
+    // Alias для обратной совместимости
+    public function works()
+    {
+        return $this->orderWorks();
+    }
+
     public function activities()
     {
         return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject');

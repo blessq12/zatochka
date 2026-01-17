@@ -3,7 +3,7 @@
         <div class="page-body">
             <div v-if="isLoading" class="loading">Загрузка...</div>
             <div v-else-if="orders.length === 0" class="empty-state">
-                <p>Новых заказов нет</p>
+                <p>Заказов в ожидании запчастей нет</p>
             </div>
             <div v-else class="orders-list">
                 <OrderCard
@@ -11,12 +11,10 @@
                     :key="order.id"
                     :order="order"
                     :primary-action="true"
-                    primary-action-text="Взять в работу"
-                    primary-action-loading-text="Сохранение..."
-                    primary-action-class="btn-status-in-work"
-                    :is-loading="isUpdatingStatus"
+                    primary-action-text="В работу"
+                    primary-action-class="btn-work"
                     @view-details="openOrderDetails"
-                    @primary-action="changeStatusToInWork"
+                    @primary-action="goToOrderEdit"
                 />
             </div>
 
@@ -30,38 +28,35 @@
 </template>
 
 <script>
-import { reactive, ref, onMounted, onUnmounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { orderService } from "../../services/pos/OrderService.js";
 import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
-import { usePosStore } from "../../stores/posStore.js";
 import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
-import { toastService } from "../../services/toastService.js";
 import OrderDetailsModal from "../../components/Pos/OrderDetailsModal.vue";
 import OrderCard from "../../components/Pos/OrderCard.vue";
 import OrderStats from "../../components/Pos/OrderStats.vue";
 
 export default {
-    name: "OrdersNewPage",
+    name: "OrdersWaitingPartsPage",
     components: {
         OrderDetailsModal,
         OrderCard,
         OrderStats,
     },
     setup() {
+        const router = useRouter();
         const route = useRoute();
         const orders = ref([]);
         const isLoading = ref(false);
         const isModalOpen = ref(false);
         const selectedOrderId = ref(null);
-        const isUpdatingStatus = reactive({});
-        const posStore = usePosStore();
-        const { setNavigationItems, setCustomContent, reset } = useHeaderNavigation();
+        const { setCustomContent, reset } = useHeaderNavigation();
 
         const fetchOrders = async () => {
             isLoading.value = true;
             try {
-                orders.value = await orderService.getNewOrders();
+                orders.value = await orderService.getWaitingPartsOrders();
             } catch (error) {
                 console.error("Error fetching orders:", error);
             } finally {
@@ -69,27 +64,8 @@ export default {
             }
         };
 
-        const changeStatusToInWork = async (orderId) => {
-            if (isUpdatingStatus[orderId]) return;
-
-            isUpdatingStatus[orderId] = true;
-            try {
-                await orderService.updateOrderStatus(orderId, "in_work");
-                toastService.success("Заказ взят в работу");
-                
-                // Обновляем список заказов
-                await fetchOrders();
-                
-                // Обновляем счетчики
-                await posStore.getOrdersCount();
-            } catch (error) {
-                console.error("Error updating order status:", error);
-                toastService.error(
-                    error.response?.data?.message || "Ошибка при изменении статуса заказа"
-                );
-            } finally {
-                isUpdatingStatus[orderId] = false;
-            }
+        const goToOrderEdit = (orderId) => {
+            router.push({ name: "pos.orders.in-work", params: { id: orderId } });
         };
 
         const openOrderDetails = (orderId) => {
@@ -122,10 +98,9 @@ export default {
             isLoading,
             isModalOpen,
             selectedOrderId,
-            isUpdatingStatus,
+            goToOrderEdit,
             openOrderDetails,
             closeOrderDetails,
-            changeStatusToInWork,
         };
     },
 };

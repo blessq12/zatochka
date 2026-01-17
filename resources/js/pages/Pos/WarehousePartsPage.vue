@@ -3,14 +3,27 @@
         <div class="page-header">
             <h1>Запчасти</h1>
         </div>
+        
+        <!-- Строка поиска -->
+        <div class="search-section">
+            <input
+                v-model="searchQuery"
+                type="text"
+                class="search-input"
+                placeholder="Поиск по названию или артикулу..."
+            />
+        </div>
+
         <div class="page-body">
+            <!-- Результаты -->
             <div v-if="isLoading" class="loading">Загрузка...</div>
-            <div v-else-if="items.length === 0" class="empty-state">
-                <p>Запчастей нет</p>
+            <div v-else-if="filteredItems.length === 0" class="empty-state">
+                <p v-if="searchQuery">Ничего не найдено по запросу "{{ searchQuery }}"</p>
+                <p v-else>Запчастей нет</p>
             </div>
             <div v-else class="items-list">
                 <div
-                    v-for="item in items"
+                    v-for="item in filteredItems"
                     :key="item.id"
                     class="item-card"
                 >
@@ -31,15 +44,35 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
 import { warehouseService } from "../../services/pos/WarehouseService.js";
 import { orderService } from "../../services/pos/OrderService.js";
+import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
+import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
 
 export default {
     name: "WarehousePartsPage",
     setup() {
+        const route = useRoute();
         const items = ref([]);
         const isLoading = ref(false);
+        const searchQuery = ref("");
+        const { setNavigationItems, reset } = useHeaderNavigation();
+
+        // Фильтрация товаров по поисковому запросу
+        const filteredItems = computed(() => {
+            if (!searchQuery.value.trim()) {
+                return items.value;
+            }
+
+            const query = searchQuery.value.trim().toLowerCase();
+            return items.value.filter((item) => {
+                const nameMatch = item.name?.toLowerCase().includes(query);
+                const articleMatch = item.article?.toLowerCase().includes(query);
+                return nameMatch || articleMatch;
+            });
+        });
 
         const fetchItems = async () => {
             isLoading.value = true;
@@ -52,13 +85,36 @@ export default {
             }
         };
 
+        // Автообновление товаров склада каждые 20 секунд
+        useAutoRefresh(fetchItems, 20000, true);
+
+        // Регистрация элементов навигации в Header
         onMounted(() => {
-            fetchItems();
+            setNavigationItems([
+                {
+                    name: "parts",
+                    label: "Запчасти",
+                    to: { name: "pos.warehouse.parts" },
+                    active: route.name === "pos.warehouse.parts",
+                },
+                {
+                    name: "materials",
+                    label: "Расходные материалы",
+                    to: { name: "pos.warehouse.materials" },
+                    active: route.name === "pos.warehouse.materials",
+                },
+            ]);
+        });
+
+        onUnmounted(() => {
+            reset();
         });
 
         return {
             items,
             isLoading,
+            searchQuery,
+            filteredItems,
             formatPrice: orderService.formatPrice,
         };
     },
@@ -73,12 +129,37 @@ export default {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
 .page-header h1 {
     font-size: 2rem;
     font-weight: 900;
     color: #003859;
-    margin: 0 0 2rem 0;
+    margin: 0;
     font-family: "Jost", sans-serif;
+}
+
+.search-section {
+    margin-bottom: 2rem;
+    display: block;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: "Jost", sans-serif;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #046490;
+    box-shadow: 0 0 0 3px rgba(4, 100, 144, 0.1);
 }
 
 .loading,

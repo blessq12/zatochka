@@ -37,11 +37,34 @@ export const orderService = {
     },
 
     /**
+     * Получить заказы в ожидании запчастей
+     * @returns {Promise<Array>}
+     */
+    async getWaitingPartsOrders() {
+        return this.getOrders("waiting_parts");
+    },
+
+    /**
      * Получить завершенные заказы
      * @returns {Promise<Array>}
      */
     async getCompletedOrders() {
         return this.getOrders("completed");
+    },
+
+    /**
+     * Получить детали заказа по ID
+     * @param {number|string} orderId
+     * @returns {Promise<Object>}
+     */
+    async getOrderById(orderId) {
+        try {
+            const response = await axios.get(`/api/pos/orders/${orderId}`);
+            return response.data.order;
+        } catch (error) {
+            console.error("Error fetching order:", error);
+            throw error;
+        }
     },
 
     /**
@@ -54,10 +77,30 @@ export const orderService = {
             return {
                 new: response.data.new || 0,
                 in_work: response.data.in_work || 0,
+                waiting_parts: response.data.waiting_parts || 0,
+                ready: response.data.ready || 0,
             };
         } catch (error) {
             console.error("Error fetching orders count:", error);
-            return { new: 0, in_work: 0 };
+            return { new: 0, in_work: 0, waiting_parts: 0, ready: 0 };
+        }
+    },
+
+    /**
+     * Обновить статус заказа
+     * @param {number|string} orderId
+     * @param {string} status
+     * @returns {Promise<Object>}
+     */
+    async updateOrderStatus(orderId, status) {
+        try {
+            const response = await axios.patch(`/api/pos/orders/${orderId}/status`, {
+                status,
+            });
+            return response.data.order;
+        } catch (error) {
+            console.error("Error updating order status:", error);
+            throw error;
         }
     },
 
