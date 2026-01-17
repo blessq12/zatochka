@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Resources\BranchResource;
 use App\Filament\Resources\ClientResource;
 use App\Filament\Resources\CompanyResource;
+use App\Filament\Resources\MasterResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PriceItemResource;
 use App\Filament\Resources\UserResource;
@@ -66,6 +67,7 @@ class AdminPanelProvider extends PanelProvider
                 CompanyResource::class,
                 BranchResource::class,
                 UserResource::class,
+                MasterResource::class,
                 // Справочники
                 PriceItemResource::class,
             ])

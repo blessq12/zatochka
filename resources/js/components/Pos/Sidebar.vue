@@ -1,4 +1,6 @@
 <script>
+import { usePosStore } from "../../stores/posStore.js";
+
 export default {
     name: "PosSidebar",
     data() {
@@ -10,6 +12,17 @@ export default {
                 settings: false,
             },
         };
+    },
+    computed: {
+        posStore() {
+            return usePosStore();
+        },
+        fullName() {
+            const user = this.posStore.user;
+            if (!user) return "";
+            const parts = [user.surname, user.name].filter(Boolean);
+            return parts.length > 0 ? parts.join(" ") : user.name || "";
+        },
     },
     methods: {
         toggleSection(section) {
@@ -38,10 +51,7 @@ export default {
                 >
                     <span class="nav-icon">📋</span>
                     <span class="nav-title">Заказы</span>
-                    <span
-                        class="nav-arrow"
-                        :class="{ open: sections.orders }"
-                    >
+                    <span class="nav-arrow" :class="{ open: sections.orders }">
                         ▼
                     </span>
                 </div>
@@ -169,12 +179,19 @@ export default {
 }
 
 .sidebar-subtitle {
-    margin: 0;
+    margin: 0 0 12px 0;
     font-size: 0.875rem;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+.user-name {
+    margin: 0;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
 }
 
 .sidebar-nav {

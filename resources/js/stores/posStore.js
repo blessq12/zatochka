@@ -8,6 +8,10 @@ export const usePosStore = defineStore("pos", {
         token: null,
         isLoading: false,
         error: null,
+        ordersCount: {
+            new: 0,
+            in_work: 0,
+        },
     }),
 
     getters: {
@@ -31,6 +35,9 @@ export const usePosStore = defineStore("pos", {
 
                     localStorage.setItem("pos_token", this.token);
                     toastService.success("Добро пожаловать!");
+
+                    // Загружаем счетчики заказов после логина
+                    await this.getOrdersCount();
 
                     return { success: true, data: response.data };
                 } else {
@@ -67,6 +74,8 @@ export const usePosStore = defineStore("pos", {
 
                 if (response.data.user) {
                     this.user = response.data.user;
+                    // Загружаем счетчики заказов после получения пользователя
+                    await this.getOrdersCount();
                     return true;
                 } else {
                     this.logout();
@@ -76,6 +85,55 @@ export const usePosStore = defineStore("pos", {
                 console.error("Auth check failed:", error);
                 this.logout();
                 return false;
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        /**
+         * Получить счетчики заказов
+         */
+        async getOrdersCount() {
+            try {
+                const response = await axios.get("/api/pos/orders/count");
+                if (response.data.new !== undefined && response.data.in_work !== undefined) {
+                    this.ordersCount = {
+                        new: response.data.new,
+                        in_work: response.data.in_work,
+                    };
+                }
+            } catch (error) {
+                console.error("Failed to fetch orders count:", error);
+            }
+        },
+
+        /**
+         * Обновить профиль мастера
+         */
+        async updateProfile(profileData) {
+            this.isLoading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post("/api/pos/profile/update", profileData);
+
+                if (response.data.user) {
+                    this.user = response.data.user;
+                    toastService.success("Профиль успешно обновлён");
+                    return { success: true, data: response.data };
+                } else {
+                    this.error = "Ошибка обновления профиля";
+                    return { success: false, error: this.error };
+                }
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message || "Ошибка обновления профиля";
+                const errors = error.response?.data?.errors;
+                return {
+                    success: false,
+                    error: this.error,
+                    errors: errors || {},
+                };
             } finally {
                 this.isLoading = false;
             }

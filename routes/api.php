@@ -53,7 +53,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('pos')->controller(PosController::class)->group(function () {
         Route::post('/logout', 'logout');
         Route::get('/me', 'me');
+        Route::post('/profile/update', 'updateProfile');
         Route::get('/orders', 'orders');
+        Route::get('/orders/count', 'ordersCount');
         Route::get('/warehouse/items', 'warehouseItems');
     });
 });

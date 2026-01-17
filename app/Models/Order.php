@@ -98,6 +98,10 @@ class Order extends Model implements HasMedia
         return $this->belongsTo(User::class, 'manager_id');
     }
 
+    public function master()
+    {
+        return $this->belongsTo(\App\Models\Master::class, 'master_id');
+    }
 
     public function activities()
     {

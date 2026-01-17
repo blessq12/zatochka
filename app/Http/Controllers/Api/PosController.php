@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Master;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class PosController extends Controller
@@ -26,24 +28,30 @@ class PosController extends Controller
             ], 422);
         }
 
-        $user = \App\Models\User::where('email', $request->email)->first();
+        $master = Master::where('email', $request->email)
+            ->where('is_deleted', false)
+            ->first();
 
-        if (!$user || !\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+        if (!$master || !Hash::check($request->password, $master->password)) {
             return response()->json([
                 'message' => 'Invalid credentials',
             ], 401);
         }
 
         // Создаем токен через Sanctum с уникальным именем для мастера
-        $token = $user->createToken('pos_master_token')->plainTextToken;
+        $token = $master->createToken('pos_master_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful',
             'token' => $token,
             'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
+                'id' => $master->id,
+                'name' => $master->name,
+                'surname' => $master->surname,
+                'email' => $master->email,
+                'phone' => $master->phone,
+                'telegram_username' => $master->telegram_username,
+                'notifications_enabled' => $master->notifications_enabled,
             ],
         ]);
     }
@@ -53,11 +61,12 @@ class PosController extends Controller
      */
     public function logout(Request $request)
     {
-        $user = $request->user();
+        /** @var Master $master */
+        $master = $request->user();
 
-        if ($user) {
+        if ($master) {
             // Удаляем текущий токен
-            $request->user()->currentAccessToken()->delete();
+            $master->currentAccessToken()->delete();
         }
 
         return response()->json([
@@ -70,9 +79,10 @@ class PosController extends Controller
      */
     public function me(Request $request)
     {
-        $user = $request->user();
+        /** @var Master $master */
+        $master = $request->user();
 
-        if (!$user) {
+        if (!$master) {
             return response()->json([
                 'message' => 'Unauthorized',
             ], 401);
@@ -80,9 +90,68 @@ class PosController extends Controller
 
         return response()->json([
             'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
+                'id' => $master->id,
+                'name' => $master->name,
+                'surname' => $master->surname,
+                'email' => $master->email,
+                'phone' => $master->phone,
+                'telegram_username' => $master->telegram_username,
+                'notifications_enabled' => $master->notifications_enabled,
+            ],
+        ]);
+    }
+
+    /**
+     * Обновить профиль мастера
+     */
+    public function updateProfile(Request $request)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'surname' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'telegram_username' => 'nullable|string|max:255',
+            'notifications_enabled' => 'sometimes|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $data = $validator->validated();
+
+        // Убираем @ из telegram_username если есть
+        if (isset($data['telegram_username'])) {
+            $data['telegram_username'] = ltrim($data['telegram_username'], '@');
+            if (empty($data['telegram_username'])) {
+                $data['telegram_username'] = null;
+            }
+        }
+
+        $master->update($data);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => [
+                'id' => $master->id,
+                'name' => $master->name,
+                'surname' => $master->surname,
+                'email' => $master->email,
+                'phone' => $master->phone,
+                'telegram_username' => $master->telegram_username,
+                'notifications_enabled' => $master->notifications_enabled,
             ],
         ]);
     }
@@ -92,9 +161,10 @@ class PosController extends Controller
      */
     public function orders(Request $request)
     {
-        $user = $request->user();
+        /** @var Master $master */
+        $master = $request->user();
 
-        if (!$user) {
+        if (!$master) {
             return response()->json([
                 'message' => 'Unauthorized',
             ], 401);
@@ -102,8 +172,9 @@ class PosController extends Controller
 
         $status = $request->get('status'); // new, active, completed
 
-        $query = Order::with(['client', 'branch'])
-            ->where('is_deleted', false);
+        $query = Order::with(['client', 'branch', 'master'])
+            ->where('is_deleted', false)
+            ->where('master_id', $master->id);
 
         // Фильтр по статусу
         if ($status === 'new') {
@@ -133,13 +204,53 @@ class PosController extends Controller
     }
 
     /**
+     * Получить счетчики заказов для мастера
+     */
+    public function ordersCount(Request $request)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        // Новые заказы (new, consultation, diagnostic)
+        $newCount = Order::where('is_deleted', false)
+            ->where('master_id', $master->id)
+            ->whereIn('status', [
+                Order::STATUS_NEW,
+                Order::STATUS_CONSULTATION,
+                Order::STATUS_DIAGNOSTIC,
+            ])
+            ->count();
+
+        // Заказы в работе (in_work, waiting_parts)
+        $inWorkCount = Order::where('is_deleted', false)
+            ->where('master_id', $master->id)
+            ->whereIn('status', [
+                Order::STATUS_IN_WORK,
+                Order::STATUS_WAITING_PARTS,
+            ])
+            ->count();
+
+        return response()->json([
+            'new' => $newCount,
+            'in_work' => $inWorkCount,
+        ]);
+    }
+
+    /**
      * Получить товары склада
      */
     public function warehouseItems(Request $request)
     {
-        $user = $request->user();
+        /** @var Master $master */
+        $master = $request->user();
 
-        if (!$user) {
+        if (!$master) {
             return response()->json([
                 'message' => 'Unauthorized',
             ], 401);

@@ -19,6 +19,7 @@
         <div v-else class="pos-app">
             <PosSidebar />
             <div class="pos-main-content">
+                <PosHeader />
                 <router-view />
             </div>
         </div>
@@ -31,12 +32,14 @@ import { useRouter } from "vue-router";
 import { usePosStore } from "../stores/posStore.js";
 import PosLoginForm from "../components/Pos/LoginForm.vue";
 import PosSidebar from "../components/Pos/Sidebar.vue";
+import PosHeader from "../components/Pos/Header.vue";
 
 export default {
     name: "PosPage",
     components: {
         PosLoginForm,
         PosSidebar,
+        PosHeader,
     },
     setup() {
         const router = useRouter();
