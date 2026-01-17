@@ -47,15 +47,19 @@ class PriceItemSeeder extends Seeder
         foreach ($sharpeningData as $category) {
             $itemSort = 1;
             foreach ($category['items'] as $item) {
-                PriceItem::create([
-                    'service_type' => PriceItem::TYPE_SHARPENING,
-                    'category_title' => $category['category_title'],
-                    'name' => $item['name'],
-                    'description' => null,
-                    'price' => $item['price'],
-                    'sort_order' => $categorySort * 100 + $itemSort,
-                    'is_active' => true,
-                ]);
+                PriceItem::firstOrCreate(
+                    [
+                        'service_type' => PriceItem::TYPE_SHARPENING,
+                        'category_title' => $category['category_title'],
+                        'name' => $item['name'],
+                    ],
+                    [
+                        'description' => null,
+                        'price' => $item['price'],
+                        'sort_order' => $categorySort * 100 + $itemSort,
+                        'is_active' => true,
+                    ]
+                );
                 $itemSort++;
             }
             $categorySort++;
@@ -94,15 +98,19 @@ class PriceItemSeeder extends Seeder
         $categorySort = 1;
         foreach ($repairData as $category) {
             foreach ($category['items'] as $item) {
-                PriceItem::create([
-                    'service_type' => PriceItem::TYPE_REPAIR,
-                    'category_title' => $category['category_title'],
-                    'name' => $item['name'],
-                    'description' => $item['description'] ?? null,
-                    'price' => $item['price'],
-                    'sort_order' => $categorySort * 100 + $item['sort_order'],
-                    'is_active' => true,
-                ]);
+                PriceItem::firstOrCreate(
+                    [
+                        'service_type' => PriceItem::TYPE_REPAIR,
+                        'category_title' => $category['category_title'],
+                        'name' => $item['name'],
+                    ],
+                    [
+                        'description' => $item['description'] ?? null,
+                        'price' => $item['price'],
+                        'sort_order' => $categorySort * 100 + $item['sort_order'],
+                        'is_active' => true,
+                    ]
+                );
             }
             $categorySort++;
         }

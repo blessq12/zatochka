@@ -71,18 +71,22 @@ class WarehouseSeeder extends Seeder
         ];
 
         foreach ($parts as $part) {
-            WarehouseItem::create([
-                'warehouse_category_id' => $partsCategory->id,
-                'name' => $part['name'],
-                'description' => $part['description'] ?? null,
-                'unit' => $part['unit'],
-                'quantity' => $part['quantity'],
-                'reserved_quantity' => 0,
-                'min_quantity' => $part['min_quantity'],
-                'price' => $part['price'],
-                'location' => 'Стеллаж А',
-                'is_active' => true,
-            ]);
+            WarehouseItem::firstOrCreate(
+                [
+                    'warehouse_category_id' => $partsCategory->id,
+                    'name' => $part['name'],
+                ],
+                [
+                    'description' => $part['description'] ?? null,
+                    'unit' => $part['unit'],
+                    'quantity' => $part['quantity'],
+                    'reserved_quantity' => 0,
+                    'min_quantity' => $part['min_quantity'],
+                    'price' => $part['price'],
+                    'location' => 'Стеллаж А',
+                    'is_active' => true,
+                ]
+            );
         }
 
         // Расходные материалы (25-30 товаров)
@@ -121,18 +125,22 @@ class WarehouseSeeder extends Seeder
         ];
 
         foreach ($consumables as $consumable) {
-            WarehouseItem::create([
-                'warehouse_category_id' => $consumablesCategory->id,
-                'name' => $consumable['name'],
-                'description' => $consumable['description'] ?? null,
-                'unit' => $consumable['unit'],
-                'quantity' => $consumable['quantity'],
-                'reserved_quantity' => 0,
-                'min_quantity' => $consumable['min_quantity'],
-                'price' => $consumable['price'],
-                'location' => 'Стеллаж Б',
-                'is_active' => true,
-            ]);
+            WarehouseItem::firstOrCreate(
+                [
+                    'warehouse_category_id' => $consumablesCategory->id,
+                    'name' => $consumable['name'],
+                ],
+                [
+                    'description' => $consumable['description'] ?? null,
+                    'unit' => $consumable['unit'],
+                    'quantity' => $consumable['quantity'],
+                    'reserved_quantity' => 0,
+                    'min_quantity' => $consumable['min_quantity'],
+                    'price' => $consumable['price'],
+                    'location' => 'Стеллаж Б',
+                    'is_active' => true,
+                ]
+            );
         }
 
         $this->command->info('Склад заполнен: создано 2 категории и ' . (count($parts) + count($consumables)) . ' товаров');
