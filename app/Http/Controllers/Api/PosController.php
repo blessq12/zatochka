@@ -254,6 +254,137 @@ class PosController extends Controller
     }
 
     /**
+     * Получить статистику для дашборда мастера
+     */
+    public function dashboard(Request $request)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $now = now();
+        $todayStart = $now->copy()->startOfDay();
+        $weekStart = $now->copy()->startOfWeek();
+        $monthStart = $now->copy()->startOfMonth();
+
+        // Базовый запрос для заказов мастера
+        $baseQuery = Order::where('is_deleted', 0)
+            ->where('master_id', $master->id);
+
+        // Статистика по статусам
+        $statusStats = [
+            'new' => (clone $baseQuery)->whereIn('status', [
+                Order::STATUS_NEW,
+                Order::STATUS_CONSULTATION,
+                Order::STATUS_DIAGNOSTIC,
+            ])->count(),
+            'in_work' => (clone $baseQuery)->where('status', Order::STATUS_IN_WORK)->count(),
+            'waiting_parts' => (clone $baseQuery)->where('status', Order::STATUS_WAITING_PARTS)->count(),
+            'ready' => (clone $baseQuery)->where('status', Order::STATUS_READY)->count(),
+        ];
+
+        // Статистика за сегодня
+        $todayStats = [
+            'completed' => (clone $baseQuery)
+                ->where('status', Order::STATUS_READY)
+                ->where('updated_at', '>=', $todayStart)
+                ->count(),
+            'total_revenue' => (clone $baseQuery)
+                ->where('status', Order::STATUS_READY)
+                ->where('updated_at', '>=', $todayStart)
+                ->sum('actual_price') ?? 0,
+        ];
+
+        // Статистика за неделю
+        $weekStats = [
+            'completed' => (clone $baseQuery)
+                ->where('status', Order::STATUS_READY)
+                ->where('updated_at', '>=', $weekStart)
+                ->count(),
+            'total_revenue' => (clone $baseQuery)
+                ->where('status', Order::STATUS_READY)
+                ->where('updated_at', '>=', $weekStart)
+                ->sum('actual_price') ?? 0,
+        ];
+
+        // Статистика за месяц
+        $monthStats = [
+            'completed' => (clone $baseQuery)
+                ->where('status', Order::STATUS_READY)
+                ->where('updated_at', '>=', $monthStart)
+                ->count(),
+            'total_revenue' => (clone $baseQuery)
+                ->where('status', Order::STATUS_READY)
+                ->where('updated_at', '>=', $monthStart)
+                ->sum('actual_price') ?? 0,
+        ];
+
+        // Статистика по работам
+        $worksStats = [
+            'today' => \App\Models\OrderWork::whereHas('order', function ($query) use ($master, $todayStart) {
+                $query->where('master_id', $master->id)
+                    ->where('is_deleted', 0)
+                    ->where('created_at', '>=', $todayStart);
+            })
+                ->where('is_deleted', 0)
+                ->count(),
+            'week' => \App\Models\OrderWork::whereHas('order', function ($query) use ($master, $weekStart) {
+                $query->where('master_id', $master->id)
+                    ->where('is_deleted', 0)
+                    ->where('created_at', '>=', $weekStart);
+            })
+                ->where('is_deleted', 0)
+                ->count(),
+            'month' => \App\Models\OrderWork::whereHas('order', function ($query) use ($master, $monthStart) {
+                $query->where('master_id', $master->id)
+                    ->where('is_deleted', 0)
+                    ->where('created_at', '>=', $monthStart);
+            })
+                ->where('is_deleted', 0)
+                ->count(),
+        ];
+
+        // Общая выручка по работам
+        $worksRevenue = [
+            'today' => \App\Models\OrderWork::whereHas('order', function ($query) use ($master, $todayStart) {
+                $query->where('master_id', $master->id)
+                    ->where('is_deleted', 0)
+                    ->where('created_at', '>=', $todayStart);
+            })
+                ->where('is_deleted', 0)
+                ->sum('work_price') ?? 0,
+            'week' => \App\Models\OrderWork::whereHas('order', function ($query) use ($master, $weekStart) {
+                $query->where('master_id', $master->id)
+                    ->where('is_deleted', 0)
+                    ->where('created_at', '>=', $weekStart);
+            })
+                ->where('is_deleted', 0)
+                ->sum('work_price') ?? 0,
+            'month' => \App\Models\OrderWork::whereHas('order', function ($query) use ($master, $monthStart) {
+                $query->where('master_id', $master->id)
+                    ->where('is_deleted', 0)
+                    ->where('created_at', '>=', $monthStart);
+            })
+                ->where('is_deleted', 0)
+                ->sum('work_price') ?? 0,
+        ];
+
+        return response()->json([
+            'status_stats' => $statusStats,
+            'today' => $todayStats,
+            'week' => $weekStats,
+            'month' => $monthStats,
+            'works' => $worksStats,
+            'works_revenue' => $worksRevenue,
+        ]);
+    }
+
+    /**
      * Получить детали заказа по ID
      */
     public function order(Request $request, $id)

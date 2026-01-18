@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', 'logout');
         Route::get('/me', 'me');
         Route::post('/profile/update', 'updateProfile');
+        Route::get('/dashboard', 'dashboard');
         Route::get('/orders', 'orders');
         Route::get('/orders/count', 'ordersCount'); // Должен быть ПЕРЕД /orders/{id}
         Route::get('/orders/{id}', 'order');

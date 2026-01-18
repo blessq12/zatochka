@@ -57,7 +57,6 @@
                     <!-- Клиент -->
                     <div class="details-section">
                         <div class="details-section-header">
-                            <span class="details-icon">👤</span>
                             <h3 class="details-section-title">Клиент</h3>
                         </div>
                         <div class="details-grid">
@@ -83,7 +82,6 @@
                     <!-- Оборудование -->
                     <div v-if="order.equipment?.name || order.equipment_name" class="details-section">
                         <div class="details-section-header">
-                            <span class="details-icon">⚙️</span>
                             <h3 class="details-section-title">Оборудование</h3>
                         </div>
                         <div class="details-grid">
@@ -105,7 +103,6 @@
                     <!-- Инструменты для заточки -->
                     <div v-if="order.tools && order.tools.length > 0" class="details-section">
                         <div class="details-section-header">
-                            <span class="details-icon">✂️</span>
                             <h3 class="details-section-title">Инструменты</h3>
                         </div>
                         <div class="tools-details">
@@ -124,7 +121,6 @@
                     <!-- Описание проблемы -->
                     <div v-if="order.problem_description" class="details-section problem-section">
                         <div class="details-section-header">
-                            <span class="details-icon">📝</span>
                             <h3 class="details-section-title">Описание проблемы</h3>
                         </div>
                         <div class="problem-content">
@@ -161,7 +157,6 @@
                     <!-- Материалы -->
                     <div v-if="order.order_works && order.order_works.some(w => w.materials && w.materials.length > 0)" class="details-section">
                         <div class="details-section-header">
-                            <span class="details-icon">📦</span>
                             <h3 class="details-section-title">Материалы и запчасти</h3>
                         </div>
                         <div class="materials-list-details">
@@ -198,7 +193,6 @@
                     <!-- Финансовая информация -->
                     <div class="details-section financial-section">
                         <div class="details-section-header">
-                            <span class="details-icon">💰</span>
                             <h3 class="details-section-title">Финансовая информация</h3>
                         </div>
                         <div class="details-grid">
@@ -230,7 +224,6 @@
                     <!-- Ответственные -->
                     <div v-if="order.manager || order.master" class="details-section">
                         <div class="details-section-header">
-                            <span class="details-icon">👥</span>
                             <h3 class="details-section-title">Ответственные</h3>
                         </div>
                         <div class="details-grid">
@@ -250,7 +243,6 @@
                     <!-- Внутренние заметки -->
                     <div v-if="order.internal_notes" class="details-section notes-section">
                         <div class="details-section-header">
-                            <span class="details-icon">📋</span>
                             <h3 class="details-section-title">Внутренние заметки</h3>
                         </div>
                         <div class="notes-content">

@@ -19,7 +19,7 @@
                             v-if="order.urgency === 'urgent'"
                             class="urgency-badge urgent"
                         >
-                            ⚡ Срочно
+                            Срочно
                         </span>
                     </div>
                 </div>
@@ -36,14 +36,12 @@
                 <!-- Клиент -->
                 <div class="info-block">
                     <div class="info-item">
-                        <span class="info-icon">👤</span>
                         <div class="info-content">
                             <span class="info-label">Клиент</span>
                             <span class="info-value">{{ order.client?.full_name || "—" }}</span>
                         </div>
                     </div>
                     <div v-if="order.client?.phone" class="info-item">
-                        <span class="info-icon">📞</span>
                         <div class="info-content">
                             <span class="info-label">Телефон</span>
                             <a :href="`tel:${order.client.phone}`" class="info-value link" @click.stop>
@@ -56,14 +54,12 @@
                 <!-- Тип услуги и филиал -->
                 <div class="info-block">
                     <div class="info-item">
-                        <span class="info-icon">🔧</span>
                         <div class="info-content">
                             <span class="info-label">Тип услуги</span>
                             <span class="info-value">{{ getTypeLabel(order.service_type) }}</span>
                         </div>
                     </div>
                     <div v-if="order.branch?.name" class="info-item">
-                        <span class="info-icon">📍</span>
                         <div class="info-content">
                             <span class="info-label">Филиал</span>
                             <span class="info-value">{{ order.branch.name }}</span>
@@ -74,7 +70,6 @@
                 <!-- Оборудование (если есть) -->
                 <div v-if="order.equipment?.name || order.equipment_name" class="info-block">
                     <div class="info-item">
-                        <span class="info-icon">⚙️</span>
                         <div class="info-content">
                             <span class="info-label">Оборудование</span>
                             <span class="info-value">
@@ -90,7 +85,6 @@
                 <!-- Инструменты для заточки (если есть) -->
                 <div v-if="order.tools && order.tools.length > 0" class="info-block">
                     <div class="info-item">
-                        <span class="info-icon">✂️</span>
                         <div class="info-content">
                             <span class="info-label">Инструменты</span>
                             <div class="tools-list">
