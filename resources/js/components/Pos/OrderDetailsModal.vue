@@ -12,224 +12,251 @@
                 </div>
                 <div v-else class="order-details">
                     <!-- Основная информация -->
-                    <table class="info-table">
-                        <thead>
-                            <tr>
-                                <th colspan="2" class="table-header">
-                                    <div class="header-content">
-                                        <span>Заказ №{{ order.order_number }}</span>
-                                        <span
-                                            class="status-badge"
-                                            :class="getStatusClass(order.status)"
-                                        >
-                                            {{ getStatusLabel(order.status) }}
-                                        </span>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="table-label">Тип услуги</td>
-                                <td class="table-value">{{ getTypeLabel(order.service_type) }}</td>
-                            </tr>
-                            <tr>
-                                <td class="table-label">Срочность</td>
-                                <td class="table-value">
-                                    <span
-                                        class="urgency-badge"
-                                        :class="order.urgency === 'urgent' ? 'urgent' : 'normal'"
-                                    >
-                                        {{ order.urgency === "urgent" ? "Срочный" : "Обычный" }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="table-label">Филиал</td>
-                                <td class="table-value">{{ order.branch?.name || "—" }}</td>
-                            </tr>
-                            <tr>
-                                <td class="table-label">Дата создания</td>
-                                <td class="table-value">{{ formatDate(order.created_at) }}</td>
-                            </tr>
-                            <tr>
-                                <td class="table-label">Последнее обновление</td>
-                                <td class="table-value">{{ formatDate(order.updated_at) }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="details-section">
+                        <div class="details-section-header">
+                            <h3 class="details-section-title">Основная информация</h3>
+                        </div>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Номер заказа</span>
+                                <span class="detail-value">№{{ order.order_number }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Статус</span>
+                                <span
+                                    class="detail-badge"
+                                    :class="getStatusClass(order.status)"
+                                >
+                                    {{ getStatusLabel(order.status) }}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Тип услуги</span>
+                                <span class="detail-value">{{ getTypeLabel(order.service_type) }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Срочность</span>
+                                <span
+                                    class="detail-badge urgency"
+                                    :class="order.urgency === 'urgent' ? 'urgent' : 'normal'"
+                                >
+                                    {{ order.urgency === "urgent" ? "⚡ Срочный" : "Обычный" }}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Филиал</span>
+                                <span class="detail-value">{{ order.branch?.name || "—" }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Дата создания</span>
+                                <span class="detail-value">{{ formatDate(order.created_at) }}</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Клиент -->
-                    <table class="info-table">
-                        <thead>
-                            <tr>
-                                <th colspan="2" class="table-header">Клиент</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="table-label">ФИО</td>
-                                <td class="table-value">{{ order.client?.full_name || "—" }}</td>
-                            </tr>
-                            <tr v-if="order.client?.phone">
-                                <td class="table-label">Телефон</td>
-                                <td class="table-value">{{ order.client.phone }}</td>
-                            </tr>
-                            <tr v-if="order.client?.email">
-                                <td class="table-label">Email</td>
-                                <td class="table-value">{{ order.client.email }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="details-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">👤</span>
+                            <h3 class="details-section-title">Клиент</h3>
+                        </div>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">ФИО</span>
+                                <span class="detail-value">{{ order.client?.full_name || "—" }}</span>
+                            </div>
+                            <div v-if="order.client?.phone" class="detail-item">
+                                <span class="detail-label">Телефон</span>
+                                <a :href="`tel:${order.client.phone}`" class="detail-value link">
+                                    {{ order.client.phone }}
+                                </a>
+                            </div>
+                            <div v-if="order.client?.email" class="detail-item">
+                                <span class="detail-label">Email</span>
+                                <a :href="`mailto:${order.client.email}`" class="detail-value link">
+                                    {{ order.client.email }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Оборудование -->
-                    <table class="info-table">
-                        <thead>
-                            <tr>
-                                <th colspan="2" class="table-header">Оборудование</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="table-label">Название</td>
-                                <td class="table-value">{{ order.equipment_name || "—" }}</td>
-                            </tr>
-                            <tr v-if="order.equipment_serial_number">
-                                <td class="table-label">Серийный номер</td>
-                                <td class="table-value">{{ order.equipment_serial_number }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div v-if="order.equipment?.name || order.equipment_name" class="details-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">⚙️</span>
+                            <h3 class="details-section-title">Оборудование</h3>
+                        </div>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Название</span>
+                                <span class="detail-value">
+                                    {{ order.equipment?.name || order.equipment_name }}
+                                </span>
+                            </div>
+                            <div v-if="order.equipment?.serial_number || order.equipment_serial_number" class="detail-item">
+                                <span class="detail-label">Серийный номер</span>
+                                <span class="detail-value">
+                                    {{ order.equipment?.serial_number || order.equipment_serial_number }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Инструменты для заточки -->
+                    <div v-if="order.tools && order.tools.length > 0" class="details-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">✂️</span>
+                            <h3 class="details-section-title">Инструменты</h3>
+                        </div>
+                        <div class="tools-details">
+                            <div 
+                                v-for="(tool, idx) in order.tools" 
+                                :key="tool.id || idx"
+                                class="tool-detail-item"
+                            >
+                                <span class="tool-type">{{ tool.tool_type }}</span>
+                                <span class="tool-quantity">Количество: {{ tool.quantity }}</span>
+                                <span v-if="tool.description" class="tool-description">{{ tool.description }}</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Описание проблемы -->
-                    <table v-if="order.problem_description" class="info-table">
-                        <thead>
-                            <tr>
-                                <th class="table-header">Описание проблемы</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="table-text">{{ order.problem_description }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div v-if="order.problem_description" class="details-section problem-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">📝</span>
+                            <h3 class="details-section-title">Описание проблемы</h3>
+                        </div>
+                        <div class="problem-content">
+                            {{ order.problem_description }}
+                        </div>
+                    </div>
 
                     <!-- Работы -->
-                    <table v-if="order.order_works && order.order_works.length > 0" class="info-table">
-                        <thead>
-                            <tr>
-                                <th class="table-header">Описание работы</th>
-                                <th class="table-header text-right">Стоимость</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="work in order.order_works" :key="work.id">
-                                <td class="table-value">{{ work.description }}</td>
-                                <td class="table-value text-right price">{{ formatPrice(work.work_price || 0) }} ₽</td>
-                            </tr>
-                            <tr class="table-total">
-                                <td class="table-label">Итого работ</td>
-                                <td class="table-value text-right price">{{ formatPrice(totalWorksPrice) }} ₽</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div v-if="order.order_works && order.order_works.length > 0" class="details-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">🔨</span>
+                            <h3 class="details-section-title">Выполненные работы</h3>
+                        </div>
+                        <div class="works-list-details">
+                            <div 
+                                v-for="work in order.order_works" 
+                                :key="work.id"
+                                class="work-detail-item"
+                            >
+                                <div class="work-detail-content">
+                                    <p class="work-detail-description">{{ work.description }}</p>
+                                </div>
+                                <div class="work-detail-price">
+                                    {{ formatPrice(work.work_price || 0) }} ₽
+                                </div>
+                            </div>
+                            <div class="works-total">
+                                <span class="total-label">Итого работ:</span>
+                                <span class="total-price">{{ formatPrice(totalWorksPrice) }} ₽</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Материалы -->
-                    <table v-if="order.order_works && order.order_works.some(w => w.materials && w.materials.length > 0)" class="info-table">
-                        <thead>
-                            <tr>
-                                <th class="table-header">Название</th>
-                                <th class="table-header">Артикул</th>
-                                <th class="table-header text-right">Количество</th>
-                                <th class="table-header text-right">Цена</th>
-                                <th class="table-header text-right">Сумма</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <div v-if="order.order_works && order.order_works.some(w => w.materials && w.materials.length > 0)" class="details-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">📦</span>
+                            <h3 class="details-section-title">Материалы и запчасти</h3>
+                        </div>
+                        <div class="materials-list-details">
                             <template v-for="work in order.order_works" :key="work.id">
-                                <tr v-for="material in work.materials" :key="material.id">
-                                    <td class="table-value">{{ material.name }}</td>
-                                    <td class="table-value">{{ material.article || "—" }}</td>
-                                    <td class="table-value text-right">{{ material.quantity || 0 }} {{ material.unit || "шт" }}</td>
-                                    <td class="table-value text-right">{{ formatPrice(material.price || 0) }} ₽</td>
-                                    <td class="table-value text-right price">{{ formatPrice((material.quantity || 0) * (material.price || 0)) }} ₽</td>
-                                </tr>
+                                <div 
+                                    v-for="material in work.materials" 
+                                    :key="material.id"
+                                    class="material-detail-item"
+                                >
+                                    <div class="material-detail-info">
+                                        <span class="material-detail-name">{{ material.name }}</span>
+                                        <span v-if="material.article" class="material-detail-article">
+                                            Арт: {{ material.article }}
+                                        </span>
+                                    </div>
+                                    <div class="material-detail-quantity">
+                                        {{ material.quantity || 0 }} {{ material.unit || "шт" }}
+                                    </div>
+                                    <div class="material-detail-price">
+                                        {{ formatPrice(material.price || 0) }} ₽
+                                    </div>
+                                    <div class="material-detail-total">
+                                        {{ formatPrice((material.quantity || 0) * (material.price || 0)) }} ₽
+                                    </div>
+                                </div>
                             </template>
-                            <tr class="table-total">
-                                <td colspan="4" class="table-label">Итого материалов</td>
-                                <td class="table-value text-right price">{{ formatPrice(totalMaterialsPrice) }} ₽</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            <div class="materials-total">
+                                <span class="total-label">Итого материалов:</span>
+                                <span class="total-price">{{ formatPrice(totalMaterialsPrice) }} ₽</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Финансовая информация -->
-                    <table class="info-table">
-                        <thead>
-                            <tr>
-                                <th colspan="2" class="table-header">Финансовая информация</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-if="order.estimated_price">
-                                <td class="table-label">Ориентировочная цена</td>
-                                <td class="table-value price">{{ formatPrice(order.estimated_price) }} ₽</td>
-                            </tr>
-                            <tr v-if="order.actual_price">
-                                <td class="table-label">Фактическая цена</td>
-                                <td class="table-value price">{{ formatPrice(order.actual_price) }} ₽</td>
-                            </tr>
-                            <tr>
-                                <td class="table-label">Тип оплаты</td>
-                                <td class="table-value">
+                    <div class="details-section financial-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">💰</span>
+                            <h3 class="details-section-title">Финансовая информация</h3>
+                        </div>
+                        <div class="details-grid">
+                            <div v-if="order.estimated_price" class="detail-item">
+                                <span class="detail-label">Ориентировочная цена</span>
+                                <span class="detail-value price">{{ formatPrice(order.estimated_price) }} ₽</span>
+                            </div>
+                            <div v-if="order.actual_price" class="detail-item">
+                                <span class="detail-label">Фактическая цена</span>
+                                <span class="detail-value price">{{ formatPrice(order.actual_price) }} ₽</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Тип оплаты</span>
+                                <span class="detail-badge payment-type" :class="order.order_payment_type === 'paid' ? 'paid' : 'warranty'">
                                     {{ order.order_payment_type === "paid" ? "Оплачен" : "Гарантия" }}
-                                </td>
-                            </tr>
-                            <tr v-if="order.delivery_cost">
-                                <td class="table-label">Стоимость доставки</td>
-                                <td class="table-value price">{{ formatPrice(order.delivery_cost) }} ₽</td>
-                            </tr>
-                            <tr v-if="order.delivery_address">
-                                <td class="table-label">Адрес доставки</td>
-                                <td class="table-value">{{ order.delivery_address }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </span>
+                            </div>
+                            <div v-if="order.delivery_cost" class="detail-item">
+                                <span class="detail-label">Стоимость доставки</span>
+                                <span class="detail-value price">{{ formatPrice(order.delivery_cost) }} ₽</span>
+                            </div>
+                            <div v-if="order.delivery_address" class="detail-item full-width">
+                                <span class="detail-label">Адрес доставки</span>
+                                <span class="detail-value">{{ order.delivery_address }}</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Ответственные -->
-                    <table v-if="order.manager || order.master" class="info-table">
-                        <thead>
-                            <tr>
-                                <th colspan="2" class="table-header">Ответственные</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-if="order.manager">
-                                <td class="table-label">Менеджер</td>
-                                <td class="table-value">{{ order.manager.name }}</td>
-                            </tr>
-                            <tr v-if="order.master">
-                                <td class="table-label">Мастер</td>
-                                <td class="table-value">
+                    <div v-if="order.manager || order.master" class="details-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">👥</span>
+                            <h3 class="details-section-title">Ответственные</h3>
+                        </div>
+                        <div class="details-grid">
+                            <div v-if="order.manager" class="detail-item">
+                                <span class="detail-label">Менеджер</span>
+                                <span class="detail-value">{{ order.manager.name }}</span>
+                            </div>
+                            <div v-if="order.master" class="detail-item">
+                                <span class="detail-label">Мастер</span>
+                                <span class="detail-value">
                                     {{ order.master.surname ? `${order.master.surname} ${order.master.name}` : order.master.name }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Внутренние заметки -->
-                    <table v-if="order.internal_notes" class="info-table">
-                        <thead>
-                            <tr>
-                                <th class="table-header">Внутренние заметки</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="table-text">{{ order.internal_notes }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div v-if="order.internal_notes" class="details-section notes-section">
+                        <div class="details-section-header">
+                            <span class="details-icon">📋</span>
+                            <h3 class="details-section-title">Внутренние заметки</h3>
+                        </div>
+                        <div class="notes-content">
+                            {{ order.internal_notes }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -403,6 +430,84 @@ export default {
     flex-direction: column;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     animation: slideIn 0.3s;
+    overflow: hidden;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 0.5rem;
+    }
+
+    .modal-container {
+        max-height: 95vh;
+        border-radius: 8px;
+    }
+
+    .modal-header {
+        padding: 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .order-details {
+        gap: 1rem;
+    }
+
+    .details-section {
+        padding: 0.75rem;
+    }
+
+    .details-section-header {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .details-section-title {
+        font-size: 1rem;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .detail-value {
+        font-size: 0.875rem;
+    }
+
+    .detail-value.price {
+        font-size: 0.9375rem;
+    }
+
+    .material-detail-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .material-detail-quantity,
+    .material-detail-price,
+    .material-detail-total {
+        text-align: left;
+    }
+
+    .works-total,
+    .materials-total {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.75rem;
+    }
+
+    .total-price {
+        font-size: 1.125rem;
+    }
 }
 
 @keyframes slideIn {
@@ -472,168 +577,325 @@ export default {
     gap: 1.5rem;
 }
 
-.info-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
+.details-section {
+    background: #f9fafb;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 0;
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: all 0.2s;
 }
 
-.info-table thead {
-    background: #003859;
-    color: white;
+.details-section:hover {
+    border-color: #003859;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.info-table thead th {
-    text-align: left;
+.details-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
 }
 
-.table-header {
-    padding: 1rem 1.25rem;
-    font-size: 1rem;
+.details-icon {
+    font-size: 1.25rem;
+}
+
+.details-section-title {
+    font-size: 1.125rem;
     font-weight: 700;
-    text-align: left;
+    color: #003859;
+    margin: 0;
     font-family: "Jost", sans-serif;
 }
 
-.header-content {
-    display: flex;
-    align-items: center;
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    flex-wrap: wrap;
 }
 
-.info-table tbody tr {
-    border-bottom: 1px solid #e5e7eb;
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
 }
 
-.info-table tbody tr:last-child {
-    border-bottom: none;
+.detail-item.full-width {
+    grid-column: 1 / -1;
 }
 
-.info-table tbody tr:hover {
-    background: #f9fafb;
-}
-
-.table-label {
-    padding: 0.875rem 1.25rem;
-    font-size: 0.875rem;
+.detail-label {
+    font-size: 0.75rem;
     font-weight: 600;
     color: #6b7280;
-    width: 40%;
-    vertical-align: top;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.table-value {
-    padding: 0.875rem 1.25rem;
+.detail-value {
     font-size: 0.9375rem;
-    color: #1f2937;
     font-weight: 500;
-    vertical-align: top;
+    color: #374151;
+    word-break: break-word;
 }
 
-.table-value.price {
+.detail-value.link {
+    color: #046490;
+    text-decoration: none;
+}
+
+.detail-value.link:hover {
+    text-decoration: underline;
+}
+
+.detail-value.price {
     font-weight: 700;
-    color: #003859;
+    color: #059669;
     font-size: 1rem;
 }
 
-.table-text {
-    padding: 1rem 1.25rem;
-    font-size: 0.9375rem;
-    color: #374151;
-    line-height: 1.7;
-    white-space: pre-wrap;
-}
-
-.text-right {
-    text-align: right;
-}
-
-.table-total {
-    background: #f9fafb;
-    font-weight: 700;
-}
-
-.table-total .table-label {
-    color: #003859;
-    font-size: 0.9375rem;
-}
-
-.table-total .table-value {
-    color: #003859;
-    font-size: 1.125rem;
-}
-
-.status-badge {
+.detail-badge {
     padding: 0.375rem 0.75rem;
     border-radius: 8px;
     font-size: 0.8125rem;
-    font-weight: 700;
+    font-weight: 600;
     display: inline-block;
     white-space: nowrap;
 }
 
-.status-new {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+.detail-badge.status-new,
+.detail-badge.status-consultation,
+.detail-badge.status-diagnostic {
+    background: #dbeafe;
+    color: #1e40af;
 }
 
-.status-consultation {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+.detail-badge.status-in-work,
+.detail-badge.status-waiting-parts {
+    background: #fef3c7;
+    color: #92400e;
 }
 
-.status-diagnostic {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-.status-in-work {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-.status-waiting-parts {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.status-ready {
+.detail-badge.status-ready {
     background: #d1fae5;
     color: #065f46;
 }
 
-.status-issued {
-    background: #e5e7eb;
-    color: #374151;
-}
-
-.status-cancelled {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.urgency-badge {
-    padding: 0.25rem 0.625rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.urgency-badge.urgent {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.urgency-badge.normal {
+.detail-badge.status-issued {
     background: #dbeafe;
     color: #1e40af;
 }
+
+.detail-badge.status-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.detail-badge.urgency.urgent {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.detail-badge.urgency.normal {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.detail-badge.payment-type.paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.detail-badge.payment-type.warranty {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.problem-section {
+    background: #fef3c7;
+    border-color: #fde68a;
+}
+
+.problem-content {
+    font-size: 0.875rem;
+    color: #78350f;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.tools-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tool-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.tool-type {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.tool-quantity {
+    font-size: 0.8125rem;
+    color: #6b7280;
+}
+
+.tool-description {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+}
+
+.works-list-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.work-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.work-detail-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.work-detail-description {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.work-detail-price {
+    font-weight: 700;
+    color: #059669;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.works-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f0f7ff;
+    border: 2px solid #003859;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.total-label {
+    font-weight: 700;
+    color: #003859;
+    font-size: 1rem;
+}
+
+.total-price {
+    font-weight: 700;
+    color: #003859;
+    font-size: 1.25rem;
+}
+
+.materials-list-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.material-detail-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.material-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.material-detail-name {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    word-break: break-word;
+}
+
+.material-detail-article {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-family: monospace;
+}
+
+.material-detail-quantity,
+.material-detail-price {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    text-align: right;
+}
+
+.material-detail-total {
+    font-weight: 700;
+    color: #059669;
+    font-size: 0.9375rem;
+    text-align: right;
+}
+
+.materials-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f0f7ff;
+    border: 2px solid #003859;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.notes-section {
+    background: #eff6ff;
+    border-color: #dbeafe;
+}
+
+.notes-content {
+    font-size: 0.875rem;
+    color: #1e40af;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.financial-section {
+    background: #ecfdf5;
+    border-color: #d1fae5;
+}
+
 
 </style>
