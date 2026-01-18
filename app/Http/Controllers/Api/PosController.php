@@ -368,11 +368,17 @@ class PosController extends Controller
         // Обработка списания/возврата товаров при изменении статуса заказа
         $works = $order->orderWorks()->where('is_deleted', false)->with('materials')->get();
 
-        // Если заказ переводится в статус ready или issued - списываем товары
+        // Проверяем наличие работ перед переводом в статус ready или issued
         if (
             in_array($newStatus, [Order::STATUS_READY, Order::STATUS_ISSUED]) &&
             !in_array($oldStatus, [Order::STATUS_READY, Order::STATUS_ISSUED])
         ) {
+            // Нельзя завершить заказ без выполненных работ
+            if ($works->isEmpty()) {
+                return response()->json([
+                    'message' => 'Нельзя завершить заказ без выполненных работ. Добавьте хотя бы одну работу.',
+                ], 422);
+            }
             // Списываем товары со склада (используем данные из order_work_materials)
             foreach ($works as $work) {
                 foreach ($work->materials as $material) {

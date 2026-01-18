@@ -53,14 +53,21 @@ export default {
         const selectedOrderId = ref(null);
         const { setNavigationItems, setCustomContent, reset } = useHeaderNavigation();
 
-        const fetchOrders = async () => {
-            isLoading.value = true;
+        const fetchOrders = async (silent = false) => {
+            // Показываем индикатор загрузки только при первой загрузке или ручном обновлении
+            if (!silent) {
+                isLoading.value = true;
+            }
             try {
-                orders.value = await orderService.getActiveOrders();
+                const newOrders = await orderService.getActiveOrders();
+                // Плавно обновляем список без моргания
+                orders.value = newOrders;
             } catch (error) {
                 console.error("Error fetching orders:", error);
             } finally {
-                isLoading.value = false;
+                if (!silent) {
+                    isLoading.value = false;
+                }
             }
         };
 

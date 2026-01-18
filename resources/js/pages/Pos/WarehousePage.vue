@@ -195,8 +195,11 @@ export default {
             return pages;
         });
 
-        const fetchItems = async (page = 1) => {
-            isLoading.value = true;
+        const fetchItems = async (page = 1, silent = false) => {
+            // Показываем индикатор загрузки только при первой загрузке или ручном обновлении
+            if (!silent) {
+                isLoading.value = true;
+            }
             try {
                 const search = searchQuery.value.trim() || null;
                 const result = await warehouseService.getAllItems(
@@ -204,13 +207,16 @@ export default {
                     perPage.value,
                     search
                 );
+                // Плавно обновляем данные без моргания
                 items.value = result.items;
                 pagination.value = result.pagination;
                 currentPage.value = page;
             } catch (error) {
                 console.error("Error fetching items:", error);
             } finally {
-                isLoading.value = false;
+                if (!silent) {
+                    isLoading.value = false;
+                }
             }
         };
 
@@ -251,9 +257,9 @@ export default {
 
         // Автообновление товаров склада каждые 20 секунд (только если не активен поиск)
         useAutoRefresh(
-            () => {
+            (silent) => {
                 if (!searchQuery.value.trim()) {
-                    fetchItems(currentPage.value);
+                    fetchItems(currentPage.value, silent);
                 }
             },
             20000,
