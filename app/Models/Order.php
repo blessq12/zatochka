@@ -64,6 +64,7 @@ class Order extends Model implements HasMedia
     protected $fillable = [
         'client_id',
         'branch_id',
+        'equipment_id',
         'manager_id',
         'master_id',
         'order_number',
@@ -77,11 +78,6 @@ class Order extends Model implements HasMedia
         'problem_description',
         'delivery_address',
         'delivery_cost',
-        'equipment_name',
-        'equipment_type',
-        'equipment_serial_number',
-        'tool_type',
-        'total_tools_count',
         'needs_delivery',
         'order_payment_type',
         'is_deleted',
@@ -103,6 +99,11 @@ class Order extends Model implements HasMedia
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function equipment()
+    {
+        return $this->belongsTo(Equipment::class);
     }
 
     public function warehouse()
@@ -137,6 +138,14 @@ class Order extends Model implements HasMedia
     public function orderMaterials()
     {
         return $this->hasMany(OrderWorkMaterial::class, 'order_id');
+    }
+
+    /**
+     * Инструменты для заточки (только для заказов типа sharpening)
+     */
+    public function tools()
+    {
+        return $this->hasMany(Tool::class, 'order_id');
     }
 
     public function activities()
@@ -294,9 +303,9 @@ class Order extends Model implements HasMedia
                 'problem_description',
                 'delivery_address',
                 'delivery_cost',
-                'equipment_name',
-                'equipment_serial_number',
+                'equipment_id',
                 'order_payment_type',
+                'needs_delivery',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()

@@ -65,6 +65,44 @@ class Client extends Model
         return $this->hasOne(TelegramChat::class);
     }
 
+    public function bonusAccount()
+    {
+        return $this->hasOne(BonusAccount::class);
+    }
+
+    public function bonusTransactions()
+    {
+        return $this->hasMany(BonusTransaction::class);
+    }
+
+    /**
+     * Получить бонусный счет (создать если не существует)
+     */
+    public function getBonusAccount(): BonusAccount
+    {
+        return $this->bonusAccount ?? BonusAccount::getOrCreateForClient($this);
+    }
+
+    /**
+     * Получить текущий баланс бонусов
+     */
+    public function getBonusBalanceAttribute(): int
+    {
+        return $this->getBonusAccount()->balance;
+    }
+
+    /**
+     * Boot метод для автоматического создания бонусного счета
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Автоматически создаем бонусный счет при создании клиента
+        static::created(function (Client $client) {
+            BonusAccount::getOrCreateForClient($client);
+        });
+    }
 
     // Scope для активных клиентов
     public function scopeActive($query)

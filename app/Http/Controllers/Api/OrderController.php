@@ -21,10 +21,11 @@ class OrderController extends Controller
             'service_type' => 'required|string|in:sharpening,repair',
             'urgency' => 'nullable|string|in:normal,urgent',
             'problem_description' => 'nullable|string|max:5000',
+            // Для заточки
             'tool_type' => 'nullable|string|max:255',
             'total_tools_count' => 'nullable|integer|min:1',
-            'equipment_type' => 'nullable|string|max:255',
-            'equipment_name' => 'nullable|string|max:255',
+            // Для ремонта
+            'equipment_id' => 'nullable|integer|exists:equipment,id',
             'needs_delivery' => 'nullable|boolean',
             'delivery_address' => 'nullable|string|max:1000',
             'email' => 'nullable|email|max:255',
@@ -104,16 +105,24 @@ class OrderController extends Controller
                         'client_id' => $client->id,
                         'branch_id' => $branch->id,
                         'problem_description' => $request->problem_description ?? null,
-                        'tool_type' => $request->tool_type ?? null,
-                        'total_tools_count' => $request->total_tools_count ?? null,
-                        'equipment_type' => $request->equipment_type ?? null,
-                        'equipment_name' => $request->equipment_name ?? null,
+                        'equipment_id' => $request->equipment_id ?? null,
                         'needs_delivery' => $request->boolean('needs_delivery', false),
                         'delivery_address' => $request->delivery_address ?? null,
                     ];
 
                     // Создаем заказ
-                    return $client->orders()->create($orderData);
+                    $order = $client->orders()->create($orderData);
+
+                    // Для заточки создаем записи инструментов
+                    if ($orderType === Order::TYPE_SHARPENING && $request->tool_type) {
+                        \App\Models\Tool::create([
+                            'order_id' => $order->id,
+                            'tool_type' => $request->tool_type,
+                            'quantity' => $request->total_tools_count ?? 1,
+                        ]);
+                    }
+
+                    return $order;
                 });
                 
                 // Если успешно создали, выходим из цикла

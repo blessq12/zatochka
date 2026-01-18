@@ -3,8 +3,10 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\BranchResource;
+use App\Filament\Resources\BonusSettingsResource;
 use App\Filament\Resources\ClientResource;
 use App\Filament\Resources\CompanyResource;
+use App\Filament\Resources\EquipmentResource;
 use App\Filament\Resources\MasterResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PriceItemResource;
@@ -72,6 +74,9 @@ class AdminPanelProvider extends PanelProvider
                 MasterResource::class,
                 // Справочники
                 PriceItemResource::class,
+                EquipmentResource::class,
+                // Настройки
+                BonusSettingsResource::class,
                 // Склад
                 WarehouseCategoryResource::class,
                 WarehouseItemResource::class,
