@@ -75,8 +75,11 @@
                         @click="completeOrder"
                         class="btn-status btn-complete"
                         :disabled="
-                            isCompletingOrder || order.status === 'ready'
+                            isCompletingOrder || 
+                            order.status === 'ready' ||
+                            works.length === 0
                         "
+                        :title="works.length === 0 ? 'Нельзя завершить заказ без выполненных работ' : ''"
                     >
                         <span v-if="isCompletingOrder">Сохранение...</span>
                         <span v-else>Завершить заказ</span>
@@ -852,6 +855,14 @@ export default {
         };
 
         const completeOrder = async () => {
+            // Проверяем наличие выполненных работ
+            if (works.value.length === 0) {
+                toastService.error(
+                    "Нельзя завершить заказ без выполненных работ. Добавьте хотя бы одну работу."
+                );
+                return;
+            }
+
             if (
                 !confirm(
                     "Завершить заказ? Заказ будет переведен в статус 'Готов'."
@@ -1125,6 +1136,41 @@ export default {
 
 .btn-status.btn-complete:disabled {
     background: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-status.btn-complete:disabled[title] {
+    position: relative;
+}
+
+.btn-status.btn-complete:disabled[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 0.75rem;
+    background: #1f2937;
+    color: white;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-status.btn-complete:disabled[title]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1f2937;
+    margin-bottom: -0.5rem;
+    z-index: 1000;
 }
 
 .section-header {

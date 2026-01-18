@@ -83,14 +83,21 @@ export default {
             });
         });
 
-        const fetchItems = async () => {
-            isLoading.value = true;
+        const fetchItems = async (silent = false) => {
+            // Показываем индикатор загрузки только при первой загрузке или ручном обновлении
+            if (!silent) {
+                isLoading.value = true;
+            }
             try {
-                items.value = await warehouseService.getMaterials();
+                const newItems = await warehouseService.getMaterials();
+                // Плавно обновляем список без моргания
+                items.value = newItems;
             } catch (error) {
                 console.error("Error fetching items:", error);
             } finally {
-                isLoading.value = false;
+                if (!silent) {
+                    isLoading.value = false;
+                }
             }
         };
 
