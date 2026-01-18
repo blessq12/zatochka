@@ -24,6 +24,15 @@ use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
+use App\Filament\Widgets\ActiveOrdersStatsWidget;
+use App\Filament\Widgets\ClientsStatsWidget;
+use App\Filament\Widgets\CompletedOrdersStatsWidget;
+use App\Filament\Widgets\MastersPerformanceWidget;
+use App\Filament\Widgets\OrdersChartWidget;
+use App\Filament\Widgets\RecentOrdersWidget;
+use App\Filament\Widgets\RevenueStatsWidget;
+use App\Filament\Widgets\ServiceTypeStatsWidget;
+use App\Filament\Widgets\UrgentOrdersWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -61,6 +70,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->widgets([
                 Widgets\AccountWidget::class,
+                RevenueStatsWidget::class,
+                ActiveOrdersStatsWidget::class,
+                CompletedOrdersStatsWidget::class,
+                UrgentOrdersWidget::class,
+                ServiceTypeStatsWidget::class,
+                ClientsStatsWidget::class,
+                OrdersChartWidget::class,
+                MastersPerformanceWidget::class,
+                RecentOrdersWidget::class,
             ])
             ->resources([
                 // Заказы
