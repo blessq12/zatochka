@@ -57,6 +57,11 @@ const routes = [
         component: () => import("../pages/PosPage.vue"),
         children: [
             {
+                path: "dashboard",
+                name: "pos.dashboard",
+                component: () => import("../pages/Pos/DashboardPage.vue"),
+            },
+            {
                 path: "orders/new",
                 name: "pos.orders.new",
                 component: () => import("../pages/Pos/OrdersNewPage.vue"),
@@ -98,7 +103,7 @@ const routes = [
             },
             {
                 path: "",
-                redirect: { name: "pos.orders.new" },
+                redirect: { name: "pos.dashboard" },
             },
         ],
     },

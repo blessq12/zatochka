@@ -24,7 +24,7 @@
                                 v-if="order.urgency === 'urgent'"
                                 class="urgency-badge urgent"
                             >
-                                ⚡ Срочно
+                                Срочно
                             </span>
                         </div>
                     </div>
@@ -95,7 +95,6 @@
                     <!-- Клиент -->
                     <div class="info-card">
                         <div class="info-card-header">
-                            <span class="info-icon">👤</span>
                             <span class="info-card-title">Клиент</span>
                         </div>
                         <div class="info-card-content">
@@ -121,7 +120,6 @@
                     <!-- Услуга и филиал -->
                     <div class="info-card">
                         <div class="info-card-header">
-                            <span class="info-icon">🔧</span>
                             <span class="info-card-title">Услуга</span>
                         </div>
                         <div class="info-card-content">
@@ -167,7 +165,6 @@
                     <!-- Инструменты для заточки (если есть) -->
                     <div v-if="order.tools && order.tools.length > 0" class="info-card">
                         <div class="info-card-header">
-                            <span class="info-icon">✂️</span>
                             <span class="info-card-title">Инструменты</span>
                         </div>
                         <div class="info-card-content">
@@ -191,7 +188,6 @@
                 <!-- Описание проблемы -->
                 <div v-if="order.problem_description" class="problem-card">
                     <div class="problem-card-header">
-                        <span class="info-icon">📝</span>
                         <span class="problem-card-title">Описание проблемы</span>
                     </div>
                     <div class="problem-card-content">

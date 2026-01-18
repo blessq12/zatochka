@@ -16,10 +16,14 @@ export default {
 
         const isActiveSection = (sectionName) => {
             const routeName = route.name || "";
+            if (sectionName === 'dashboard') {
+                return routeName === 'pos.dashboard';
+            }
             return routeName.startsWith(`pos.${sectionName}`);
         };
 
         return {
+            route,
             isActiveSection,
         };
     },
@@ -50,13 +54,21 @@ export default {
         </div>
 
         <nav class="sidebar-nav">
+            <!-- Дашборд -->
+            <router-link
+                :to="{ name: 'pos.dashboard' }"
+                class="nav-section-header"
+                :class="{ active: isActiveSection('dashboard') }"
+            >
+                <span class="nav-title">Дашборд</span>
+            </router-link>
+
             <!-- Заказы -->
             <router-link
                 :to="{ name: 'pos.orders.new' }"
                 class="nav-section-header"
                 :class="{ active: isActiveSection('orders') }"
             >
-                <span class="nav-icon">📋</span>
                 <span class="nav-title">Заказы</span>
             </router-link>
 
@@ -66,7 +78,6 @@ export default {
                 class="nav-section-header"
                 :class="{ active: isActiveSection('warehouse') }"
             >
-                <span class="nav-icon">📦</span>
                 <span class="nav-title">Склад</span>
             </router-link>
 
@@ -76,7 +87,6 @@ export default {
                 class="nav-section-header"
                 :class="{ active: isActiveSection('settings') }"
             >
-                <span class="nav-icon">⚙️</span>
                 <span class="nav-title">Настройки</span>
             </router-link>
         </nav>
