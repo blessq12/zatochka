@@ -30,7 +30,6 @@ class ClientFactory extends Factory
             'telegram' => $this->faker->userName(), // Без @, как в CreateClient
             'birth_date' => $this->faker->optional()->date('Y-m-d', '-18 years'),
             'delivery_address' => $this->faker->optional()->address(),
-            'bonus_points' => $this->faker->numberBetween(0, 1000),
             'password' => Hash::make('password'),
             'is_deleted' => false,
         ];
