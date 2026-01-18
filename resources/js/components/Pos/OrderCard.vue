@@ -4,79 +4,119 @@
             class="order-card-content"
             @click="$emit('view-details', order.id)"
         >
+            <!-- Заголовок с номером и статусами -->
             <div class="order-header">
-                <span class="order-number">{{ order.order_number }}</span>
-                <div class="order-header-badges">
-                    <span
-                        class="order-status"
-                        :class="getStatusClass(order.status)"
-                    >
-                        {{ getStatusLabel(order.status) }}
-                    </span>
-                    <span
-                        v-if="order.urgency === 'urgent'"
-                        class="urgency-badge urgent"
-                    >
-                        Срочно
+                <div class="order-header-main">
+                    <span class="order-number">№{{ order.order_number }}</span>
+                    <div class="order-header-badges">
+                        <span
+                            class="order-status"
+                            :class="getStatusClass(order.status)"
+                        >
+                            {{ getStatusLabel(order.status) }}
+                        </span>
+                        <span
+                            v-if="order.urgency === 'urgent'"
+                            class="urgency-badge urgent"
+                        >
+                            ⚡ Срочно
+                        </span>
+                    </div>
+                </div>
+                <div class="order-header-meta">
+                    <span class="order-date">{{ formatDateShort(order.created_at) }}</span>
+                    <span v-if="order.estimated_price || order.actual_price" class="order-price">
+                        {{ formatPrice(order.actual_price || order.estimated_price) }} ₽
                     </span>
                 </div>
             </div>
+
+            <!-- Основная информация -->
             <div class="order-info">
-                <div class="info-row">
-                    <p>
-                        <strong>Клиент:</strong> {{ order.client?.full_name }}
-                    </p>
-                    <p v-if="order.client?.phone">
-                        <strong>Телефон:</strong> {{ order.client.phone }}
-                    </p>
+                <!-- Клиент -->
+                <div class="info-block">
+                    <div class="info-item">
+                        <span class="info-icon">👤</span>
+                        <div class="info-content">
+                            <span class="info-label">Клиент</span>
+                            <span class="info-value">{{ order.client?.full_name || "—" }}</span>
+                        </div>
+                    </div>
+                    <div v-if="order.client?.phone" class="info-item">
+                        <span class="info-icon">📞</span>
+                        <div class="info-content">
+                            <span class="info-label">Телефон</span>
+                            <a :href="`tel:${order.client.phone}`" class="info-value link" @click.stop>
+                                {{ order.client.phone }}
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <p>
-                        <strong>Тип:</strong>
-                        {{ getTypeLabel(order.service_type) }}
-                    </p>
-                    <p v-if="order.branch?.name">
-                        <strong>Филиал:</strong> {{ order.branch.name }}
-                    </p>
+
+                <!-- Тип услуги и филиал -->
+                <div class="info-block">
+                    <div class="info-item">
+                        <span class="info-icon">🔧</span>
+                        <div class="info-content">
+                            <span class="info-label">Тип услуги</span>
+                            <span class="info-value">{{ getTypeLabel(order.service_type) }}</span>
+                        </div>
+                    </div>
+                    <div v-if="order.branch?.name" class="info-item">
+                        <span class="info-icon">📍</span>
+                        <div class="info-content">
+                            <span class="info-label">Филиал</span>
+                            <span class="info-value">{{ order.branch.name }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div v-if="order.equipment_name" class="info-row">
-                    <p>
-                        <strong>Оборудование:</strong>
-                        {{ order.equipment_name }}
-                    </p>
-                    <p v-if="order.equipment_serial_number">
-                        <strong>Серийный №:</strong>
-                        {{ order.equipment_serial_number }}
-                    </p>
+
+                <!-- Оборудование (если есть) -->
+                <div v-if="order.equipment?.name || order.equipment_name" class="info-block">
+                    <div class="info-item">
+                        <span class="info-icon">⚙️</span>
+                        <div class="info-content">
+                            <span class="info-label">Оборудование</span>
+                            <span class="info-value">
+                                {{ order.equipment?.name || order.equipment_name }}
+                            </span>
+                            <span v-if="order.equipment?.serial_number || order.equipment_serial_number" class="info-subvalue">
+                                С/Н: {{ order.equipment?.serial_number || order.equipment_serial_number }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <p>
-                        <strong>Дата создания:</strong>
-                        {{ formatDate(order.created_at) }}
-                    </p>
-                    <p
-                        v-if="order.estimated_price || order.actual_price"
-                        class="price-info"
-                    >
-                        <strong>Цена:</strong>
-                        <span class="price-value"
-                            >{{
-                                formatPrice(
-                                    order.actual_price || order.estimated_price
-                                )
-                            }}
-                            ₽</span
-                        >
-                    </p>
+
+                <!-- Инструменты для заточки (если есть) -->
+                <div v-if="order.tools && order.tools.length > 0" class="info-block">
+                    <div class="info-item">
+                        <span class="info-icon">✂️</span>
+                        <div class="info-content">
+                            <span class="info-label">Инструменты</span>
+                            <div class="tools-list">
+                                <span 
+                                    v-for="(tool, idx) in order.tools" 
+                                    :key="tool.id || idx"
+                                    class="tool-badge"
+                                >
+                                    {{ tool.tool_type }} ({{ tool.quantity }})
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div v-if="order.problem_description" class="problem-preview">
-                    <p><strong>Проблема:</strong></p>
+
+                <!-- Описание проблемы -->
+                <div v-if="order.problem_description" class="problem-block">
+                    <span class="problem-label">Описание проблемы:</span>
                     <p class="problem-text">
-                        {{ truncateText(order.problem_description, 100) }}
+                        {{ truncateText(order.problem_description, 120) }}
                     </p>
                 </div>
             </div>
         </div>
+
+        <!-- Действия -->
         <div v-if="hasActions" class="order-actions">
             <slot name="actions">
                 <button
@@ -146,6 +186,17 @@ export default {
             }).format(date);
         };
 
+        const formatDateShort = (dateString) => {
+            if (!dateString) return "—";
+            const date = new Date(dateString);
+            return new Intl.DateTimeFormat("ru-RU", {
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+            }).format(date);
+        };
+
         const truncateText = (text, maxLength) => {
             if (!text) return "";
             if (text.length <= maxLength) return text;
@@ -169,6 +220,7 @@ export default {
         return {
             hasActions,
             formatDate,
+            formatDateShort,
             truncateText,
             getStatusLabel: orderService.getStatusLabel,
             getTypeLabel: orderService.getTypeLabel,
@@ -181,14 +233,15 @@ export default {
 
 <style scoped>
 .order-card {
-    background: #f9fafb;
+    background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 1.5rem;
+    border-radius: 10px;
+    padding: 1.25rem;
     transition: all 0.2s;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .order-card-content {
@@ -199,15 +252,22 @@ export default {
 .order-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
+    border-color: #003859;
 }
 
 .order-header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
-    border-bottom: 2px solid #e5e7eb;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.order-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
 }
@@ -215,8 +275,29 @@ export default {
 .order-number {
     font-weight: 700;
     font-size: 1.125rem;
-    color: #046490;
+    color: #003859;
     flex-shrink: 0;
+}
+
+.order-header-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.8125rem;
+    color: #6b7280;
+}
+
+.order-date {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.order-price {
+    font-weight: 700;
+    color: #059669;
+    font-size: 0.9375rem;
 }
 
 .order-header-badges {
@@ -278,49 +359,103 @@ export default {
 .order-info {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
-.info-row {
+.info-block {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.info-row p {
-    margin: 0;
-    color: #374151;
-    font-size: 0.875rem;
+.info-item {
     display: flex;
     align-items: flex-start;
+    gap: 0.75rem;
 }
 
-.price-info {
-    margin-top: 0.5rem;
+.info-icon {
+    font-size: 1.125rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
 }
 
-.price-value {
-    color: #046490;
+.info-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.info-label {
+    font-size: 0.75rem;
     font-weight: 600;
-    margin-left: 0.25rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.problem-preview {
+.info-value {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    word-break: break-word;
+}
+
+.info-value.link {
+    color: #046490;
+    text-decoration: none;
+}
+
+.info-value.link:hover {
+    text-decoration: underline;
+}
+
+.info-subvalue {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.125rem;
+}
+
+.tools-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.tool-badge {
+    padding: 0.25rem 0.5rem;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #1e40af;
+}
+
+.problem-block {
     margin-top: 0.5rem;
-    padding-top: 0.75rem;
+    padding-top: 1rem;
     border-top: 1px solid #e5e7eb;
 }
 
-.problem-preview p {
-    margin: 0.25rem 0;
-    color: #374151;
-    font-size: 0.875rem;
+.problem-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .problem-text {
-    color: #6b7280;
+    color: #374151;
     font-size: 0.8125rem;
-    line-height: 1.4;
+    line-height: 1.5;
+    margin: 0;
 }
 
 .order-actions {

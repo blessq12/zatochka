@@ -8,102 +8,197 @@
             </router-link>
         </div>
         <div v-else class="order-content">
+            <!-- Заголовок с кнопками действий -->
+            <div class="order-header-section">
+                <div class="order-header-top">
+                    <div class="order-title-group">
+                        <h1 class="order-title">Заказ №{{ order.order_number }}</h1>
+                        <div class="order-status-group">
+                            <span
+                                class="order-status-badge"
+                                :class="getStatusClass(order.status)"
+                            >
+                                {{ getStatusLabel(order.status) }}
+                            </span>
+                            <span
+                                v-if="order.urgency === 'urgent'"
+                                class="urgency-badge urgent"
+                            >
+                                ⚡ Срочно
+                            </span>
+                        </div>
+                    </div>
+                    <router-link
+                        :to="{ name: 'pos.orders.active' }"
+                        class="btn-back"
+                    >
+                        ← Назад
+                    </router-link>
+                </div>
+                
+                <!-- Кнопки изменения статуса -->
+                <div class="status-actions">
+                    <button
+                        @click="setInWorkStatus"
+                        class="btn-status btn-in-work"
+                        :disabled="
+                            isChangingStatus || order.status === 'in_work'
+                        "
+                    >
+                        <span
+                            v-if="
+                                isChangingStatus &&
+                                changingToStatus === 'in_work'
+                            "
+                            >Сохранение...</span
+                        >
+                        <span v-else>В работе</span>
+                    </button>
+                    <button
+                        @click="setWaitingPartsStatus"
+                        class="btn-status btn-waiting-parts"
+                        :disabled="
+                            isChangingStatus ||
+                            order.status === 'waiting_parts'
+                        "
+                    >
+                        <span
+                            v-if="
+                                isChangingStatus &&
+                                changingToStatus === 'waiting_parts'
+                            "
+                            >Сохранение...</span
+                        >
+                        <span v-else>Ожидание запчастей</span>
+                    </button>
+                    <button
+                        @click="completeOrder"
+                        class="btn-status btn-complete"
+                        :disabled="
+                            isCompletingOrder || order.status === 'ready'
+                        "
+                    >
+                        <span v-if="isCompletingOrder">Сохранение...</span>
+                        <span v-else>Завершить заказ</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Информация о заказе -->
             <div class="order-info-section">
-                <div class="section-header">
-                    <h1>Заказ №{{ order.order_number }}</h1>
-                    <div class="header-actions">
-                        <button
-                            @click="setInWorkStatus"
-                            class="btn-in-work"
-                            :disabled="
-                                isChangingStatus || order.status === 'in_work'
-                            "
-                        >
-                            <span
-                                v-if="
-                                    isChangingStatus &&
-                                    changingToStatus === 'in_work'
-                                "
-                                >Сохранение...</span
+                <h2 class="section-title">Информация о заказе</h2>
+                
+                <div class="order-info-grid">
+                    <!-- Клиент -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <span class="info-icon">👤</span>
+                            <span class="info-card-title">Клиент</span>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-item">
+                                <span class="info-card-label">ФИО</span>
+                                <span class="info-card-value">{{ order.client?.full_name || "—" }}</span>
+                            </div>
+                            <div v-if="order.client?.phone" class="info-card-item">
+                                <span class="info-card-label">Телефон</span>
+                                <a :href="`tel:${order.client.phone}`" class="info-card-value link">
+                                    {{ order.client.phone }}
+                                </a>
+                            </div>
+                            <div v-if="order.client?.email" class="info-card-item">
+                                <span class="info-card-label">Email</span>
+                                <a :href="`mailto:${order.client.email}`" class="info-card-value link">
+                                    {{ order.client.email }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Услуга и филиал -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <span class="info-icon">🔧</span>
+                            <span class="info-card-title">Услуга</span>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-item">
+                                <span class="info-card-label">Тип услуги</span>
+                                <span class="info-card-value">{{ getTypeLabel(order.service_type) }}</span>
+                            </div>
+                            <div v-if="order.branch?.name" class="info-card-item">
+                                <span class="info-card-label">Филиал</span>
+                                <span class="info-card-value">{{ order.branch.name }}</span>
+                            </div>
+                            <div v-if="order.order_payment_type" class="info-card-item">
+                                <span class="info-card-label">Тип оплаты</span>
+                                <span class="info-card-value">
+                                    {{ order.order_payment_type === 'paid' ? 'Платный' : 'Гарантия' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Оборудование (если есть) -->
+                    <div v-if="order.equipment?.name || order.equipment_name" class="info-card">
+                        <div class="info-card-header">
+                            <span class="info-icon">⚙️</span>
+                            <span class="info-card-title">Оборудование</span>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-item">
+                                <span class="info-card-label">Название</span>
+                                <span class="info-card-value">
+                                    {{ order.equipment?.name || order.equipment_name }}
+                                </span>
+                            </div>
+                            <div v-if="order.equipment?.serial_number || order.equipment_serial_number" class="info-card-item">
+                                <span class="info-card-label">Серийный номер</span>
+                                <span class="info-card-value">
+                                    {{ order.equipment?.serial_number || order.equipment_serial_number }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Инструменты для заточки (если есть) -->
+                    <div v-if="order.tools && order.tools.length > 0" class="info-card">
+                        <div class="info-card-header">
+                            <span class="info-icon">✂️</span>
+                            <span class="info-card-title">Инструменты</span>
+                        </div>
+                        <div class="info-card-content">
+                            <div 
+                                v-for="(tool, idx) in order.tools" 
+                                :key="tool.id || idx"
+                                class="info-card-item"
                             >
-                            <span v-else>В работе</span>
-                        </button>
-                        <button
-                            @click="setWaitingPartsStatus"
-                            class="btn-waiting-parts"
-                            :disabled="
-                                isChangingStatus ||
-                                order.status === 'waiting_parts'
-                            "
-                        >
-                            <span
-                                v-if="
-                                    isChangingStatus &&
-                                    changingToStatus === 'waiting_parts'
-                                "
-                                >Сохранение...</span
-                            >
-                            <span v-else>Ожидание запчастей</span>
-                        </button>
-                        <button
-                            @click="completeOrder"
-                            class="btn-complete"
-                            :disabled="
-                                isCompletingOrder || order.status === 'ready'
-                            "
-                        >
-                            <span v-if="isCompletingOrder">Сохранение...</span>
-                            <span v-else>Завершить заказ</span>
-                        </button>
-                        <router-link
-                            :to="{ name: 'pos.orders.active' }"
-                            class="btn-back"
-                        >
-                            ← Назад
-                        </router-link>
+                                <span class="info-card-label">{{ tool.tool_type }}</span>
+                                <span class="info-card-value">
+                                    Количество: {{ tool.quantity }}
+                                    <span v-if="tool.description" class="info-card-subvalue">
+                                        ({{ tool.description }})
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Краткая информация о заказе (аналогично модалке, но упрощенно) -->
-                <div class="order-summary">
-                    <div class="summary-row">
-                        <span class="summary-label">Клиент:</span>
-                        <span class="summary-value">{{
-                            order.client?.full_name || "—"
-                        }}</span>
+                <!-- Описание проблемы -->
+                <div v-if="order.problem_description" class="problem-card">
+                    <div class="problem-card-header">
+                        <span class="info-icon">📝</span>
+                        <span class="problem-card-title">Описание проблемы</span>
                     </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Телефон:</span>
-                        <span class="summary-value">{{
-                            order.client?.phone || "—"
-                        }}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Тип услуги:</span>
-                        <span class="summary-value">{{
-                            getTypeLabel(order.service_type)
-                        }}</span>
-                    </div>
-                    <div class="summary-row" v-if="order.equipment_name">
-                        <span class="summary-label">Оборудование:</span>
-                        <span class="summary-value">{{
-                            order.equipment_name
-                        }}</span>
-                    </div>
-                    <div class="summary-row" v-if="order.problem_description">
-                        <span class="summary-label">Проблема:</span>
-                        <span class="summary-value">{{
-                            order.problem_description
-                        }}</span>
+                    <div class="problem-card-content">
+                        {{ order.problem_description }}
                     </div>
                 </div>
 
                 <!-- Комментарии мастера -->
                 <div class="comments-section">
-                    <div class="section-header">
-                        <h3>Комментарии мастера</h3>
-                    </div>
+                    <h3 class="section-title">Комментарии мастера</h3>
                     <div class="comments-list" v-if="order.internal_notes">
                         <div class="comment-item">
                             <div class="comment-content">
@@ -137,9 +232,7 @@
 
             <!-- Выполненные работы -->
             <div class="works-section">
-                <div class="section-header">
-                    <h2>Выполненные работы</h2>
-                </div>
+                <h2 class="section-title">Выполненные работы</h2>
 
                 <!-- Список работ -->
                 <div v-if="worksLoading" class="loading">Загрузка работ...</div>
@@ -209,9 +302,7 @@
 
             <!-- Материалы к работам -->
             <div class="materials-section">
-                <div class="section-header">
-                    <h2>Материалы и запчасти</h2>
-                </div>
+                <h2 class="section-title">Материалы и запчасти</h2>
 
                 <!-- Список материалов -->
                 <div v-if="materialsLoading" class="loading">
@@ -854,6 +945,19 @@ export default {
             getStatusLabel: orderService.getStatusLabel,
             getTypeLabel: orderService.getTypeLabel,
             formatPrice: orderService.formatPrice,
+            getStatusClass: (status) => {
+                const classes = {
+                    new: "status-new",
+                    consultation: "status-consultation",
+                    diagnostic: "status-diagnostic",
+                    in_work: "status-in-work",
+                    waiting_parts: "status-waiting-parts",
+                    ready: "status-ready",
+                    issued: "status-issued",
+                    cancelled: "status-cancelled",
+                };
+                return classes[status] || "";
+            },
         };
     },
 };
@@ -864,6 +968,165 @@ export default {
     max-width: 1200px;
 }
 
+.order-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Заголовок заказа */
+.order-header-section {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.order-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.order-title-group {
+    flex: 1;
+    min-width: 0;
+}
+
+.order-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #003859;
+    margin: 0 0 0.75rem 0;
+    font-family: "Jost", sans-serif;
+}
+
+.order-status-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.order-status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.order-status-badge.status-new,
+.order-status-badge.status-consultation,
+.order-status-badge.status-diagnostic {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.order-status-badge.status-in-work,
+.order-status-badge.status-waiting-parts {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.order-status-badge.status-ready {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.order-status-badge.status-issued {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.order-status-badge.status-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.urgency-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.urgency-badge.urgent {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-status {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: "Jost", sans-serif;
+}
+
+.btn-status:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-status:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-status.btn-in-work {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-status.btn-in-work:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.btn-status.btn-in-work:disabled {
+    background: #9ca3af;
+}
+
+.btn-status.btn-waiting-parts {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-status.btn-waiting-parts:hover:not(:disabled) {
+    background: #d97706;
+}
+
+.btn-status.btn-waiting-parts:disabled {
+    background: #9ca3af;
+}
+
+.btn-status.btn-complete {
+    background: #059669;
+    color: white;
+}
+
+.btn-status.btn-complete:hover:not(:disabled) {
+    background: #047857;
+}
+
+.btn-status.btn-complete:disabled {
+    background: #9ca3af;
+}
+
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -871,22 +1134,12 @@ export default {
     margin-bottom: 1.5rem;
 }
 
-.header-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.section-header h1,
-.section-header h2 {
-    font-size: 1.75rem;
+.section-title {
+    font-size: 1.5rem;
     font-weight: 700;
     color: #003859;
     margin: 0;
-}
-
-.section-header h2 {
-    font-size: 1.5rem;
+    font-family: "Jost", sans-serif;
 }
 
 .btn-back {
@@ -905,39 +1158,129 @@ export default {
 
 .order-info-section {
     background: white;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 1.5rem;
-    margin-bottom: 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.order-summary {
+.order-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s;
+}
+
+.info-card:hover {
+    border-color: #003859;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.info-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.info-icon {
+    font-size: 1.125rem;
+}
+
+.info-card-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #003859;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-card-content {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
-.summary-row {
+.info-card-item {
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
-.summary-label {
+.info-card-label {
+    font-size: 0.75rem;
     font-weight: 600;
     color: #6b7280;
-    min-width: 120px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.summary-value {
+.info-card-value {
+    font-size: 0.875rem;
+    font-weight: 500;
     color: #374151;
+    word-break: break-word;
+}
+
+.info-card-value.link {
+    color: #046490;
+    text-decoration: none;
+}
+
+.info-card-value.link:hover {
+    text-decoration: underline;
+}
+
+.info-card-subvalue {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.125rem;
+}
+
+.problem-card {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.problem-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.problem-card-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.problem-card-content {
+    font-size: 0.875rem;
+    color: #78350f;
+    line-height: 1.6;
+    white-space: pre-wrap;
 }
 
 .works-section,
 .materials-section {
     background: white;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 1.5rem;
-    margin-bottom: 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -952,9 +1295,16 @@ export default {
 .work-item,
 .material-item {
     border: 1px solid #e5e7eb;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 1rem;
     background: #f9fafb;
+    transition: all 0.2s;
+}
+
+.work-item:hover,
+.material-item:hover {
+    border-color: #003859;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .work-header {
@@ -962,42 +1312,53 @@ export default {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
+    gap: 1rem;
 }
 
 .work-price {
-    font-weight: 600;
+    font-weight: 700;
     color: #059669;
     font-size: 1.125rem;
 }
 
 .work-description {
     color: #374151;
-    line-height: 1.5;
+    line-height: 1.6;
+    font-size: 0.875rem;
 }
 
 .material-info {
     display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 0.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .material-name {
     font-weight: 600;
     color: #374151;
+    font-size: 0.9375rem;
 }
 
 .material-article {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: #6b7280;
+    font-family: monospace;
 }
 
 .material-details {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: #6b7280;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.material-details span {
+    padding: 0.25rem 0.5rem;
+    background: #f3f4f6;
+    border-radius: 4px;
 }
 
 .add-work-form,
@@ -1616,32 +1977,45 @@ export default {
         border-radius: 8px;
     }
 
-    .section-header {
+    .order-header-section {
+        padding: 1rem;
+    }
+
+    .order-header-top {
         flex-direction: column;
-        gap: 0.75rem;
         align-items: stretch;
-        margin-bottom: 0.75rem;
     }
 
-    .section-header h1 {
-        font-size: 1.125rem;
-        margin: 0;
+    .order-title {
+        font-size: 1.25rem;
     }
 
-    .header-actions {
+    .status-actions {
         flex-direction: column;
-        gap: 0.5rem;
     }
 
-    .header-actions button {
+    .status-actions .btn-status {
         width: 100%;
         padding: 0.625rem 0.75rem;
         font-size: 0.8125rem;
     }
 
+    .order-info-section {
+        padding: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+    }
+
     .order-info-grid {
         grid-template-columns: 1fr;
-        gap: 0.5rem;
+        gap: 0.75rem;
+    }
+
+    .info-card {
+        padding: 0.75rem;
     }
 
     .info-item {
