@@ -20,13 +20,17 @@ class ClientFactory extends Factory
      */
     public function definition(): array
     {
+        // Генерируем телефон в формате +7 (999) 123-45-67
+        $phone = '+7 (' . $this->faker->numerify('###') . ') ' . $this->faker->numerify('###-##-##');
+        
         return [
             'full_name' => $this->faker->name(),
-            'phone' => $this->faker->unique()->phoneNumber(),
+            'phone' => $phone,
             'email' => $this->faker->unique()->safeEmail(),
-            'telegram' => '@' . $this->faker->userName(),
-            'birth_date' => $this->faker->date(),
-            'delivery_address' => $this->faker->address(),
+            'telegram' => $this->faker->userName(), // Без @, как в CreateClient
+            'birth_date' => $this->faker->optional()->date('Y-m-d', '-18 years'),
+            'delivery_address' => $this->faker->optional()->address(),
+            'bonus_points' => $this->faker->numberBetween(0, 1000),
             'password' => Hash::make('password'),
             'is_deleted' => false,
         ];

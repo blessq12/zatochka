@@ -66,13 +66,17 @@ class OrderResource extends Resource
                             ->relationship('branch', 'name')
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->default(fn () => \App\Models\Branch::first()?->id),
 
                         Forms\Components\TextInput::make('order_number')
                             ->label('Номер заказа')
-                            ->required()
-                            ->maxLength(255)
-                            ->default(fn() => Order::generateOrderNumber()),
+                            ->disabled(fn ($operation) => $operation === 'create')
+                            ->dehydrated()
+                            ->default(fn ($operation) => $operation === 'create' ? 'Автоматически' : null)
+                            ->helperText(fn ($operation) => $operation === 'create' 
+                                ? 'Номер заказа будет сгенерирован автоматически при сохранении' 
+                                : 'Номер заказа нельзя изменить'),
                     ])
                     ->columns(2),
 
@@ -80,9 +84,24 @@ class OrderResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('service_type')
                             ->label('Тип услуги')
-                            ->options(Order::getAvailableTypes())
+                            ->options([
+                                Order::TYPE_SHARPENING => 'Заточка',
+                                Order::TYPE_REPAIR => 'Ремонт',
+                                Order::TYPE_DIAGNOSTIC => 'Диагностика',
+                            ])
                             ->required()
-                            ->default(Order::TYPE_REPAIR),
+                            ->default(Order::TYPE_REPAIR)
+                            ->live(),
+
+                        Forms\Components\Select::make('order_payment_type')
+                            ->label('Вид заказа')
+                            ->options([
+                                Order::PAYMENT_TYPE_PAID => 'Платный',
+                                Order::PAYMENT_TYPE_WARRANTY => 'Гарантийный',
+                            ])
+                            ->default(Order::PAYMENT_TYPE_PAID)
+                            ->required()
+                            ->live(),
 
                         Forms\Components\Select::make('status')
                             ->label('Статус')
@@ -99,38 +118,105 @@ class OrderResource extends Resource
                             ->label('Ориентировочная цена')
                             ->numeric()
                             ->prefix('₽')
-                            ->step(0.01),
+                            ->step(0.01)
+                            ->visible(fn ($get) => $get('order_payment_type') === Order::PAYMENT_TYPE_PAID),
 
                         Forms\Components\TextInput::make('actual_price')
                             ->label('Фактическая цена')
                             ->numeric()
                             ->prefix('₽')
-                            ->step(0.01),
-
-                        Forms\Components\Select::make('order_payment_type')
-                            ->label('Тип оплаты')
-                            ->options([
-                                Order::PAYMENT_TYPE_PAID => 'Оплачен',
-                                Order::PAYMENT_TYPE_WARRANTY => 'Гарантия',
-                            ])
-                            ->default(Order::PAYMENT_TYPE_PAID)
-                            ->required(),
+                            ->step(0.01)
+                            ->visible(fn ($get) => $get('order_payment_type') === Order::PAYMENT_TYPE_PAID),
                     ])
                     ->columns(2),
 
+                // Секция для заточки
+                Forms\Components\Section::make('Инструменты для заточки')
+                    ->schema([
+                        Forms\Components\Repeater::make('tools')
+                            ->label('Инструменты')
+                            ->relationship('tools')
+                            ->schema([
+                                Forms\Components\TextInput::make('tool_type')
+                                    ->label('Тип инструмента')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('Например: ножницы, кусачки, ножи'),
+
+                                Forms\Components\TextInput::make('quantity')
+                                    ->label('Количество')
+                                    ->numeric()
+                                    ->required()
+                                    ->minValue(1)
+                                    ->default(1)
+                                    ->helperText('Количество инструментов этого типа'),
+
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Описание')
+                                    ->rows(2)
+                                    ->maxLength(65535)
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(1)
+                            ->minItems(1)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => 
+                                ($state['tool_type'] ?? 'Инструмент') . 
+                                (isset($state['quantity']) && $state['quantity'] > 1 ? " ({$state['quantity']} шт.)" : '')
+                            ),
+                    ])
+                    ->visible(fn ($get) => $get('service_type') === Order::TYPE_SHARPENING),
+
+                // Секция для ремонта и диагностики
                 Forms\Components\Section::make('Оборудование')
                     ->schema([
-                        Forms\Components\TextInput::make('equipment_name')
-                            ->label('Название оборудования')
-                            ->required()
-                            ->maxLength(255),
-
-                        Forms\Components\TextInput::make('equipment_serial_number')
-                            ->label('Серийный номер')
-                            ->maxLength(255)
-                            ->nullable(),
+                        Forms\Components\Select::make('equipment_id')
+                            ->label('Оборудование')
+                            ->relationship('equipment', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(fn ($get) => in_array($get('service_type'), [Order::TYPE_REPAIR, Order::TYPE_DIAGNOSTIC]))
+                            ->getSearchResultsUsing(fn (string $search) => \App\Models\Equipment::query()
+                                ->where('name', 'like', "%{$search}%")
+                                ->orWhere('serial_number', 'like', "%{$search}%")
+                                ->orWhere('brand', 'like', "%{$search}%")
+                                ->orWhere('model', 'like', "%{$search}%")
+                                ->limit(50)
+                                ->get()
+                                ->mapWithKeys(fn ($equipment) => [
+                                    $equipment->id => $equipment->full_name . ($equipment->serial_number ? ' (SN: ' . $equipment->serial_number . ')' : '')
+                                ]))
+                            ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Equipment::find($value)?->full_name)
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Название оборудования')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('type')
+                                    ->label('Тип оборудования')
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('serial_number')
+                                    ->label('Серийный номер')
+                                    ->maxLength(255)
+                                    ->unique('equipment', 'serial_number'),
+                                Forms\Components\TextInput::make('brand')
+                                    ->label('Производитель/Бренд')
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('model')
+                                    ->label('Модель')
+                                    ->maxLength(255),
+                                Forms\Components\Select::make('client_id')
+                                    ->label('Владелец')
+                                    ->relationship('client', 'full_name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->nullable(),
+                            ])
+                            ->helperText('Выберите существующее оборудование или создайте новое')
+                            ->visible(fn ($get) => in_array($get('service_type'), [Order::TYPE_REPAIR, Order::TYPE_DIAGNOSTIC])),
                     ])
-                    ->columns(2),
+                    ->visible(fn ($get) => in_array($get('service_type'), [Order::TYPE_REPAIR, Order::TYPE_DIAGNOSTIC])),
 
                 Forms\Components\Section::make('Доставка')
                     ->schema([
@@ -170,7 +256,8 @@ class OrderResource extends Resource
                             ->relationship('manager', 'name')
                             ->searchable()
                             ->preload()
-                            ->nullable(),
+                            ->default(fn () => \Illuminate\Support\Facades\Auth::id())
+                            ->required(),
 
                         Forms\Components\Select::make('master_id')
                             ->label('Мастер')
@@ -270,10 +357,27 @@ class OrderResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('equipment_name')
+                Tables\Columns\TextColumn::make('equipment.name')
                     ->label('Оборудование')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->visible(fn ($record) => $record && in_array($record->service_type, [Order::TYPE_REPAIR, Order::TYPE_DIAGNOSTIC])),
+
+                Tables\Columns\TextColumn::make('tools_summary')
+                    ->label('Инструменты')
+                    ->getStateUsing(function ($record) {
+                        if ($record->service_type !== Order::TYPE_SHARPENING) {
+                            return null;
+                        }
+                        $tools = $record->tools;
+                        if ($tools->isEmpty()) {
+                            return '—';
+                        }
+                        return $tools->map(fn($tool) => $tool->tool_type . ($tool->quantity > 1 ? " ({$tool->quantity})" : ''))->join(', ');
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->visible(fn ($record) => $record && $record->service_type === Order::TYPE_SHARPENING),
 
                 Tables\Columns\TextColumn::make('order_payment_type')
                     ->label('Тип оплаты')
