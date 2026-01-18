@@ -153,4 +153,23 @@ export default {
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
 }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .pos-page-content {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .loading,
+    .empty-state {
+        padding: 2rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .orders-list {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+}
 </style>

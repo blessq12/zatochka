@@ -17,9 +17,16 @@
 
         <!-- Основное приложение -->
         <div v-else class="pos-app">
-            <PosSidebar />
+            <!-- Overlay для мобильного меню -->
+            <div 
+                v-if="isMobileMenuOpen" 
+                class="mobile-menu-overlay"
+                @click="closeMobileMenu"
+            ></div>
+            
+            <PosSidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" />
             <div class="pos-main-content">
-                <PosHeader />
+                <PosHeader @toggle-mobile-menu="toggleMobileMenu" />
                 <router-view />
             </div>
         </div>
@@ -48,6 +55,7 @@ export default {
         const isAuthenticated = computed(() => posStore.isAuthenticated);
         const user = computed(() => posStore.user);
         const isCheckingAuth = ref(true);
+        const isMobileMenuOpen = ref(false);
 
         const checkAuth = async () => {
             isCheckingAuth.value = true;
@@ -62,6 +70,19 @@ export default {
             router.push({ name: "pos.orders.new" });
         };
 
+        const toggleMobileMenu = () => {
+            isMobileMenuOpen.value = !isMobileMenuOpen.value;
+        };
+
+        const closeMobileMenu = () => {
+            isMobileMenuOpen.value = false;
+        };
+
+        // Закрываем меню при смене роута
+        router.afterEach(() => {
+            closeMobileMenu();
+        });
+
         onMounted(() => {
             checkAuth();
         });
@@ -70,7 +91,10 @@ export default {
             isAuthenticated,
             user,
             isCheckingAuth,
+            isMobileMenuOpen,
             handleLoginSuccess,
+            toggleMobileMenu,
+            closeMobileMenu,
         };
     },
 };
@@ -107,6 +131,45 @@ export default {
     margin-left: 280px;
     min-height: 100vh;
     padding: 2rem;
+    transition: margin-left 0.3s ease;
+    width: 0;
+    min-width: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .pos-login-screen {
+        padding: 1rem;
+    }
+
+    .pos-login-container {
+        max-width: 100%;
+    }
+
+    .pos-main-content {
+        margin-left: 0;
+        padding: 0.75rem;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    .mobile-menu-overlay {
+        display: block;
+    }
 }
 
 .pos-loading-screen {

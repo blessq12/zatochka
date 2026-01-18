@@ -184,6 +184,65 @@ export default {
     gap: 1.5rem;
 }
 
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .pos-page-content {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .page-header {
+        margin-bottom: 0.75rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.125rem;
+    }
+
+    .search-section {
+        margin-bottom: 0.75rem;
+    }
+
+    .search-input {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .loading,
+    .empty-state {
+        padding: 2rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .items-list {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .item-card {
+        padding: 0.75rem;
+        border-radius: 6px;
+    }
+
+    .item-name {
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .item-details {
+        font-size: 0.75rem;
+        gap: 0.375rem;
+    }
+
+    .item-detail-label {
+        font-size: 0.6875rem;
+    }
+
+    .item-detail-value {
+        font-size: 0.75rem;
+    }
+}
+
 .item-card {
     background: #f9fafb;
     border: 1px solid #e5e7eb;

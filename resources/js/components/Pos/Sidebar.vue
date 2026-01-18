@@ -4,6 +4,13 @@ import { useRoute } from "vue-router";
 
 export default {
     name: "PosSidebar",
+    props: {
+        isMobileOpen: {
+            type: Boolean,
+            default: false,
+        },
+    },
+    emits: ['close'],
     setup() {
         const route = useRoute();
 
@@ -31,10 +38,15 @@ export default {
 </script>
 
 <template>
-    <div class="pos-sidebar">
+    <div class="pos-sidebar" :class="{ 'mobile-open': isMobileOpen }">
         <div class="sidebar-header">
-            <h2 class="sidebar-title">Заточка.ТСК</h2>
-            <p class="sidebar-subtitle">POS Панель</p>
+            <div class="sidebar-header-content">
+                <h2 class="sidebar-title">Заточка.ТСК</h2>
+                <p class="sidebar-subtitle">POS Панель</p>
+            </div>
+            <button v-if="isMobileOpen" @click="$emit('close')" class="mobile-close-btn">
+                ✕
+            </button>
         </div>
 
         <nav class="sidebar-nav">
@@ -85,12 +97,40 @@ export default {
     flex-direction: column;
     font-family: "Jost", sans-serif;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    transition: transform 0.3s ease;
 }
 
 .sidebar-header {
     padding: 2rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.sidebar-header-content {
+    flex: 1;
+}
+
+.mobile-close-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.mobile-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-title {
@@ -158,5 +198,33 @@ export default {
     font-weight: 500;
     font-size: 1rem;
     font-family: "Jost", sans-serif;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .pos-sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+    }
+
+    .pos-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .mobile-close-btn {
+        display: block;
+    }
+
+    .sidebar-header {
+        padding: 1.5rem 1rem;
+    }
+
+    .sidebar-title {
+        font-size: 1.25rem;
+    }
+
+    .sidebar-subtitle {
+        font-size: 0.75rem;
+    }
 }
 </style>

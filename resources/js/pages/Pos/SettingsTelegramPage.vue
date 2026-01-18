@@ -513,4 +513,77 @@ export default {
 .benefits-list li {
     margin-bottom: 0.5rem;
 }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .pos-page-content {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .section-title {
+        font-size: 1.125rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .info-box {
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+    }
+
+    .info-title {
+        font-size: 0.9375rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-text {
+        font-size: 0.8125rem;
+        line-height: 1.5;
+    }
+
+    .info-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .instructions-list {
+        padding-left: 1.25rem;
+        font-size: 0.8125rem;
+        gap: 0.5rem;
+    }
+
+    .instructions-list li {
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-link,
+    .btn-primary {
+        padding: 0.625rem 1rem;
+        font-size: 0.8125rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .qr-code-wrapper {
+        padding: 0.75rem;
+    }
+
+    .qr-code {
+        width: 200px;
+        height: 200px;
+    }
+
+    .benefits-list {
+        font-size: 0.8125rem;
+        padding-left: 1.25rem;
+    }
+}
 </style>

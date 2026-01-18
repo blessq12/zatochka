@@ -209,6 +209,7 @@ export default {
     padding-bottom: 1rem;
     border-bottom: 2px solid #e5e7eb;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .order-number {
@@ -375,5 +376,80 @@ export default {
 
 .btn-primary-action.btn-return-to-work:hover:not(:disabled) {
     background: #d97706;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .order-card {
+        padding: 0.75rem;
+        border-radius: 6px;
+    }
+
+    .order-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .order-header-badges {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .order-number {
+        font-size: 0.9375rem;
+    }
+
+    .order-status,
+    .urgency-badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .order-info {
+        gap: 0.5rem;
+    }
+
+    .info-row {
+        gap: 0.25rem;
+    }
+
+    .info-row p {
+        font-size: 0.8125rem;
+        flex-direction: column;
+        gap: 0.125rem;
+        line-height: 1.4;
+    }
+
+    .info-row p strong {
+        display: block;
+        margin-bottom: 0.125rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .problem-preview {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+    }
+
+    .problem-preview p {
+        font-size: 0.75rem;
+    }
+
+    .problem-text {
+        font-size: 0.6875rem;
+    }
+
+    .order-actions {
+        padding-top: 0.75rem;
+    }
+
+    .btn-primary-action {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
+    }
 }
 </style>

@@ -1599,4 +1599,147 @@ export default {
 .btn-save-comment {
     margin-top: 0.75rem;
 }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .pos-page-content {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .order-content {
+        gap: 0.75rem;
+    }
+
+    .order-info-section {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+        margin-bottom: 0.75rem;
+    }
+
+    .section-header h1 {
+        font-size: 1.125rem;
+        margin: 0;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .header-actions button {
+        width: 100%;
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .order-info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .info-item {
+        padding: 0.5rem 0;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 0.8125rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .form-row-inline {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .material-form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.75rem;
+    }
+
+    .form-label {
+        font-size: 0.8125rem;
+        margin-bottom: 0.375rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .form-group-price,
+    .form-group-quantity {
+        min-width: auto;
+        max-width: none;
+    }
+
+    .works-section,
+    .materials-section {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .work-item,
+    .material-item {
+        padding: 0.75rem;
+        border-radius: 6px;
+    }
+
+    .item-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .item-name {
+        font-size: 0.875rem;
+    }
+
+    .item-details {
+        font-size: 0.75rem;
+        gap: 0.25rem;
+    }
+
+    .btn-remove {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .btn-add {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .btn-save-comment {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
+        margin-top: 0.5rem;
+    }
+}
 </style>
