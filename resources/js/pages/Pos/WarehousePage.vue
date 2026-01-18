@@ -143,11 +143,11 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { warehouseService } from "../../services/pos/WarehouseService.js";
 import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
 import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
+import { warehouseService } from "../../services/pos/WarehouseService.js";
 
 export default {
     name: "WarehousePage",
@@ -299,6 +299,12 @@ export default {
     border-radius: 12px;
     padding: 2rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    position: relative;
 }
 
 .page-header {
@@ -316,16 +322,23 @@ export default {
 .search-section {
     margin-bottom: 2rem;
     display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .search-input {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     padding: 0.75rem 1rem;
     border: 2px solid #e5e7eb;
     border-radius: 8px;
     font-size: 1rem;
     font-family: "Jost", sans-serif;
     transition: border-color 0.2s;
+    box-sizing: border-box;
 }
 
 .search-input:focus {
@@ -335,6 +348,12 @@ export default {
 
 .page-body {
     min-height: 200px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    position: relative;
 }
 
 .loading {
@@ -353,14 +372,48 @@ export default {
 
 .warehouse-table-wrapper {
     overflow-x: auto;
+    overflow-y: visible;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #f1f5f9;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    background: white;
+    box-sizing: border-box;
+    display: block;
+    contain: layout;
+}
+
+.warehouse-table-wrapper::-webkit-scrollbar {
+    height: 10px;
+}
+
+.warehouse-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 5px;
+    margin: 0 4px;
+}
+
+.warehouse-table-wrapper::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 5px;
+    border: 2px solid #f1f5f9;
+}
+
+.warehouse-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
 }
 
 .warehouse-table {
     width: 100%;
+    min-width: 800px;
     border-collapse: collapse;
     font-family: "Jost", sans-serif;
+    table-layout: auto;
 }
 
 .warehouse-table thead {
@@ -376,6 +429,12 @@ export default {
     font-size: 0.875rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+.warehouse-table th:first-child {
+    min-width: 200px;
 }
 
 .warehouse-table td {
@@ -383,9 +442,19 @@ export default {
     border-bottom: 1px solid #f3f4f6;
     color: #374151;
     font-size: 0.875rem;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+.warehouse-table td:first-child {
+    min-width: 200px;
 }
 
 .warehouse-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.warehouse-table tbody tr:hover td:first-child {
     background: #f9fafb;
 }
 
@@ -523,5 +592,152 @@ export default {
     cursor: default;
     border: none;
     background: transparent;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .pos-page-content {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .page-header {
+        margin-bottom: 0.75rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.125rem;
+    }
+
+    .search-section {
+        margin-bottom: 0.75rem;
+    }
+
+    .search-input {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .pos-page-content {
+        padding: 0.75rem;
+        border-radius: 8px;
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .page-header,
+    .search-section {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .page-body {
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .warehouse-table-wrapper {
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        margin: 0;
+        padding: 0;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .warehouse-table-wrapper::-webkit-scrollbar {
+        height: 12px;
+    }
+
+    .warehouse-table-wrapper::-webkit-scrollbar-thumb {
+        background: #64748b;
+        border: 3px solid white;
+    }
+
+    .warehouse-table {
+        min-width: 700px;
+        width: auto;
+        font-size: 0.75rem;
+    }
+
+    .warehouse-table th,
+    .warehouse-table td {
+        white-space: nowrap;
+        padding: 0.625rem 0.5rem;
+    }
+
+    .warehouse-table th:first-child,
+    .warehouse-table td:first-child {
+        padding-left: 0.75rem;
+        min-width: 150px;
+    }
+
+    .warehouse-table th {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .warehouse-table th:not(:first-child) {
+        min-width: 100px;
+    }
+
+    .warehouse-table td:not(:first-child) {
+        min-width: 100px;
+    }
+
+    .item-name {
+        font-size: 0.75rem;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .item-article-cell,
+    .item-category {
+        font-size: 0.6875rem;
+    }
+
+    .item-price {
+        font-size: 0.75rem;
+    }
+
+    .pagination-wrapper {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+    }
+
+    .pagination-info {
+        font-size: 0.75rem;
+    }
+
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+    .pagination-btn,
+    .pagination-page-btn {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.75rem;
+        min-width: 2rem;
+        height: 2rem;
+    }
 }
 </style>

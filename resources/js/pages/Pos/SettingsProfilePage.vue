@@ -503,4 +503,83 @@ export default {
 .btn-secondary:hover:not(:disabled) {
     background: #e5e7eb;
 }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .pos-page-content {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .page-header {
+        margin-bottom: 0.75rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.125rem;
+    }
+
+    .profile-card {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .form-section {
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: 0.9375rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .info-row {
+        padding: 0.5rem 0;
+        font-size: 0.8125rem;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+    }
+
+    .info-value {
+        font-size: 0.8125rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.75rem;
+    }
+
+    .form-label {
+        font-size: 0.8125rem;
+        margin-bottom: 0.375rem;
+    }
+
+    .form-input {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .form-error {
+        font-size: 0.75rem;
+        margin-top: 0.375rem;
+    }
+
+    .form-error-general {
+        padding: 0.75rem;
+        font-size: 0.8125rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+    }
+}
 </style>
