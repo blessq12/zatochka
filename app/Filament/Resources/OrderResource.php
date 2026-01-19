@@ -7,6 +7,7 @@ use App\Filament\Resources\OrderResource\RelationManagers\ActivityLogRelationMan
 use App\Filament\Resources\OrderResource\RelationManagers\OrderWorksRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderMaterialsRelationManager;
 use App\Models\Order;
+use App\Services\Document\Factories\DocumentGeneratorFactory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -313,21 +314,18 @@ class OrderResource extends Resource
                     })
                     ->formatStateUsing(fn(string $state): string => Order::getAvailableTypes()[$state] ?? $state),
 
-                Tables\Columns\TextColumn::make('status')
+                Tables\Columns\SelectColumn::make('status')
                     ->label('Статус')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        Order::STATUS_NEW => 'primary',
-                        Order::STATUS_CONSULTATION => 'warning',
-                        Order::STATUS_DIAGNOSTIC => 'info',
-                        Order::STATUS_IN_WORK => 'secondary',
-                        Order::STATUS_WAITING_PARTS => 'danger',
-                        Order::STATUS_READY => 'success',
-                        Order::STATUS_ISSUED => 'gray',
-                        Order::STATUS_CANCELLED => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn(string $state): string => Order::getAvailableStatuses()[$state] ?? $state),
+                    ->options(Order::getAvailableStatuses())
+                    ->selectablePlaceholder(false)
+                    ->searchable()
+                    ->sortable()
+                    ->afterStateUpdated(function ($record, $state) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Статус обновлен')
+                            ->success()
+                            ->send();
+                    }),
 
                 Tables\Columns\TextColumn::make('urgency')
                     ->label('Срочность')
@@ -435,22 +433,39 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('change_status')
-                    ->label('Изменить статус')
-                    ->icon('heroicon-o-arrow-path')
-                    ->form([
-                        Forms\Components\Select::make('status')
-                            ->label('Новый статус')
-                            ->options(Order::getAvailableStatuses())
-                            ->required(),
-                    ])
-                    ->action(function (Order $record, array $data): void {
-                        $record->update(['status' => $data['status']]);
-                        \Filament\Notifications\Notification::make()
-                            ->title('Статус обновлен')
-                            ->success()
-                            ->send();
-                    }),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('generate_acceptance')
+                        ->label('Акт приема')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('info')
+                        ->visible(fn (Order $record): bool => in_array($record->status, [
+                            Order::STATUS_NEW,
+                            Order::STATUS_CONSULTATION,
+                            Order::STATUS_DIAGNOSTIC,
+                        ]))
+                        ->url(fn (Order $record): string => url('/api/orders/' . $record->id . '/documents/view?type=' . DocumentGeneratorFactory::TYPE_ACCEPTANCE))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('generate_issuance')
+                        ->label('Акт выдачи')
+                        ->icon('heroicon-o-document-arrow-up')
+                        ->color('success')
+                        ->visible(fn (Order $record): bool => in_array($record->status, [
+                            Order::STATUS_READY,
+                            Order::STATUS_ISSUED,
+                        ]))
+                        ->url(fn (Order $record): string => url('/api/orders/' . $record->id . '/documents/view?type=' . DocumentGeneratorFactory::TYPE_ISSUANCE))
+                        ->openUrlInNewTab(),
+                ])
+                    ->label('Документы')
+                    ->icon('heroicon-o-document-text')
+                    ->button()
+                    ->visible(fn (Order $record): bool => in_array($record->status, [
+                        Order::STATUS_NEW,
+                        Order::STATUS_CONSULTATION,
+                        Order::STATUS_DIAGNOSTIC,
+                        Order::STATUS_READY,
+                        Order::STATUS_ISSUED,
+                    ])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

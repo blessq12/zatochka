@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\PriceController;
@@ -74,6 +75,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/orders/{orderId}/works/{workId}/materials/{materialId}', 'removeOrderMaterial');
 
         Route::get('/warehouse/items', 'warehouseItems');
+
+        // Документы заказов
+        Route::prefix('orders/{order}')->controller(DocumentController::class)->group(function () {
+            Route::get('/documents/download', 'download');
+            Route::get('/documents/view', 'view');
+            Route::post('/documents/generate', 'generate');
+        });
 
         // Telegram для мастеров
         Route::post('/telegram/send-verification-code', 'sendTelegramVerificationCode');
