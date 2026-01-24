@@ -142,10 +142,13 @@ export default {
 
 <style scoped>
 .pos-page-content {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    font-family: "Jost", sans-serif;
 }
 
 .loading,
@@ -153,19 +156,19 @@ export default {
     text-align: center;
     padding: 3rem;
     color: #6b7280;
+    font-weight: 500;
 }
 
 .orders-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
     .pos-page-content {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .loading,

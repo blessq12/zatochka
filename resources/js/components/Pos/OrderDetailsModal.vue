@@ -1,6 +1,7 @@
 <template>
-    <div v-if="isOpen" class="modal-overlay" @click.self="close">
-        <div class="modal-container">
+    <Teleport to="body">
+        <div v-if="isOpen" class="modal-overlay" @click.self="close">
+            <div class="modal-container">
             <div class="modal-header">
                 <h2 class="modal-title">Заказ №{{ order?.order_number }}</h2>
                 <button @click="close" class="modal-close-btn">✕</button>
@@ -253,6 +254,7 @@
             </div>
         </div>
     </div>
+    </Teleport>
 </template>
 
 <script>
@@ -395,37 +397,36 @@ export default {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1100;
     padding: 2rem;
     animation: fadeIn 0.2s;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-container {
-    background: white;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
     max-width: 900px;
     width: 100%;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
     animation: slideIn 0.3s;
     overflow: hidden;
+    font-family: "Jost", sans-serif;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
     .modal-overlay {
         padding: 0.5rem;
@@ -433,15 +434,15 @@ export default {
 
     .modal-container {
         max-height: 95vh;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .modal-header {
-        padding: 1rem;
+        padding: 1rem 1.25rem;
     }
 
     .modal-title {
-        font-size: 1.25rem;
+        font-size: 1.125rem;
     }
 
     .modal-body {
@@ -517,26 +518,27 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 1.25rem 1.5rem;
+    background: #c20a6c;
+    border-bottom: none;
 }
 
 .modal-title {
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: #003859;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
     margin: 0;
     font-family: "Jost", sans-serif;
 }
 
 .modal-close-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border: none;
-    background: #f3f4f6;
-    border-radius: 8px;
-    font-size: 1.25rem;
-    color: #6b7280;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0;
+    font-size: 1.125rem;
+    color: white;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -546,14 +548,15 @@ export default {
 }
 
 .modal-close-btn:hover {
-    background: #e5e7eb;
-    color: #374151;
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
 }
 
 .modal-body {
-    padding: 2rem;
+    padding: 1.5rem;
     overflow-y: auto;
     flex: 1;
+    background: #f9fafb;
 }
 
 .loading,
@@ -570,16 +573,17 @@ export default {
 }
 
 .details-section {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
     padding: 1.25rem;
     transition: all 0.2s;
 }
 
 .details-section:hover {
-    border-color: #003859;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 56, 89, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 56, 89, 0.08);
 }
 
 .details-section-header {
@@ -588,7 +592,7 @@ export default {
     gap: 0.75rem;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid #e5e7eb;
+    border-bottom: 1px solid rgba(0, 56, 89, 0.15);
 }
 
 .details-icon {
@@ -635,7 +639,7 @@ export default {
 }
 
 .detail-value.link {
-    color: #046490;
+    color: #003859;
     text-decoration: none;
 }
 
@@ -651,11 +655,12 @@ export default {
 
 .detail-badge {
     padding: 0.375rem 0.75rem;
-    border-radius: 8px;
+    border-radius: 0;
     font-size: 0.8125rem;
     font-weight: 600;
     display: inline-block;
     white-space: nowrap;
+    font-family: "Jost", sans-serif;
 }
 
 .detail-badge.status-new,
@@ -707,8 +712,8 @@ export default {
 }
 
 .problem-section {
-    background: #fef3c7;
-    border-color: #fde68a;
+    background: rgba(254, 243, 199, 0.8);
+    border-color: rgba(0, 56, 89, 0.2);
 }
 
 .problem-content {
@@ -731,7 +736,7 @@ export default {
     padding: 0.75rem;
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .tool-type {
@@ -765,7 +770,7 @@ export default {
     padding: 0.75rem;
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .work-detail-content {
@@ -794,7 +799,7 @@ export default {
     padding: 1rem;
     background: #f0f7ff;
     border: 2px solid #003859;
-    border-radius: 8px;
+    border-radius: 0;
     margin-top: 0.5rem;
 }
 
@@ -824,7 +829,7 @@ export default {
     padding: 0.75rem;
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .material-detail-info {
@@ -868,7 +873,7 @@ export default {
     padding: 1rem;
     background: #f0f7ff;
     border: 2px solid #003859;
-    border-radius: 8px;
+    border-radius: 0;
     margin-top: 0.5rem;
 }
 

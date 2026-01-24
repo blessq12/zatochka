@@ -185,10 +185,10 @@ export default {
     justify-content: space-between;
     width: 100%;
     padding: 0.5rem 1rem;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    color: #6b7280;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    color: #003859;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
@@ -197,9 +197,9 @@ export default {
 }
 
 .mobile-stats-toggle:hover {
-    background: #f3f4f6;
+    background: rgba(0, 56, 89, 0.08);
     color: #003859;
-    border-color: #d1d5db;
+    border-color: rgba(0, 56, 89, 0.3);
 }
 
 .mobile-stats-toggle.active {
@@ -222,10 +222,11 @@ export default {
     top: calc(100% + 0.5rem);
     left: 0;
     right: 0;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     z-index: 1000;
     overflow: hidden;
     animation: slideDown 0.2s ease;
@@ -264,35 +265,37 @@ export default {
 }
 
 .mobile-stats-item.active {
-    background: #f0f7ff;
+    background: rgba(0, 56, 89, 0.08);
     color: #003859;
     font-weight: 600;
+    border-left: 3px solid #c20a6c;
 }
 
 .nav-btn {
-    padding: 0.5rem 1rem;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
     text-decoration: none;
-    color: #6b7280;
+    color: #003859;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 0.2s;
     font-family: "Jost", sans-serif;
     white-space: nowrap;
+    transition: all 0.2s;
 }
 
 .nav-btn:hover {
-    background: #f3f4f6;
+    background: rgba(0, 56, 89, 0.08);
     color: #003859;
-    border-color: #d1d5db;
+    border-color: rgba(0, 56, 89, 0.3);
 }
 
 .nav-btn.active {
     background: #003859;
     color: white;
     border-color: #003859;
+    font-weight: 700;
 }
 
 /* Мобильная адаптация */

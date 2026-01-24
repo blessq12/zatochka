@@ -1,33 +1,36 @@
 <template>
-    <div class="pos-header">
-        <button @click="$emit('toggle-mobile-menu')" class="mobile-menu-btn">
-            ☰
+    <header class="pos-header">
+        <button
+            type="button"
+            @click="$emit('toggle-mobile-menu')"
+            class="mobile-menu-btn"
+            aria-label="Меню"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
         </button>
         <div class="header-info">
             <div class="user-info">
-                <div class="user-avatar">
-                    {{ userInitials }}
-                </div>
+                <div class="user-avatar">{{ userInitials }}</div>
                 <div class="user-details">
                     <div class="user-name">{{ fullName }}</div>
                     <div class="user-email">{{ user?.email }}</div>
                 </div>
             </div>
-            
-            <!-- Десктопная навигация -->
+
             <div class="header-navigation desktop-nav" v-if="navigationItems.length > 0">
                 <router-link
                     v-for="item in navigationItems"
                     :key="item.name"
                     :to="item.to"
-                    class="nav-btn"
+                    class="header-nav-link"
                     :class="{ active: item.active }"
                 >
                     {{ item.label }}
                 </router-link>
             </div>
-            
-            <!-- Десктопный кастомный контент (статусы заказов) -->
+
             <div class="header-custom-content desktop-custom" v-if="customContent">
                 <component
                     :is="customContent.component"
@@ -36,30 +39,28 @@
                 />
             </div>
         </div>
-        
-        <!-- Десктопная кнопка выхода -->
+
         <div class="header-actions desktop-actions">
-            <button @click="handleLogout" class="logout-btn">
-                <span class="logout-text">Выйти</span>
+            <button type="button" @click="handleLogout" class="logout-btn">
+                Выйти
             </button>
         </div>
 
-        <!-- Мобильное универсальное меню -->
         <div class="mobile-unified-menu">
-            <button 
-                @click="toggleMobileMenu" 
+            <button
+                type="button"
+                @click="toggleMobileMenu"
                 class="mobile-menu-toggle"
                 :class="{ active: isMobileMenuOpen }"
             >
                 <span>Меню</span>
-                <span class="mobile-menu-arrow">▼</span>
+                <span class="mobile-menu-arrow" aria-hidden="true">▼</span>
             </button>
-            <div 
-                class="mobile-menu-dropdown" 
-                :class="{ open: isMobileMenuOpen }"
+            <div
                 v-if="isMobileMenuOpen"
+                class="mobile-menu-dropdown"
+                :class="{ open: isMobileMenuOpen }"
             >
-                <!-- Навигация -->
                 <div v-if="navigationItems.length > 0" class="mobile-menu-section">
                     <div class="mobile-menu-section-title">Навигация</div>
                     <router-link
@@ -73,8 +74,6 @@
                         {{ item.label }}
                     </router-link>
                 </div>
-
-                <!-- Статусы заказов -->
                 <div v-if="customContent && orderStatsItems.length > 0" class="mobile-menu-section">
                     <div class="mobile-menu-section-title">Статусы заказов</div>
                     <router-link
@@ -88,16 +87,14 @@
                         {{ item.label }}
                     </router-link>
                 </div>
-
-                <!-- Кнопка выхода -->
                 <div class="mobile-menu-section">
-                    <button @click="handleMobileLogout" class="mobile-menu-logout">
+                    <button type="button" @click="handleMobileLogout" class="mobile-menu-logout">
                         Выйти
                     </button>
                 </div>
             </div>
         </div>
-    </div>
+    </header>
 </template>
 
 <script>
@@ -242,32 +239,160 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: #c20a6c;
     padding: 0.75rem 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 1.5rem;
-    border-radius: 12px;
+    border-radius: 0;
     font-family: "Jost", sans-serif;
     gap: 1rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
 .header-info {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .header-navigation {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.25rem;
     align-items: center;
+}
+
+.header-nav-link {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: white;
+    transition: all 0.2s;
+}
+
+.header-nav-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.header-nav-link.active {
+    background: rgba(255, 255, 255, 0.3);
+    font-weight: 700;
+}
+
+.header-custom-content {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* OrderStats внутри хедера — стиль как на сайте */
+.pos-header :deep(.nav-btn) {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0;
+    font-size: 0.875rem;
+}
+
+.pos-header :deep(.nav-btn:hover) {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-color: transparent;
+}
+
+.pos-header :deep(.nav-btn.active) {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    border-color: transparent;
+    font-weight: 700;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: white;
+}
+
+.user-email {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+}
+
+.logout-btn {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 0;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: "Jost", sans-serif;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: transparent;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.mobile-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.mobile-unified-menu {
+    display: none;
+    position: relative;
+    width: 100%;
 }
 
 .mobile-menu-toggle {
@@ -276,9 +401,9 @@ export default {
     justify-content: space-between;
     width: 100%;
     padding: 0.75rem 1rem;
-    background: #003859;
-    border: none;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
     color: white;
     font-size: 0.875rem;
     font-weight: 600;
@@ -287,12 +412,9 @@ export default {
     font-family: "Jost", sans-serif;
 }
 
-.mobile-menu-toggle:hover {
-    background: #002c4e;
-}
-
+.mobile-menu-toggle:hover,
 .mobile-menu-toggle.active {
-    background: #002c4e;
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .mobile-menu-arrow {
@@ -312,8 +434,8 @@ export default {
     right: 0;
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     overflow: hidden;
     animation: slideDown 0.2s ease;
@@ -324,7 +446,7 @@ export default {
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-8px);
     }
     to {
         opacity: 1;
@@ -375,15 +497,14 @@ export default {
     background: #f0f7ff;
     color: #003859;
     font-weight: 600;
-    border-left: 3px solid #003859;
+    border-left: 3px solid #c20a6c;
 }
 
 .mobile-menu-logout {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: #ef4444;
+    background: #c20a6c;
     border: none;
-    border-radius: 0;
     color: white;
     font-size: 0.875rem;
     font-weight: 600;
@@ -394,126 +515,7 @@ export default {
 }
 
 .mobile-menu-logout:hover {
-    background: #dc2626;
-}
-
-.header-custom-content {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.mobile-unified-menu {
-    display: none;
-    position: relative;
-}
-
-.nav-btn {
-    padding: 0.5rem 1rem;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #6b7280;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    font-family: "Jost", sans-serif;
-}
-
-.nav-btn:hover {
-    background: #f3f4f6;
-    color: #003859;
-    border-color: #d1d5db;
-}
-
-.nav-btn.active {
-    background: #003859;
-    color: white;
-    border-color: #003859;
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #003859 0%, #c3006b 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-.user-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.user-name {
-    font-weight: 600;
-    font-size: 0.9375rem;
-    color: #003859;
-}
-
-.user-email {
-    font-size: 0.8125rem;
-    color: #6b7280;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-}
-
-.logout-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.625rem 1.25rem;
-    background: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: "Jost", sans-serif;
-}
-
-.logout-btn:hover {
-    background: #dc2626;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
-}
-
-.logout-text {
-    font-size: 0.875rem;
-}
-
-.mobile-menu-btn {
-    display: none;
-    background: #003859;
-    color: white;
-    border: none;
-    padding: 0.5rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1.25rem;
-    width: 40px;
-    height: 40px;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-    flex-shrink: 0;
-}
-
-.mobile-menu-btn:hover {
-    background: #002c4e;
+    background: #a8095a;
 }
 
 @media (max-width: 768px) {
@@ -521,14 +523,13 @@ export default {
         display: flex;
         width: 36px;
         height: 36px;
-        font-size: 1.125rem;
     }
 
     .pos-header {
         padding: 0.625rem 0.75rem;
         flex-wrap: wrap;
         margin-bottom: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .header-info {
@@ -541,7 +542,7 @@ export default {
     .user-info {
         min-width: 0;
         flex-shrink: 0;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .user-avatar {
@@ -568,17 +569,14 @@ export default {
         text-overflow: ellipsis;
     }
 
-    /* Скрываем десктопные элементы на мобильных */
     .desktop-nav,
     .desktop-custom,
     .desktop-actions {
         display: none;
     }
 
-    /* Показываем универсальное мобильное меню */
     .mobile-unified-menu {
         display: block;
-        width: 100%;
         order: 3;
         margin-top: 0.5rem;
     }

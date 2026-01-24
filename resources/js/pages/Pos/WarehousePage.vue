@@ -301,16 +301,19 @@ export default {
 
 <style scoped>
 .pos-page-content {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     width: 100%;
     max-width: 100%;
     min-width: 0;
     overflow-x: hidden;
     box-sizing: border-box;
     position: relative;
+    font-family: "Jost", sans-serif;
 }
 
 .page-header {
@@ -319,14 +322,14 @@ export default {
 
 .page-header h1 {
     font-size: 2rem;
-    font-weight: 900;
+    font-weight: 700;
     color: #003859;
     margin: 0;
     font-family: "Jost", sans-serif;
 }
 
 .search-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     display: block;
     width: 100%;
     max-width: 100%;
@@ -339,17 +342,18 @@ export default {
     max-width: 100%;
     min-width: 0;
     padding: 0.75rem 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid rgba(0, 56, 89, 0.25);
+    border-radius: 0;
     font-size: 1rem;
     font-family: "Jost", sans-serif;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
 }
 
 .search-input:focus {
     outline: none;
     border-color: #003859;
+    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.15);
 }
 
 .page-body {
@@ -379,8 +383,8 @@ export default {
 .warehouse-table-wrapper {
     overflow-x: auto;
     overflow-y: visible;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border-radius: 0;
+    border: 1px solid rgba(0, 56, 89, 0.2);
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: #94a3b8 #f1f5f9;
@@ -388,7 +392,7 @@ export default {
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    background: white;
+    background: rgba(255, 255, 255, 0.6);
     box-sizing: border-box;
     display: block;
     contain: layout;
@@ -400,13 +404,13 @@ export default {
 
 .warehouse-table-wrapper::-webkit-scrollbar-track {
     background: #f1f5f9;
-    border-radius: 5px;
+    border-radius: 0;
     margin: 0 4px;
 }
 
 .warehouse-table-wrapper::-webkit-scrollbar-thumb {
     background: #94a3b8;
-    border-radius: 5px;
+    border-radius: 0;
     border: 2px solid #f1f5f9;
 }
 
@@ -541,10 +545,10 @@ export default {
 
 .pagination-btn {
     padding: 0.5rem 1rem;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    color: #374151;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    color: #003859;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
@@ -553,7 +557,7 @@ export default {
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background: #f9fafb;
+    background: rgba(0, 56, 89, 0.08);
     border-color: #003859;
     color: #003859;
 }
@@ -572,10 +576,10 @@ export default {
     min-width: 2.5rem;
     height: 2.5rem;
     padding: 0 0.75rem;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    color: #374151;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    color: #003859;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
@@ -584,7 +588,7 @@ export default {
 }
 
 .pagination-page-btn:hover:not(:disabled) {
-    background: #f9fafb;
+    background: rgba(0, 56, 89, 0.08);
     border-color: #003859;
 }
 
@@ -592,6 +596,7 @@ export default {
     background: #003859;
     color: white;
     border-color: #003859;
+    font-weight: 700;
 }
 
 .pagination-page-btn:disabled {
@@ -600,11 +605,10 @@ export default {
     background: transparent;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
     .pos-page-content {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .page-header {
@@ -626,7 +630,7 @@ export default {
 
     .pos-page-content {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
         overflow-x: hidden;
         width: 100%;
         max-width: 100%;

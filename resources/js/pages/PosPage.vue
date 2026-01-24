@@ -123,7 +123,7 @@ export default {
 .pos-app {
     display: flex;
     min-height: 100vh;
-    background: #f0f7ff;
+    background: #f9fafb; /* gray-50, как MainLayout на сайте */
 }
 
 .pos-main-content {
@@ -190,7 +190,7 @@ export default {
     height: 60px;
     border: 4px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
-    border-radius: 50%;
+    border-radius: 0;
     animation: spin 1s linear infinite;
     margin: 0 auto 1.5rem;
 }

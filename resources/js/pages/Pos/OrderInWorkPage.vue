@@ -984,7 +984,7 @@ export default {
 /* Заголовок заказа */
 .order-header-section {
     background: white;
-    border-radius: 10px;
+    border-radius: 0;
     padding: 1.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 1.5rem;
@@ -1021,7 +1021,7 @@ export default {
 
 .order-status-badge {
     padding: 0.375rem 0.75rem;
-    border-radius: 8px;
+    border-radius: 0;
     font-size: 0.8125rem;
     font-weight: 600;
     white-space: nowrap;
@@ -1057,7 +1057,7 @@ export default {
 
 .urgency-badge {
     padding: 0.375rem 0.75rem;
-    border-radius: 8px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
@@ -1077,7 +1077,7 @@ export default {
 .btn-status {
     padding: 0.75rem 1.25rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -1149,7 +1149,7 @@ export default {
     padding: 0.5rem 0.75rem;
     background: #1f2937;
     color: white;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.75rem;
     white-space: nowrap;
     z-index: 1000;
@@ -1189,7 +1189,7 @@ export default {
     background: #f3f4f6;
     color: #374151;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     transition: all 0.2s;
 }
@@ -1200,7 +1200,7 @@ export default {
 
 .order-info-section {
     background: white;
-    border-radius: 10px;
+    border-radius: 0;
     padding: 1.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -1215,7 +1215,7 @@ export default {
 .info-card {
     background: #f9fafb;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 1rem;
     transition: all 0.2s;
 }
@@ -1291,7 +1291,7 @@ export default {
 .problem-card {
     background: #fef3c7;
     border: 1px solid #fde68a;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 1rem;
     margin-top: 1rem;
 }
@@ -1321,7 +1321,7 @@ export default {
 .works-section,
 .materials-section {
     background: white;
-    border-radius: 10px;
+    border-radius: 0;
     padding: 1.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -1337,7 +1337,7 @@ export default {
 .work-item,
 .material-item {
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 1rem;
     background: #f9fafb;
     transition: all 0.2s;
@@ -1400,7 +1400,7 @@ export default {
 .material-details span {
     padding: 0.25rem 0.5rem;
     background: #f3f4f6;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
 .add-work-form,
@@ -1460,7 +1460,7 @@ export default {
     padding: 0.75rem 1rem;
     font-size: 0.9375rem;
     border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 0;
     transition: all 0.2s;
     background: white;
 }
@@ -1481,7 +1481,7 @@ export default {
     font-weight: 600;
     text-align: center;
     border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 0;
     transition: all 0.2s;
     background: white;
 }
@@ -1503,7 +1503,7 @@ export default {
     padding: 0.875rem 1.5rem;
     font-size: 0.9375rem;
     font-weight: 700;
-    border-radius: 8px;
+    border-radius: 0;
     transition: all 0.2s;
 }
 
@@ -1524,7 +1524,7 @@ export default {
     right: 0;
     background: white;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
+    border-radius: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     max-height: 300px;
@@ -1574,7 +1574,7 @@ export default {
     padding: 0.75rem 1rem;
     font-size: 0.9375rem;
     border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 0;
     background: white;
     color: #374151;
     text-align: left;
@@ -1607,35 +1607,36 @@ export default {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1100;
     padding: 2rem;
     animation: fadeIn 0.2s;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .material-search-modal {
     max-width: 700px;
     width: 100%;
     max-height: 85vh;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+    font-family: "Jost", sans-serif;
 }
 
 .modal-container {
-    background: white;
-    border-radius: 12px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
     animation: slideIn 0.3s;
 }
 
@@ -1654,26 +1655,27 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 1.25rem 1.5rem;
+    background: #c20a6c;
+    border-bottom: none;
 }
 
 .modal-title {
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: #003859;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
     margin: 0;
     font-family: "Jost", sans-serif;
 }
 
 .modal-close-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border: none;
-    background: #f3f4f6;
-    border-radius: 8px;
-    font-size: 1.25rem;
-    color: #6b7280;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0;
+    font-size: 1.125rem;
+    color: white;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -1683,14 +1685,15 @@ export default {
 }
 
 .modal-close-btn:hover {
-    background: #e5e7eb;
-    color: #374151;
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
 }
 
 .modal-body {
-    padding: 2rem;
+    padding: 1.5rem;
     overflow-y: auto;
     flex: 1;
+    background: #f9fafb;
 }
 
 .search-input-wrapper {
@@ -1701,15 +1704,16 @@ export default {
     width: 100%;
     padding: 0.875rem 1rem;
     font-size: 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid rgba(0, 56, 89, 0.25);
+    border-radius: 0;
     transition: all 0.2s;
     background: white;
+    font-family: "Jost", sans-serif;
 }
 
 .search-input-full:focus {
     border-color: #003859;
-    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.15);
     outline: none;
 }
 
@@ -1729,17 +1733,17 @@ export default {
 
 .search-result-item-modal {
     padding: 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
     cursor: pointer;
     transition: all 0.2s;
-    background: white;
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .search-result-item-modal:hover {
-    border-color: #003859;
-    background: #f9fafb;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 56, 89, 0.4);
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 56, 89, 0.1);
 }
 
 .result-header {
@@ -1775,7 +1779,7 @@ export default {
 .result-category {
     padding: 0.25rem 0.5rem;
     background: #f3f4f6;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
 .result-available {
@@ -1812,7 +1816,7 @@ export default {
 .form-input {
     padding: 0.5rem 0.75rem;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     transition: all 0.2s;
 }
@@ -1828,7 +1832,7 @@ export default {
     background: #046490;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -1855,7 +1859,7 @@ export default {
     background: #fee2e2;
     color: #991b1b;
     border: none;
-    border-radius: 4px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
@@ -1876,7 +1880,7 @@ export default {
     background: #3b82f6;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -1898,7 +1902,7 @@ export default {
     background: #f59e0b;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -1920,7 +1924,7 @@ export default {
     background: #059669;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -1968,7 +1972,7 @@ export default {
 .comment-item {
     padding: 1rem;
     background: #f9fafb;
-    border-radius: 6px;
+    border-radius: 0;
     margin-bottom: 1rem;
 }
 
@@ -1985,7 +1989,7 @@ export default {
 .form-textarea {
     padding: 0.75rem;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-family: inherit;
     transition: all 0.2s;
@@ -2007,7 +2011,7 @@ export default {
 @media (max-width: 768px) {
     .pos-page-content {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .order-content {
@@ -2016,7 +2020,7 @@ export default {
 
     .order-info-section {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .order-header-section {
@@ -2115,7 +2119,7 @@ export default {
     .works-section,
     .materials-section {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .section-title {
@@ -2126,7 +2130,7 @@ export default {
     .work-item,
     .material-item {
         padding: 0.75rem;
-        border-radius: 6px;
+        border-radius: 0;
     }
 
     .item-header {
