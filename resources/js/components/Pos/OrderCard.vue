@@ -65,6 +65,14 @@
                             <span class="info-value">{{ order.branch.name }}</span>
                         </div>
                     </div>
+                    <div v-if="order.order_payment_type" class="info-item">
+                        <div class="info-content">
+                            <span class="info-label">Тип оплаты</span>
+                            <span class="info-value">
+                                {{ order.order_payment_type === 'paid' ? 'Платный' : 'Гарантийный' }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Оборудование (если есть) -->

@@ -208,7 +208,7 @@
                             <div class="detail-item">
                                 <span class="detail-label">Тип оплаты</span>
                                 <span class="detail-badge payment-type" :class="order.order_payment_type === 'paid' ? 'paid' : 'warranty'">
-                                    {{ order.order_payment_type === "paid" ? "Оплачен" : "Гарантия" }}
+                                    {{ order.order_payment_type === "paid" ? "Платный" : "Гарантийный" }}
                                 </span>
                             </div>
                             <div v-if="order.delivery_cost" class="detail-item">

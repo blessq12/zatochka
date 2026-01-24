@@ -24,15 +24,11 @@ use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
-use App\Filament\Widgets\ActiveOrdersStatsWidget;
-use App\Filament\Widgets\ClientsStatsWidget;
-use App\Filament\Widgets\CompletedOrdersStatsWidget;
+use App\Filament\Widgets\AnalyticsWidget;
+use App\Filament\Widgets\LowStockWidget;
 use App\Filament\Widgets\MastersPerformanceWidget;
-use App\Filament\Widgets\OrdersChartWidget;
-use App\Filament\Widgets\RecentOrdersWidget;
-use App\Filament\Widgets\RevenueStatsWidget;
-use App\Filament\Widgets\ServiceTypeStatsWidget;
-use App\Filament\Widgets\UrgentOrdersWidget;
+use App\Filament\Widgets\OrdersOverviewWidget;
+use App\Filament\Widgets\QuickActionsWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -62,6 +58,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('cp')
             ->login()
+            ->maxContentWidth('full')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -69,16 +66,11 @@ class AdminPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->widgets([
-                Widgets\AccountWidget::class,
-                RevenueStatsWidget::class,
-                ActiveOrdersStatsWidget::class,
-                CompletedOrdersStatsWidget::class,
-                UrgentOrdersWidget::class,
-                ServiceTypeStatsWidget::class,
-                ClientsStatsWidget::class,
-                OrdersChartWidget::class,
+                QuickActionsWidget::class,
+                OrdersOverviewWidget::class,
+                AnalyticsWidget::class,
+                LowStockWidget::class,
                 MastersPerformanceWidget::class,
-                RecentOrdersWidget::class,
             ])
             ->resources([
                 // Заказы

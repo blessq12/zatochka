@@ -134,7 +134,7 @@
                             <div v-if="order.order_payment_type" class="info-card-item">
                                 <span class="info-card-label">Тип оплаты</span>
                                 <span class="info-card-value">
-                                    {{ order.order_payment_type === 'paid' ? 'Платный' : 'Гарантия' }}
+                                    {{ order.order_payment_type === 'paid' ? 'Платный' : 'Гарантийный' }}
                                 </span>
                             </div>
                         </div>
