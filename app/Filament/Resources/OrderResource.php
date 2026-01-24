@@ -290,30 +290,6 @@ class OrderResource extends Resource
                     ->sortable()
                     ->copyable(),
 
-                Tables\Columns\TextColumn::make('client.full_name')
-                    ->label('Клиент')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Филиал')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('service_type')
-                    ->label('Тип услуги')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        Order::TYPE_REPAIR => 'primary',
-                        Order::TYPE_SHARPENING => 'success',
-                        Order::TYPE_DIAGNOSTIC => 'warning',
-                        Order::TYPE_CONSULTATION => 'info',
-                        Order::TYPE_MAINTENANCE => 'secondary',
-                        Order::TYPE_WARRANTY => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn(string $state): string => Order::getAvailableTypes()[$state] ?? $state),
-
                 Tables\Columns\SelectColumn::make('status')
                     ->label('Статус')
                     ->options(Order::getAvailableStatuses())
@@ -327,30 +303,98 @@ class OrderResource extends Resource
                             ->send();
                     }),
 
-                Tables\Columns\TextColumn::make('urgency')
-                    ->label('Срочность')
-                    ->badge()
+                Tables\Columns\IconColumn::make('service_type')
+                    ->label('Тип услуги')
+                    ->icon(fn(string $state): string => match ($state) {
+                        Order::TYPE_SHARPENING => 'heroicon-o-scissors',
+                        Order::TYPE_REPAIR => 'heroicon-o-wrench-screwdriver',
+                        Order::TYPE_DIAGNOSTIC => 'heroicon-o-magnifying-glass',
+                        Order::TYPE_CONSULTATION => 'heroicon-o-chat-bubble-left-right',
+                        Order::TYPE_MAINTENANCE => 'heroicon-o-cog-6-tooth',
+                        Order::TYPE_WARRANTY => 'heroicon-o-shield-check',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
                     ->color(fn(string $state): string => match ($state) {
-                        Order::URGENCY_NORMAL => 'primary',
-                        Order::URGENCY_URGENT => 'danger',
+                        Order::TYPE_REPAIR => 'primary',
+                        Order::TYPE_SHARPENING => 'success',
+                        Order::TYPE_DIAGNOSTIC => 'warning',
+                        Order::TYPE_CONSULTATION => 'info',
+                        Order::TYPE_MAINTENANCE => 'secondary',
+                        Order::TYPE_WARRANTY => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn(string $state): string => Order::getAvailableUrgencies()[$state] ?? $state),
+                    ->tooltip(fn(string $state): string => Order::getAvailableTypes()[$state] ?? $state),
 
-                Tables\Columns\TextColumn::make('estimated_price')
-                    ->label('Ориентировочная цена')
-                    ->money('RUB')
-                    ->sortable()
-                    ->toggleable(),
+                Tables\Columns\IconColumn::make('order_payment_type')
+                    ->label('Вид заказа')
+                    ->icon(fn(string $state): string => match ($state) {
+                        Order::PAYMENT_TYPE_PAID => 'heroicon-o-banknotes',
+                        Order::PAYMENT_TYPE_WARRANTY => 'heroicon-o-shield-check',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
+                    ->color(fn(string $state): string => match ($state) {
+                        Order::PAYMENT_TYPE_PAID => 'success',
+                        Order::PAYMENT_TYPE_WARRANTY => 'warning',
+                        default => 'gray',
+                    })
+                    ->tooltip(fn(string $state): string => match ($state) {
+                        Order::PAYMENT_TYPE_PAID => 'Платный',
+                        Order::PAYMENT_TYPE_WARRANTY => 'Гарантийный',
+                        default => $state,
+                    }),
 
-                Tables\Columns\TextColumn::make('actual_price')
-                    ->label('Фактическая цена')
-                    ->money('RUB')
+                Tables\Columns\IconColumn::make('urgency')
+                    ->label('Срочность')
+                    ->icon(fn(string $state): string => match ($state) {
+                        Order::URGENCY_URGENT => 'heroicon-o-exclamation-triangle',
+                        Order::URGENCY_NORMAL => 'heroicon-o-clock',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
+                    ->color(fn(string $state): string => match ($state) {
+                        Order::URGENCY_URGENT => 'danger',
+                        Order::URGENCY_NORMAL => 'primary',
+                        default => 'gray',
+                    })
+                    ->tooltip(fn(string $state): string => Order::getAvailableUrgencies()[$state] ?? $state),
+
+                Tables\Columns\IconColumn::make('payment_status')
+                    ->label('Оплата')
+                    ->getStateUsing(function (Order $record): bool {
+                        // Для платных заказов проверяем наличие фактической цены
+                        if ($record->order_payment_type === Order::PAYMENT_TYPE_PAID) {
+                            return $record->actual_price > 0;
+                        }
+                        // Для гарантийных заказов всегда считаем "оплачено" (гарантия)
+                        return true;
+                    })
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->tooltip(function (Order $record): string {
+                        if ($record->order_payment_type === Order::PAYMENT_TYPE_WARRANTY) {
+                            return 'Гарантийный заказ';
+                        }
+                        $isPaid = $record->order_payment_type === Order::PAYMENT_TYPE_PAID && $record->actual_price > 0;
+                        return $isPaid ? 'Оплачено' : 'Не оплачено';
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('client.full_name')
+                    ->label('Клиент')
+                    ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->formatStateUsing(fn(?string $state): string => $state ? (mb_strlen($state) > 30 ? mb_substr($state, 0, 30) . '...' : $state) : '—'),
 
                 Tables\Columns\TextColumn::make('master.name')
                     ->label('Мастер')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('manager.name')
+                    ->label('Менеджер')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
@@ -376,21 +420,6 @@ class OrderResource extends Resource
                     })
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->visible(fn ($record) => $record && $record->service_type === Order::TYPE_SHARPENING),
-
-                Tables\Columns\TextColumn::make('order_payment_type')
-                    ->label('Тип оплаты')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        Order::PAYMENT_TYPE_PAID => 'success',
-                        Order::PAYMENT_TYPE_WARRANTY => 'warning',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        Order::PAYMENT_TYPE_PAID => 'Оплачен',
-                        Order::PAYMENT_TYPE_WARRANTY => 'Гарантия',
-                        default => $state,
-                    })
-                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')

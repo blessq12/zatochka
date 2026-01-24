@@ -12,7 +12,7 @@ class RecentOrdersWidget extends BaseWidget
 {
     protected static ?string $heading = 'Последние заказы';
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 7;
 
     protected int | string | array $columnSpan = 'full';
 
