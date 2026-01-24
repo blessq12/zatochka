@@ -273,10 +273,13 @@ export default {
 
 <style scoped>
 .pos-page-content {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    font-family: "Jost", sans-serif;
 }
 
 .telegram-section {
@@ -285,7 +288,7 @@ export default {
 
 .section-title {
     font-size: 2rem;
-    font-weight: 900;
+    font-weight: 700;
     color: #003859;
     margin: 0 0 2rem 0;
     font-family: "Jost", sans-serif;
@@ -298,10 +301,11 @@ export default {
 }
 
 .info-box {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
     padding: 1.5rem;
+    backdrop-filter: blur(8px);
 }
 
 .info-box.warning {
@@ -334,7 +338,7 @@ export default {
 
 .badge {
     padding: 0.375rem 0.75rem;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -356,14 +360,16 @@ export default {
     background: #003859;
     color: white;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 56, 89, 0.25);
 }
 
 .btn-link:hover {
-    background: #046490;
+    background: #002c4e;
+    box-shadow: 0 4px 12px rgba(0, 56, 89, 0.3);
 }
 
 .instructions-box {
@@ -388,7 +394,7 @@ export default {
 
 .alert {
     padding: 1rem;
-    border-radius: 6px;
+    border-radius: 0;
     margin: 1rem 0;
 }
 
@@ -413,7 +419,7 @@ export default {
     background: #003859;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -435,7 +441,7 @@ export default {
     background: #f3f4f6;
     color: #374151;
     border: 1px solid #e5e7eb;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -467,7 +473,7 @@ export default {
     width: 100%;
     padding: 0.75rem;
     border: 2px solid #d1d5db;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 1.5rem;
     font-weight: 700;
     text-align: center;
@@ -518,7 +524,7 @@ export default {
 @media (max-width: 768px) {
     .pos-page-content {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .section-title {
@@ -528,7 +534,7 @@ export default {
 
     .info-box {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
         margin-bottom: 0.75rem;
     }
 

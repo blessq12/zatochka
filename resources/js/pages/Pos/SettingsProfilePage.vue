@@ -315,15 +315,18 @@ export default {
 
 <style scoped>
 .pos-page-content {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    font-family: "Jost", sans-serif;
 }
 
 .page-header h1 {
     font-size: 2rem;
-    font-weight: 900;
+    font-weight: 700;
     color: #003859;
     margin: 0 0 2rem 0;
     font-family: "Jost", sans-serif;
@@ -361,7 +364,7 @@ export default {
     align-items: center;
     padding: 1rem;
     background: #f9fafb;
-    border-radius: 8px;
+    border-radius: 0;
     margin-bottom: 1rem;
 }
 
@@ -396,17 +399,17 @@ export default {
 .form-input {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid rgba(0, 56, 89, 0.25);
+    border-radius: 0;
     font-size: 1rem;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     font-family: "Jost", sans-serif;
 }
 
 .form-input:focus {
     outline: none;
     border-color: #003859;
-    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.15);
 }
 
 .form-input-error {
@@ -428,14 +431,14 @@ export default {
     background: #f9fafb;
     border: 2px solid #e5e7eb;
     border-right: none;
-    border-radius: 8px 0 0 8px;
+    border-radius: 0;
     color: #6b7280;
     font-weight: 500;
 }
 
 .input-with-prefix .form-input {
     border-left: none;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0;
 }
 
 .input-with-prefix .form-input-error {
@@ -459,7 +462,7 @@ export default {
     padding: 1rem;
     background: #fee2e2;
     border: 1px solid #fecaca;
-    border-radius: 8px;
+    border-radius: 0;
     color: #991b1b;
     margin-bottom: 1.5rem;
 }
@@ -473,7 +476,7 @@ export default {
 .btn {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 0;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -489,26 +492,31 @@ export default {
 .btn-primary {
     background: #003859;
     color: white;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 56, 89, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
     background: #002c4e;
+    box-shadow: 0 4px 12px rgba(0, 56, 89, 0.3);
 }
 
 .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
+    background: rgba(0, 56, 89, 0.08);
+    color: #003859;
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background: #e5e7eb;
+    background: rgba(0, 56, 89, 0.12);
+    border-color: rgba(0, 56, 89, 0.3);
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
     .pos-page-content {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .page-header {
@@ -521,7 +529,7 @@ export default {
 
     .profile-card {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .form-section {

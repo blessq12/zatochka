@@ -227,15 +227,17 @@ export default {
 
 <style scoped>
 .order-card {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 56, 89, 0.25);
+    border-radius: 0;
     padding: 1.25rem;
     transition: all 0.2s;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    font-family: "Jost", sans-serif;
 }
 
 .order-card-content {
@@ -244,9 +246,9 @@ export default {
 }
 
 .order-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 56, 89, 0.12);
     transform: translateY(-2px);
-    border-color: #003859;
+    border-color: rgba(0, 56, 89, 0.4);
 }
 
 .order-header {
@@ -271,6 +273,7 @@ export default {
     font-size: 1.125rem;
     color: #003859;
     flex-shrink: 0;
+    font-family: "Jost", sans-serif;
 }
 
 .order-header-meta {
@@ -303,7 +306,7 @@ export default {
 
 .order-status {
     padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     white-space: nowrap;
@@ -339,7 +342,7 @@ export default {
 
 .urgency-badge {
     padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
@@ -398,7 +401,7 @@ export default {
 }
 
 .info-value.link {
-    color: #046490;
+    color: #003859;
     text-decoration: none;
 }
 
@@ -421,12 +424,12 @@ export default {
 
 .tool-badge {
     padding: 0.25rem 0.5rem;
-    background: #eff6ff;
-    border: 1px solid #dbeafe;
-    border-radius: 6px;
+    background: rgba(0, 56, 89, 0.08);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 500;
-    color: #1e40af;
+    color: #003859;
 }
 
 .problem-block {
@@ -462,19 +465,22 @@ export default {
 .btn-primary-action {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: #046490;
+    background: #003859;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: "Jost", sans-serif;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 56, 89, 0.25);
 }
 
 .btn-primary-action:hover:not(:disabled) {
-    background: #003859;
+    background: #002c4e;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 56, 89, 0.3);
 }
 
 .btn-primary-action:disabled {
@@ -482,36 +488,31 @@ export default {
     cursor: not-allowed;
 }
 
-/* Специфичные классы для разных типов действий */
-.btn-primary-action.btn-status-in-work {
-    background: #046490;
-}
-
-.btn-primary-action.btn-status-in-work:hover:not(:disabled) {
-    background: #003859;
-}
-
+.btn-primary-action.btn-status-in-work,
 .btn-primary-action.btn-work {
-    background: #046490;
+    background: #003859;
 }
 
+.btn-primary-action.btn-status-in-work:hover:not(:disabled),
 .btn-primary-action.btn-work:hover:not(:disabled) {
-    background: #003859;
+    background: #002c4e;
 }
 
 .btn-primary-action.btn-return-to-work {
-    background: #f59e0b;
+    background: #c20a6c;
+    box-shadow: 0 2px 8px rgba(194, 10, 108, 0.25);
 }
 
 .btn-primary-action.btn-return-to-work:hover:not(:disabled) {
-    background: #d97706;
+    background: #a8095a;
+    box-shadow: 0 4px 12px rgba(194, 10, 108, 0.3);
 }
 
 /* Мобильная адаптация */
 @media (max-width: 768px) {
     .order-card {
         padding: 0.75rem;
-        border-radius: 6px;
+        border-radius: 0;
     }
 
     .order-header {

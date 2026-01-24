@@ -139,10 +139,13 @@ export default {
 
 <style scoped>
 .pos-page-content {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    font-family: "Jost", sans-serif;
 }
 
 .page-header {
@@ -151,31 +154,31 @@ export default {
 
 .page-header h1 {
     font-size: 2rem;
-    font-weight: 900;
+    font-weight: 700;
     color: #003859;
     margin: 0;
     font-family: "Jost", sans-serif;
 }
 
 .search-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     display: block;
 }
 
 .search-input {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid rgba(0, 56, 89, 0.25);
+    border-radius: 0;
     font-size: 1rem;
     font-family: "Jost", sans-serif;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search-input:focus {
     outline: none;
-    border-color: #046490;
-    box-shadow: 0 0 0 3px rgba(4, 100, 144, 0.1);
+    border-color: #003859;
+    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.15);
 }
 
 .loading,
@@ -183,19 +186,19 @@ export default {
     text-align: center;
     padding: 3rem;
     color: #6b7280;
+    font-weight: 500;
 }
 
 .items-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
     .pos-page-content {
         padding: 0.75rem;
-        border-radius: 8px;
+        border-radius: 0;
     }
 
     .page-header {
@@ -228,7 +231,7 @@ export default {
 
     .item-card {
         padding: 0.75rem;
-        border-radius: 6px;
+        border-radius: 0;
     }
 
     .item-name {
@@ -251,16 +254,18 @@ export default {
 }
 
 .item-card {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 56, 89, 0.2);
+    border-radius: 0;
     padding: 1.5rem;
     transition: all 0.2s;
+    backdrop-filter: blur(8px);
 }
 
 .item-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 56, 89, 0.12);
     transform: translateY(-2px);
+    border-color: rgba(0, 56, 89, 0.35);
 }
 
 .item-header {
@@ -280,7 +285,7 @@ export default {
 
 .item-quantity {
     padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 600;
     background: #dbeafe;
