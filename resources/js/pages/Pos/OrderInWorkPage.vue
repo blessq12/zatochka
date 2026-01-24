@@ -92,31 +92,6 @@
                 <h2 class="section-title">Информация о заказе</h2>
                 
                 <div class="order-info-grid">
-                    <!-- Клиент -->
-                    <div class="info-card">
-                        <div class="info-card-header">
-                            <span class="info-card-title">Клиент</span>
-                        </div>
-                        <div class="info-card-content">
-                            <div class="info-card-item">
-                                <span class="info-card-label">ФИО</span>
-                                <span class="info-card-value">{{ order.client?.full_name || "—" }}</span>
-                            </div>
-                            <div v-if="order.client?.phone" class="info-card-item">
-                                <span class="info-card-label">Телефон</span>
-                                <a :href="`tel:${order.client.phone}`" class="info-card-value link">
-                                    {{ order.client.phone }}
-                                </a>
-                            </div>
-                            <div v-if="order.client?.email" class="info-card-item">
-                                <span class="info-card-label">Email</span>
-                                <a :href="`mailto:${order.client.email}`" class="info-card-value link">
-                                    {{ order.client.email }}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Услуга и филиал -->
                     <div class="info-card">
                         <div class="info-card-header">
