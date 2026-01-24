@@ -33,24 +33,6 @@
 
             <!-- Основная информация -->
             <div class="order-info">
-                <!-- Клиент -->
-                <div class="info-block">
-                    <div class="info-item">
-                        <div class="info-content">
-                            <span class="info-label">Клиент</span>
-                            <span class="info-value">{{ order.client?.full_name || "—" }}</span>
-                        </div>
-                    </div>
-                    <div v-if="order.client?.phone" class="info-item">
-                        <div class="info-content">
-                            <span class="info-label">Телефон</span>
-                            <a :href="`tel:${order.client.phone}`" class="info-value link" @click.stop>
-                                {{ order.client.phone }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Тип услуги и филиал -->
                 <div class="info-block">
                     <div class="info-item">

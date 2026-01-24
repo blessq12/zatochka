@@ -55,31 +55,6 @@
                         </div>
                     </div>
 
-                    <!-- Клиент -->
-                    <div class="details-section">
-                        <div class="details-section-header">
-                            <h3 class="details-section-title">Клиент</h3>
-                        </div>
-                        <div class="details-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">ФИО</span>
-                                <span class="detail-value">{{ order.client?.full_name || "—" }}</span>
-                            </div>
-                            <div v-if="order.client?.phone" class="detail-item">
-                                <span class="detail-label">Телефон</span>
-                                <a :href="`tel:${order.client.phone}`" class="detail-value link">
-                                    {{ order.client.phone }}
-                                </a>
-                            </div>
-                            <div v-if="order.client?.email" class="detail-item">
-                                <span class="detail-label">Email</span>
-                                <a :href="`mailto:${order.client.email}`" class="detail-value link">
-                                    {{ order.client.email }}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Оборудование -->
                     <div v-if="order.equipment?.name || order.equipment_name" class="details-section">
                         <div class="details-section-header">
