@@ -14,7 +14,10 @@ export default {
     computed: {
         ...mapStores(useAuthStore, useOrderStore),
         historyOrders() {
-            if (!this.orderStore.orders || this.orderStore.orders.length === 0) {
+            if (
+                !this.orderStore.orders ||
+                this.orderStore.orders.length === 0
+            ) {
                 return [];
             }
             return this.orderStore.orders.filter(
@@ -26,13 +29,15 @@ export default {
             return this.orderStore.isLoading;
         },
         pagination() {
-            return this.orderStore.pagination || {
-                current_page: 1,
-                last_page: 1,
-                per_page: 10,
-                total: 0,
-                has_more_pages: false,
-            };
+            return (
+                this.orderStore.pagination || {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 0,
+                    has_more_pages: false,
+                }
+            );
         },
         paginatedOrders() {
             const start = (this.currentPage - 1) * this.perPage;
@@ -46,11 +51,7 @@ export default {
     async mounted() {
         // Заказы уже загружаются в AuthorizedApp, но если их нет - загружаем
         if (!this.orderStore.orders || this.orderStore.orders.length === 0) {
-            await this.orderStore.getClientOrders(
-                this.authStore.token,
-                1,
-                50
-            );
+            await this.orderStore.getClientOrders(this.authStore.token, 1, 50);
         }
     },
     methods: {
@@ -63,8 +64,6 @@ export default {
         getStatusLabel(status) {
             const statusMap = {
                 new: "Новый",
-                consultation: "Консультация",
-                diagnostic: "Диагностика",
                 in_work: "В работе",
                 waiting_parts: "Ожидание запчастей",
                 ready: "Готов",
@@ -76,7 +75,8 @@ export default {
         getStatusColor(status) {
             const colorMap = {
                 issued: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-                cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+                cancelled:
+                    "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
             };
             return (
                 colorMap[status] ||
@@ -137,7 +137,10 @@ export default {
                 </p>
             </div>
 
-            <div v-else-if="historyOrders.length === 0" class="mt-4 text-center py-12">
+            <div
+                v-else-if="historyOrders.length === 0"
+                class="mt-4 text-center py-12"
+            >
                 <p
                     class="text-dark-gray-500 dark:text-gray-200 font-jost-regular text-base sm:text-lg"
                 >
@@ -198,28 +201,16 @@ export default {
                                         {{ formatDate(order.updated_at) }}
                                     </span>
                                 </div>
-                                <div v-if="order.estimated_price">
+                                <div v-if="order.price">
                                     <span
                                         class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
                                     >
-                                        Предварительная стоимость:
-                                    </span>
-                                    <span
-                                        class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                    >
-                                        {{ formatPrice(order.estimated_price) }}
-                                    </span>
-                                </div>
-                                <div v-if="order.actual_price">
-                                    <span
-                                        class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                    >
-                                        Фактическая стоимость:
+                                        Стоимость:
                                     </span>
                                     <span
                                         class="ml-2 font-jost-bold text-[#C3006B]"
                                     >
-                                        {{ formatPrice(order.actual_price) }}
+                                        {{ formatPrice(order.price) }}
                                     </span>
                                 </div>
                             </div>

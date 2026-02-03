@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -201,11 +202,12 @@ class WarehouseItemResource extends Resource
                     ->query(fn($query) => $query->inStock()),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
+                Tables\Actions\EditAction::make()->iconButton()->tooltip('Редактировать'),
                 Tables\Actions\Action::make('adjust_quantity')
-                    ->label('Изменить количество')
+                    ->iconButton()
                     ->icon('heroicon-o-adjustments-horizontal')
+                    ->tooltip('Изменить количество')
                     ->form([
                         Forms\Components\TextInput::make('quantity_change')
                             ->label('Изменение количества')
@@ -237,8 +239,8 @@ class WarehouseItemResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\DeleteAction::make(),
-            ])
+                Tables\Actions\DeleteAction::make()->iconButton()->tooltip('Удалить'),
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

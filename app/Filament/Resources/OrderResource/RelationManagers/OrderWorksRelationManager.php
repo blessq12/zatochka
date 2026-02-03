@@ -7,6 +7,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -24,12 +25,6 @@ class OrderWorksRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('work_type')
-                    ->label('Тип работы')
-                    ->options(OrderWork::getAvailableWorkTypes())
-                    ->default(OrderWork::WORK_TYPE_REPAIR)
-                    ->required(),
-
                 Forms\Components\Textarea::make('description')
                     ->label('Описание')
                     ->required()
@@ -42,24 +37,7 @@ class OrderWorksRelationManager extends RelationManager
                     ->numeric()
                     ->prefix('₽')
                     ->step(0.01)
-                    ->default(0),
-
-                Forms\Components\TextInput::make('quantity')
-                    ->label('Количество')
-                    ->numeric()
-                    ->default(1)
-                    ->visible(fn($get) => $get('work_type') === OrderWork::WORK_TYPE_SHARPENING),
-
-                Forms\Components\TextInput::make('unit_price')
-                    ->label('Цена за единицу')
-                    ->numeric()
-                    ->prefix('₽')
-                    ->step(0.01)
-                    ->visible(fn($get) => $get('work_type') === OrderWork::WORK_TYPE_SHARPENING),
-
-                Forms\Components\TextInput::make('work_time_minutes')
-                    ->label('Время работы (минуты)')
-                    ->numeric()
+                    ->required()
                     ->default(0),
             ]);
     }
@@ -69,18 +47,6 @@ class OrderWorksRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('description')
             ->columns([
-                Tables\Columns\TextColumn::make('work_type')
-                    ->label('Тип')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        OrderWork::WORK_TYPE_SHARPENING => 'success',
-                        OrderWork::WORK_TYPE_REPAIR => 'primary',
-                        OrderWork::WORK_TYPE_DIAGNOSTIC => 'warning',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn(string $state): string => OrderWork::getAvailableWorkTypes()[$state] ?? $state)
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('description')
                     ->label('Описание')
                     ->searchable()
@@ -92,33 +58,12 @@ class OrderWorksRelationManager extends RelationManager
                     ->money('RUB')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('materials_cost')
-                    ->label('Стоимость материалов')
-                    ->money('RUB')
-                    ->default(0)
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('materials_count')
-                    ->label('Материалов')
-                    ->counts('materials')
-                    ->badge()
-                    ->color('info'),
-
-                Tables\Columns\TextColumn::make('work_time_minutes')
-                    ->label('Время (мин)')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
                 Tables\Columns\IconColumn::make('is_deleted')
                     ->label('Удалена')
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('work_type')
-                    ->label('Тип работы')
-                    ->options(OrderWork::getAvailableWorkTypes()),
-
                 Tables\Filters\Filter::make('is_deleted')
                     ->label('Только активные')
                     ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
@@ -128,12 +73,13 @@ class OrderWorksRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
+                Tables\Actions\EditAction::make()->iconButton()->tooltip('Редактировать'),
                 Tables\Actions\DeleteAction::make()
-                    ->label('Удалить')
+                    ->iconButton()
+                    ->tooltip('Удалить')
                     ->requiresConfirmation(),
-            ])
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

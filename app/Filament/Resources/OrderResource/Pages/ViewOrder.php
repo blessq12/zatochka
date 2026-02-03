@@ -19,11 +19,7 @@ class ViewOrder extends ViewRecord
         $actions = [];
 
         // Генерация акта приема доступна только для новых заказов
-        $canGenerateAcceptance = in_array($this->record->status, [
-            Order::STATUS_NEW,
-            Order::STATUS_CONSULTATION,
-            Order::STATUS_DIAGNOSTIC,
-        ]);
+        $canGenerateAcceptance = $this->record->status === Order::STATUS_NEW;
 
         // Генерация акта выдачи доступна только для завершенных заказов
         $canGenerateIssuance = in_array($this->record->status, [
@@ -39,7 +35,7 @@ class ViewOrder extends ViewRecord
                     ->label('Сгенерировать акт приема')
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('info')
-                    ->url(fn () => url('/api/orders/' . $this->record->id . '/documents/view?type=' . DocumentGeneratorFactory::TYPE_ACCEPTANCE))
+                    ->url(fn() => url('/api/orders/' . $this->record->id . '/documents/view?type=' . DocumentGeneratorFactory::TYPE_ACCEPTANCE))
                     ->openUrlInNewTab();
             }
 
@@ -48,7 +44,7 @@ class ViewOrder extends ViewRecord
                     ->label('Сгенерировать акт выдачи')
                     ->icon('heroicon-o-document-arrow-up')
                     ->color('success')
-                    ->url(fn () => url('/api/orders/' . $this->record->id . '/documents/view?type=' . DocumentGeneratorFactory::TYPE_ISSUANCE))
+                    ->url(fn() => url('/api/orders/' . $this->record->id . '/documents/view?type=' . DocumentGeneratorFactory::TYPE_ISSUANCE))
                     ->openUrlInNewTab();
             }
 

@@ -69,10 +69,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/orders/{orderId}/works/{workId}', 'updateOrderWork');
         Route::delete('/orders/{orderId}/works/{workId}', 'deleteOrderWork');
 
-        // Материалы заказа
+        // Материалы заказа (привязка к заказу, не к работам)
         Route::get('/orders/{id}/materials', 'getOrderMaterials');
-        Route::post('/orders/{orderId}/works/{workId}/materials', 'addOrderMaterial');
-        Route::delete('/orders/{orderId}/works/{workId}/materials/{materialId}', 'removeOrderMaterial');
+        Route::post('/orders/{orderId}/materials', 'addOrderMaterial');
+        Route::delete('/orders/{orderId}/materials/{materialId}', 'removeOrderMaterial');
 
         Route::get('/warehouse/items', 'warehouseItems');
 

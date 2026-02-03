@@ -23,8 +23,6 @@ class UrgentOrdersWidget extends BaseWidget
         $urgentNew = (clone $baseQuery)
             ->whereIn('status', [
                 Order::STATUS_NEW,
-                Order::STATUS_CONSULTATION,
-                Order::STATUS_DIAGNOSTIC,
             ])
             ->count();
 

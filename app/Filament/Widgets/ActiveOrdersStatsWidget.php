@@ -23,8 +23,6 @@ class ActiveOrdersStatsWidget extends BaseWidget
             Stat::make('Новых заказов', $baseQuery->clone()
                 ->whereIn('status', [
                     Order::STATUS_NEW,
-                    Order::STATUS_CONSULTATION,
-                    Order::STATUS_DIAGNOSTIC,
                 ])
                 ->count())
                 ->description('Требуют обработки')

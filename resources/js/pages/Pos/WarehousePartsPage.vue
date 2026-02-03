@@ -39,10 +39,6 @@
                         <p v-if="item.sku">
                             <strong>Артикул:</strong> {{ item.sku }}
                         </p>
-                        <p v-if="item.retail_price">
-                            <strong>Цена:</strong>
-                            {{ formatPrice(item.retail_price) }} ₽
-                        </p>
                     </div>
                 </div>
             </div>
@@ -54,7 +50,6 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import { warehouseService } from "../../services/pos/WarehouseService.js";
-import { orderService } from "../../services/pos/OrderService.js";
 import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
 import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
 
@@ -131,7 +126,6 @@ export default {
             isLoading,
             searchQuery,
             filteredItems,
-            formatPrice: orderService.formatPrice,
         };
     },
 };

@@ -43,7 +43,7 @@ class MastersPerformanceWidget extends BaseWidget
                                 ->where('status', Order::STATUS_ISSUED)
                                 ->where('updated_at', '>=', $monthStart);
                         }
-                    ], 'actual_price')
+                    ], 'price')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('full_name')

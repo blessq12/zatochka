@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -90,12 +91,12 @@ class PriceItemResource extends Resource
                 Tables\Columns\TextColumn::make('service_type')
                     ->label('Тип услуги')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         PriceItem::TYPE_SHARPENING => 'success',
                         PriceItem::TYPE_REPAIR => 'info',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         PriceItem::TYPE_SHARPENING => 'Заточка',
                         PriceItem::TYPE_REPAIR => 'Ремонт',
                         default => $state,
@@ -106,21 +107,21 @@ class PriceItemResource extends Resource
                     ->label('Категория')
                     ->searchable()
                     ->limit(50)
-                    ->tooltip(fn (PriceItem $record): ?string => $record->category_title)
+                    ->tooltip(fn(PriceItem $record): ?string => $record->category_title)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Название')
                     ->searchable()
                     ->limit(50)
-                    ->tooltip(fn (PriceItem $record): ?string => $record->name)
+                    ->tooltip(fn(PriceItem $record): ?string => $record->name)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('price')
                     ->label('Цена')
                     ->badge()
                     ->color('success')
-                    ->formatStateUsing(fn (string $state): string => $state . '₽')
+                    ->formatStateUsing(fn(string $state): string => $state . '₽')
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
@@ -156,9 +157,9 @@ class PriceItemResource extends Resource
             ])
             ->defaultSort('sort_order')
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
+                Tables\Actions\EditAction::make()->iconButton()->tooltip('Редактировать'),
+                Tables\Actions\DeleteAction::make()->iconButton()->tooltip('Удалить'),
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

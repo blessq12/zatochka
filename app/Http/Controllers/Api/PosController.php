@@ -182,8 +182,6 @@ class PosController extends Controller
         if ($status === 'new') {
             $query->whereIn('status', [
                 Order::STATUS_NEW,
-                Order::STATUS_CONSULTATION,
-                Order::STATUS_DIAGNOSTIC,
             ]);
         } elseif ($status === 'active') {
             $query->where('status', Order::STATUS_IN_WORK);
@@ -222,8 +220,6 @@ class PosController extends Controller
             ->where('master_id', $master->id)
             ->whereIn('status', [
                 Order::STATUS_NEW,
-                Order::STATUS_CONSULTATION,
-                Order::STATUS_DIAGNOSTIC,
             ])
             ->count();
 
@@ -280,8 +276,6 @@ class PosController extends Controller
         $statusStats = [
             'new' => (clone $baseQuery)->whereIn('status', [
                 Order::STATUS_NEW,
-                Order::STATUS_CONSULTATION,
-                Order::STATUS_DIAGNOSTIC,
             ])->count(),
             'in_work' => (clone $baseQuery)->where('status', Order::STATUS_IN_WORK)->count(),
             'waiting_parts' => (clone $baseQuery)->where('status', Order::STATUS_WAITING_PARTS)->count(),
@@ -297,7 +291,7 @@ class PosController extends Controller
             'total_revenue' => (clone $baseQuery)
                 ->where('status', Order::STATUS_READY)
                 ->where('updated_at', '>=', $todayStart)
-                ->sum('actual_price') ?? 0,
+                ->sum('price') ?? 0,
         ];
 
         // Статистика за неделю
@@ -309,7 +303,7 @@ class PosController extends Controller
             'total_revenue' => (clone $baseQuery)
                 ->where('status', Order::STATUS_READY)
                 ->where('updated_at', '>=', $weekStart)
-                ->sum('actual_price') ?? 0,
+                ->sum('price') ?? 0,
         ];
 
         // Статистика за месяц
@@ -321,7 +315,7 @@ class PosController extends Controller
             'total_revenue' => (clone $baseQuery)
                 ->where('status', Order::STATUS_READY)
                 ->where('updated_at', '>=', $monthStart)
-                ->sum('actual_price') ?? 0,
+                ->sum('price') ?? 0,
         ];
 
         // Статистика по работам
@@ -403,7 +397,9 @@ class PosController extends Controller
             'branch',
             'master',
             'manager',
-            'orderWorks.materials',
+            'orderWorks',
+            'orderMaterials',
+            'tools',
         ])
             ->where('is_deleted', false)
             ->where('master_id', $master->id)
@@ -483,8 +479,6 @@ class PosController extends Controller
         $request->validate([
             'status' => 'required|string|in:' . implode(',', [
                 Order::STATUS_NEW,
-                Order::STATUS_CONSULTATION,
-                Order::STATUS_DIAGNOSTIC,
                 Order::STATUS_IN_WORK,
                 Order::STATUS_WAITING_PARTS,
                 Order::STATUS_READY,
@@ -497,7 +491,8 @@ class PosController extends Controller
         $newStatus = $request->status;
 
         // Обработка списания/возврата товаров при изменении статуса заказа
-        $works = $order->orderWorks()->where('is_deleted', false)->with('materials')->get();
+        $works = $order->orderWorks()->where('is_deleted', false)->get();
+        $orderMaterials = $order->orderMaterials;
 
         // Проверяем наличие работ перед переводом в статус ready или issued
         if (
@@ -510,14 +505,11 @@ class PosController extends Controller
                     'message' => 'Нельзя завершить заказ без выполненных работ. Добавьте хотя бы одну работу.',
                 ], 422);
             }
-            // Списываем товары со склада (используем данные из order_work_materials)
-            foreach ($works as $work) {
-                foreach ($work->materials as $material) {
-                    if ($material->warehouseItem) {
-                        $quantity = $material->quantity;
-                        // Списание автоматически уменьшает и reserved_quantity, и quantity
-                        $material->warehouseItem->decreaseQuantity($quantity);
-                    }
+            // Списываем товары со склада (материалы привязаны к заказу)
+            foreach ($orderMaterials as $material) {
+                if ($material->warehouseItem) {
+                    $quantity = $material->quantity;
+                    $material->warehouseItem->decreaseQuantity($quantity);
                 }
             }
         }
@@ -526,15 +518,11 @@ class PosController extends Controller
             in_array($oldStatus, [Order::STATUS_READY, Order::STATUS_ISSUED]) &&
             !in_array($newStatus, [Order::STATUS_READY, Order::STATUS_ISSUED])
         ) {
-            // Возвращаем товары на склад (увеличиваем quantity)
-            foreach ($works as $work) {
-                foreach ($work->materials as $material) {
-                    if ($material->warehouseItem) {
-                        $quantity = $material->quantity;
-                        // Возвращаем товар на склад и резервируем его снова
-                        $material->warehouseItem->increaseQuantity($quantity);
-                        $material->warehouseItem->reserve($quantity);
-                    }
+            foreach ($orderMaterials as $material) {
+                if ($material->warehouseItem) {
+                    $quantity = $material->quantity;
+                    $material->warehouseItem->increaseQuantity($quantity);
+                    $material->warehouseItem->reserve($quantity);
                 }
             }
         }
@@ -644,15 +632,13 @@ class PosController extends Controller
 
         $request->validate([
             'description' => 'required|string|max:1000',
-            'work_price' => 'required|numeric|min:0',
         ]);
 
         $work = \App\Models\OrderWork::create([
             'order_id' => $order->id,
-            'work_type' => 'repair', // По умолчанию
             'description' => $request->description,
             'quantity' => 1,
-            'work_price' => $request->work_price,
+            'work_price' => 0, // Цена проставляется в админке
         ]);
 
         return response()->json([
@@ -691,21 +677,13 @@ class PosController extends Controller
         }
 
         $request->validate([
-            'work_type' => 'sometimes|string|in:repair,sharpening,diagnostic',
             'description' => 'sometimes|string|max:1000',
             'quantity' => 'sometimes|integer|min:1',
-            'unit_price' => 'sometimes|numeric|min:0',
-            'work_price' => 'sometimes|numeric|min:0',
-            'work_time_minutes' => 'sometimes|integer|min:0',
         ]);
 
         $work->update($request->only([
-            'work_type',
             'description',
             'quantity',
-            'unit_price',
-            'work_price',
-            'work_time_minutes',
         ]));
 
         return response()->json([
@@ -743,18 +721,8 @@ class PosController extends Controller
             return response()->json(['message' => 'Work not found'], 404);
         }
 
-        // Получаем материалы работы перед удалением для снятия резерва
-        $workMaterials = $work->materials;
-
-        // Снимаем резерв со всех материалов, если заказ еще не завершен
-        if (!in_array($order->status, [Order::STATUS_READY, Order::STATUS_ISSUED])) {
-            foreach ($workMaterials as $material) {
-                if ($material->warehouseItem) {
-                    $quantityToRelease = $material->quantity;
-                    $material->warehouseItem->releaseReserve($quantityToRelease);
-                }
-            }
-        }
+        // Материалы привязаны к заказу — при удалении работы переводим их на уровень заказа
+        $work->materials()->update(['work_id' => null]);
 
         $work->update(['is_deleted' => 1]);
 
@@ -762,7 +730,7 @@ class PosController extends Controller
     }
 
     /**
-     * Получить материалы заказа
+     * Получить материалы заказа (материалы привязаны к заказу)
      */
     public function getOrderMaterials(Request $request, $id)
     {
@@ -781,34 +749,23 @@ class PosController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        $works = \App\Models\OrderWork::where('order_id', $order->id)
-            ->where('is_deleted', 0)
-            ->with(['materials'])
-            ->get();
-
-        $materials = [];
-        foreach ($works as $work) {
-            foreach ($work->materials as $material) {
-                $materials[] = [
-                    'id' => $material->id,
-                    'work_id' => $work->id,
-                    'warehouse_item_id' => $material->warehouse_item_id,
-                    'name' => $material->name,
-                    'article' => $material->article,
-                    'quantity' => $material->quantity,
-                    'price' => $material->price,
-                    'notes' => $material->notes,
-                ];
-            }
-        }
+        $materials = $order->orderMaterials->map(fn($material) => [
+            'id' => $material->id,
+            'warehouse_item_id' => $material->warehouse_item_id,
+            'name' => $material->name,
+            'article' => $material->article,
+            'quantity' => $material->quantity,
+            'price' => $material->price,
+            'notes' => $material->notes,
+        ])->values()->all();
 
         return response()->json(['materials' => $materials]);
     }
 
     /**
-     * Добавить материал к работе заказа
+     * Добавить материал к заказу (материалы привязаны к заказу, не к работам)
      */
-    public function addOrderMaterial(Request $request, $orderId, $workId)
+    public function addOrderMaterial(Request $request, $orderId)
     {
         /** @var Master $master */
         $master = $request->user();
@@ -825,19 +782,9 @@ class PosController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        $work = \App\Models\OrderWork::where('order_id', $order->id)
-            ->where('id', $workId)
-            ->where('is_deleted', 0)
-            ->first();
-
-        if (!$work) {
-            return response()->json(['message' => 'Work not found'], 404);
-        }
-
         $request->validate([
             'warehouse_item_id' => 'required|exists:warehouse_items,id',
             'quantity' => 'required|numeric|min:0.001',
-            'price' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:500',
         ]);
 
@@ -847,19 +794,14 @@ class PosController extends Controller
             return response()->json(['message' => 'Warehouse item not found or inactive'], 404);
         }
 
-        // Проверяем наличие на складе
         $neededQuantity = $request->quantity;
 
-        // Проверяем, был ли материал уже добавлен к этой работе
-        $existingMaterial = $work->materials()
+        $existingMaterial = $order->orderMaterials()
             ->where('warehouse_item_id', $request->warehouse_item_id)
             ->first();
+
         if ($existingMaterial) {
-            // Если материал уже добавлен, нужно снять старый резерв и зарезервировать новое количество
-            $oldQuantity = $existingMaterial->quantity;
-            // Снимаем старый резерв
-            $warehouseItem->releaseReserve($oldQuantity);
-            $neededQuantity = $request->quantity; // Новое количество
+            $warehouseItem->releaseReserve($existingMaterial->quantity);
         }
 
         if ($warehouseItem->available_quantity < $neededQuantity) {
@@ -868,23 +810,15 @@ class PosController extends Controller
             ], 400);
         }
 
-        // Резервируем товар на складе
         if (!$warehouseItem->reserve($neededQuantity)) {
             return response()->json([
                 'message' => 'Failed to reserve item. Available: ' . $warehouseItem->available_quantity,
             ], 400);
         }
 
-        // Используем цену из запроса или из товара
-        $price = $request->price ?? $warehouseItem->price;
-
-        // Проверяем, был ли материал уже добавлен к этой работе
-        $existingMaterial = $work->materials()
-            ->where('warehouse_item_id', $request->warehouse_item_id)
-            ->first();
+        $price = $warehouseItem->price ?? 0;
 
         if ($existingMaterial) {
-            // Обновляем существующий материал
             $existingMaterial->update([
                 'quantity' => $request->quantity,
                 'price' => $price,
@@ -894,10 +828,10 @@ class PosController extends Controller
                 'category_name' => $warehouseItem->category?->name,
                 'unit' => $warehouseItem->unit ?? 'шт',
             ]);
+            $material = $existingMaterial;
         } else {
-            // Создаем новую запись с snapshot данных
-            \App\Models\OrderWorkMaterial::create([
-                'work_id' => $work->id,
+            $material = \App\Models\OrderWorkMaterial::create([
+                'work_id' => null,
                 'order_id' => $order->id,
                 'warehouse_item_id' => $warehouseItem->id,
                 'name' => $warehouseItem->name,
@@ -910,19 +844,7 @@ class PosController extends Controller
             ]);
         }
 
-        // Обновляем стоимость материалов в работе
-        $totalMaterialsCost = $work->materials()->sum(
-            \Illuminate\Support\Facades\DB::raw('quantity * price')
-        );
-        $work->update(['materials_cost' => $totalMaterialsCost]);
-
-        // Обновляем данные товара
         $warehouseItem->refresh();
-
-        // Получаем созданный/обновленный материал
-        $material = $work->materials()
-            ->where('warehouse_item_id', $warehouseItem->id)
-            ->first();
 
         return response()->json([
             'message' => 'Material added successfully',
@@ -933,13 +855,13 @@ class PosController extends Controller
                 'quantity' => $material->quantity,
                 'price' => $material->price,
             ],
-        ]);
+        ], 201);
     }
 
     /**
-     * Удалить материал из работы заказа
+     * Удалить материал из заказа
      */
-    public function removeOrderMaterial(Request $request, $orderId, $workId, $materialId)
+    public function removeOrderMaterial(Request $request, $orderId, $materialId)
     {
         /** @var Master $master */
         $master = $request->user();
@@ -956,18 +878,7 @@ class PosController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        $work = \App\Models\OrderWork::where('order_id', $order->id)
-            ->where('id', $workId)
-            ->where('is_deleted', 0)
-            ->first();
-
-        if (!$work) {
-            return response()->json(['message' => 'Work not found'], 404);
-        }
-
-        // Находим материал перед удалением для снятия резерва
-        // materialId может быть как ID из order_work_materials, так и warehouse_item_id для обратной совместимости
-        $material = $work->materials()
+        $material = $order->orderMaterials()
             ->where(function ($query) use ($materialId) {
                 $query->where('id', $materialId)
                     ->orWhere('warehouse_item_id', $materialId);
@@ -978,21 +889,12 @@ class PosController extends Controller
             $quantityToRelease = $material->quantity;
             $warehouseItem = $material->warehouseItem;
 
-            // Снимаем резерв только если заказ еще не завершен
-            // Если заказ в статусе ready/issued, товар уже списан и резерв не нужно снимать
             if ($warehouseItem && !in_array($order->status, [Order::STATUS_READY, Order::STATUS_ISSUED])) {
                 $warehouseItem->releaseReserve($quantityToRelease);
             }
 
-            // Удаляем запись из order_work_materials
             $material->delete();
         }
-
-        // Обновляем стоимость материалов в работе
-        $totalMaterialsCost = $work->materials()->sum(
-            \Illuminate\Support\Facades\DB::raw('quantity * price')
-        );
-        $work->update(['materials_cost' => $totalMaterialsCost]);
 
         return response()->json(['message' => 'Material removed successfully']);
     }

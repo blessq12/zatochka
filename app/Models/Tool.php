@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Dictionaries\ToolTypeDictionary;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -28,6 +29,8 @@ class Tool extends Model
         'quantity' => 'integer',
     ];
 
+    protected $appends = ['tool_type_label'];
+
     // Связи
     public function order()
     {
@@ -41,12 +44,21 @@ class Tool extends Model
     }
 
     /**
+     * Человекочитаемое название типа инструмента
+     */
+    public function getToolTypeLabelAttribute(): string
+    {
+        return ToolTypeDictionary::getLabel($this->tool_type);
+    }
+
+    /**
      * Получить полное описание инструмента
      */
     public function getFullDescriptionAttribute(): string
     {
+        $typeLabel = $this->tool_type_label ?: $this->tool_type;
         $parts = array_filter([
-            $this->tool_type,
+            $typeLabel,
             $this->quantity > 1 ? "({$this->quantity} шт.)" : null,
         ]);
 

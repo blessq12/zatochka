@@ -37,8 +37,6 @@ class OrderFactory extends Factory
             ]),
             'status' => $this->faker->randomElement([
                 Order::STATUS_NEW,
-                Order::STATUS_CONSULTATION,
-                Order::STATUS_DIAGNOSTIC,
                 Order::STATUS_IN_WORK,
                 Order::STATUS_WAITING_PARTS,
                 Order::STATUS_READY,
@@ -49,8 +47,7 @@ class OrderFactory extends Factory
                 Order::URGENCY_NORMAL,
                 Order::URGENCY_URGENT,
             ]),
-            'estimated_price' => $this->faker->randomFloat(2, 100, 5000),
-            'actual_price' => $this->faker->randomFloat(2, 100, 5000),
+            'price' => $this->faker->randomFloat(2, 100, 5000),
             'internal_notes' => $this->faker->sentence(),
             'problem_description' => $this->faker->paragraph(),
             'is_deleted' => false,

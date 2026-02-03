@@ -2,16 +2,16 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
-use App\Models\OrderWork;
+use App\Models\OrderWorkMaterial;
 use App\Models\WarehouseItem;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 class OrderMaterialsRelationManager extends RelationManager
 {
@@ -23,13 +23,66 @@ class OrderMaterialsRelationManager extends RelationManager
 
     protected static ?string $pluralModelLabel = 'Материалы';
 
-    protected static string $model = \App\Models\OrderWorkMaterial::class;
+    protected static string $model = OrderWorkMaterial::class;
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                // Форма не используется, так как материалы добавляются через работы
+                Forms\Components\Select::make('warehouse_item_id')
+                    ->label('Товар со склада')
+                    ->options(
+                        WarehouseItem::where('is_active', true)
+                            ->orderBy('name')
+                            ->get()
+                            ->mapWithKeys(fn($item) => [$item->id => $item->name . ($item->article ? " ({$item->article})" : '')])
+                    )
+                    ->getOptionLabelUsing(fn($value): ?string => WarehouseItem::find($value)?->name ?? ($value ? "ID: {$value}" : null))
+                    ->searchable()
+                    ->required()
+                    ->live()
+                    ->visible(fn(?OrderWorkMaterial $record) => $record === null)
+                    ->afterStateUpdated(function (Forms\Set $set, ?string $state) {
+                        if ($state && $item = WarehouseItem::with('category')->find($state)) {
+                            $set('name', $item->name);
+                            $set('article', $item->article);
+                            $set('category_name', $item->category?->name);
+                            $set('unit', $item->unit ?? 'шт');
+                            $set('price', $item->price ?? 0);
+                        }
+                    }),
+
+                Forms\Components\TextInput::make('name')
+                    ->label('Название')
+                    ->required()
+                    ->maxLength(255)
+                    ->visible(fn(?OrderWorkMaterial $record) => $record === null),
+
+                Forms\Components\TextInput::make('article')
+                    ->label('Артикул')
+                    ->maxLength(255)
+                    ->visible(fn(?OrderWorkMaterial $record) => $record === null),
+
+                Forms\Components\TextInput::make('quantity')
+                    ->label('Количество')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0.001)
+                    ->step(0.001),
+
+                Forms\Components\TextInput::make('price')
+                    ->label('Цена за ед.')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0)
+                    ->step(0.01)
+                    ->prefix('₽'),
+
+                Forms\Components\Textarea::make('notes')
+                    ->label('Примечания')
+                    ->maxLength(500)
+                    ->columnSpanFull()
+                    ->visible(fn(?OrderWorkMaterial $record) => $record === null),
             ]);
     }
 
@@ -99,8 +152,8 @@ class OrderMaterialsRelationManager extends RelationManager
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->tooltip(fn($record) => $record->warehouse_item_id 
-                        ? 'Товар существует на складе' 
+                    ->tooltip(fn($record) => $record->warehouse_item_id
+                        ? 'Товар существует на складе'
                         : 'Товар удален со склада или не найден')
                     ->toggleable(),
 
@@ -111,13 +164,39 @@ class OrderMaterialsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                // Материалы добавляются через работы, поэтому здесь нет действий
+                Tables\Actions\CreateAction::make()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['order_id'] = $this->getOwnerRecord()->id;
+                        $data['work_id'] = null;
+                        if (isset($data['warehouse_item_id']) && $item = WarehouseItem::with('category')->find($data['warehouse_item_id'])) {
+                            $data['name'] = $item->name;
+                            $data['article'] = $item->article;
+                            $data['category_name'] = $item->category?->name;
+                            $data['unit'] = $item->unit ?? 'шт';
+                            $data['price'] = $data['price'] ?? $item->price ?? 0;
+                        }
+                        return $data;
+                    }),
             ])
             ->actions([
-                // Материалы редактируются через работы
-            ])
+                Tables\Actions\EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Редактировать')
+                    ->mutateFormDataUsing(function (array $data, OrderWorkMaterial $record): array {
+                        return [
+                            'price' => $data['price'] ?? $record->price,
+                            'quantity' => $data['quantity'] ?? $record->quantity,
+                        ];
+                    }),
+                Tables\Actions\DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Удалить')
+                    ->requiresConfirmation(),
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
-                // Нет массовых действий
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ])
             ->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(function (Builder $query) use ($orderId) {
@@ -127,7 +206,7 @@ class OrderMaterialsRelationManager extends RelationManager
                     ->with('warehouseItem');
             })
             ->emptyStateHeading('Материалы не добавлены')
-            ->emptyStateDescription('Материалы добавляются через работы заказа')
+            ->emptyStateDescription('Материалы добавляются в POS мастерской')
             ->emptyStateIcon('heroicon-o-cube');
     }
 }
