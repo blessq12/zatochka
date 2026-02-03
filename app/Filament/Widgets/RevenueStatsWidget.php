@@ -30,15 +30,15 @@ class RevenueStatsWidget extends BaseWidget
 
         $todayRevenue = (clone $baseQuery)
             ->where('updated_at', '>=', $todayStart)
-            ->sum('actual_price') ?? 0;
+            ->sum('price') ?? 0;
 
         $weekRevenue = (clone $baseQuery)
             ->where('updated_at', '>=', $weekStart)
-            ->sum('actual_price') ?? 0;
+            ->sum('price') ?? 0;
 
         $monthRevenue = (clone $baseQuery)
             ->where('updated_at', '>=', $monthStart)
-            ->sum('actual_price') ?? 0;
+            ->sum('price') ?? 0;
 
         $todayCount = (clone $baseQuery)
             ->where('updated_at', '>=', $todayStart)

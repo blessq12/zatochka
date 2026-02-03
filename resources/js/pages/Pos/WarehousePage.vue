@@ -33,7 +33,6 @@
                                 <th>Артикул</th>
                                 <th>Категория</th>
                                 <th>Остаток</th>
-                                <th>Цена</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -78,11 +77,6 @@
                                         {{ formatQuantity(item.quantity) }}
                                         {{ item.unit }}
                                     </span>
-                                </td>
-                                <td class="item-price-cell">
-                                    <span class="item-price"
-                                        >{{ formatPrice(item.price) }} ₽</span
-                                    >
                                 </td>
                             </tr>
                         </tbody>
@@ -242,13 +236,6 @@ export default {
             }, 500);
         };
 
-        const formatPrice = (price) => {
-            if (!price) return "0";
-            return parseFloat(price)
-                .toFixed(2)
-                .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-        };
-
         const formatQuantity = (quantity) => {
             if (!quantity && quantity !== 0) return "0";
             const qty = parseFloat(quantity);
@@ -292,7 +279,6 @@ export default {
             visiblePages,
             goToPage,
             handleSearch,
-            formatPrice,
             formatQuantity,
         };
     },

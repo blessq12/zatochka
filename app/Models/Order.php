@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -21,10 +22,6 @@ class Order extends Model implements HasMedia
 
     // Константы статусов заказов
     public const STATUS_NEW = 'new';
-
-    public const STATUS_CONSULTATION = 'consultation';
-
-    public const STATUS_DIAGNOSTIC = 'diagnostic';
 
     public const STATUS_IN_WORK = 'in_work';
 
@@ -61,6 +58,13 @@ class Order extends Model implements HasMedia
 
     public const URGENCY_URGENT = 'urgent';
 
+    // Источник клиента (откуда пришёл)
+    public const SOURCE_SOCIAL = 'social';
+
+    public const SOURCE_OUTDOOR = 'outdoor';
+
+    public const SOURCE_RECOMMENDATION = 'recommendation';
+
     protected $fillable = [
         'client_id',
         'branch_id',
@@ -71,24 +75,34 @@ class Order extends Model implements HasMedia
         'service_type',
         'status',
         'urgency',
+        'client_source',
         'discount_id',
-        'estimated_price',
-        'actual_price',
+        'price',
         'internal_notes',
         'problem_description',
         'delivery_address',
-        'delivery_cost',
         'needs_delivery',
         'order_payment_type',
         'is_deleted',
     ];
 
     protected $casts = [
-        'estimated_price' => 'decimal:2',
-        'actual_price' => 'decimal:2',
-        'delivery_cost' => 'decimal:2',
+        'price' => 'decimal:2',
         'is_deleted' => 'boolean',
     ];
+
+    protected $appends = ['calculated_price'];
+
+    /**
+     * Стоимость заказа = сумма работ + сумма материалов (вычисляемое свойство)
+     */
+    public function getCalculatedPriceAttribute(): float
+    {
+        $this->loadMissing(['orderWorks', 'orderMaterials']);
+        $worksTotal = $this->orderWorks->sum('work_price');
+        $materialsTotal = $this->orderMaterials->sum(fn($m) => $m->quantity * (float)($m->price ?? 0));
+        return round($worksTotal + $materialsTotal, 2);
+    }
 
     // Связи
     public function client()
@@ -104,11 +118,6 @@ class Order extends Model implements HasMedia
     public function equipment()
     {
         return $this->belongsTo(Equipment::class);
-    }
-
-    public function warehouse()
-    {
-        return $this->hasOneThrough(Warehouse::class, Branch::class, 'id', 'branch_id', 'branch_id', 'id');
     }
 
     public function manager()
@@ -224,7 +233,7 @@ class Order extends Model implements HasMedia
 
     public function isManagerStatus(): bool
     {
-        return in_array($this->status, [self::STATUS_NEW, self::STATUS_CONSULTATION, self::STATUS_DIAGNOSTIC]);
+        return $this->status === self::STATUS_NEW;
     }
 
     public function isWorkshopStatus(): bool
@@ -255,8 +264,6 @@ class Order extends Model implements HasMedia
     {
         return [
             self::STATUS_NEW => 'Новый',
-            self::STATUS_CONSULTATION => 'Консультация',
-            self::STATUS_DIAGNOSTIC => 'Диагностика',
             self::STATUS_IN_WORK => 'В работе',
             self::STATUS_WAITING_PARTS => 'Ожидание запчастей',
             self::STATUS_READY => 'Готов',
@@ -286,6 +293,15 @@ class Order extends Model implements HasMedia
         ];
     }
 
+    public static function getAvailableClientSources(): array
+    {
+        return [
+            self::SOURCE_SOCIAL => 'Соц сети',
+            self::SOURCE_OUTDOOR => 'Наружная реклама',
+            self::SOURCE_RECOMMENDATION => 'Рекомендация',
+        ];
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -297,19 +313,18 @@ class Order extends Model implements HasMedia
                 'service_type',
                 'status',
                 'urgency',
-                'estimated_price',
-                'actual_price',
+                'client_source',
+                'price',
                 'internal_notes',
                 'problem_description',
                 'delivery_address',
-                'delivery_cost',
                 'equipment_id',
                 'order_payment_type',
                 'needs_delivery',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
                 'created' => 'Заказ создан',
                 'updated' => 'Заказ обновлен',
                 'deleted' => 'Заказ удален',
@@ -318,39 +333,23 @@ class Order extends Model implements HasMedia
     }
 
     /**
-     * Генерирует уникальный номер заказа
-     * Должен вызываться внутри транзакции!
+     * Генерирует уникальный номер заказа в формате ORD-XXXXXX (6 символов)
+     * Короткий уникальный хеш — без привязки к дате, поиск по номеру даёт один результат
      */
     public static function generateOrderNumber(): string
     {
-        $date = date('Ymd');
-        
-        // Используем SELECT FOR UPDATE для блокировки всех строк с номерами за сегодня
-        // Это гарантирует, что другие транзакции будут ждать
-        $lastOrder = DB::table('orders')
-            ->where('order_number', 'like', 'ORD-'.$date.'-%')
-            ->orderBy('order_number', 'desc')
-            ->lockForUpdate()
-            ->first();
+        $maxAttempts = 10;
 
-        if ($lastOrder && preg_match('/ORD-'.$date.'-(\d+)/', $lastOrder->order_number, $matches)) {
-            $count = (int) $matches[1] + 1;
-        } else {
-            $count = 1;
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $suffix = strtoupper(Str::random(6));
+            $orderNumber = 'ORD-' . $suffix;
+
+            if (!static::where('order_number', $orderNumber)->exists()) {
+                return $orderNumber;
+            }
         }
 
-        $orderNumber = 'ORD-'.$date.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
-        
-        // Дополнительная проверка уникальности
-        $exists = static::where('order_number', $orderNumber)->lockForUpdate()->exists();
-        
-        if ($exists) {
-            // Если номер все равно существует, увеличиваем счетчик
-            $count++;
-            $orderNumber = 'ORD-'.$date.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
-        }
-
-        return $orderNumber;
+        throw new \RuntimeException('Не удалось сгенерировать уникальный номер заказа');
     }
 
     /**

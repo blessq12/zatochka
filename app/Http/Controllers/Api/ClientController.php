@@ -23,8 +23,7 @@ class ClientController extends Controller
                 'type',
                 'status',
                 'urgency',
-                'estimated_price',
-                'actual_price',
+                'price',
                 'problem_description',
                 'created_at',
                 'updated_at'
@@ -70,5 +69,4 @@ class ClientController extends Controller
             return response()->json(['message' => $e->getMessage()], 400);
         }
     }
-
 }

@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -19,13 +20,13 @@ class BranchResource extends Resource
     protected static ?string $model = Branch::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
-    
+
     protected static ?string $navigationLabel = 'Филиалы';
-    
+
     protected static ?string $modelLabel = 'Филиал';
-    
+
     protected static ?string $pluralModelLabel = 'Филиалы';
-    
+
     protected static ?string $navigationGroup = 'Организация';
 
     public static function form(Form $form): Form
@@ -125,12 +126,12 @@ class BranchResource extends Resource
                                 Forms\Components\TimePicker::make('start')
                                     ->label('Время начала')
                                     ->required()
-                                    ->visible(fn ($get) => $get('is_working'))
+                                    ->visible(fn($get) => $get('is_working'))
                                     ->columnSpan(1),
                                 Forms\Components\TimePicker::make('end')
                                     ->label('Время окончания')
                                     ->required()
-                                    ->visible(fn ($get) => $get('is_working'))
+                                    ->visible(fn($get) => $get('is_working'))
                                     ->columnSpan(1),
                                 Forms\Components\TextInput::make('note')
                                     ->label('Примечание')
@@ -140,7 +141,7 @@ class BranchResource extends Resource
                             ])
                             ->columns(2)
                             ->defaultItems(7)
-                            ->itemLabel(fn (array $state): ?string => match($state['day'] ?? null) {
+                            ->itemLabel(fn(array $state): ?string => match ($state['day'] ?? null) {
                                 'monday' => 'Понедельник',
                                 'tuesday' => 'Вторник',
                                 'wednesday' => 'Среда',
@@ -173,7 +174,7 @@ class BranchResource extends Resource
                                     }
                                     return $result;
                                 }
-                                
+
                                 // Если нет данных, создаем дефолтные значения для всех дней
                                 $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
                                 $result = [];
@@ -192,7 +193,7 @@ class BranchResource extends Resource
                                 if (!is_array($state)) {
                                     return [];
                                 }
-                                
+
                                 // Преобразуем обратно в структуру по дням
                                 $result = [];
                                 foreach ($state as $item) {
@@ -281,7 +282,7 @@ class BranchResource extends Resource
                     ->label('Адрес')
                     ->searchable()
                     ->limit(30)
-                    ->tooltip(fn ($record) => $record->address)
+                    ->tooltip(fn($record) => $record->address)
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Телефон')
@@ -353,9 +354,9 @@ class BranchResource extends Resource
                     ->falseLabel('Только активные'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-            ])
+                Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
+                Tables\Actions\EditAction::make()->iconButton()->tooltip('Редактировать'),
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

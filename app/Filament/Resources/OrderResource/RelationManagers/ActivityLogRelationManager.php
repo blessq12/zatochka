@@ -91,8 +91,8 @@ class ActivityLogRelationManager extends RelationManager
                                     'type' => 'Тип',
                                     'status' => 'Статус',
                                     'urgency' => 'Срочность',
-                                    'estimated_price' => 'Предварительная цена',
-                                    'actual_price' => 'Фактическая цена',
+                                    'client_source' => 'Откуда пришёл клиент',
+                                    'price' => 'Цена',
                                     'internal_notes' => 'Внутренние заметки',
                                     'problem_description' => 'Описание проблемы',
                                 ];
@@ -180,8 +180,11 @@ class ActivityLogRelationManager extends RelationManager
                 $urgencies = \App\Models\Order::getAvailableUrgencies();
                 return $urgencies[$value] ?? (string) $value;
 
-            case 'estimated_price':
-            case 'actual_price':
+            case 'client_source':
+                $sources = \App\Models\Order::getAvailableClientSources();
+                return $sources[$value] ?? (string) $value;
+
+            case 'price':
                 return number_format((float) $value, 2, ',', ' ') . ' ₽';
 
             default:

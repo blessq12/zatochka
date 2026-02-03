@@ -42,19 +42,19 @@ class RecentOrdersWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        Order::STATUS_NEW, Order::STATUS_CONSULTATION, Order::STATUS_DIAGNOSTIC => 'info',
+                    ->color(fn(string $state): string => match ($state) {
+                        Order::STATUS_NEW => 'info',
                         Order::STATUS_IN_WORK, Order::STATUS_WAITING_PARTS => 'warning',
                         Order::STATUS_READY => 'success',
                         Order::STATUS_ISSUED => 'success',
                         Order::STATUS_CANCELLED => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => Order::getAvailableStatuses()[$state] ?? $state),
+                    ->formatStateUsing(fn(string $state): string => Order::getAvailableStatuses()[$state] ?? $state),
 
                 Tables\Columns\TextColumn::make('service_type')
                     ->label('Тип услуги')
-                    ->formatStateUsing(fn (string $state): string => Order::getAvailableTypes()[$state] ?? $state)
+                    ->formatStateUsing(fn(string $state): string => Order::getAvailableTypes()[$state] ?? $state)
                     ->badge()
                     ->color('gray'),
 
@@ -64,7 +64,7 @@ class RecentOrdersWidget extends BaseWidget
                     ->sortable()
                     ->placeholder('—'),
 
-                Tables\Columns\TextColumn::make('actual_price')
+                Tables\Columns\TextColumn::make('price')
                     ->label('Цена')
                     ->money('RUB')
                     ->sortable()
@@ -78,7 +78,7 @@ class RecentOrdersWidget extends BaseWidget
             ->actions([
                 Tables\Actions\Action::make('view')
                     ->label('Открыть')
-                    ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record]))
+                    ->url(fn(Order $record): string => OrderResource::getUrl('view', ['record' => $record]))
                     ->icon('heroicon-o-eye'),
             ])
             ->defaultSort('created_at', 'desc');

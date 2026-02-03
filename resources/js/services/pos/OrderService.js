@@ -94,9 +94,12 @@ export const orderService = {
      */
     async updateOrderStatus(orderId, status) {
         try {
-            const response = await axios.patch(`/api/pos/orders/${orderId}/status`, {
-                status,
-            });
+            const response = await axios.patch(
+                `/api/pos/orders/${orderId}/status`,
+                {
+                    status,
+                }
+            );
             return response.data.order;
         } catch (error) {
             console.error("Error updating order status:", error);
@@ -112,8 +115,6 @@ export const orderService = {
     getStatusLabel(status) {
         const statuses = {
             new: "Новый",
-            consultation: "Консультация",
-            diagnostic: "Диагностика",
             in_work: "В работе",
             waiting_parts: "Ожидание запчастей",
             ready: "Готов",
@@ -132,10 +133,8 @@ export const orderService = {
         const types = {
             repair: "Ремонт",
             sharpening: "Заточка",
-            diagnostic: "Диагностика",
             replacement: "Замена",
             maintenance: "Обслуживание",
-            consultation: "Консультация",
             warranty: "Гарантия",
         };
         return types[type] || type;

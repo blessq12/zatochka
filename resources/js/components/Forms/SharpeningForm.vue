@@ -1,8 +1,8 @@
 <script>
 import { mapStores } from "pinia";
 import * as yup from "yup";
-import { useOrderStore } from "../../stores/orderStore.js";
 import { useAuthStore } from "../../stores/authStore.js";
+import { useOrderStore } from "../../stores/orderStore.js";
 
 export default {
     name: "SharpeningForm",
@@ -33,9 +33,7 @@ export default {
                     .number()
                     .required("Количество инструментов обязательно")
                     .min(1, "Минимум 1 инструмент"),
-                tool_type: yup
-                    .string()
-                    .required("Выберите тип инструментов"),
+                tool_type: yup.string().required("Выберите тип инструментов"),
                 name: yup
                     .string()
                     .required("Имя обязательно")
@@ -50,7 +48,10 @@ export default {
                     .oneOf([true], "Необходимо согласие с условиями доставки"),
                 privacy_agreement: yup
                     .boolean()
-                    .oneOf([true], "Необходимо согласие на обработку персональных данных"),
+                    .oneOf(
+                        [true],
+                        "Необходимо согласие на обработку персональных данных"
+                    ),
             }),
         };
     },
@@ -62,7 +63,7 @@ export default {
         if (this.authStore.isAuthenticated && !this.authStore.user) {
             await this.authStore.checkAuth();
         }
-        
+
         // Автозаполняем форму данными пользователя, если он авторизован
         if (this.authStore.isAuthenticated && this.authStore.user) {
             this.fillUserData();
@@ -72,12 +73,12 @@ export default {
         fillUserData() {
             const user = this.authStore.user;
             if (!user) return;
-            
+
             // Заполняем имя
             if (user.full_name) {
                 this.form.name = user.full_name;
             }
-            
+
             // Заполняем телефон (формат +7 (###) ###-##-##)
             if (user.phone) {
                 // Если телефон уже в нужном формате, используем как есть
@@ -85,21 +86,25 @@ export default {
                     this.form.phone = user.phone;
                 } else {
                     // Убираем все нецифровые символы, кроме +
-                    let cleanPhone = user.phone.replace(/[^\d+]/g, '');
+                    let cleanPhone = user.phone.replace(/[^\d+]/g, "");
                     // Если нет +, добавляем +7
-                    if (!cleanPhone.startsWith('+')) {
+                    if (!cleanPhone.startsWith("+")) {
                         // Убираем ведущую 7 или 8, добавляем +7
-                        cleanPhone = cleanPhone.replace(/^[78]/, '');
-                        cleanPhone = '+7' + cleanPhone;
-                    } else if (cleanPhone.startsWith('+')) {
+                        cleanPhone = cleanPhone.replace(/^[78]/, "");
+                        cleanPhone = "+7" + cleanPhone;
+                    } else if (cleanPhone.startsWith("+")) {
                         // Если есть +, но не 7, заменяем
-                        cleanPhone = cleanPhone.replace(/^\+[^7]/, '+7');
+                        cleanPhone = cleanPhone.replace(/^\+[^7]/, "+7");
                     }
-                    
+
                     // Форматируем в +7 (###) ###-##-## (10 цифр после +7)
-                    const digits = cleanPhone.replace(/\+7/, '').replace(/\D/g, '');
+                    const digits = cleanPhone
+                        .replace(/\+7/, "")
+                        .replace(/\D/g, "");
                     if (digits.length === 10) {
-                        const match = digits.match(/^(\d{3})(\d{3})(\d{2})(\d{2})$/);
+                        const match = digits.match(
+                            /^(\d{3})(\d{3})(\d{2})(\d{2})$/
+                        );
                         if (match) {
                             this.form.phone = `+7 (${match[1]}) ${match[2]}-${match[3]}-${match[4]}`;
                         } else {
@@ -110,7 +115,7 @@ export default {
                     }
                 }
             }
-            
+
             // Заполняем адрес доставки, если указан
             if (user.delivery_address) {
                 this.form.delivery_address = user.delivery_address;
@@ -142,7 +147,7 @@ export default {
                         privacy_agreement: false,
                         delivery_conditions_agreement: false,
                     };
-                    
+
                     // Повторно заполняем данные пользователя, если он авторизован
                     if (this.authStore.isAuthenticated && this.authStore.user) {
                         this.fillUserData();
@@ -196,7 +201,8 @@ export default {
                         <label
                             class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            Количество инструментов <span class="text-red-500">*</span>
+                            Количество инструментов
+                            <span class="text-red-500">*</span>
                         </label>
                         <input
                             v-model.number="form.tools_count"
@@ -435,7 +441,9 @@ export default {
                             :disabled="orderStore.createOrderLoading"
                             class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
-                            <span v-if="orderStore.createOrderLoading">Отправка...</span>
+                            <span v-if="orderStore.createOrderLoading"
+                                >Отправка...</span
+                            >
                             <span v-else>ЗАКАЗАТЬ ЗАТОЧКУ</span>
                         </button>
                     </div>
@@ -502,12 +510,6 @@ export default {
                         НАПИСАТЬ
                     </button>
                 </div>
-
-                <!-- Примечание -->
-                <p class="text-sm sm:text-base font-jost-regular text-white/80">
-                    *В случае если инструментов меньше доставка 150 рублей в
-                    одну сторону
-                </p>
             </div>
         </section>
     </div>

@@ -8,7 +8,10 @@ export default {
     computed: {
         ...mapStores(useAuthStore, useOrderStore),
         activeOrders() {
-            if (!this.orderStore.orders || this.orderStore.orders.length === 0) {
+            if (
+                !this.orderStore.orders ||
+                this.orderStore.orders.length === 0
+            ) {
                 return [];
             }
             return this.orderStore.orders.filter(
@@ -24,8 +27,6 @@ export default {
         getStatusLabel(status) {
             const statusMap = {
                 new: "Новый",
-                consultation: "Консультация",
-                diagnostic: "Диагностика",
                 in_work: "В работе",
                 waiting_parts: "Ожидание запчастей",
                 ready: "Готов",
@@ -37,10 +38,10 @@ export default {
         getStatusColor(status) {
             const colorMap = {
                 new: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-                consultation: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-                diagnostic: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
-                in_work: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-                waiting_parts: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+                in_work:
+                    "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+                waiting_parts:
+                    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
                 ready: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
             };
             return (
@@ -52,10 +53,8 @@ export default {
             const typeMap = {
                 repair: "Ремонт",
                 sharpening: "Заточка",
-                diagnostic: "Диагностика",
                 replacement: "Замена",
                 maintenance: "Обслуживание",
-                consultation: "Консультация",
                 warranty: "Гарантийный",
             };
             return typeMap[type] || type;
@@ -102,7 +101,10 @@ export default {
                 </p>
             </div>
 
-            <div v-else-if="activeOrders.length === 0" class="mt-4 text-center py-12">
+            <div
+                v-else-if="activeOrders.length === 0"
+                class="mt-4 text-center py-12"
+            >
                 <p
                     class="text-dark-gray-500 dark:text-gray-200 font-jost-regular text-base sm:text-lg"
                 >
@@ -162,28 +164,16 @@ export default {
                                         {{ formatDate(order.created_at) }}
                                     </span>
                                 </div>
-                                <div v-if="order.estimated_price">
+                                <div v-if="order.price">
                                     <span
                                         class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
                                     >
-                                        Предварительная стоимость:
+                                        Стоимость:
                                     </span>
                                     <span
                                         class="ml-2 font-jost-bold text-[#C3006B]"
                                     >
-                                        {{ formatPrice(order.estimated_price) }}
-                                    </span>
-                                </div>
-                                <div v-if="order.actual_price">
-                                    <span
-                                        class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                    >
-                                        Фактическая стоимость:
-                                    </span>
-                                    <span
-                                        class="ml-2 font-jost-bold text-[#C3006B]"
-                                    >
-                                        {{ formatPrice(order.actual_price) }}
+                                        {{ formatPrice(order.price) }}
                                     </span>
                                 </div>
                             </div>

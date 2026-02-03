@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -18,13 +19,13 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    
+
     protected static ?string $navigationLabel = 'Пользователи';
-    
+
     protected static ?string $modelLabel = 'Пользователь';
-    
+
     protected static ?string $pluralModelLabel = 'Пользователи';
-    
+
     protected static ?string $navigationGroup = 'Организация';
 
     public static function form(Form $form): Form
@@ -56,15 +57,15 @@ class UserResource extends Resource
                             ->maxLength(255)
                             ->required()
                             ->helperText('Минимум 6 символов')
-                            ->visible(fn ($operation) => $operation === 'create')
+                            ->visible(fn($operation) => $operation === 'create')
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('password')
                             ->label('Новый пароль')
                             ->password()
                             ->maxLength(255)
-                            ->dehydrated(fn ($state) => filled($state))
+                            ->dehydrated(fn($state) => filled($state))
                             ->helperText('Оставьте пустым, чтобы не менять пароль. Минимум 6 символов.')
-                            ->visible(fn ($operation) => $operation === 'edit')
+                            ->visible(fn($operation) => $operation === 'edit')
                             ->columnSpanFull(),
                     ])
                     ->collapsible(),
@@ -118,9 +119,9 @@ class UserResource extends Resource
                     ->falseLabel('Только активные'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-            ])
+                Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
+                Tables\Actions\EditAction::make()->iconButton()->tooltip('Редактировать'),
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

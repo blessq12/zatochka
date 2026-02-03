@@ -31,20 +31,18 @@ class OrdersOverviewWidget extends BaseWidget
         $revenueQuery = (clone $baseQuery)->where('status', Order::STATUS_READY);
         $todayRevenue = (clone $revenueQuery)
             ->where('updated_at', '>=', $todayStart)
-            ->sum('actual_price') ?? 0;
+            ->sum('price') ?? 0;
         $weekRevenue = (clone $revenueQuery)
             ->where('updated_at', '>=', $weekStart)
-            ->sum('actual_price') ?? 0;
+            ->sum('price') ?? 0;
         $monthRevenue = (clone $revenueQuery)
             ->where('updated_at', '>=', $monthStart)
-            ->sum('actual_price') ?? 0;
+            ->sum('price') ?? 0;
 
         // Активные заказы
         $newOrders = (clone $baseQuery)
             ->whereIn('status', [
                 Order::STATUS_NEW,
-                Order::STATUS_CONSULTATION,
-                Order::STATUS_DIAGNOSTIC,
             ])
             ->count();
         $inWork = (clone $baseQuery)

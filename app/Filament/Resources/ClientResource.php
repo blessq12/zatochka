@@ -11,6 +11,7 @@ use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -20,13 +21,13 @@ class ClientResource extends Resource
     protected static ?string $model = Client::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
-    
+
     protected static ?string $navigationLabel = 'Клиенты';
-    
+
     protected static ?string $modelLabel = 'Клиент';
-    
+
     protected static ?string $pluralModelLabel = 'Клиенты';
-    
+
     protected static ?string $navigationGroup = 'Клиенты';
 
     public static function form(Form $form): Form
@@ -75,7 +76,7 @@ class ClientResource extends Resource
                             ->label('Telegram подтвержден')
                             ->displayFormat('d.m.Y H:i')
                             ->helperText('Дата подтверждения Telegram аккаунта')
-                            ->visible(fn ($record) => $record && filled($record->telegram_verified_at)),
+                            ->visible(fn($record) => $record && filled($record->telegram_verified_at)),
                     ])
                     ->collapsible(),
 
@@ -97,15 +98,15 @@ class ClientResource extends Resource
                             ->maxLength(255)
                             ->required()
                             ->helperText('Минимум 6 символов')
-                            ->visible(fn ($operation) => $operation === 'create')
+                            ->visible(fn($operation) => $operation === 'create')
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('password')
                             ->label('Новый пароль')
                             ->password()
                             ->maxLength(255)
-                            ->dehydrated(fn ($state) => filled($state))
+                            ->dehydrated(fn($state) => filled($state))
                             ->helperText('Оставьте пустым, чтобы не менять пароль. Минимум 6 символов.')
-                            ->visible(fn ($operation) => $operation === 'edit')
+                            ->visible(fn($operation) => $operation === 'edit')
                             ->columnSpanFull(),
                     ])
                     ->collapsible(),
@@ -143,12 +144,12 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('telegram')
                     ->label('Telegram')
                     ->searchable()
-                    ->formatStateUsing(fn ($state) => $state ? '@' . $state : '—')
+                    ->formatStateUsing(fn($state) => $state ? '@' . $state : '—')
                     ->toggleable(),
                 Tables\Columns\IconColumn::make('telegram_verified_at')
                     ->label('Telegram подтвержден')
                     ->boolean()
-                    ->getStateUsing(fn ($record) => filled($record->telegram_verified_at))
+                    ->getStateUsing(fn($record) => filled($record->telegram_verified_at))
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('birth_date')
@@ -158,7 +159,7 @@ class ClientResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('bonus_balance')
                     ->label('Бонусные баллы')
-                    ->getStateUsing(fn ($record) => $record->getBonusAccount()->balance)
+                    ->getStateUsing(fn($record) => $record->getBonusAccount()->balance)
                     ->numeric()
                     ->sortable()
                     ->badge()
@@ -167,7 +168,7 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('delivery_address')
                     ->label('Адрес доставки')
                     ->limit(30)
-                    ->tooltip(fn ($record) => $record->delivery_address)
+                    ->tooltip(fn($record) => $record->delivery_address)
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('is_deleted')
                     ->label('Удален')
@@ -198,9 +199,9 @@ class ClientResource extends Resource
                     ->falseLabel('Только неподтвержденные'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-            ])
+                Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
+                Tables\Actions\EditAction::make()->iconButton()->tooltip('Редактировать'),
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 //
             ])
@@ -244,13 +245,13 @@ class ClientResource extends Resource
                     ->schema([
                         Infolists\Components\TextEntry::make('telegram')
                             ->label('Telegram')
-                            ->formatStateUsing(fn ($state) => $state ? '@' . $state : '—')
+                            ->formatStateUsing(fn($state) => $state ? '@' . $state : '—')
                             ->icon('heroicon-o-chat-bubble-left-right')
                             ->placeholder('—'),
                         Infolists\Components\IconEntry::make('telegram_verified_at')
                             ->label('Telegram подтвержден')
                             ->boolean()
-                            ->getStateUsing(fn ($record) => filled($record->telegram_verified_at))
+                            ->getStateUsing(fn($record) => filled($record->telegram_verified_at))
                             ->placeholder('—'),
                         Infolists\Components\TextEntry::make('delivery_address')
                             ->label('Адрес доставки')
@@ -265,7 +266,7 @@ class ClientResource extends Resource
                     ->schema([
                         Infolists\Components\TextEntry::make('bonus_balance')
                             ->label('Баланс бонусов')
-                            ->getStateUsing(fn ($record) => $record->getBonusAccount()->balance)
+                            ->getStateUsing(fn($record) => $record->getBonusAccount()->balance)
                             ->numeric()
                             ->badge()
                             ->color('success')

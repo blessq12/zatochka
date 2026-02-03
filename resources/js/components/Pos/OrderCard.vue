@@ -24,9 +24,11 @@
                     </div>
                 </div>
                 <div class="order-header-meta">
-                    <span class="order-date">{{ formatDateShort(order.created_at) }}</span>
-                    <span v-if="order.estimated_price || order.actual_price" class="order-price">
-                        {{ formatPrice(order.actual_price || order.estimated_price) }} ₽
+                    <span class="order-date">{{
+                        formatDateShort(order.created_at)
+                    }}</span>
+                    <span v-if="order.price" class="order-price">
+                        {{ formatPrice(order.price) }} ₽
                     </span>
                 </div>
             </div>
@@ -38,52 +40,80 @@
                     <div class="info-item">
                         <div class="info-content">
                             <span class="info-label">Тип услуги</span>
-                            <span class="info-value">{{ getTypeLabel(order.service_type) }}</span>
+                            <span class="info-value">{{
+                                getTypeLabel(order.service_type)
+                            }}</span>
                         </div>
                     </div>
                     <div v-if="order.branch?.name" class="info-item">
                         <div class="info-content">
                             <span class="info-label">Филиал</span>
-                            <span class="info-value">{{ order.branch.name }}</span>
+                            <span class="info-value">{{
+                                order.branch.name
+                            }}</span>
                         </div>
                     </div>
                     <div v-if="order.order_payment_type" class="info-item">
                         <div class="info-content">
                             <span class="info-label">Тип оплаты</span>
                             <span class="info-value">
-                                {{ order.order_payment_type === 'paid' ? 'Платный' : 'Гарантийный' }}
+                                {{
+                                    order.order_payment_type === "paid"
+                                        ? "Платный"
+                                        : "Гарантийный"
+                                }}
                             </span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Оборудование (если есть) -->
-                <div v-if="order.equipment?.name || order.equipment_name" class="info-block">
+                <div
+                    v-if="order.equipment?.name || order.equipment_name"
+                    class="info-block"
+                >
                     <div class="info-item">
                         <div class="info-content">
                             <span class="info-label">Оборудование</span>
                             <span class="info-value">
-                                {{ order.equipment?.name || order.equipment_name }}
+                                {{
+                                    order.equipment?.name ||
+                                    order.equipment_name
+                                }}
                             </span>
-                            <span v-if="order.equipment?.serial_number || order.equipment_serial_number" class="info-subvalue">
-                                С/Н: {{ order.equipment?.serial_number || order.equipment_serial_number }}
+                            <span
+                                v-if="
+                                    order.equipment?.serial_number ||
+                                    order.equipment_serial_number
+                                "
+                                class="info-subvalue"
+                            >
+                                С/Н:
+                                {{
+                                    order.equipment?.serial_number ||
+                                    order.equipment_serial_number
+                                }}
                             </span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Инструменты для заточки (если есть) -->
-                <div v-if="order.tools && order.tools.length > 0" class="info-block">
+                <div
+                    v-if="order.tools && order.tools.length > 0"
+                    class="info-block"
+                >
                     <div class="info-item">
                         <div class="info-content">
                             <span class="info-label">Инструменты</span>
                             <div class="tools-list">
-                                <span 
-                                    v-for="(tool, idx) in order.tools" 
+                                <span
+                                    v-for="(tool, idx) in order.tools"
                                     :key="tool.id || idx"
                                     class="tool-badge"
                                 >
-                                    {{ tool.tool_type }} ({{ tool.quantity }})
+                                    {{ tool.tool_type_label || tool.tool_type }}
+                                    ({{ tool.quantity }})
                                 </span>
                             </div>
                         </div>
@@ -190,8 +220,6 @@ export default {
         const getStatusClass = (status) => {
             const classes = {
                 new: "status-new",
-                consultation: "status-consultation",
-                diagnostic: "status-diagnostic",
                 in_work: "status-in-work",
                 waiting_parts: "status-waiting-parts",
                 ready: "status-ready",
@@ -302,9 +330,7 @@ export default {
     white-space: nowrap;
 }
 
-.status-new,
-.status-consultation,
-.status-diagnostic {
+.status-new {
     background: #dbeafe;
     color: #1e40af;
 }

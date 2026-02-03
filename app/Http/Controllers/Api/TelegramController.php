@@ -517,8 +517,8 @@ class TelegramController extends Controller
             $message .= "Тип: {$typeLabel}\n";
             $message .= "Статус: {$statusLabel}\n";
 
-            if ($order->estimated_price) {
-                $price = $this->formatPrice($order->estimated_price);
+            if ($order->price) {
+                $price = $this->formatPrice($order->price);
                 if ($price) {
                     $message .= "Цена: {$price}\n";
                 }
@@ -563,13 +563,8 @@ class TelegramController extends Controller
             $message .= "Тип: {$typeLabel}\n";
             $message .= "Статус: {$statusLabel}\n";
 
-            if ($order->actual_price) {
-                $price = $this->formatPrice($order->actual_price);
-                if ($price) {
-                    $message .= "Итоговая цена: {$price}\n";
-                }
-            } elseif ($order->estimated_price) {
-                $price = $this->formatPrice($order->estimated_price);
+            if ($order->price) {
+                $price = $this->formatPrice($order->price);
                 if ($price) {
                     $message .= "Цена: {$price}\n";
                 }

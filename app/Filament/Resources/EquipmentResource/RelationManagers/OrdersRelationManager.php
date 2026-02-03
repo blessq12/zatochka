@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -72,7 +73,7 @@ class OrdersRelationManager extends RelationManager
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('actual_price')
+                Tables\Columns\TextColumn::make('price')
                     ->label('Стоимость')
                     ->money('RUB')
                     ->sortable()
@@ -101,10 +102,11 @@ class OrdersRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\Action::make('view')
-                    ->label('Просмотр')
+                    ->iconButton()
                     ->icon('heroicon-o-eye')
-                    ->url(fn ($record) => \App\Filament\Resources\OrderResource::getUrl('view', ['record' => $record])),
-            ])
+                    ->tooltip('Просмотр')
+                    ->url(fn($record) => \App\Filament\Resources\OrderResource::getUrl('view', ['record' => $record])),
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 // Нет массовых действий
             ])

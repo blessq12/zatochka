@@ -12,7 +12,9 @@
             <div class="order-header-section">
                 <div class="order-header-top">
                     <div class="order-title-group">
-                        <h1 class="order-title">Заказ №{{ order.order_number }}</h1>
+                        <h1 class="order-title">
+                            Заказ №{{ order.order_number }}
+                        </h1>
                         <div class="order-status-group">
                             <span
                                 class="order-status-badge"
@@ -35,7 +37,7 @@
                         ← Назад
                     </router-link>
                 </div>
-                
+
                 <!-- Кнопки изменения статуса -->
                 <div class="status-actions">
                     <button
@@ -58,8 +60,7 @@
                         @click="setWaitingPartsStatus"
                         class="btn-status btn-waiting-parts"
                         :disabled="
-                            isChangingStatus ||
-                            order.status === 'waiting_parts'
+                            isChangingStatus || order.status === 'waiting_parts'
                         "
                     >
                         <span
@@ -75,11 +76,15 @@
                         @click="completeOrder"
                         class="btn-status btn-complete"
                         :disabled="
-                            isCompletingOrder || 
+                            isCompletingOrder ||
                             order.status === 'ready' ||
                             works.length === 0
                         "
-                        :title="works.length === 0 ? 'Нельзя завершить заказ без выполненных работ' : ''"
+                        :title="
+                            works.length === 0
+                                ? 'Нельзя завершить заказ без выполненных работ'
+                                : ''
+                        "
                     >
                         <span v-if="isCompletingOrder">Сохранение...</span>
                         <span v-else>Завершить заказ</span>
@@ -90,7 +95,7 @@
             <!-- Информация о заказе -->
             <div class="order-info-section">
                 <h2 class="section-title">Информация о заказе</h2>
-                
+
                 <div class="order-info-grid">
                     <!-- Услуга и филиал -->
                     <div class="info-card">
@@ -100,23 +105,40 @@
                         <div class="info-card-content">
                             <div class="info-card-item">
                                 <span class="info-card-label">Тип услуги</span>
-                                <span class="info-card-value">{{ getTypeLabel(order.service_type) }}</span>
+                                <span class="info-card-value">{{
+                                    getTypeLabel(order.service_type)
+                                }}</span>
                             </div>
-                            <div v-if="order.branch?.name" class="info-card-item">
+                            <div
+                                v-if="order.branch?.name"
+                                class="info-card-item"
+                            >
                                 <span class="info-card-label">Филиал</span>
-                                <span class="info-card-value">{{ order.branch.name }}</span>
+                                <span class="info-card-value">{{
+                                    order.branch.name
+                                }}</span>
                             </div>
-                            <div v-if="order.order_payment_type" class="info-card-item">
+                            <div
+                                v-if="order.order_payment_type"
+                                class="info-card-item"
+                            >
                                 <span class="info-card-label">Тип оплаты</span>
                                 <span class="info-card-value">
-                                    {{ order.order_payment_type === 'paid' ? 'Платный' : 'Гарантийный' }}
+                                    {{
+                                        order.order_payment_type === "paid"
+                                            ? "Платный"
+                                            : "Гарантийный"
+                                    }}
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Оборудование (если есть) -->
-                    <div v-if="order.equipment?.name || order.equipment_name" class="info-card">
+                    <div
+                        v-if="order.equipment?.name || order.equipment_name"
+                        class="info-card"
+                    >
                         <div class="info-card-header">
                             <span class="info-icon">⚙️</span>
                             <span class="info-card-title">Оборудование</span>
@@ -125,33 +147,55 @@
                             <div class="info-card-item">
                                 <span class="info-card-label">Название</span>
                                 <span class="info-card-value">
-                                    {{ order.equipment?.name || order.equipment_name }}
+                                    {{
+                                        order.equipment?.name ||
+                                        order.equipment_name
+                                    }}
                                 </span>
                             </div>
-                            <div v-if="order.equipment?.serial_number || order.equipment_serial_number" class="info-card-item">
-                                <span class="info-card-label">Серийный номер</span>
+                            <div
+                                v-if="
+                                    order.equipment?.serial_number ||
+                                    order.equipment_serial_number
+                                "
+                                class="info-card-item"
+                            >
+                                <span class="info-card-label"
+                                    >Серийный номер</span
+                                >
                                 <span class="info-card-value">
-                                    {{ order.equipment?.serial_number || order.equipment_serial_number }}
+                                    {{
+                                        order.equipment?.serial_number ||
+                                        order.equipment_serial_number
+                                    }}
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Инструменты для заточки (если есть) -->
-                    <div v-if="order.tools && order.tools.length > 0" class="info-card">
+                    <div
+                        v-if="order.tools && order.tools.length > 0"
+                        class="info-card"
+                    >
                         <div class="info-card-header">
                             <span class="info-card-title">Инструменты</span>
                         </div>
                         <div class="info-card-content">
-                            <div 
-                                v-for="(tool, idx) in order.tools" 
+                            <div
+                                v-for="(tool, idx) in order.tools"
                                 :key="tool.id || idx"
                                 class="info-card-item"
                             >
-                                <span class="info-card-label">{{ tool.tool_type }}</span>
+                                <span class="info-card-label">{{
+                                    tool.tool_type_label || tool.tool_type
+                                }}</span>
                                 <span class="info-card-value">
                                     Количество: {{ tool.quantity }}
-                                    <span v-if="tool.description" class="info-card-subvalue">
+                                    <span
+                                        v-if="tool.description"
+                                        class="info-card-subvalue"
+                                    >
                                         ({{ tool.description }})
                                     </span>
                                 </span>
@@ -163,7 +207,9 @@
                 <!-- Описание проблемы -->
                 <div v-if="order.problem_description" class="problem-card">
                     <div class="problem-card-header">
-                        <span class="problem-card-title">Описание проблемы</span>
+                        <span class="problem-card-title"
+                            >Описание проблемы</span
+                        >
                     </div>
                     <div class="problem-card-content">
                         {{ order.problem_description }}
@@ -210,25 +256,22 @@
 
                 <!-- Список работ -->
                 <div v-if="worksLoading" class="loading">Загрузка работ...</div>
-                <div
-                    v-if="!worksLoading && works.length > 0"
-                    class="works-list"
-                >
+                <div v-else-if="works.length === 0" class="empty-state-inline">
+                    Пока нет выполненных работ
+                </div>
+                <div v-else class="works-list">
                     <div v-for="work in works" :key="work.id" class="work-item">
-                        <div class="work-header">
-                            <span class="work-price"
-                                >{{ formatPrice(work.work_price || 0) }} ₽</span
-                            >
+                        <div class="work-body">
+                            <span class="work-description">{{
+                                work.description
+                            }}</span>
                             <button
                                 @click="deleteWork(work.id)"
-                                class="btn-delete"
+                                class="btn-delete btn-delete-inline"
                                 :disabled="isDeletingWork[work.id]"
                             >
                                 Удалить
                             </button>
-                        </div>
-                        <div class="work-description">
-                            {{ work.description }}
                         </div>
                     </div>
                 </div>
@@ -249,18 +292,6 @@
                                     required
                                 />
                             </div>
-                            <div class="form-group form-group-price">
-                                <label class="form-label">Цена *</label>
-                                <input
-                                    v-model.number="workForm.work_price"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    class="form-input"
-                                    placeholder="0.00"
-                                    required
-                                />
-                            </div>
                         </div>
                         <button
                             type="submit"
@@ -274,7 +305,7 @@
                 </div>
             </div>
 
-            <!-- Материалы к работам -->
+            <!-- Материалы заказа -->
             <div class="materials-section">
                 <h2 class="section-title">Материалы и запчасти</h2>
 
@@ -283,55 +314,39 @@
                     Загрузка материалов...
                 </div>
                 <div
-                    v-if="!materialsLoading && materials.length > 0"
-                    class="materials-list"
+                    v-else-if="materials.length === 0"
+                    class="empty-state-inline"
                 >
+                    Материалы не добавлены
+                </div>
+                <div v-else class="materials-list">
                     <div
                         v-for="material in materials"
-                        :key="`${material.work_id}-${material.id}`"
+                        :key="material.id"
                         class="material-item"
                     >
-                        <div class="material-info">
-                            <span class="material-name">{{
-                                material.name
-                            }}</span>
-                            <span
-                                v-if="material.article"
-                                class="material-article"
-                                >Арт: {{ material.article }}</span
+                        <div class="material-body">
+                            <div class="material-info">
+                                <span class="material-name">{{
+                                    material.name
+                                }}</span>
+                                <span
+                                    v-if="material.article"
+                                    class="material-article"
+                                    >Арт: {{ material.article }}</span
+                                >
+                                <span class="material-quantity"
+                                    >Количество: {{ material.quantity }}</span
+                                >
+                            </div>
+                            <button
+                                @click="removeMaterial(material.id)"
+                                class="btn-delete btn-delete-inline"
+                                :disabled="isRemovingMaterial[material.id]"
                             >
+                                Удалить
+                            </button>
                         </div>
-                        <div class="material-details">
-                            <span>Количество: {{ material.quantity }}</span>
-                            <span
-                                >Цена: {{ formatPrice(material.price) }} ₽</span
-                            >
-                            <span
-                                >Сумма:
-                                {{
-                                    formatPrice(
-                                        material.quantity * material.price
-                                    )
-                                }}
-                                ₽</span
-                            >
-                        </div>
-                        <button
-                            @click="
-                                removeMaterial(
-                                    material.work_id,
-                                    material.id
-                                )
-                            "
-                            class="btn-delete"
-                            :disabled="
-                                isRemovingMaterial[
-                                    `${material.work_id}-${material.id}`
-                                ]
-                            "
-                        >
-                            Удалить
-                        </button>
                     </div>
                 </div>
 
@@ -340,7 +355,9 @@
                     <form @submit.prevent="addMaterial" class="material-form">
                         <div class="material-form-row">
                             <div class="material-form-search">
-                                <label class="form-label">Материал или запчасть *</label>
+                                <label class="form-label"
+                                    >Материал или запчасть *</label
+                                >
                                 <button
                                     type="button"
                                     class="btn-select-material"
@@ -375,7 +392,10 @@
                         <button
                             type="submit"
                             class="btn-primary btn-add-material"
-                            :disabled="isAddingMaterial || !materialForm.warehouse_item_id"
+                            :disabled="
+                                isAddingMaterial ||
+                                !materialForm.warehouse_item_id
+                            "
                         >
                             <span v-if="isAddingMaterial">Сохранение...</span>
                             <span v-else>+ Добавить запчасть/материал</span>
@@ -425,8 +445,13 @@
                                     @click="selectMaterialFromModal(item)"
                                 >
                                     <div class="result-header">
-                                        <div class="result-name">{{ item.name }}</div>
-                                        <div v-if="item.article" class="result-article">
+                                        <div class="result-name">
+                                            {{ item.name }}
+                                        </div>
+                                        <div
+                                            v-if="item.article"
+                                            class="result-article"
+                                        >
                                             Арт: {{ item.article }}
                                         </div>
                                     </div>
@@ -437,20 +462,17 @@
                                         <span class="result-available">
                                             Доступно:
                                             {{
-                                                item.quantity - item.reserved_quantity || 0
+                                                item.quantity -
+                                                    item.reserved_quantity || 0
                                             }}
                                             {{ item.unit }}
-                                        </span>
-                                        <span class="result-price" v-if="item.price">
-                                            {{ formatPrice(item.price) }} ₽
                                         </span>
                                     </div>
                                 </div>
                             </div>
                             <div
                                 v-else-if="
-                                    materialSearchQuery.trim() &&
-                                    !isSearching
+                                    materialSearchQuery.trim() && !isSearching
                                 "
                                 class="no-results-message"
                             >
@@ -460,7 +482,8 @@
                                 v-else-if="!materialSearchQuery.trim()"
                                 class="no-results-message"
                             >
-                                Введите название материала или артикул для поиска
+                                Введите название материала или артикул для
+                                поиска
                             </div>
                         </div>
                     </div>
@@ -471,13 +494,13 @@
 </template>
 
 <script>
+import axios from "axios";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { orderService } from "../../services/pos/OrderService.js";
 import { warehouseService } from "../../services/pos/WarehouseService.js";
-import { usePosStore } from "../../stores/posStore.js";
-import axios from "axios";
 import { toastService } from "../../services/toastService.js";
+import { usePosStore } from "../../stores/posStore.js";
 
 export default {
     name: "OrderInWorkPage",
@@ -496,7 +519,6 @@ export default {
 
         const workForm = reactive({
             description: "",
-            work_price: null,
         });
 
         const materialForm = reactive({
@@ -641,7 +663,6 @@ export default {
 
                 // Очищаем форму
                 workForm.description = "";
-                workForm.work_price = null;
 
                 // Обновляем список работ
                 await fetchWorks();
@@ -681,24 +702,12 @@ export default {
                 return;
             }
 
-            // Проверяем наличие работ
-            if (works.value.length === 0) {
-                toastService.error("Сначала добавьте работу к заказу");
-                return;
-            }
-
-            // Используем первую работу
-            const workId = works.value[0].id;
-
             isAddingMaterial.value = true;
             try {
-                await axios.post(
-                    `/api/pos/orders/${orderId.value}/works/${workId}/materials`,
-                    {
-                        warehouse_item_id: materialForm.warehouse_item_id,
-                        quantity: materialForm.quantity,
-                    }
-                );
+                await axios.post(`/api/pos/orders/${orderId.value}/materials`, {
+                    warehouse_item_id: materialForm.warehouse_item_id,
+                    quantity: materialForm.quantity,
+                });
                 toastService.success("Материал добавлен");
 
                 // Очищаем форму
@@ -720,14 +729,13 @@ export default {
             }
         };
 
-        const removeMaterial = async (workId, materialId) => {
+        const removeMaterial = async (materialId) => {
             if (!confirm("Удалить этот материал?")) return;
 
-            const key = `${workId}-${materialId}`;
-            isRemovingMaterial[key] = true;
+            isRemovingMaterial[materialId] = true;
             try {
                 await axios.delete(
-                    `/api/pos/orders/${orderId.value}/works/${workId}/materials/${materialId}`
+                    `/api/pos/orders/${orderId.value}/materials/${materialId}`
                 );
                 toastService.success("Материал удален");
                 await fetchMaterials();
@@ -736,7 +744,7 @@ export default {
                 console.error("Error removing material:", error);
                 toastService.error("Ошибка при удалении материала");
             } finally {
-                isRemovingMaterial[key] = false;
+                isRemovingMaterial[materialId] = false;
             }
         };
 
@@ -930,8 +938,6 @@ export default {
             getStatusClass: (status) => {
                 const classes = {
                     new: "status-new",
-                    consultation: "status-consultation",
-                    diagnostic: "status-diagnostic",
                     in_work: "status-in-work",
                     waiting_parts: "status-waiting-parts",
                     ready: "status-ready",
@@ -1002,9 +1008,7 @@ export default {
     white-space: nowrap;
 }
 
-.order-status-badge.status-new,
-.order-status-badge.status-consultation,
-.order-status-badge.status-diagnostic {
+.order-status-badge.status-new {
     background: #dbeafe;
     color: #1e40af;
 }
@@ -1133,7 +1137,7 @@ export default {
 }
 
 .btn-status.btn-complete:disabled[title]:hover::before {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 100%;
     left: 50%;
@@ -1324,31 +1328,42 @@ export default {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.work-header {
+.work-body,
+.material-body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
     gap: 1rem;
 }
 
-.work-price {
-    font-weight: 700;
-    color: #059669;
-    font-size: 1.125rem;
+.work-description {
+    flex: 1;
+    color: #374151;
+    line-height: 1.5;
+    font-size: 0.9375rem;
 }
 
-.work-description {
-    color: #374151;
-    line-height: 1.6;
-    font-size: 0.875rem;
+.btn-delete-inline {
+    flex-shrink: 0;
+}
+
+.empty-state-inline {
+    color: #6b7280;
+    font-size: 0.9375rem;
+    padding: 1.5rem;
+    text-align: center;
+    background: #f9fafb;
+    border: 1px dashed #e5e7eb;
+    border-radius: 0;
+    margin-bottom: 1.5rem;
 }
 
 .material-info {
+    flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
 }
 
 .material-name {
@@ -1363,19 +1378,9 @@ export default {
     font-family: monospace;
 }
 
-.material-details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+.material-quantity {
     font-size: 0.8125rem;
     color: #6b7280;
-    margin-bottom: 0.75rem;
-}
-
-.material-details span {
-    padding: 0.25rem 0.5rem;
-    background: #f3f4f6;
-    border-radius: 0;
 }
 
 .add-work-form,
@@ -1400,11 +1405,6 @@ export default {
 
 .form-group.flex-1 {
     flex: 1;
-}
-
-.form-group-price {
-    min-width: 150px;
-    max-width: 200px;
 }
 
 .form-group-quantity {
@@ -1592,8 +1592,12 @@ export default {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .material-search-modal {
@@ -1760,13 +1764,6 @@ export default {
 .result-available {
     color: #059669;
     font-weight: 600;
-}
-
-.result-price {
-    margin-left: auto;
-    color: #003859;
-    font-weight: 700;
-    font-size: 1rem;
 }
 
 .no-results-message {
@@ -2085,7 +2082,6 @@ export default {
         font-size: 0.8125rem;
     }
 
-    .form-group-price,
     .form-group-quantity {
         min-width: auto;
         max-width: none;

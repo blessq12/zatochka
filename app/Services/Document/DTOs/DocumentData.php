@@ -15,8 +15,7 @@ class DocumentData
         public readonly ?string $equipmentName,
         public readonly ?string $problemDescription,
         public readonly array $tools,
-        public readonly ?float $estimatedPrice,
-        public readonly ?float $actualPrice,
+        public readonly ?float $price,
         public readonly string $branchName,
         public readonly ?string $branchAddress,
         public readonly ?string $branchPhone,
@@ -34,8 +33,7 @@ class DocumentData
         public readonly ?string $companyOgrn,
         public readonly ?string $companyPhone,
         public readonly ?string $companyAddress,
-    ) {
-    }
+    ) {}
 
     public static function fromOrder(\App\Models\Order $order): self
     {
@@ -48,58 +46,41 @@ class DocumentData
             'equipment',
             'tools',
             'orderWorks',
-            'orderWorks.materials',
+            'orderMaterials',
         ]);
 
         $tools = $order->tools->map(function ($tool) {
             return [
-                'type' => $tool->tool_type,
+                'type' => $tool->tool_type_label ?: $tool->tool_type,
                 'quantity' => $tool->quantity,
                 'description' => $tool->description,
             ];
         })->toArray();
 
         $works = $order->orderWorks->map(function ($work) {
-            $workTypeLabel = \App\Models\OrderWork::getAvailableWorkTypes()[$work->work_type] ?? $work->work_type;
-            $workName = $workTypeLabel . ($work->description ? ': ' . $work->description : '');
-            
             return [
-                'name' => $workName,
+                'name' => $work->description ?? '',
                 'price' => (float) ($work->work_price ?? 0),
                 'comment' => $work->description ?? '',
-                'materials' => $work->materials->map(function ($material) {
-                    return [
-                        'name' => $material->name,
-                        'quantity' => $material->quantity,
-                        'price' => (float) ($material->price ?? 0),
-                    ];
-                })->toArray(),
             ];
         })->toArray();
 
-        // Собираем материалы из всех работ (без дубликатов по имени)
-        $materials = collect();
+        // Материалы привязаны к заказу (без дубликатов по имени)
         $materialsMap = [];
-        
-        foreach ($order->orderWorks as $work) {
-            foreach ($work->materials as $material) {
-                $materialName = $material->name;
-                $key = $materialName;
-                
-                if (isset($materialsMap[$key])) {
-                    // Если материал уже есть, суммируем количество и стоимость
-                    $materialsMap[$key]['quantity'] += $material->quantity;
-                    $materialsMap[$key]['price'] += (float) ($material->price ?? 0);
-                } else {
-                    $materialsMap[$key] = [
-                        'name' => $materialName,
-                        'quantity' => $material->quantity,
-                        'price' => (float) ($material->price ?? 0),
-                    ];
-                }
+        foreach ($order->orderMaterials as $material) {
+            $key = $material->name;
+            $total = (float) ($material->quantity * ($material->price ?? 0));
+            if (isset($materialsMap[$key])) {
+                $materialsMap[$key]['quantity'] += $material->quantity;
+                $materialsMap[$key]['price'] += $total;
+            } else {
+                $materialsMap[$key] = [
+                    'name' => $material->name,
+                    'quantity' => $material->quantity,
+                    'price' => $total,
+                ];
             }
         }
-        
         $materials = array_values($materialsMap);
 
         return new self(
@@ -113,8 +94,7 @@ class DocumentData
             equipmentName: $order->equipment?->name,
             problemDescription: $order->problem_description,
             tools: $tools,
-            estimatedPrice: $order->estimated_price,
-            actualPrice: $order->actual_price,
+            price: $order->price,
             branchName: $order->branch->name ?? 'Не указано',
             branchAddress: $order->branch->address,
             branchPhone: $order->branch->phone,

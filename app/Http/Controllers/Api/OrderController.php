@@ -21,8 +21,8 @@ class OrderController extends Controller
             'service_type' => 'required|string|in:sharpening,repair',
             'urgency' => 'nullable|string|in:normal,urgent',
             'problem_description' => 'nullable|string|max:5000',
-            // Для заточки
-            'tool_type' => 'nullable|string|max:255',
+            // Для заточки (только известные типы из словаря)
+            'tool_type' => 'nullable|string|in:' . implode(',', array_keys(\App\Dictionaries\ToolTypeDictionary::getLabels())),
             'total_tools_count' => 'nullable|integer|min:1',
             // Для ремонта
             'equipment_id' => 'nullable|integer|exists:equipment,id',
@@ -95,7 +95,7 @@ class OrderController extends Controller
                 $order = DB::transaction(function () use ($client, $orderType, $urgency, $request, $branch) {
                     // Генерируем уникальный номер заказа в транзакции
                     $orderNumber = Order::generateOrderNumber();
-                    
+
                     // Подготавливаем данные для создания заказа
                     $orderData = [
                         'order_number' => $orderNumber,
@@ -124,7 +124,7 @@ class OrderController extends Controller
 
                     return $order;
                 });
-                
+
                 // Если успешно создали, выходим из цикла
                 break;
             } catch (\Illuminate\Database\QueryException $e) {
