@@ -49,7 +49,7 @@ export default {
                     question: "Как происходит доставка?",
                     answerLines: [
                         "Курьер забирает и привозит инструменты по согласованному адресу и времени.",
-                        "Доставка в обе стороны бесплатная при заказе от 2000 ₽.",
+                        "Доставка доступна по условиям.",
                     ],
                 },
                 {
@@ -282,18 +282,12 @@ export default {
                                 <p
                                     class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 text-base sm:text-lg"
                                 >
-                                    Бесплатная доставка
+                                    Доставка
                                 </p>
                                 <p
                                     class="font-jost-regular text-dark-gray-500 dark:text-gray-200 text-sm sm:text-base"
                                 >
-                                    Доставка в обе стороны бесплатная при заказе
-                                    от 2000 ₽*
-                                </p>
-                                <p
-                                    class="mt-1 text-xs font-jost-regular text-dark-gray-400 dark:text-gray-300"
-                                >
-                                    *смотрите условия доставки
+                                    Узнайте условия доставки на странице
                                 </p>
                             </div>
                         </div>
