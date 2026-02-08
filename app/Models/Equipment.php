@@ -28,10 +28,19 @@ class Equipment extends Model
     ];
 
     protected $casts = [
+        'serial_number' => 'array', // [{ name: string, serial_number: string }, ...]
         'is_deleted' => 'boolean',
         'is_active' => 'boolean',
         'purchase_date' => 'date',
         'warranty_expiry' => 'date',
+    ];
+
+    protected $attributes = [
+        'serial_number' => '[]',
+    ];
+
+    protected $appends = [
+        'serial_numbers_display',
     ];
 
     // Связи
@@ -51,10 +60,26 @@ class Equipment extends Model
         return $query->where('is_deleted', false);
     }
 
-    // Scope для поиска по серийному номеру
+    /** Поиск по серийному номеру (в любой части оборудования) */
     public function scopeBySerialNumber($query, string $serialNumber)
     {
-        return $query->where('serial_number', $serialNumber);
+        return $query->whereRaw('serial_number LIKE ?', ['%' . addslashes($serialNumber) . '%']);
+    }
+
+    /** Строка для отображения серийников: "Часть1: SN1; Часть2: SN2" или "SN1, SN2" */
+    public function getSerialNumbersDisplayAttribute(): string
+    {
+        $items = $this->serial_number ?? [];
+        if (!is_array($items) || count($items) === 0) {
+            return '';
+        }
+        $parts = [];
+        foreach ($items as $item) {
+            $name = trim($item['name'] ?? '');
+            $sn = trim($item['serial_number'] ?? '');
+            $parts[] = $name !== '' ? "{$name}: {$sn}" : $sn;
+        }
+        return implode('; ', array_filter($parts));
     }
 
     // Accessor для полного названия

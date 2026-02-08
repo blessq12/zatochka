@@ -53,12 +53,22 @@ class EquipmentResource extends Resource
                             ->maxLength(255)
                             ->placeholder('Например: Дрель, Шуруповерт, Болгарка'),
 
-                        Forms\Components\TextInput::make('serial_number')
-                            ->label('Серийный номер')
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true)
-                            ->nullable()
-                            ->helperText('Уникальный серийный номер оборудования'),
+                        Forms\Components\Repeater::make('serial_number')
+                            ->label('Серийные номера (части оборудования)')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Название части')
+                                    ->placeholder('Например: блок, двигатель')
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('serial_number')
+                                    ->label('Серийный номер')
+                                    ->required()
+                                    ->maxLength(255),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->addActionLabel('Добавить часть')
+                            ->helperText('У составного оборудования у каждой части может быть свой серийный номер'),
                     ])
                     ->columns(2),
 
@@ -128,13 +138,14 @@ class EquipmentResource extends Resource
                     ->color('info')
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('serial_number')
-                    ->label('Серийный номер')
-                    ->searchable()
-                    ->sortable()
-                    ->copyable()
+                Tables\Columns\TextColumn::make('serial_numbers_display')
+                    ->label('Серийные номера')
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where('serial_number', 'like', '%' . $search . '%');
+                    })
                     ->placeholder('—')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->wrap(),
 
                 Tables\Columns\TextColumn::make('client.full_name')
                     ->label('Владелец')

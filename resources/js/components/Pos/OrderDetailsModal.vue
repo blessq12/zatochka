@@ -101,7 +101,7 @@
                                 </div>
                                 <div
                                     v-if="
-                                        order.equipment?.serial_number ||
+                                        order.equipment?.serial_numbers_display ||
                                         order.equipment_serial_number
                                     "
                                     class="detail-item"
@@ -111,7 +111,7 @@
                                     >
                                     <span class="detail-value">
                                         {{
-                                            order.equipment?.serial_number ||
+                                            order.equipment?.serial_numbers_display ||
                                             order.equipment_serial_number
                                         }}
                                     </span>

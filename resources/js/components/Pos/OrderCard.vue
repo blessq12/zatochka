@@ -83,14 +83,14 @@
                             </span>
                             <span
                                 v-if="
-                                    order.equipment?.serial_number ||
+                                    order.equipment?.serial_numbers_display ||
                                     order.equipment_serial_number
                                 "
                                 class="info-subvalue"
                             >
                                 С/Н:
                                 {{
-                                    order.equipment?.serial_number ||
+                                    order.equipment?.serial_numbers_display ||
                                     order.equipment_serial_number
                                 }}
                             </span>
