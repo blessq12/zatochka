@@ -47,11 +47,11 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { warehouseService } from "../../services/pos/WarehouseService.js";
 import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
 import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
+import { warehouseService } from "../../services/pos/WarehouseService.js";
 
 export default {
     name: "WarehouseMaterialsPage",
