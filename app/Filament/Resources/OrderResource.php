@@ -45,7 +45,15 @@ class OrderResource extends Resource
         $equipmentCreateForm = [
             Forms\Components\TextInput::make('name')->label('Название')->required()->maxLength(255),
             Forms\Components\TextInput::make('type')->label('Тип')->maxLength(255),
-            Forms\Components\TextInput::make('serial_number')->label('Серийный номер')->maxLength(255)->unique('equipment', 'serial_number'),
+            Forms\Components\Repeater::make('serial_number')
+                ->label('Серийные номера (части)')
+                ->schema([
+                    Forms\Components\TextInput::make('name')->label('Часть')->maxLength(255)->placeholder('блок, двигатель…'),
+                    Forms\Components\TextInput::make('serial_number')->label('Серийный номер')->required()->maxLength(255),
+                ])
+                ->columns(2)
+                ->defaultItems(0)
+                ->addActionLabel('Добавить часть'),
             Forms\Components\TextInput::make('brand')->label('Бренд')->maxLength(255),
             Forms\Components\TextInput::make('model')->label('Модель')->maxLength(255),
             Forms\Components\Select::make('client_id')->label('Владелец')->relationship('client', 'full_name')->searchable()->preload()->nullable(),
@@ -157,8 +165,11 @@ class OrderResource extends Resource
                                 ->orWhere('brand', 'like', "%{$search}%")
                                 ->orWhere('model', 'like', "%{$search}%")
                                 ->limit(50)->get()
-                                ->mapWithKeys(fn($e) => [$e->id => $e->full_name . ($e->serial_number ? ' (SN: ' . $e->serial_number . ')' : '')]))
-                            ->getOptionLabelUsing(fn($value): ?string => \App\Models\Equipment::find($value)?->full_name)
+                                ->mapWithKeys(fn($e) => [$e->id => $e->full_name . ($e->serial_numbers_display ? ' (' . $e->serial_numbers_display . ')' : '')]))
+                            ->getOptionLabelUsing(function ($value): ?string {
+                                $e = \App\Models\Equipment::find($value);
+                                return $e ? $e->full_name . ($e->serial_numbers_display ? ' — ' . $e->serial_numbers_display : '') : null;
+                            })
                             ->createOptionForm($equipmentCreateForm)
                             ->visible(fn($get) => in_array($get('service_type'), [Order::TYPE_REPAIR, Order::TYPE_DIAGNOSTIC])),
                     ])

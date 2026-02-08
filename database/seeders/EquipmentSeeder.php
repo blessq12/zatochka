@@ -23,7 +23,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Аппарат для педикюра',
                 'brand' => 'Strong',
                 'model' => '210',
-                'serial_number' => 'STR-210-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'STR-210-' . rand(1000, 9999)]],
                 'description' => 'Профессиональный аппарат для аппаратного педикюра',
             ],
             [
@@ -31,7 +31,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Фреза',
                 'brand' => 'Strong',
                 'model' => 'FR-3.0',
-                'serial_number' => 'STR-FR-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'STR-FR-' . rand(1000, 9999)]],
                 'description' => 'Алмазная фреза для обработки ногтевой пластины',
             ],
             [
@@ -39,7 +39,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Аппарат для педикюра',
                 'brand' => 'Strong',
                 'model' => '108',
-                'serial_number' => 'STR-108-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'STR-108-' . rand(1000, 9999)]],
                 'description' => 'Компактный аппарат для педикюра',
             ],
 
@@ -49,7 +49,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Кусачки',
                 'brand' => 'Staleks',
                 'model' => 'Pro-5.0',
-                'serial_number' => 'STK-CUT-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'STK-CUT-' . rand(1000, 9999)]],
                 'description' => 'Профессиональные кусачки для удаления кутикулы',
             ],
             [
@@ -57,7 +57,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Ножницы',
                 'brand' => 'Staleks',
                 'model' => 'SC-12',
-                'serial_number' => 'STK-SC-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'STK-SC-' . rand(1000, 9999)]],
                 'description' => 'Прямые ножницы для обрезки ногтей',
             ],
             [
@@ -65,7 +65,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Аппарат для маникюра',
                 'brand' => 'Strong',
                 'model' => '108',
-                'serial_number' => 'STR-MAN-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'STR-MAN-' . rand(1000, 9999)]],
                 'description' => 'Аппарат для аппаратного маникюра',
             ],
             [
@@ -73,7 +73,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Пилка',
                 'brand' => 'Strong',
                 'model' => 'DC-2.0',
-                'serial_number' => 'STR-DC-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'STR-DC-' . rand(1000, 9999)]],
                 'description' => 'Алмазная пилка для обработки кутикулы',
             ],
             [
@@ -81,7 +81,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Кусачки',
                 'brand' => 'Staleks',
                 'model' => 'Pro-3.5',
-                'serial_number' => 'STK-CUT2-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'STK-CUT2-' . rand(1000, 9999)]],
                 'description' => 'Кусачки для деликатной работы с кутикулой',
             ],
 
@@ -91,7 +91,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Машинка для стрижки',
                 'brand' => 'Moser',
                 'model' => '1245',
-                'serial_number' => 'MOS-1245-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'MOS-1245-' . rand(1000, 9999)]],
                 'description' => 'Профессиональная машинка для груминга собак',
             ],
             [
@@ -99,7 +99,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Триммер',
                 'brand' => 'Wahl',
                 'model' => 'Arco',
-                'serial_number' => 'WAH-ARCO-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'WAH-ARCO-' . rand(1000, 9999)]],
                 'description' => 'Триммер для точной стрижки',
             ],
             [
@@ -107,7 +107,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Ножницы',
                 'brand' => 'Moser',
                 'model' => 'SC-7.0',
-                'serial_number' => 'MOS-SC-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'MOS-SC-' . rand(1000, 9999)]],
                 'description' => 'Прямые ножницы для стрижки шерсти',
             ],
             [
@@ -115,7 +115,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Ножницы',
                 'brand' => 'Moser',
                 'model' => 'TH-7.0',
-                'serial_number' => 'MOS-TH-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'MOS-TH-' . rand(1000, 9999)]],
                 'description' => 'Филировочные ножницы для создания объема',
             ],
             [
@@ -123,7 +123,7 @@ class EquipmentSeeder extends Seeder
                 'type' => 'Машинка для стрижки',
                 'brand' => 'Moser',
                 'model' => '1245-CAT',
-                'serial_number' => 'MOS-CAT-' . rand(1000, 9999),
+                'serial_number' => [['name' => '', 'serial_number' => 'MOS-CAT-' . rand(1000, 9999)]],
                 'description' => 'Машинка для стрижки кошек',
             ],
         ];
