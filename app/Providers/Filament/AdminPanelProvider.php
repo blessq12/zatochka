@@ -27,6 +27,7 @@ use Filament\View\PanelsRenderHook;
 use App\Filament\Widgets\AnalyticsWidget;
 use App\Filament\Widgets\LowStockWidget;
 use App\Filament\Widgets\MastersPerformanceWidget;
+use App\Filament\Widgets\OldIssuedOrdersWidget;
 use App\Filament\Widgets\OrdersOverviewWidget;
 use App\Filament\Widgets\QuickActionsWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -71,6 +72,7 @@ class AdminPanelProvider extends PanelProvider
                 AnalyticsWidget::class,
                 LowStockWidget::class,
                 MastersPerformanceWidget::class,
+                OldIssuedOrdersWidget::class,
             ])
             ->resources([
                 // Заказы

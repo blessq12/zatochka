@@ -494,14 +494,6 @@ export default {
     color: #ef4444;
 }
 
-.item-price-cell {
-    font-weight: 700;
-    color: #003859;
-}
-
-.item-price {
-    font-size: 0.875rem;
-}
 
 .text-muted {
     color: #9ca3af;
@@ -706,9 +698,6 @@ export default {
         font-size: 0.6875rem;
     }
 
-    .item-price {
-        font-size: 0.75rem;
-    }
 
     .pagination-wrapper {
         flex-direction: column;

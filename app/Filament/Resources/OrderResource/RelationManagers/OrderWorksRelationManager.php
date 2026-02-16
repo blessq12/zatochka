@@ -23,6 +23,25 @@ class OrderWorksRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
+        $order = $this->getOwnerRecord();
+        $equipment = $order->equipment;
+        $hasMultipleComponents = $equipment && 
+            is_array($equipment->serial_number) && 
+            count($equipment->serial_number) > 1;
+
+        $componentOptions = [];
+        if ($hasMultipleComponents) {
+            foreach ($equipment->serial_number as $component) {
+                $name = trim($component['name'] ?? '');
+                $sn = trim($component['serial_number'] ?? '');
+                $label = $name ?: 'Элемент';
+                if ($sn) {
+                    $label .= " (SN: {$sn})";
+                }
+                $componentOptions[$name] = $label;
+            }
+        }
+
         return $form
             ->schema([
                 Forms\Components\Textarea::make('description')
@@ -31,6 +50,31 @@ class OrderWorksRelationManager extends RelationManager
                     ->rows(3)
                     ->maxLength(65535)
                     ->columnSpanFull(),
+
+                Forms\Components\Select::make('equipment_component_name')
+                    ->label('Элемент оборудования')
+                    ->options($componentOptions)
+                    ->nullable()
+                    ->visible(fn() => $hasMultipleComponents)
+                    ->live()
+                    ->afterStateUpdated(function (Forms\Set $set, $state, $get) use ($equipment) {
+                        if ($state && $equipment && is_array($equipment->serial_number)) {
+                            foreach ($equipment->serial_number as $component) {
+                                if (trim($component['name'] ?? '') === $state) {
+                                    $set('equipment_component_serial_number', trim($component['serial_number'] ?? ''));
+                                    break;
+                                }
+                            }
+                        } else {
+                            $set('equipment_component_serial_number', null);
+                        }
+                    }),
+
+                Forms\Components\TextInput::make('equipment_component_serial_number')
+                    ->label('Серийный номер элемента')
+                    ->disabled()
+                    ->dehydrated()
+                    ->visible(fn($get) => $get('equipment_component_name') !== null),
 
                 Forms\Components\TextInput::make('work_price')
                     ->label('Стоимость работы')
@@ -52,6 +96,21 @@ class OrderWorksRelationManager extends RelationManager
                     ->searchable()
                     ->wrap()
                     ->limit(100),
+
+                Tables\Columns\TextColumn::make('equipment_component_name')
+                    ->label('Элемент оборудования')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('—')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('equipment_component_serial_number')
+                    ->label('Серийный номер элемента')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('—')
+                    ->copyable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('work_price')
                     ->label('Стоимость работы')
