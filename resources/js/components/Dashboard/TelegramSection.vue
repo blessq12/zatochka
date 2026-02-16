@@ -127,28 +127,30 @@ export default {
                     <div
                         class="border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 bg-white/60 backdrop-blur-md dark:bg-gray-800/60"
                     >
-                        <div class="flex items-center gap-3 mb-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
                             <h3
                                 class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                             >
                                 Telegram
                             </h3>
-                            <span
-                                class="px-4 py-2 font-jost-medium text-sm sm:text-base"
-                                :class="[
-                                    isTelegramVerified
-                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-                                ]"
-                            >
-                                @{{ telegramUsername }}
-                            </span>
-                            <span
-                                v-if="isTelegramVerified"
-                                class="px-4 py-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 font-jost-medium text-sm sm:text-base"
-                            >
-                                Подтвержден
-                            </span>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span
+                                    class="px-4 py-2 font-jost-medium text-sm sm:text-base break-all"
+                                    :class="[
+                                        isTelegramVerified
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+                                    ]"
+                                >
+                                    @{{ telegramUsername }}
+                                </span>
+                                <span
+                                    v-if="isTelegramVerified"
+                                    class="px-4 py-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 font-jost-medium text-sm sm:text-base whitespace-nowrap"
+                                >
+                                    Подтвержден
+                                </span>
+                            </div>
                         </div>
                         <p
                             class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300 mb-4"
@@ -175,7 +177,7 @@ export default {
                             </li>
                             <li>
                                 Найдите бота
-                                <strong>@zatochka_bot</strong> в поиске Telegram
+                                <strong>@zatochkatsk_bot</strong> в поиске Telegram
                             </li>
                             <li>
                                 Нажмите кнопку

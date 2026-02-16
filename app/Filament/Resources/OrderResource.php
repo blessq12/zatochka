@@ -120,7 +120,7 @@ class OrderResource extends Resource
                                 Forms\Components\Select::make('client_source')
                                     ->label('Источник клиента')
                                     ->options(Order::getAvailableClientSources())
-                                    ->nullable(),
+                                    ->required(),
 
                                 Forms\Components\Select::make('manager_id')
                                     ->label('Менеджер')

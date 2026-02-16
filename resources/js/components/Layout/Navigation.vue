@@ -1,13 +1,11 @@
 <script>
 import { mapStores } from "pinia";
 import { useAuthStore } from "../../stores/authStore.js";
-import ThemeToggler from "../Support/ThemeToggler.vue";
 import MobileMenu from "./MobileMenu.vue";
 
 export default {
     name: "Navigation",
     components: {
-        ThemeToggler,
         MobileMenu,
     },
     data() {
@@ -144,7 +142,6 @@ export default {
                 <div
                     class="hidden lg:flex items-center space-x-3 flex-shrink-0"
                 >
-                    <ThemeToggler />
                     <router-link
                         v-if="authStore.isAuthenticated"
                         to="/client/dashboard"
@@ -163,7 +160,6 @@ export default {
 
                 <!-- Правая часть - мобильный -->
                 <div class="flex lg:hidden items-center space-x-3">
-                    <ThemeToggler />
                     <button
                         @click="toggleMobileMenu"
                         class="w-10 h-10 flex flex-col justify-center items-center space-y-1.5 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg"

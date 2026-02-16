@@ -62,6 +62,8 @@ class DocumentData
                 'name' => $work->description ?? '',
                 'price' => (float) ($work->work_price ?? 0),
                 'comment' => $work->description ?? '',
+                'equipment_component_name' => $work->equipment_component_name,
+                'equipment_component_serial_number' => $work->equipment_component_serial_number,
             ];
         })->toArray();
 

@@ -27,9 +27,6 @@
                     <span class="order-date">{{
                         formatDateShort(order.created_at)
                     }}</span>
-                    <span v-if="order.price" class="order-price">
-                        {{ formatPrice(order.price) }} ₽
-                    </span>
                 </div>
             </div>
 
@@ -236,7 +233,6 @@ export default {
             truncateText,
             getStatusLabel: orderService.getStatusLabel,
             getTypeLabel: orderService.getTypeLabel,
-            formatPrice: orderService.formatPrice,
             getStatusClass,
         };
     },
@@ -309,11 +305,6 @@ export default {
     gap: 0.25rem;
 }
 
-.order-price {
-    font-weight: 700;
-    color: #059669;
-    font-size: 0.9375rem;
-}
 
 .order-header-badges {
     display: flex;

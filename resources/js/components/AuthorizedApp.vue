@@ -102,12 +102,12 @@ export default {
 
                 <!-- Табы -->
                 <div
-                    class="flex gap-4 mb-8 sm:mb-12 bg-white/60 backdrop-blur-md p-2 border border-white/20 dark:bg-gray-800/60 dark:border-gray-700/20 overflow-x-auto"
+                    class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-8 sm:mb-12 bg-white/60 backdrop-blur-md p-2 border border-white/20 dark:bg-gray-800/60 dark:border-gray-700/20"
                 >
                     <button
                         @click="setActiveTab('profile')"
                         :class="[
-                            'flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300 whitespace-nowrap',
+                            'w-full sm:flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
                             activeTab === 'profile'
                                 ? 'bg-[#C3006B] text-white shadow-lg'
                                 : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
@@ -118,7 +118,7 @@ export default {
                     <button
                         @click="setActiveTab('active')"
                         :class="[
-                            'flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300 whitespace-nowrap',
+                            'w-full sm:flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
                             activeTab === 'active'
                                 ? 'bg-[#C3006B] text-white shadow-lg'
                                 : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
@@ -129,7 +129,7 @@ export default {
                     <button
                         @click="setActiveTab('history')"
                         :class="[
-                            'flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300 whitespace-nowrap',
+                            'w-full sm:flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
                             activeTab === 'history'
                                 ? 'bg-[#C3006B] text-white shadow-lg'
                                 : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
@@ -140,7 +140,7 @@ export default {
                     <button
                         @click="setActiveTab('telegram')"
                         :class="[
-                            'flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300 whitespace-nowrap',
+                            'w-full sm:flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
                             activeTab === 'telegram'
                                 ? 'bg-[#C3006B] text-white shadow-lg'
                                 : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',

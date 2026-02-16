@@ -25,6 +25,8 @@ class AcceptanceDocumentGenerator implements DocumentGeneratorInterface
         $pdf->setOption('isRemoteEnabled', false);
         $pdf->setOption('defaultFont', 'dejavusans');
         $pdf->setOption('defaultEncoding', 'UTF-8');
+        $pdf->setOption('isPhpEnabled', true);
+        $pdf->setOption('isFontSubsettingEnabled', true);
 
         $fileName = $this->getFileName($order);
         $filePath = storage_path('app/temp/' . $fileName);

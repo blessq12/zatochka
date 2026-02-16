@@ -43,7 +43,7 @@
                         </li>
                         <li>
                             Найдите бота
-                            <strong>@zatochka_bot</strong> в поиске Telegram
+                            <strong>@zatochkatsk_bot</strong> в поиске Telegram
                         </li>
                         <li>
                             Нажмите кнопку

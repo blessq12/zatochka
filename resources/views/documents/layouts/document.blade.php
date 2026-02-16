@@ -22,8 +22,8 @@
 
         body {
             font-family: dejavusans, DejaVu Sans, Arial, sans-serif;
-            font-size: 5px;
-            line-height: 1.3;
+            font-size: 9px;
+            line-height: 1.4;
             color: #000;
             padding: 0;
             margin: 0;
@@ -50,15 +50,14 @@
         }
 
         .document-title {
-            font-size: 7px;
+            font-size: 13px;
             font-weight: bold;
             margin-bottom: 0.5mm;
             letter-spacing: 0.5px;
-            text-transform: uppercase;
         }
 
         .document-subtitle {
-            font-size: 5px;
+            font-size: 9px;
             color: #333;
             font-weight: 400;
         }
@@ -98,12 +97,10 @@
         .document-part-header {
             text-align: center;
             font-weight: bold;
-            font-size: 5px;
+            font-size: 10px;
             margin-bottom: 2mm;
             padding-bottom: 1mm;
             border-bottom: 0.5px solid #000;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
         }
 
         .client-part {
@@ -119,13 +116,11 @@
         }
 
         .section-title {
-            font-size: 5px;
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: bold;
             margin-bottom: 1mm;
             border-bottom: 0.5px solid #000;
             padding-bottom: 0.5mm;
-            letter-spacing: 0.2px;
-            text-transform: uppercase;
         }
 
         .info-row {
@@ -138,12 +133,12 @@
             width: 100px;
             font-weight: bold;
             padding-right: 2px;
-            font-size: 5px;
+            font-size: 9px;
         }
 
         .info-value {
             overflow: hidden;
-            font-size: 5px;
+            font-size: 9px;
         }
 
         .table {
@@ -151,16 +146,16 @@
             max-width: 100%;
             border-collapse: collapse;
             margin-bottom: 2mm;
-            font-size: 4px;
+            font-size: 8px;
             table-layout: fixed;
         }
 
         .table th,
         .table td {
             border: 0.5px solid #000;
-            padding: 1px 1.5px;
+            padding: 2px 3px;
             text-align: left;
-            font-size: 4px;
+            font-size: 8px;
             vertical-align: top;
         }
 
@@ -203,13 +198,13 @@
 
         .signature-line {
             border-top: 0.5px solid #000;
-            margin-top: 10mm;
+            margin-top: 5mm;
             padding-top: 1mm;
             min-height: 15mm;
         }
 
         .signature-label {
-            font-size: 5px;
+            font-size: 9px;
             text-align: center;
             font-weight: bold;
             margin-bottom: 1mm;
@@ -226,9 +221,9 @@
         .urgent-badge {
             display: inline-block;
             border: 0.5px solid #000;
-            padding: 0.5px 2px;
+            padding: 1px 3px;
             font-weight: bold;
-            font-size: 4px;
+            font-size: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -243,14 +238,14 @@
             margin-top: 2mm;
             padding: 2mm;
             border: 0.5px solid #000;
-            font-size: 4px;
-            line-height: 1.3;
+            font-size: 8px;
+            line-height: 1.4;
         }
 
         .responsibility-title {
             font-weight: bold;
             margin-bottom: 0.8mm;
-            font-size: 5px;
+            font-size: 9px;
             letter-spacing: 0.2px;
             text-transform: uppercase;
         }

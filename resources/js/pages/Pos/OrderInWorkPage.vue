@@ -262,9 +262,17 @@
                 <div v-else class="works-list">
                     <div v-for="work in works" :key="work.id" class="work-item">
                         <div class="work-body">
-                            <span class="work-description">{{
-                                work.description
-                            }}</span>
+                            <div class="work-content">
+                                <span class="work-description">{{
+                                    work.description
+                                }}</span>
+                                <span
+                                    v-if="work.equipment_component_name || work.equipment_component_serial_number"
+                                    class="work-equipment-component"
+                                >
+                                    [{{ work.equipment_component_name || 'Элемент' }}{{ work.equipment_component_serial_number ? ` (SN: ${work.equipment_component_serial_number})` : '' }}]
+                                </span>
+                            </div>
                             <button
                                 @click="deleteWork(work.id)"
                                 class="btn-delete btn-delete-inline"
@@ -291,6 +299,33 @@
                                     placeholder="Опишите выполненную работу"
                                     required
                                 />
+                            </div>
+                        </div>
+                        <div
+                            v-if="hasEquipmentComponents"
+                            class="form-row-inline"
+                        >
+                            <div class="form-group flex-1">
+                                <label class="form-label"
+                                    >Элемент оборудования</label
+                                >
+                                <div class="select-wrapper">
+                                    <select
+                                        v-model="workForm.selectedComponentIndex"
+                                        class="form-select equipment-component-select"
+                                        @change="onComponentSelected"
+                                    >
+                                        <option value="">Не указывать</option>
+                                        <option
+                                            v-for="(component, index) in equipmentComponents"
+                                            :key="index"
+                                            :value="index"
+                                        >
+                                            {{ component.name || 'Элемент' }}{{ component.serial_number ? ` (SN: ${component.serial_number})` : '' }}
+                                        </option>
+                                    </select>
+                                    <span class="select-arrow">▼</span>
+                                </div>
                             </div>
                         </div>
                         <button
@@ -519,6 +554,9 @@ export default {
 
         const workForm = reactive({
             description: "",
+            equipment_component_name: "",
+            equipment_component_serial_number: "",
+            selectedComponentIndex: "",
         });
 
         const materialForm = reactive({
@@ -655,14 +693,27 @@ export default {
         const addWork = async () => {
             isAddingWork.value = true;
             try {
+                const payload = {
+                    description: workForm.description,
+                };
+
+                // Добавляем данные элемента оборудования, если выбран
+                if (workForm.equipment_component_name || workForm.equipment_component_serial_number) {
+                    payload.equipment_component_name = workForm.equipment_component_name || null;
+                    payload.equipment_component_serial_number = workForm.equipment_component_serial_number || null;
+                }
+
                 await axios.post(
                     `/api/pos/orders/${orderId.value}/works`,
-                    workForm
+                    payload
                 );
                 toastService.success("Работа добавлена");
 
                 // Очищаем форму
                 workForm.description = "";
+                workForm.equipment_component_name = "";
+                workForm.equipment_component_serial_number = "";
+                workForm.selectedComponentIndex = "";
 
                 // Обновляем список работ
                 await fetchWorks();
@@ -877,6 +928,39 @@ export default {
             }
         };
 
+        // Получаем компоненты оборудования
+        const equipmentComponents = computed(() => {
+            if (!order.value?.equipment?.serial_number) {
+                return [];
+            }
+            const serialNumbers = order.value.equipment.serial_number;
+            if (!Array.isArray(serialNumbers) || serialNumbers.length === 0) {
+                return [];
+            }
+            return serialNumbers;
+        });
+
+        // Проверяем есть ли несколько компонентов оборудования
+        const hasEquipmentComponents = computed(() => {
+            return equipmentComponents.value.length > 1;
+        });
+
+        // Обработка выбора компонента оборудования
+        const onComponentSelected = () => {
+            if (workForm.selectedComponentIndex === "" || workForm.selectedComponentIndex === null) {
+                workForm.equipment_component_name = "";
+                workForm.equipment_component_serial_number = "";
+                return;
+            }
+
+            const index = parseInt(workForm.selectedComponentIndex);
+            const component = equipmentComponents.value[index];
+            if (component) {
+                workForm.equipment_component_name = component.name || "";
+                workForm.equipment_component_serial_number = component.serial_number || "";
+            }
+        };
+
         // Следим за изменениями заказа и обновляем форму комментариев
         const updateCommentForm = () => {
             if (order.value?.internal_notes && !commentForm.internal_notes) {
@@ -911,6 +995,9 @@ export default {
             showMaterialSearchModal,
             selectedMaterialName,
             isSearching,
+            equipmentComponents,
+            hasEquipmentComponents,
+            onComponentSelected,
             handleMaterialSearch,
             openMaterialSearchModal,
             closeMaterialSearchModal,
@@ -1336,11 +1423,23 @@ export default {
     gap: 1rem;
 }
 
-.work-description {
+.work-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
     flex: 1;
+}
+
+.work-description {
     color: #374151;
     line-height: 1.5;
     font-size: 0.9375rem;
+}
+
+.work-equipment-component {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
 }
 
 .btn-delete-inline {
@@ -1799,6 +1898,63 @@ export default {
     box-shadow: 0 0 0 3px rgba(4, 100, 144, 0.1);
 }
 
+.select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.select-wrapper .select-arrow {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #6b7280;
+    font-size: 0.75rem;
+    z-index: 1;
+}
+
+.form-select {
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0;
+    font-size: 0.875rem;
+    font-family: "Jost", sans-serif;
+    width: 100%;
+    transition: all 0.2s;
+    background: white;
+    color: #374151;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #046490;
+    box-shadow: 0 0 0 3px rgba(4, 100, 144, 0.1);
+}
+
+.form-select:hover {
+    border-color: #9ca3af;
+}
+
+.equipment-component-select {
+    background-image: none;
+}
+
+.equipment-component-select option {
+    padding: 0.5rem;
+    background: white;
+    color: #374151;
+}
+
+.equipment-component-select option:first-child {
+    color: #9ca3af;
+    font-style: italic;
+}
+
 .btn-primary {
     padding: 0.75rem 1.5rem;
     background: #046490;
@@ -2080,6 +2236,24 @@ export default {
     .form-textarea {
         padding: 0.5rem 0.75rem;
         font-size: 0.8125rem;
+    }
+
+    .select-wrapper .select-arrow {
+        right: 0.5rem;
+        font-size: 0.625rem;
+    }
+
+    .form-select {
+        padding-right: 1.75rem;
+    }
+
+    .select-wrapper .select-arrow {
+        right: 0.5rem;
+        font-size: 0.625rem;
+    }
+
+    .form-select {
+        padding-right: 1.75rem;
     }
 
     .form-group-quantity {

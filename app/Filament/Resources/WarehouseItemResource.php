@@ -93,13 +93,22 @@ class WarehouseItemResource extends Resource
                             ->helperText('Для уведомлений о низком остатке')
                             ->prefix('мин'),
 
+                        Forms\Components\TextInput::make('purchase_price')
+                            ->label('Цена закупки')
+                            ->numeric()
+                            ->step(0.01)
+                            ->default(0)
+                            ->prefix('₽')
+                            ->helperText('Цена закупки товара'),
+
                         Forms\Components\TextInput::make('price')
                             ->label('Цена за единицу')
                             ->numeric()
                             ->step(0.01)
                             ->default(0)
                             ->prefix('₽')
-                            ->required(),
+                            ->required()
+                            ->helperText('Розничная цена для продажи в заказах'),
 
                         Forms\Components\TextInput::make('location')
                             ->label('Местоположение на складе')

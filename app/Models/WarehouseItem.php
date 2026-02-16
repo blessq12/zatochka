@@ -20,6 +20,7 @@ class WarehouseItem extends Model
         'reserved_quantity',
         'min_quantity',
         'price',
+        'purchase_price',
         'location',
         'is_active',
     ];
@@ -29,6 +30,7 @@ class WarehouseItem extends Model
         'reserved_quantity' => 'decimal:3',
         'min_quantity' => 'decimal:3',
         'price' => 'decimal:2',
+        'purchase_price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 

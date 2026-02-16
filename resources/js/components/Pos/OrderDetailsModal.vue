@@ -189,22 +189,13 @@
                                         <p class="work-detail-description">
                                             {{ work.description }}
                                         </p>
+                                        <p
+                                            v-if="work.equipment_component_name || work.equipment_component_serial_number"
+                                            class="work-detail-equipment-component"
+                                        >
+                                            Элемент: {{ work.equipment_component_name || 'Не указан' }}{{ work.equipment_component_serial_number ? ` (SN: ${work.equipment_component_serial_number})` : '' }}
+                                        </p>
                                     </div>
-                                    <div class="work-detail-price">
-                                        {{ formatPrice(work.work_price || 0) }}
-                                        ₽
-                                    </div>
-                                </div>
-                                <div class="works-total">
-                                    <span class="total-label"
-                                        >Итого работ:</span
-                                    >
-                                    <span class="total-price"
-                                        >{{
-                                            formatPrice(totalWorksPrice)
-                                        }}
-                                        ₽</span
-                                    >
                                 </div>
                             </div>
                         </div>
@@ -240,47 +231,18 @@
                                         {{ material.quantity || 0 }}
                                         {{ material.unit || "шт" }}
                                     </div>
-                                    <div class="material-detail-price">
-                                        {{ formatPrice(material.price || 0) }} ₽
-                                    </div>
-                                    <div class="material-detail-total">
-                                        {{
-                                            formatPrice(
-                                                (material.quantity || 0) *
-                                                    (material.price || 0)
-                                            )
-                                        }}
-                                        ₽
-                                    </div>
-                                </div>
-                                <div class="materials-total">
-                                    <span class="total-label"
-                                        >Итого материалов:</span
-                                    >
-                                    <span class="total-price"
-                                        >{{
-                                            formatPrice(totalMaterialsPrice)
-                                        }}
-                                        ₽</span
-                                    >
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Финансовая информация -->
+                        <!-- Информация об оплате и доставке -->
                         <div class="details-section financial-section">
                             <div class="details-section-header">
                                 <h3 class="details-section-title">
-                                    Финансовая информация
+                                    Дополнительная информация
                                 </h3>
                             </div>
                             <div class="details-grid">
-                                <div v-if="order.price" class="detail-item">
-                                    <span class="detail-label">Цена</span>
-                                    <span class="detail-value price"
-                                        >{{ formatPrice(order.price) }} ₽</span
-                                    >
-                                </div>
                                 <div class="detail-item">
                                     <span class="detail-label">Тип оплаты</span>
                                     <span
@@ -384,24 +346,8 @@ export default {
         const order = ref(null);
         const isLoading = ref(false);
 
-        const totalWorksPrice = computed(() => {
-            if (!order.value?.order_works) return 0;
-            return order.value.order_works.reduce((sum, work) => {
-                return sum + (parseFloat(work.work_price) || 0);
-            }, 0);
-        });
-
         const orderMaterialsList = computed(() => {
             return order.value?.order_materials ?? [];
-        });
-
-        const totalMaterialsPrice = computed(() => {
-            if (!order.value?.order_materials) return 0;
-            return order.value.order_materials.reduce((total, material) => {
-                const quantity = parseFloat(material.quantity) || 0;
-                const price = parseFloat(material.price) || 0;
-                return total + quantity * price;
-            }, 0);
         });
 
         const fetchOrder = async (orderId) => {
@@ -478,14 +424,11 @@ export default {
         return {
             order,
             isLoading,
-            totalWorksPrice,
             orderMaterialsList,
-            totalMaterialsPrice,
             close,
             formatDate,
             getStatusLabel: orderService.getStatusLabel,
             getTypeLabel: orderService.getTypeLabel,
-            formatPrice: orderService.formatPrice,
             getStatusClass,
         };
     },
@@ -582,31 +525,14 @@ export default {
         font-size: 0.875rem;
     }
 
-    .detail-value.price {
-        font-size: 0.9375rem;
-    }
 
     .material-detail-item {
         grid-template-columns: 1fr;
         gap: 0.5rem;
     }
 
-    .material-detail-quantity,
-    .material-detail-price,
-    .material-detail-total {
+    .material-detail-quantity {
         text-align: left;
-    }
-
-    .works-total,
-    .materials-total {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-        padding: 0.75rem;
-    }
-
-    .total-price {
-        font-size: 1.125rem;
     }
 }
 
@@ -754,11 +680,6 @@ export default {
     text-decoration: underline;
 }
 
-.detail-value.price {
-    font-weight: 700;
-    color: #059669;
-    font-size: 1rem;
-}
 
 .detail-badge {
     padding: 0.375rem 0.75rem;
@@ -869,7 +790,6 @@ export default {
 
 .work-detail-item {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
     padding: 0.75rem;
@@ -890,35 +810,20 @@ export default {
     line-height: 1.5;
 }
 
-.work-detail-price {
-    font-weight: 700;
-    color: #059669;
-    font-size: 1rem;
-    flex-shrink: 0;
+.work-detail-equipment-component {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
 }
 
-.works-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: #f0f7ff;
-    border: 2px solid #003859;
-    border-radius: 0;
-    margin-top: 0.5rem;
+.work-detail-equipment-component {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
 }
 
-.total-label {
-    font-weight: 700;
-    color: #003859;
-    font-size: 1rem;
-}
-
-.total-price {
-    font-weight: 700;
-    color: #003859;
-    font-size: 1.25rem;
-}
 
 .materials-list-details {
     display: flex;
@@ -928,7 +833,7 @@ export default {
 
 .material-detail-item {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 1rem;
     align-items: center;
     padding: 0.75rem;
@@ -957,29 +862,10 @@ export default {
     font-family: monospace;
 }
 
-.material-detail-quantity,
-.material-detail-price {
+.material-detail-quantity {
     font-size: 0.8125rem;
     color: #6b7280;
     text-align: right;
-}
-
-.material-detail-total {
-    font-weight: 700;
-    color: #059669;
-    font-size: 0.9375rem;
-    text-align: right;
-}
-
-.materials-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: #f0f7ff;
-    border: 2px solid #003859;
-    border-radius: 0;
-    margin-top: 0.5rem;
 }
 
 .notes-section {

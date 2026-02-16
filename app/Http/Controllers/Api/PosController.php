@@ -397,6 +397,7 @@ class PosController extends Controller
             'branch',
             'master',
             'manager',
+            'equipment',
             'orderWorks',
             'orderMaterials',
             'tools',
@@ -632,11 +633,52 @@ class PosController extends Controller
 
         $request->validate([
             'description' => 'required|string|max:1000',
+            'equipment_component_name' => 'nullable|string|max:255',
+            'equipment_component_serial_number' => 'nullable|string|max:255',
         ]);
+
+        // Проверяем что элемент оборудования существует в equipment, если указан
+        if ($request->equipment_component_name || $request->equipment_component_serial_number) {
+            $equipment = $order->equipment;
+            if (!$equipment) {
+                return response()->json([
+                    'message' => 'У заказа нет привязанного оборудования',
+                ], 422);
+            }
+            
+            if ($equipment->serial_number && is_array($equipment->serial_number)) {
+                $components = $equipment->serial_number;
+                $componentExists = false;
+                $requestName = trim($request->equipment_component_name ?? '');
+                $requestSn = trim($request->equipment_component_serial_number ?? '');
+                
+                foreach ($components as $component) {
+                    $name = trim($component['name'] ?? '');
+                    $sn = trim($component['serial_number'] ?? '');
+                    
+                    // Проверяем совпадение по обоим полям, если оба указаны, или по одному если указан только один
+                    $nameMatch = !$requestName || $name === $requestName;
+                    $snMatch = !$requestSn || $sn === $requestSn;
+                    
+                    if ($nameMatch && $snMatch) {
+                        $componentExists = true;
+                        break;
+                    }
+                }
+                
+                if (!$componentExists) {
+                    return response()->json([
+                        'message' => 'Указанный элемент оборудования не найден в данном оборудовании',
+                    ], 422);
+                }
+            }
+        }
 
         $work = \App\Models\OrderWork::create([
             'order_id' => $order->id,
             'description' => $request->description,
+            'equipment_component_name' => $request->equipment_component_name,
+            'equipment_component_serial_number' => $request->equipment_component_serial_number,
             'quantity' => 1,
             'work_price' => 0, // Цена проставляется в админке
         ]);

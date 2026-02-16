@@ -14,6 +14,8 @@ class OrderWork extends Model
     protected $fillable = [
         'order_id',
         'description',
+        'equipment_component_name',
+        'equipment_component_serial_number',
         'quantity',
         'unit_price',
         'work_price',
