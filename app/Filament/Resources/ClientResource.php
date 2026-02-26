@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ClientResource\Pages;
 use App\Filament\Resources\ClientResource\RelationManagers;
 use App\Models\Client;
+use App\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Infolists;
@@ -80,6 +81,41 @@ class ClientResource extends Resource
                     ])
                     ->collapsible(),
 
+                Forms\Components\Section::make('Маркетинг')
+                    ->schema([
+                        Forms\Components\Select::make('marketing_source')
+                            ->label('Источник клиента')
+                            ->options(Order::getAvailableClientSources())
+                            ->nullable()
+                            ->helperText('Откуда клиент впервые узнал о нас'),
+
+                        Forms\Components\Select::make('first_contact_channel')
+                            ->label('Канал первого обращения')
+                            ->options([
+                                'telegram' => 'Telegram',
+                                'whatsapp' => 'WhatsApp',
+                                'instagram' => 'Instagram',
+                                'phone' => 'Телефон',
+                                'offline' => 'Оффлайн',
+                                'other' => 'Другое',
+                            ])
+                            ->nullable(),
+
+                        Forms\Components\Textarea::make('first_contact_notes')
+                            ->label('Заметки по первому обращению')
+                            ->rows(2)
+                            ->maxLength(65535)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Textarea::make('marketing_notes')
+                            ->label('Маркетинговые заметки о клиенте')
+                            ->rows(2)
+                            ->maxLength(65535)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+
                 Forms\Components\Section::make('Доставка')
                     ->schema([
                         Forms\Components\TextInput::make('delivery_address')
@@ -87,36 +123,6 @@ class ClientResource extends Resource
                             ->maxLength(255)
                             ->placeholder('Город, улица, дом, квартира')
                             ->helperText('Полный адрес для доставки заказов'),
-                    ])
-                    ->collapsible(),
-
-                Forms\Components\Section::make('Безопасность')
-                    ->schema([
-                        Forms\Components\TextInput::make('password')
-                            ->label('Пароль')
-                            ->password()
-                            ->maxLength(255)
-                            ->required()
-                            ->helperText('Минимум 6 символов')
-                            ->visible(fn($operation) => $operation === 'create')
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('password')
-                            ->label('Новый пароль')
-                            ->password()
-                            ->maxLength(255)
-                            ->dehydrated(fn($state) => filled($state))
-                            ->helperText('Оставьте пустым, чтобы не менять пароль. Минимум 6 символов.')
-                            ->visible(fn($operation) => $operation === 'edit')
-                            ->columnSpanFull(),
-                    ])
-                    ->collapsible(),
-
-                Forms\Components\Section::make('Статус')
-                    ->schema([
-                        Forms\Components\Toggle::make('is_deleted')
-                            ->label('Удален')
-                            ->default(false)
-                            ->helperText('Пометить клиента как удаленного'),
                     ])
                     ->collapsible(),
             ]);
@@ -170,9 +176,13 @@ class ClientResource extends Resource
                     ->limit(30)
                     ->tooltip(fn($record) => $record->delivery_address)
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('is_deleted')
-                    ->label('Удален')
-                    ->boolean()
+                Tables\Columns\TextColumn::make('marketing_source')
+                    ->label('Источник клиента')
+                    ->formatStateUsing(fn(?string $state): string => $state ? (Order::getAvailableClientSources()[$state] ?? $state) : '—')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('first_contact_channel')
+                    ->label('Канал первого контакта')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
@@ -197,6 +207,30 @@ class ClientResource extends Resource
                     ->placeholder('Все клиенты')
                     ->trueLabel('Только подтвержденные')
                     ->falseLabel('Только неподтвержденные'),
+                Tables\Filters\SelectFilter::make('marketing_source')
+                    ->label('Источник клиента')
+                    ->options(Order::getAvailableClientSources()),
+                Tables\Filters\SelectFilter::make('first_contact_channel')
+                    ->label('Канал первого контакта')
+                    ->options([
+                        'telegram' => 'Telegram',
+                        'whatsapp' => 'WhatsApp',
+                        'instagram' => 'Instagram',
+                        'phone' => 'Телефон',
+                        'offline' => 'Оффлайн',
+                        'other' => 'Другое',
+                    ]),
+                Tables\Filters\Filter::make('has_orders_this_month')
+                    ->label('Активные за текущий месяц')
+                    ->query(function (Builder $query): Builder {
+                        $monthStart = now()->startOfMonth();
+
+                        return $query->whereHas('orders', function (Builder $ordersQuery) use ($monthStart) {
+                            $ordersQuery
+                                ->where('is_deleted', false)
+                                ->where('created_at', '>=', $monthStart);
+                        });
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
@@ -262,6 +296,29 @@ class ClientResource extends Resource
                     ->columns(2)
                     ->collapsible(),
 
+                Infolists\Components\Section::make('Маркетинг')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('marketing_source')
+                            ->label('Источник клиента')
+                            ->formatStateUsing(fn(?string $state): string => $state ? (Order::getAvailableClientSources()[$state] ?? $state) : '—')
+                            ->icon('heroicon-o-chart-bar-square')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('first_contact_channel')
+                            ->label('Канал первого контакта')
+                            ->icon('heroicon-o-chat-bubble-left-right')
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('first_contact_notes')
+                            ->label('Заметки по первому обращению')
+                            ->columnSpanFull()
+                            ->placeholder('—'),
+                        Infolists\Components\TextEntry::make('marketing_notes')
+                            ->label('Маркетинговые заметки')
+                            ->columnSpanFull()
+                            ->placeholder('—'),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+
                 Infolists\Components\Section::make('Бонусный счет')
                     ->schema([
                         Infolists\Components\TextEntry::make('bonus_balance')
@@ -283,20 +340,6 @@ class ClientResource extends Resource
                     ])
                     ->columns(3),
 
-                Infolists\Components\Section::make('Статус')
-                    ->schema([
-                        Infolists\Components\IconEntry::make('is_deleted')
-                            ->label('Удален')
-                            ->boolean(),
-                        Infolists\Components\TextEntry::make('created_at')
-                            ->label('Создан')
-                            ->dateTime('d.m.Y H:i'),
-                        Infolists\Components\TextEntry::make('updated_at')
-                            ->label('Обновлен')
-                            ->dateTime('d.m.Y H:i'),
-                    ])
-                    ->columns(3)
-                    ->collapsible(),
             ]);
     }
 

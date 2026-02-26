@@ -10,6 +10,7 @@ use App\Filament\Resources\EquipmentResource;
 use App\Filament\Resources\MasterResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PriceItemResource;
+use App\Filament\Resources\RevenuePlanResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\WarehouseCategoryResource;
 use App\Filament\Resources\WarehouseItemResource;
@@ -25,10 +26,14 @@ use Filament\Widgets;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use App\Filament\Widgets\AnalyticsWidget;
+use App\Filament\Widgets\FinancialOverviewWidget;
 use App\Filament\Widgets\LowStockWidget;
+use App\Filament\Widgets\MarketingOverviewWidget;
 use App\Filament\Widgets\MastersPerformanceWidget;
+use App\Filament\Widgets\MonthlyRevenuePlanWidget;
 use App\Filament\Widgets\OldIssuedOrdersWidget;
 use App\Filament\Widgets\OrdersOverviewWidget;
+use App\Filament\Widgets\PrimaryClientsWidget;
 use App\Filament\Widgets\QuickActionsWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -67,11 +72,22 @@ class AdminPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->widgets([
+                // Быстрые действия
                 QuickActionsWidget::class,
+
+                // Финансы
+                MonthlyRevenuePlanWidget::class,
+                FinancialOverviewWidget::class,
+
+                // Заказы и операционка
                 OrdersOverviewWidget::class,
-                AnalyticsWidget::class,
-                LowStockWidget::class,
                 MastersPerformanceWidget::class,
+                LowStockWidget::class,
+
+                // Клиенты и маркетинг
+                AnalyticsWidget::class,
+                MarketingOverviewWidget::class,
+                PrimaryClientsWidget::class,
                 OldIssuedOrdersWidget::class,
             ])
             ->resources([
@@ -89,6 +105,8 @@ class AdminPanelProvider extends PanelProvider
                 EquipmentResource::class,
                 // Настройки
                 BonusSettingsResource::class,
+                // Аналитика
+                RevenuePlanResource::class,
                 // Склад
                 WarehouseCategoryResource::class,
                 WarehouseItemResource::class,

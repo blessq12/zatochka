@@ -27,17 +27,23 @@ class OrdersOverviewWidget extends BaseWidget
 
         $baseQuery = Order::where('is_deleted', false);
 
-        // Финансовая статистика
-        $revenueQuery = (clone $baseQuery)->where('status', Order::STATUS_READY);
+        // Финансовая статистика: считаем выручку по выданным заказам и calculated_price
+        $revenueQuery = (clone $baseQuery)->where('status', Order::STATUS_ISSUED);
+
         $todayRevenue = (clone $revenueQuery)
             ->where('updated_at', '>=', $todayStart)
-            ->sum('price') ?? 0;
+            ->get()
+            ->sum(fn (Order $order) => $order->calculated_price);
+
         $weekRevenue = (clone $revenueQuery)
             ->where('updated_at', '>=', $weekStart)
-            ->sum('price') ?? 0;
+            ->get()
+            ->sum(fn (Order $order) => $order->calculated_price);
+
         $monthRevenue = (clone $revenueQuery)
             ->where('updated_at', '>=', $monthStart)
-            ->sum('price') ?? 0;
+            ->get()
+            ->sum(fn (Order $order) => $order->calculated_price);
 
         // Активные заказы
         $newOrders = (clone $baseQuery)
@@ -68,7 +74,7 @@ class OrdersOverviewWidget extends BaseWidget
         return [
             // Финансы
             Stat::make('Выручка за месяц', number_format($monthRevenue, 0, ',', ' ') . ' ₽')
-                ->description('Завершенные заказы')
+                ->description('Выданные заказы')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\ClientResource;
 use App\Models\Client;
 use App\Models\Order;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -79,7 +80,12 @@ class AnalyticsWidget extends BaseWidget
             Stat::make('Активных клиентов', $activeClients)
                 ->description('С заказами за месяц')
                 ->descriptionIcon('heroicon-m-user-circle')
-                ->color('info'),
+                ->color('info')
+                ->url(
+                    ClientResource::getUrl('index', [
+                        'table[filters][has_orders_this_month][value]' => 1,
+                    ])
+                ),
         ];
     }
 }
