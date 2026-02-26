@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\ClientResource;
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
 use Filament\Tables;
@@ -42,7 +43,9 @@ class OldIssuedOrdersWidget extends BaseWidget
                     ->label('Клиент')
                     ->searchable()
                     ->sortable()
-                    ->limit(30),
+                    ->limit(30)
+                    ->url(fn (Order $record): string => ClientResource::getUrl('view', ['record' => $record->client_id]))
+                    ->openUrlInNewTab(),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Дата выдачи')

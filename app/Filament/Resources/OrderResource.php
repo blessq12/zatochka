@@ -117,11 +117,6 @@ class OrderResource extends Resource
                                     ->options(Order::getAvailableUrgencies())
                                     ->default(Order::URGENCY_NORMAL),
 
-                                Forms\Components\Select::make('client_source')
-                                    ->label('Источник клиента')
-                                    ->options(Order::getAvailableClientSources())
-                                    ->required(),
-
                                 Forms\Components\Select::make('manager_id')
                                     ->label('Менеджер')
                                     ->relationship('manager', 'name')
