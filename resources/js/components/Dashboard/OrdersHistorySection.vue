@@ -9,6 +9,13 @@ export default {
         return {
             currentPage: 1,
             perPage: 10,
+            reviewModalOrder: null,
+            reviewForm: {
+                rating: 5,
+                comment: "",
+            },
+            reviewErrors: {},
+            reviewSubmitting: false,
         };
     },
     computed: {
@@ -113,6 +120,49 @@ export default {
                 currency: "RUB",
             }).format(price);
         },
+        canLeaveReview(order) {
+            return order.status === "issued" && !order.review_exists;
+        },
+        openReviewModal(order) {
+            this.reviewModalOrder = order;
+            this.reviewForm = { rating: 5, comment: "" };
+            this.reviewErrors = {};
+        },
+        closeReviewModal() {
+            this.reviewModalOrder = null;
+            this.reviewErrors = {};
+        },
+        async submitReview() {
+            this.reviewErrors = {};
+            if (!this.reviewForm.comment.trim()) {
+                this.reviewErrors.comment = "Напишите текст отзыва";
+                return;
+            }
+            if (this.reviewForm.rating < 1 || this.reviewForm.rating > 5) {
+                this.reviewErrors.rating = "Выберите оценку от 1 до 5";
+                return;
+            }
+            this.reviewSubmitting = true;
+            const result = await this.orderStore.createReview(
+                this.authStore.token,
+                this.reviewModalOrder.id,
+                this.reviewForm.rating,
+                this.reviewForm.comment.trim()
+            );
+            this.reviewSubmitting = false;
+            if (result.success) {
+                this.reviewModalOrder.review_exists = true;
+                this.reviewModalOrder.review = {
+                    rating: this.reviewForm.rating,
+                    comment: this.reviewForm.comment,
+                    reply: null,
+                    created_at: new Date().toISOString(),
+                };
+                this.closeReviewModal();
+            } else {
+                this.reviewErrors.general = result.error;
+            }
+        },
     },
 };
 </script>
@@ -186,7 +236,7 @@ export default {
                                     <span
                                         class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
                                     >
-                                        {{ getTypeLabel(order.type) }}
+                                        {{ getTypeLabel(order.service_type || order.type) }}
                                     </span>
                                 </div>
                                 <div>
@@ -229,9 +279,119 @@ export default {
                                     {{ order.problem_description }}
                                 </p>
                             </div>
+                            <div
+                                v-if="order.review"
+                                class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20 space-y-3"
+                            >
+                                <p class="text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200">
+                                    Ваш отзыв
+                                    <span class="font-jost-regular text-gray-500 dark:text-gray-400">
+                                        ({{ order.review.rating }} из 5 · {{ formatDate(order.review.created_at) }})
+                                    </span>
+                                </p>
+                                <p class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300">
+                                    {{ order.review.comment }}
+                                </p>
+                                <div
+                                    v-if="order.review.reply"
+                                    class="pl-3 sm:pl-4 border-l-2 border-[#C3006B]/50 dark:border-[#C20A6C]/50"
+                                >
+                                    <p class="text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-1">
+                                        Ответ компании
+                                    </p>
+                                    <p class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300 whitespace-pre-wrap">
+                                        {{ order.review.reply }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div
+                                v-if="canLeaveReview(order)"
+                                class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
+                            >
+                                <button
+                                    type="button"
+                                    @click="openReviewModal(order)"
+                                    class="text-sm sm:text-base font-jost-medium text-[#C3006B] hover:text-[#A8005A] dark:text-[#C20A6C] dark:hover:text-[#E01A7C] transition-colors"
+                                >
+                                    Написать отзыв
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Модалка: написать отзыв -->
+                <Teleport to="body">
+                    <div
+                        v-if="reviewModalOrder"
+                        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        role="dialog"
+                        aria-modal="true"
+                    >
+                        <div
+                            class="bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-600 rounded-xl max-w-md w-full p-6 sm:p-8"
+                            @click.stop
+                        >
+                            <h3 class="text-lg font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-1">
+                                Отзыв на заказ №{{ reviewModalOrder.order_number }}
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                                Оцените качество услуги и оставьте комментарий.
+                            </p>
+                            <form @submit.prevent="submitReview" class="space-y-4">
+                                <div v-if="reviewErrors.general" class="text-sm text-red-600 dark:text-red-400">
+                                    {{ reviewErrors.general }}
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Оценка
+                                    </label>
+                                    <select
+                                        v-model.number="reviewForm.rating"
+                                        class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#C3006B] focus:border-transparent"
+                                        :class="{ 'border-red-500': reviewErrors.rating }"
+                                    >
+                                        <option v-for="n in 5" :key="n" :value="n">{{ n }} {{ n === 1 ? 'звезда' : n < 5 ? 'звезды' : 'звезд' }}</option>
+                                    </select>
+                                    <p v-if="reviewErrors.rating" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                                        {{ reviewErrors.rating }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Комментарий
+                                    </label>
+                                    <textarea
+                                        v-model="reviewForm.comment"
+                                        rows="4"
+                                        placeholder="Расскажите о качестве услуги..."
+                                        class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#C3006B] focus:border-transparent resize-none"
+                                        :class="{ 'border-red-500': reviewErrors.comment }"
+                                    ></textarea>
+                                    <p v-if="reviewErrors.comment" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                                        {{ reviewErrors.comment }}
+                                    </p>
+                                </div>
+                                <div class="flex gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        @click="closeReviewModal"
+                                        class="flex-1 px-4 py-3 font-jost-medium border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                                    >
+                                        Отмена
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        :disabled="reviewSubmitting"
+                                        class="flex-1 px-4 py-3 font-jost-bold bg-[#C3006B] text-white rounded-lg hover:bg-[#A8005A] disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                    >
+                                        {{ reviewSubmitting ? 'Отправка...' : 'Отправить отзыв' }}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </Teleport>
 
                 <!-- Пагинация -->
                 <div

@@ -12,6 +12,8 @@ export const useAuthStore = defineStore("auth", {
         isLoading: false,
         error: null,
         telegramVerified: false,
+        /** true — вошёл по временному паролю, нужно показать модалку установки постоянного */
+        requiresPasswordSet: false,
     }),
 
     getters: {
@@ -30,6 +32,8 @@ export const useAuthStore = defineStore("auth", {
 
                 this.token = response.data.token;
                 this.user = response.data.client;
+                this.requiresPasswordSet =
+                    response.data.requires_password_set === true;
 
                 localStorage.setItem("auth_token", this.token);
                 toastService.success("Добро пожаловать!");
@@ -77,11 +81,12 @@ export const useAuthStore = defineStore("auth", {
                 }
             } catch (error) {
                 console.error("Logout error:", error);
-            } finally {
+            }             finally {
                 this.token = null;
                 this.user = null;
                 this.error = null;
                 this.telegramVerified = false;
+                this.requiresPasswordSet = false;
                 localStorage.removeItem("auth_token");
             }
         },
@@ -99,6 +104,8 @@ export const useAuthStore = defineStore("auth", {
                 });
 
                 this.user = response.data.client;
+                this.requiresPasswordSet =
+                    this.user?.requires_password_set === true;
 
                 // Инициализируем статус Telegram на основе данных пользователя
                 this.telegramVerified =
@@ -147,6 +154,39 @@ export const useAuthStore = defineStore("auth", {
 
         clearError() {
             this.error = null;
+        },
+
+        async setPassword(newPassword, newPasswordConfirmation) {
+            this.isLoading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(
+                    "/api/client/set-password",
+                    {
+                        new_password: newPassword,
+                        new_password_confirmation: newPasswordConfirmation,
+                    },
+                    { headers: { Authorization: `Bearer ${this.token}` } }
+                );
+
+                this.requiresPasswordSet = false;
+                if (response.data.client) {
+                    this.user = response.data.client;
+                } else {
+                    await this.checkAuth();
+                }
+                toastService.success("Пароль успешно установлен");
+                return { success: true, data: response.data };
+            } catch (error) {
+                this.error =
+                    error.response?.data?.message ||
+                    "Ошибка установки пароля";
+                toastService.error(this.error);
+                return { success: false, error: this.error };
+            } finally {
+                this.isLoading = false;
+            }
         },
 
         setTelegramVerified(verified) {

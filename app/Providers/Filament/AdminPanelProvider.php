@@ -7,9 +7,11 @@ use App\Filament\Resources\BonusSettingsResource;
 use App\Filament\Resources\ClientResource;
 use App\Filament\Resources\CompanyResource;
 use App\Filament\Resources\EquipmentResource;
+use App\Filament\Resources\LegalDocumentResource;
 use App\Filament\Resources\MasterResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PriceItemResource;
+use App\Filament\Resources\ReviewResource;
 use App\Filament\Resources\RevenuePlanResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\WarehouseCategoryResource;
@@ -95,9 +97,11 @@ class AdminPanelProvider extends PanelProvider
                 OrderResource::class,
                 // Клиенты
                 ClientResource::class,
+                ReviewResource::class,
                 // Организация
                 CompanyResource::class,
                 BranchResource::class,
+                LegalDocumentResource::class,
                 UserResource::class,
                 MasterResource::class,
                 // Справочники

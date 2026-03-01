@@ -21,14 +21,26 @@ class AuthController extends Controller
             return response()->json(['message' => 'Client not found'], 404);
         }
 
-        if (! Hash::check($request->password, $client->password)) {
+        $passwordValid = $client->password && Hash::check($request->password, $client->password);
+        $temporaryValid = $client->temporary_password
+            && ! $client->temporary_password_used
+            && Hash::check($request->password, $client->temporary_password);
+
+        if (! $passwordValid && ! $temporaryValid) {
             return response()->json(['message' => 'Invalid password'], 401);
         }
 
-        // Создаем токен через Sanctum с уникальным именем для клиента
         $token = $client->createToken('client_auth_token')->plainTextToken;
+        $response = [
+            'message' => 'Login successful',
+            'token' => $token,
+            'client' => $client,
+        ];
+        if ($temporaryValid && ! $passwordValid) {
+            $response['requires_password_set'] = true;
+        }
 
-        return response()->json(['message' => 'Login successful', 'token' => $token, 'client' => $client]);
+        return response()->json($response);
     }
 
     public function register(Request $request)

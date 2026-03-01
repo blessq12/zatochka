@@ -149,7 +149,7 @@ export default {
                                     <span
                                         class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
                                     >
-                                        {{ getTypeLabel(order.type) }}
+                                        {{ getTypeLabel(order.service_type || order.type) }}
                                     </span>
                                 </div>
                                 <div>

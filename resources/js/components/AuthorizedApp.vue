@@ -6,6 +6,7 @@ import ActiveOrdersSection from "./Dashboard/ActiveOrdersSection.vue";
 import OrdersHistorySection from "./Dashboard/OrdersHistorySection.vue";
 import ProfileSection from "./Dashboard/ProfileSection.vue";
 import TelegramSection from "./Dashboard/TelegramSection.vue";
+import SetPasswordModal from "./ClientApp/SetPasswordModal.vue";
 
 export default {
     name: "AuthorizedApp",
@@ -14,6 +15,7 @@ export default {
         ActiveOrdersSection,
         OrdersHistorySection,
         TelegramSection,
+        SetPasswordModal,
     },
     data() {
         return {
@@ -80,6 +82,8 @@ export default {
 
             <!-- Личный кабинет -->
             <div v-else>
+                <!-- Блокирующая модалка: установка постоянного пароля после входа по временному -->
+                <SetPasswordModal v-if="authStore.requiresPasswordSet" />
                 <!-- Заголовок -->
                 <div class="mb-8 sm:mb-12">
                     <div class="flex items-center justify-between mb-4">

@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         // Запускаем сидеры
         $this->call([
             CompanyAndBranchSeeder::class,
+            LegalDocumentSeeder::class,
             PriceItemSeeder::class,
             WarehouseSeeder::class,
         ]);

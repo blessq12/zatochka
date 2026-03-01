@@ -150,6 +150,14 @@ class Order extends Model implements HasMedia
     }
 
     /**
+     * Отзыв по заказу (один на заказ)
+     */
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
+
+    /**
      * Инструменты для заточки (только для заказов типа sharpening)
      */
     public function tools()
