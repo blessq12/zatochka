@@ -24,14 +24,19 @@ class Client extends Model
         'first_contact_channel',
         'first_contact_notes',
         'marketing_notes',
+        'manager_comments',
         'password',
         'remember_token',
+        'temporary_password',
+        'temporary_password_used',
         'is_deleted',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'temporary_password',
+        'manager_comments',
     ];
 
     protected $casts = [
@@ -39,6 +44,8 @@ class Client extends Model
         'telegram_verified_at' => 'datetime',
         'is_deleted' => 'boolean',
         'bonus_points' => 'integer',
+        'temporary_password_used' => 'boolean',
+        'manager_comments' => 'array',
     ];
 
     // Accessor для форматирования даты рождения
@@ -77,6 +84,11 @@ class Client extends Model
     public function bonusTransactions()
     {
         return $this->hasMany(BonusTransaction::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 
     /**

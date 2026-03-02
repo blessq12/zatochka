@@ -48,6 +48,7 @@ class ClientResource extends Resource
                             ->maxLength(255)
                             ->unique('clients', 'phone', ignoreRecord: true)
                             ->placeholder('+7 (999) 123-45-67')
+                            ->mask('+7 (***) ***-**-**')
                             ->helperText('Формат: +7 (###) ###-##-##'),
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
@@ -124,6 +125,56 @@ class ClientResource extends Resource
                             ->placeholder('Город, улица, дом, квартира')
                             ->helperText('Полный адрес для доставки заказов'),
                     ])
+                    ->collapsible(),
+
+                Forms\Components\Section::make('Комментарии менеджера')
+                    ->schema([
+                        Forms\Components\Repeater::make('manager_comments')
+                            ->label('')
+                            ->schema([
+                                Forms\Components\TextInput::make('author_name')
+                                    ->label('Автор')
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->visible(fn ($state) => filled($state)),
+                                Forms\Components\DateTimePicker::make('created_at')
+                                    ->label('Дата')
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->displayFormat('d.m.Y H:i')
+                                    ->visible(fn ($state) => filled($state)),
+                                Forms\Components\Textarea::make('text')
+                                    ->label('Текст комментария')
+                                    ->required()
+                                    ->rows(3)
+                                    ->columnSpanFull(),
+                            ])
+                            ->default([])
+                            ->addActionLabel('Добавить комментарий')
+                            ->collapsible()
+                            ->itemLabel(fn (array $state) => ! empty($state['created_at'])
+                                ? \Carbon\Carbon::parse($state['created_at'])->format('d.m.Y H:i') . ' — ' . \Illuminate\Support\Str::limit($state['text'] ?? '', 50)
+                                : 'Новый комментарий'),
+                    ])
+                    ->collapsible(),
+
+                Forms\Components\Section::make('Вход в личный кабинет')
+                    ->schema([
+                        Forms\Components\TextInput::make('new_temporary_password')
+                            ->label('Временный пароль')
+                            ->password()
+                            ->nullable()
+                            ->maxLength(255)
+                            ->minLength(6)
+                            ->rules(['nullable', 'min:6'])
+                            ->helperText('Минимум 6 символов. Клиент войдёт по этому паролю на сайте и установит постоянный. Пусто — не менять.')
+                            ->revealable(),
+                        Forms\Components\Placeholder::make('temporary_password_used_status')
+                            ->label('Временный пароль использован')
+                            ->content(fn ($record) => $record && $record->temporary_password_used ? 'Да' : 'Нет')
+                            ->visible(fn ($record) => $record !== null),
+                    ])
+                    ->columns(2)
                     ->collapsible(),
             ]);
     }
@@ -245,6 +296,8 @@ class ClientResource extends Resource
     public static function getRelations(): array
     {
         return [
+            RelationManagers\OrdersRelationManager::class,
+            RelationManagers\ReviewsRelationManager::class,
             RelationManagers\BonusTransactionsRelationManager::class,
         ];
     }
@@ -339,6 +392,32 @@ class ClientResource extends Resource
                             ->placeholder('—'),
                     ])
                     ->columns(3),
+
+                Infolists\Components\Section::make('Комментарии менеджера')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('manager_comments')
+                            ->label('')
+                            ->getStateUsing(function ($record) {
+                                $comments = $record->manager_comments ?? [];
+                                if (empty($comments)) {
+                                    return null;
+                                }
+                                $lines = collect($comments)->map(function ($c) {
+                                    $date = isset($c['created_at'])
+                                        ? \Carbon\Carbon::parse($c['created_at'])->format('d.m.Y H:i')
+                                        : '';
+                                    $author = $c['author_name'] ?? '—';
+                                    $text = $c['text'] ?? '';
+                                    return e("{$author} ({$date}): {$text}");
+                                })->all();
+                                return implode('<br><br>', $lines);
+                            })
+                            ->html()
+                            ->placeholder('Нет комментариев')
+                            ->columnSpanFull(),
+                    ])
+                    ->visible(fn ($record) => ! empty($record->manager_comments))
+                    ->collapsible(),
 
             ]);
     }

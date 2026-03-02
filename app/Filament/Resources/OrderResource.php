@@ -84,6 +84,14 @@ class OrderResource extends Resource
                                     ->searchable()->preload()->required()
                                     ->createOptionForm($clientCreateForm),
 
+                                Forms\Components\Select::make('parent_order_id')
+                                    ->label('Исходный заказ (для возврата)')
+                                    ->relationship('parentOrder', 'order_number')
+                                    ->searchable()
+                                    ->preload()
+                                    ->nullable()
+                                    ->helperText('Укажите исходный заказ, если это возврат.'),
+
                                 Forms\Components\Select::make('branch_id')
                                     ->label('Филиал')
                                     ->relationship('branch', 'name')
@@ -209,6 +217,7 @@ class OrderResource extends Resource
                     ->selectablePlaceholder(false)
                     ->searchable()
                     ->sortable()
+                    ->disabled(fn (Order $record): bool => $record->isIssued())
                     ->afterStateUpdated(function ($record, $state) {
                         \Filament\Notifications\Notification::make()
                             ->title('Статус обновлен')
@@ -351,6 +360,11 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')
                     ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('parentOrder.order_number')
+                    ->label('Исходный заказ')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 

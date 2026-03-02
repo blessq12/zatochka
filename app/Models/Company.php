@@ -36,6 +36,11 @@ class Company extends Model
         return $this->hasMany(Branch::class);
     }
 
+    public function legalDocuments()
+    {
+        return $this->hasMany(LegalDocument::class);
+    }
+
     public function mainBranch()
     {
         return $this->branches()->first();

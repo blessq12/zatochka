@@ -28,6 +28,13 @@ class EditClient extends EditRecord
             $data['password'] = Hash::make($data['password']);
         }
 
+        // Временный пароль: при вводе хешируем и сбрасываем флаг «использован»
+        if (\Illuminate\Support\Str::length($data['new_temporary_password'] ?? '') > 0) {
+            $data['temporary_password'] = Hash::make($data['new_temporary_password']);
+            $data['temporary_password_used'] = false;
+        }
+        unset($data['new_temporary_password']);
+
         // Убираем @ из начала telegram username
         if (isset($data['telegram']) && is_string($data['telegram'])) {
             $data['telegram'] = ltrim($data['telegram'], '@');
@@ -41,6 +48,23 @@ class EditClient extends EditRecord
         if (isset($data['email']) && empty($data['email'])) {
             $data['email'] = null;
         }
+
+        // Комментарии менеджера: только добавляем новые к существующим (лог, без перезаписи)
+        $existing = $this->record->manager_comments ?? [];
+        $formComments = $data['manager_comments'] ?? [];
+        $newItems = [];
+        foreach ($formComments as $item) {
+            if (is_array($item) && empty($item['created_at']) && ! empty(trim($item['text'] ?? ''))) {
+                $user = auth()->user();
+                $newItems[] = [
+                    'user_id' => $user?->id,
+                    'author_name' => $user?->name ?? 'Менеджер',
+                    'created_at' => now()->format('Y-m-d H:i:s'),
+                    'text' => trim($item['text']),
+                ];
+            }
+        }
+        $data['manager_comments'] = array_merge($existing, $newItems);
 
         return $data;
     }

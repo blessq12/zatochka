@@ -43,6 +43,11 @@ Route::middleware('auth:client')->group(function () {
         Route::get('/client/self', 'clientSelf');
         Route::get('/client/orders-get', 'clientOrdersGet');
         Route::post('/client/update', 'clientUpdate');
+        Route::post('/client/set-password', 'setPassword');
+    });
+    Route::controller(\App\Http\Controllers\Api\ReviewController::class)->group(function () {
+        Route::post('/review/create', 'create');
+        Route::get('/review/order/{orderId}', 'getByOrder');
     });
 });
 

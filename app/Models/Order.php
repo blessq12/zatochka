@@ -72,6 +72,7 @@ class Order extends Model implements HasMedia
         'manager_id',
         'master_id',
         'order_number',
+        'parent_order_id',
         'service_type',
         'status',
         'urgency',
@@ -108,6 +109,16 @@ class Order extends Model implements HasMedia
     public function client()
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function parentOrder()
+    {
+        return $this->belongsTo(Order::class, 'parent_order_id');
+    }
+
+    public function childOrders()
+    {
+        return $this->hasMany(Order::class, 'parent_order_id');
     }
 
     public function branch()
@@ -147,6 +158,14 @@ class Order extends Model implements HasMedia
     public function orderMaterials()
     {
         return $this->hasMany(OrderWorkMaterial::class, 'order_id');
+    }
+
+    /**
+     * Отзыв по заказу (один на заказ)
+     */
+    public function review()
+    {
+        return $this->hasOne(Review::class);
     }
 
     /**
