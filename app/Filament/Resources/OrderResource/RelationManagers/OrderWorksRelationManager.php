@@ -88,6 +88,8 @@ class OrderWorksRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        $isLocked = $this->getOwnerRecord()->isIssued();
+
         return $table
             ->recordTitleAttribute('description')
             ->columns([
@@ -128,22 +130,37 @@ class OrderWorksRelationManager extends RelationManager
                     ->query(fn(Builder $query): Builder => $query->where('is_deleted', false))
                     ->default(),
             ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
-                Tables\Actions\EditAction::make()->iconButton()->tooltip('Редактировать'),
-                Tables\Actions\DeleteAction::make()
-                    ->iconButton()
-                    ->tooltip('Удалить')
-                    ->requiresConfirmation(),
-            ], position: ActionsPosition::BeforeColumns)
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ])
+            ->headerActions(
+                $isLocked
+                    ? []
+                    : [
+                        Tables\Actions\CreateAction::make(),
+                    ]
+            )
+            ->actions(
+                $isLocked
+                    ? [
+                        Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
+                    ]
+                    : [
+                        Tables\Actions\ViewAction::make()->iconButton()->tooltip('Просмотр'),
+                        Tables\Actions\EditAction::make()->iconButton()->tooltip('Редактировать'),
+                        Tables\Actions\DeleteAction::make()
+                            ->iconButton()
+                            ->tooltip('Удалить')
+                            ->requiresConfirmation(),
+                    ],
+                position: ActionsPosition::BeforeColumns
+            )
+            ->bulkActions(
+                $isLocked
+                    ? []
+                    : [
+                        Tables\Actions\BulkActionGroup::make([
+                            Tables\Actions\DeleteBulkAction::make(),
+                        ]),
+                    ]
+            )
             ->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(fn(Builder $query) => $query->where('is_deleted', false));
     }

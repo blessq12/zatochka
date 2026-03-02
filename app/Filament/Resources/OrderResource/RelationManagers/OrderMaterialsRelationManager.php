@@ -88,7 +88,9 @@ class OrderMaterialsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        $orderId = $this->getOwnerRecord()->id;
+        $order = $this->getOwnerRecord();
+        $orderId = $order->id;
+        $isLocked = $order->isIssued();
 
         return $table
             ->columns([
@@ -163,41 +165,54 @@ class OrderMaterialsRelationManager extends RelationManager
                     ->limit(50)
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['order_id'] = $this->getOwnerRecord()->id;
-                        $data['work_id'] = null;
-                        if (isset($data['warehouse_item_id']) && $item = WarehouseItem::with('category')->find($data['warehouse_item_id'])) {
-                            $data['name'] = $item->name;
-                            $data['article'] = $item->article;
-                            $data['category_name'] = $item->category?->name;
-                            $data['unit'] = $item->unit ?? 'шт';
-                            $data['price'] = $data['price'] ?? $item->price ?? 0;
-                        }
-                        return $data;
-                    }),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->iconButton()
-                    ->tooltip('Редактировать')
-                    ->mutateFormDataUsing(function (array $data, OrderWorkMaterial $record): array {
-                        return [
-                            'price' => $data['price'] ?? $record->price,
-                            'quantity' => $data['quantity'] ?? $record->quantity,
-                        ];
-                    }),
-                Tables\Actions\DeleteAction::make()
-                    ->iconButton()
-                    ->tooltip('Удалить')
-                    ->requiresConfirmation(),
-            ], position: ActionsPosition::BeforeColumns)
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ])
+            ->headerActions(
+                $isLocked
+                    ? []
+                    : [
+                        Tables\Actions\CreateAction::make()
+                            ->mutateFormDataUsing(function (array $data): array {
+                                $data['order_id'] = $this->getOwnerRecord()->id;
+                                $data['work_id'] = null;
+                                if (isset($data['warehouse_item_id']) && $item = WarehouseItem::with('category')->find($data['warehouse_item_id'])) {
+                                    $data['name'] = $item->name;
+                                    $data['article'] = $item->article;
+                                    $data['category_name'] = $item->category?->name;
+                                    $data['unit'] = $item->unit ?? 'шт';
+                                    $data['price'] = $data['price'] ?? $item->price ?? 0;
+                                }
+                                return $data;
+                            }),
+                    ]
+            )
+            ->actions(
+                $isLocked
+                    ? []
+                    : [
+                        Tables\Actions\EditAction::make()
+                            ->iconButton()
+                            ->tooltip('Редактировать')
+                            ->mutateFormDataUsing(function (array $data, OrderWorkMaterial $record): array {
+                                return [
+                                    'price' => $data['price'] ?? $record->price,
+                                    'quantity' => $data['quantity'] ?? $record->quantity,
+                                ];
+                            }),
+                        Tables\Actions\DeleteAction::make()
+                            ->iconButton()
+                            ->tooltip('Удалить')
+                            ->requiresConfirmation(),
+                    ],
+                position: ActionsPosition::BeforeColumns
+            )
+            ->bulkActions(
+                $isLocked
+                    ? []
+                    : [
+                        Tables\Actions\BulkActionGroup::make([
+                            Tables\Actions\DeleteBulkAction::make(),
+                        ]),
+                    ]
+            )
             ->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(function (Builder $query) use ($orderId) {
                 // Получаем все материалы заказа независимо от работ

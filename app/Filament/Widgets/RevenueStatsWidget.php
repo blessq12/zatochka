@@ -25,8 +25,9 @@ class RevenueStatsWidget extends BaseWidget
         $weekStart = $now->copy()->startOfWeek();
         $monthStart = $now->copy()->startOfMonth();
 
+        // Заказ считается закрытым только в статусе "выдан"
         $baseQuery = Order::where('is_deleted', false)
-            ->where('status', Order::STATUS_READY);
+            ->where('status', Order::STATUS_ISSUED);
 
         $todayRevenue = (clone $baseQuery)
             ->where('updated_at', '>=', $todayStart)

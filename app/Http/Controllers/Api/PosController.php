@@ -441,6 +441,12 @@ class PosController extends Controller
             ], 404);
         }
 
+        if ($order->isIssued()) {
+            return response()->json([
+                'message' => 'Нельзя редактировать выданный заказ',
+            ], 422);
+        }
+
         $request->validate([
             'internal_notes' => 'nullable|string|max:5000',
         ]);
@@ -490,6 +496,13 @@ class PosController extends Controller
 
         $oldStatus = $order->status;
         $newStatus = $request->status;
+
+        // Запрещаем менять статус уже выданного заказа
+        if ($order->isIssued() && $newStatus !== Order::STATUS_ISSUED) {
+            return response()->json([
+                'message' => 'Нельзя менять статус выданного заказа',
+            ], 422);
+        }
 
         // Обработка списания/возврата товаров при изменении статуса заказа
         $works = $order->orderWorks()->where('is_deleted', false)->get();
@@ -602,6 +615,12 @@ class PosController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
+        if ($order->isIssued()) {
+            return response()->json([
+                'message' => 'Нельзя добавлять работы в выданный заказ',
+            ], 422);
+        }
+
         $works = \App\Models\OrderWork::where('order_id', $order->id)
             ->where('is_deleted', 0)
             ->with('materials')
@@ -709,6 +728,12 @@ class PosController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
+        if ($order->isIssued()) {
+            return response()->json([
+                'message' => 'Нельзя редактировать работы выданного заказа',
+            ], 422);
+        }
+
         $work = \App\Models\OrderWork::where('order_id', $order->id)
             ->where('id', $workId)
             ->where('is_deleted', 0)
@@ -752,6 +777,12 @@ class PosController extends Controller
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        if ($order->isIssued()) {
+            return response()->json([
+                'message' => 'Нельзя удалять работы выданного заказа',
+            ], 422);
         }
 
         $work = \App\Models\OrderWork::where('order_id', $order->id)
@@ -822,6 +853,12 @@ class PosController extends Controller
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        if ($order->isIssued()) {
+            return response()->json([
+                'message' => 'Нельзя добавлять материалы в выданный заказ',
+            ], 422);
         }
 
         $request->validate([
@@ -918,6 +955,12 @@ class PosController extends Controller
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        if ($order->isIssued()) {
+            return response()->json([
+                'message' => 'Нельзя удалять материалы выданного заказа',
+            ], 422);
         }
 
         $material = $order->orderMaterials()
