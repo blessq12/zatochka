@@ -5,57 +5,39 @@
     <div class="document-part client-part">
         <div class="document-part-header">ЭКЗЕМПЛЯР ДЛЯ КЛИЕНТА</div>
 
-        <div class="company-header"
-            style="margin-bottom: 2mm; padding-bottom: 2mm; border-bottom: 0.5px solid #000; width: 100%; max-width: 100%; box-sizing: border-box;">
-            <div style="overflow: hidden; width: 100%;">
-                <div style="float: left; width: 60%; max-width: 60%; box-sizing: border-box;">
-                    @php
-                        $logoPath = public_path('images/logo.png');
-                        $logoExists = file_exists($logoPath);
-                        if (!$logoExists) {
-                            $logoPath = public_path('images/logo.jpg');
-                            $logoExists = file_exists($logoPath);
-                        }
-                        if (!$logoExists) {
-                            $logoPath = base_path('resources/js/assets/logo.svg');
-                            $logoExists = file_exists($logoPath);
-                        }
-                    @endphp
-                    @if ($logoExists)
-                        <img src="{{ $logoPath }}" alt="Logo"
-                            style="max-height: 12mm; max-width: 35mm; margin-bottom: 0.5mm; display: block;">
-                    @endif
-                    @if ($data->companyName)
-                        <div style="font-size: 9px; font-weight: bold; margin-bottom: 0.5mm; letter-spacing: 0.2px;">
-                            {{ $data->companyName }}</div>
-                    @endif
-                    @if ($data->companyLegalName)
-                        <div style="font-size: 8px; margin-bottom: 0.5mm; line-height: 1.3; color: #333;">
-                            {{ $data->companyLegalName }}</div>
-                    @endif
-                    <div style="font-size: 8px; line-height: 1.4;">
-                        @if ($data->companyInn)
-                            <div style="margin-bottom: 0.2mm;">ИНН: {{ $data->companyInn }}</div>
-                        @endif
-                        @if ($data->companyKpp)
-                            <div style="margin-bottom: 0.2mm;">КПП: {{ $data->companyKpp }}</div>
-                        @endif
-                        @if ($data->companyOgrn)
-                            <div style="margin-bottom: 0.2mm;">ОГРН: {{ $data->companyOgrn }}</div>
-                        @endif
-                    </div>
-                </div>
-                <div
-                    style="float: right; width: 38%; max-width: 38%; text-align: right; font-size: 8px; box-sizing: border-box;">
-                    @if ($data->companyAddress)
-                        <div style="margin-bottom: 0.2mm; line-height: 1.1;">{{ $data->companyAddress }}</div>
-                    @endif
-                    @if ($data->companyPhone)
-                        <div>Тел.: {{ $data->companyPhone }}</div>
-                    @endif
-                </div>
-                <div style="clear: both;"></div>
+        @php
+            $logoPath = public_path('images/logo.png');
+            $logoExists = file_exists($logoPath);
+            if (!$logoExists) {
+                $logoPath = public_path('images/logo.jpg');
+                $logoExists = file_exists($logoPath);
+            }
+            if (!$logoExists) {
+                $logoPath = base_path('resources/js/assets/logo.svg');
+                $logoExists = file_exists($logoPath);
+            }
+        @endphp
+        @if ($logoExists)
+            <div style="margin-bottom: 2mm;">
+                <img src="{{ $logoPath }}" alt="Logo"
+                    style="max-height: 12mm; max-width: 35mm; display: block;">
             </div>
+        @endif
+
+        <div class="company-header"
+            style="margin-bottom: 2mm; padding-bottom: 2mm; border-bottom: 0.5px solid #000; font-size: 8px; line-height: 1.3;">
+            @php
+                $companyParts = array_filter([
+                    $data->companyName,
+                    $data->companyLegalName,
+                    $data->companyInn ? 'ИНН ' . $data->companyInn : null,
+                    $data->companyKpp ? 'КПП ' . $data->companyKpp : null,
+                    $data->companyOgrn ? 'ОГРН ' . $data->companyOgrn : null,
+                    $data->companyAddress,
+                    $data->companyPhone ? 'Тел. ' . $data->companyPhone : null,
+                ]);
+            @endphp
+            {{ implode(', ', $companyParts) }}
         </div>
 
         <div class="section">
