@@ -24,6 +24,10 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'telegram_username',
+        'telegram_verified_at',
+        'max_username',
+        'max_verified_at',
         'is_deleted',
     ];
 
@@ -34,6 +38,8 @@ class User extends Authenticatable implements FilamentUser
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'telegram_verified_at' => 'datetime',
+        'max_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_deleted' => 'boolean',
     ];

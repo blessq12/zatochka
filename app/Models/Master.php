@@ -19,8 +19,10 @@ class Master extends Authenticatable
         'email',
         'phone',
         'telegram_username',
-        'notifications_enabled',
         'telegram_verified_at',
+        'max_username',
+        'max_verified_at',
+        'notifications_enabled',
         'password',
         'is_deleted',
     ];
@@ -33,6 +35,7 @@ class Master extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'telegram_verified_at' => 'datetime',
+        'max_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_deleted' => 'boolean',
         'notifications_enabled' => 'boolean',

@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Contracts\MessengerServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Order;
+use App\Models\TelegramChat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +14,11 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private MessengerServiceInterface $messenger
+    ) {
+    }
+
     public function createOrder(Request $request)
     {
         // Проверяем, авторизован ли клиент
@@ -155,21 +163,31 @@ class OrderController extends Controller
     }
 
     /**
-     * Отправляет уведомление о новом заказе в Telegram
+     * Отправляет уведомление о новом заказе в мессенджер (Telegram)
      */
-    private function sendOrderNotification($client, $order)
+    private function sendOrderNotification(Client $client, Order $order): void
     {
         try {
-            // TODO: Реализовать отправку уведомлений через Telegram Bot API
-            // Пока просто логируем
-            Log::info('Order notification for client', [
-                'client_id' => $client->id,
-                'order_id' => $order->id,
-                'telegram' => $client->telegram,
-            ]);
+            $telegramChat = TelegramChat::byUsername($client->telegram)->active()->first();
+
+            if (!$telegramChat) {
+                Log::warning('Order notification: chat not found for client', [
+                    'client_id' => $client->id,
+                    'order_id' => $order->id,
+                ]);
+                return;
+            }
+
+            $typeLabel = Order::getAvailableTypes()[$order->service_type] ?? $order->service_type;
+            $message = "📦 <b>Новый заказ</b>\n\n";
+            $message .= "Номер: {$order->order_number}\n";
+            $message .= "Тип: {$typeLabel}\n";
+            $message .= "Статус: Новый\n\n";
+            $message .= "Следите за статусом заказа в личном кабинете или через бота.";
+
+            $this->messenger->send((string) $telegramChat->chat_id, $message);
         } catch (\Exception $e) {
-            // Логируем ошибку, но не прерываем выполнение
-            Log::error('Telegram notification failed: ' . $e->getMessage());
+            Log::error('Order notification failed: ' . $e->getMessage());
         }
     }
 }
