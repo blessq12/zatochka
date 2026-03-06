@@ -42,4 +42,13 @@ return [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
     ],
 
+    'max' => [
+        'bot_token' => env('MAX_BOT_TOKEN'),
+        'webhook_secret' => env('MAX_WEBHOOK_SECRET'),
+    ],
+
+    'messenger' => [
+        'default' => env('MESSENGER_DEFAULT', 'telegram'),
+    ],
+
 ];

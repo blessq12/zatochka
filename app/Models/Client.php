@@ -17,6 +17,8 @@ class Client extends Model
         'email',
         'telegram',
         'telegram_verified_at',
+        'max_username',
+        'max_verified_at',
         'birth_date',
         'delivery_address',
         'bonus_points',
@@ -42,6 +44,7 @@ class Client extends Model
     protected $casts = [
         'birth_date' => 'date',
         'telegram_verified_at' => 'datetime',
+        'max_verified_at' => 'datetime',
         'is_deleted' => 'boolean',
         'bonus_points' => 'integer',
         'temporary_password_used' => 'boolean',
@@ -74,6 +77,11 @@ class Client extends Model
     public function telegramChat()
     {
         return $this->hasOne(TelegramChat::class);
+    }
+
+    public function maxChat()
+    {
+        return $this->hasOne(MaxChat::class);
     }
 
     public function bonusAccount()

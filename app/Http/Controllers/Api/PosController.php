@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Contracts\MessengerServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Models\Master;
 use App\Models\Order;
@@ -13,6 +14,11 @@ use Illuminate\Support\Facades\Validator;
 
 class PosController extends Controller
 {
+    public function __construct(
+        private MessengerServiceInterface $messenger
+    ) {
+    }
+
     /**
      * Авторизация мастера через токены
      */
@@ -1035,10 +1041,8 @@ class PosController extends Controller
             ], 404);
         }
 
-        // Отправляем код в Telegram
-        $botToken = config('services.telegram.bot_token');
         $message = "🔐 Код верификации: <b>{$code}</b>\n\nВведите этот код в панели мастера или отправьте мне для подтверждения.";
-        $this->sendTelegramMessage($botToken, $telegramChat->chat_id, $message);
+        $this->messenger->send((string) $telegramChat->chat_id, $message);
 
         return response()->json([
             'success' => true,
@@ -1105,10 +1109,8 @@ class PosController extends Controller
         // Удаляем код из кеша
         Cache::forget($cacheKey);
 
-        // Отправляем подтверждение в Telegram
-        $botToken = config('services.telegram.bot_token');
         $message = "✅ Telegram успешно подтвержден!\n\nТеперь вы будете получать уведомления о заказах автоматически.";
-        $this->sendTelegramMessage($botToken, $telegramChat->chat_id, $message);
+        $this->messenger->send((string) $telegramChat->chat_id, $message);
 
         return response()->json([
             'success' => true,
@@ -1117,46 +1119,5 @@ class PosController extends Controller
             'verified_at' => $master->telegram_verified_at->toIso8601String(),
             'user' => $master->fresh(),
         ]);
-    }
-
-    /**
-     * Отправить сообщение в Telegram
-     */
-    private function sendTelegramMessage(string $botToken, int $chatId, string $message, bool $withKeyboard = false): void
-    {
-        $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
-
-        $data = [
-            'chat_id' => $chatId,
-            'text' => $message,
-            'parse_mode' => 'HTML',
-        ];
-
-        if ($withKeyboard) {
-            $keyboard = [
-                'inline_keyboard' => [
-                    [
-                        ['text' => '👤 Аккаунт', 'callback_data' => 'account'],
-                        ['text' => '📋 Активные заказы', 'callback_data' => 'active_orders'],
-                    ],
-                    [
-                        ['text' => '📚 История заказов', 'callback_data' => 'history_orders'],
-                    ],
-                ],
-            ];
-            $data['reply_markup'] = json_encode($keyboard);
-        }
-
-        try {
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_exec($ch);
-            curl_close($ch);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Telegram send message error: ' . $e->getMessage());
-        }
     }
 }

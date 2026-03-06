@@ -28,6 +28,10 @@ Route::controller(\App\Http\Controllers\Api\TelegramController::class)->group(fu
     Route::post('/telegram/webhook', 'webhook');
 });
 
+Route::controller(\App\Http\Controllers\Api\MaxController::class)->group(function () {
+    Route::post('/max/webhook', 'webhook');
+});
+
 Route::middleware('auth:client')->group(function () {
     Route::controller(\App\Http\Controllers\Api\TelegramController::class)->group(function () {
         Route::post('/telegram/send-verification-code', 'sendVerificationCode');
