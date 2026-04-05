@@ -111,6 +111,13 @@ export default {
                 Склад
             </router-link>
             <router-link
+                :to="{ name: 'pos.equipment.search' }"
+                class="nav-link"
+                :class="{ active: isActiveSection('equipment') }"
+            >
+                Оборудование
+            </router-link>
+            <router-link
                 :to="{ name: 'pos.settings.profile' }"
                 class="nav-link"
                 :class="{ active: isActiveSection('settings') }"

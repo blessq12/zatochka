@@ -32,64 +32,63 @@
 
             <!-- Основная информация -->
             <div class="order-info">
-                <!-- Тип услуги и филиал -->
+                <!-- Тип заказа: платный / гарантийный -->
                 <div class="info-block">
                     <div class="info-item">
                         <div class="info-content">
-                            <span class="info-label">Тип услуги</span>
+                            <span class="info-label">Тип заказа</span>
                             <span class="info-value">{{
-                                getTypeLabel(order.service_type)
+                                formatPosOrderPaymentType(order)
                             }}</span>
-                        </div>
-                    </div>
-                    <div v-if="order.branch?.name" class="info-item">
-                        <div class="info-content">
-                            <span class="info-label">Филиал</span>
-                            <span class="info-value">{{
-                                order.branch.name
-                            }}</span>
-                        </div>
-                    </div>
-                    <div v-if="order.order_payment_type" class="info-item">
-                        <div class="info-content">
-                            <span class="info-label">Тип оплаты</span>
-                            <span class="info-value">
-                                {{
-                                    order.order_payment_type === "paid"
-                                        ? "Платный"
-                                        : "Гарантийный"
-                                }}
-                            </span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Оборудование (если есть) -->
                 <div
-                    v-if="order.equipment?.name || order.equipment_name"
+                    v-if="
+                        order.equipment?.name ||
+                        order.equipment_name ||
+                        equipmentBrandModelLine
+                    "
                     class="info-block"
                 >
                     <div class="info-item">
                         <div class="info-content">
-                            <span class="info-label">Оборудование</span>
-                            <span class="info-value">
-                                {{
-                                    order.equipment?.name ||
-                                    order.equipment_name
-                                }}
-                            </span>
+                            <span class="info-label">Оборудование (ремонт)</span>
                             <span
-                                v-if="
-                                    order.equipment?.serial_numbers_display ||
-                                    order.equipment_serial_number
+                                v-if="equipmentBrandModelLine"
+                                class="info-value"
+                                >{{ equipmentBrandModelLine }}</span
+                            >
+                            <span class="info-value">{{
+                                order.equipment?.name || order.equipment_name
+                            }}</span>
+                            <ul
+                                v-if="equipmentSerialRows.length > 0"
+                                class="equipment-serial-list"
+                            >
+                                <li
+                                    v-for="(row, idx) in equipmentSerialRows"
+                                    :key="idx"
+                                    class="info-subvalue equipment-serial-row"
+                                >
+                                    <template v-if="row.name && row.serial_number">
+                                        {{ row.name }}: {{ row.serial_number }}
+                                    </template>
+                                    <template v-else-if="row.serial_number">{{
+                                        row.serial_number
+                                    }}</template>
+                                    <template v-else>{{ row.name }}</template>
+                                </li>
+                            </ul>
+                            <span
+                                v-else-if="
+                                    order.equipment?.serial_numbers_display
                                 "
                                 class="info-subvalue"
                             >
-                                С/Н:
-                                {{
-                                    order.equipment?.serial_numbers_display ||
-                                    order.equipment_serial_number
-                                }}
+                                С/Н: {{ order.equipment.serial_numbers_display }}
                             </span>
                         </div>
                     </div>
@@ -149,6 +148,11 @@
 
 <script>
 import { computed } from "vue";
+import {
+    formatPosOrderPaymentType,
+    getEquipmentBrandModelLine,
+    getEquipmentSerialRows,
+} from "../../composables/usePosOrderDisplay.js";
 import { orderService } from "../../services/pos/OrderService.js";
 
 export default {
@@ -184,6 +188,14 @@ export default {
         const hasActions = computed(() => {
             return props.primaryAction || !!props.$slots.actions;
         });
+
+        const equipmentSerialRows = computed(() =>
+            getEquipmentSerialRows(props.order?.equipment)
+        );
+
+        const equipmentBrandModelLine = computed(() =>
+            getEquipmentBrandModelLine(props.order?.equipment)
+        );
 
         const formatDate = (dateString) => {
             if (!dateString) return "—";
@@ -228,11 +240,13 @@ export default {
 
         return {
             hasActions,
+            equipmentSerialRows,
+            equipmentBrandModelLine,
+            formatPosOrderPaymentType,
             formatDate,
             formatDateShort,
             truncateText,
             getStatusLabel: orderService.getStatusLabel,
-            getTypeLabel: orderService.getTypeLabel,
             getStatusClass,
         };
     },
@@ -419,6 +433,16 @@ export default {
 .info-subvalue {
     font-size: 0.75rem;
     color: #9ca3af;
+    margin-top: 0.125rem;
+}
+
+.equipment-serial-list {
+    margin: 0.25rem 0 0;
+    padding-left: 1.1rem;
+    list-style: disc;
+}
+
+.equipment-serial-row {
     margin-top: 0.125rem;
 }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\MessengerServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Models\Equipment;
 use App\Models\Master;
 use App\Models\Order;
 use App\Models\TelegramChat;
@@ -180,7 +181,7 @@ class PosController extends Controller
 
         $status = $request->get('status'); // new, active, waiting_parts, completed
 
-        $query = Order::with(['client', 'branch', 'master'])
+        $query = Order::with(['client', 'branch', 'master', 'equipment', 'tools'])
             ->where('is_deleted', false)
             ->where('master_id', $master->id);
 
@@ -556,6 +557,94 @@ class PosController extends Controller
     }
 
     /**
+     * Поиск оборудования по названию, бренду, модели или вхождению в JSON серийников
+     */
+    public function searchEquipment(Request $request)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $term = trim((string) $request->get('q', ''));
+        if (mb_strlen($term) < 2) {
+            return response()->json(['equipment' => []]);
+        }
+
+        $escaped = addcslashes($term, '%_\\');
+        $like = '%' . $escaped . '%';
+
+        $items = Equipment::query()
+            ->where('is_deleted', false)
+            ->where('is_active', true)
+            ->where(function ($query) use ($like) {
+                $query->where('name', 'like', $like)
+                    ->orWhere('brand', 'like', $like)
+                    ->orWhere('model', 'like', $like)
+                    ->orWhere('manufacturer', 'like', $like)
+                    ->orWhereRaw('CAST(serial_number AS CHAR) LIKE ?', [$like]);
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'equipment' => $items->map(static function (Equipment $e) {
+                return [
+                    'id' => $e->id,
+                    'name' => $e->name,
+                    'full_name' => $e->full_name,
+                    'serial_numbers_display' => $e->serial_numbers_display,
+                    'brand' => $e->brand,
+                    'model' => $e->model,
+                    'client_id' => $e->client_id,
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * Хронология заказов по единице оборудования (все заказы компании с этим equipment_id)
+     */
+    public function equipmentOrderHistory(Request $request, int $id)
+    {
+        /** @var Master $master */
+        $master = $request->user();
+
+        if (!$master) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $equipment = Equipment::where('is_deleted', false)->find($id);
+        if (!$equipment) {
+            return response()->json(['message' => 'Equipment not found'], 404);
+        }
+
+        $orders = Order::query()
+            ->where('equipment_id', $id)
+            ->where('is_deleted', false)
+            ->with([
+                'master:id,name,surname',
+                'client:id,full_name',
+            ])
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        return response()->json([
+            'equipment' => [
+                'id' => $equipment->id,
+                'name' => $equipment->name,
+                'full_name' => $equipment->full_name,
+                'serial_numbers_display' => $equipment->serial_numbers_display,
+            ],
+            'orders' => $orders,
+        ]);
+    }
+
+    /**
      * Получить товары склада
      */
     public function warehouseItems(Request $request)
@@ -853,94 +942,9 @@ class PosController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $order = Order::where('is_deleted', 0)
-            ->where('master_id', $master->id)
-            ->find($orderId);
-
-        if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
-        }
-
-        if ($order->isIssued()) {
-            return response()->json([
-                'message' => 'Нельзя добавлять материалы в выданный заказ',
-            ], 422);
-        }
-
-        $request->validate([
-            'warehouse_item_id' => 'required|exists:warehouse_items,id',
-            'quantity' => 'required|numeric|min:0.001',
-            'notes' => 'nullable|string|max:500',
-        ]);
-
-        $warehouseItem = \App\Models\WarehouseItem::find($request->warehouse_item_id);
-
-        if (!$warehouseItem || !$warehouseItem->is_active) {
-            return response()->json(['message' => 'Warehouse item not found or inactive'], 404);
-        }
-
-        $neededQuantity = $request->quantity;
-
-        $existingMaterial = $order->orderMaterials()
-            ->where('warehouse_item_id', $request->warehouse_item_id)
-            ->first();
-
-        if ($existingMaterial) {
-            $warehouseItem->releaseReserve($existingMaterial->quantity);
-        }
-
-        if ($warehouseItem->available_quantity < $neededQuantity) {
-            return response()->json([
-                'message' => 'Not enough stock. Available: ' . $warehouseItem->available_quantity,
-            ], 400);
-        }
-
-        if (!$warehouseItem->reserve($neededQuantity)) {
-            return response()->json([
-                'message' => 'Failed to reserve item. Available: ' . $warehouseItem->available_quantity,
-            ], 400);
-        }
-
-        $price = $warehouseItem->price ?? 0;
-
-        if ($existingMaterial) {
-            $existingMaterial->update([
-                'quantity' => $request->quantity,
-                'price' => $price,
-                'notes' => $request->notes,
-                'name' => $warehouseItem->name,
-                'article' => $warehouseItem->article,
-                'category_name' => $warehouseItem->category?->name,
-                'unit' => $warehouseItem->unit ?? 'шт',
-            ]);
-            $material = $existingMaterial;
-        } else {
-            $material = \App\Models\OrderWorkMaterial::create([
-                'work_id' => null,
-                'order_id' => $order->id,
-                'warehouse_item_id' => $warehouseItem->id,
-                'name' => $warehouseItem->name,
-                'article' => $warehouseItem->article,
-                'category_name' => $warehouseItem->category?->name,
-                'unit' => $warehouseItem->unit ?? 'шт',
-                'price' => $price,
-                'quantity' => $request->quantity,
-                'notes' => $request->notes,
-            ]);
-        }
-
-        $warehouseItem->refresh();
-
         return response()->json([
-            'message' => 'Material added successfully',
-            'material' => [
-                'id' => $material->id,
-                'warehouse_item_id' => $warehouseItem->id,
-                'name' => $material->name,
-                'quantity' => $material->quantity,
-                'price' => $material->price,
-            ],
-        ], 201);
+            'message' => 'Добавление запчастей и материалов через POS отключено. Используйте панель менеджера.',
+        ], 403);
     }
 
     /**
@@ -955,39 +959,9 @@ class PosController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $order = Order::where('is_deleted', 0)
-            ->where('master_id', $master->id)
-            ->find($orderId);
-
-        if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
-        }
-
-        if ($order->isIssued()) {
-            return response()->json([
-                'message' => 'Нельзя удалять материалы выданного заказа',
-            ], 422);
-        }
-
-        $material = $order->orderMaterials()
-            ->where(function ($query) use ($materialId) {
-                $query->where('id', $materialId)
-                    ->orWhere('warehouse_item_id', $materialId);
-            })
-            ->first();
-
-        if ($material) {
-            $quantityToRelease = $material->quantity;
-            $warehouseItem = $material->warehouseItem;
-
-            if ($warehouseItem && !in_array($order->status, [Order::STATUS_READY, Order::STATUS_ISSUED])) {
-                $warehouseItem->releaseReserve($quantityToRelease);
-            }
-
-            $material->delete();
-        }
-
-        return response()->json(['message' => 'Material removed successfully']);
+        return response()->json([
+            'message' => 'Удаление запчастей и материалов через POS отключено. Используйте панель менеджера.',
+        ], 403);
     }
 
     /**

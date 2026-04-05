@@ -1,0 +1,30 @@
+---
+description: Laravel 12 — слои, API, Filament, интеграции для zatochka_upd
+globs: app/**/*.php,routes/**/*.php,database/**/*.php,bootstrap/**/*.php
+alwaysApply: false
+---
+
+# Backend (Laravel)
+
+## Стек
+
+PHP 8.2+, Laravel 12. Аутентификация: **Sanctum**; для клиента — middleware/guard `auth:client`, для POS — `auth:sanctum`. В `bootstrap/app.php` для API учтён stateful Sanctum для фронта.
+
+## Структура
+
+- **Маршруты:** `routes/api.php` (JSON), `routes/web.php` (SPA layout + исключения).
+- **Контроллеры** — тонкие; тяжёлая логика в **`app/Services/`** и моделях.
+- **Документы заказов:** фабрика генераторов + интерфейсы (`DocumentGeneratorFactory` / `DocumentGeneratorInterface`), DomPDF, Spatie Media Library на заказе.
+- **Мессенджеры:** `MessengerServiceInterface`; реализации Telegram/Max; default из `config('services.messenger.default')`, в отдельных местах возможен override (см. `AppServiceProvider`).
+
+## Filament
+
+Ресурсы и виджеты в `app/Filament/`; панель админа не дублировать через публичные API без необходимости.
+
+## Зависимости
+
+В `composer.json` есть пакеты Spatie (в т.ч. event-sourcing, query-builder, data) — **перед использованием** проверять, что паттерн уже принят в проекте; не добавлять новые тяжёлые зависимости без явной задачи.
+
+## Безопасность
+
+Не хардкодить секреты; вебхуки Telegram/Max — валидировать вход и секреты из конфига. Чувствительные данные не логировать в открытом виде.

@@ -97,53 +97,48 @@
                 <h2 class="section-title">Информация о заказе</h2>
 
                 <div class="order-info-grid">
-                    <!-- Услуга и филиал -->
+                    <!-- Тип заказа -->
                     <div class="info-card">
                         <div class="info-card-header">
-                            <span class="info-card-title">Услуга</span>
+                            <span class="info-card-title">Заказ</span>
                         </div>
                         <div class="info-card-content">
                             <div class="info-card-item">
-                                <span class="info-card-label">Тип услуги</span>
+                                <span class="info-card-label">Тип заказа</span>
                                 <span class="info-card-value">{{
-                                    getTypeLabel(order.service_type)
+                                    formatPosOrderPaymentType(order)
                                 }}</span>
-                            </div>
-                            <div
-                                v-if="order.branch?.name"
-                                class="info-card-item"
-                            >
-                                <span class="info-card-label">Филиал</span>
-                                <span class="info-card-value">{{
-                                    order.branch.name
-                                }}</span>
-                            </div>
-                            <div
-                                v-if="order.order_payment_type"
-                                class="info-card-item"
-                            >
-                                <span class="info-card-label">Тип оплаты</span>
-                                <span class="info-card-value">
-                                    {{
-                                        order.order_payment_type === "paid"
-                                            ? "Платный"
-                                            : "Гарантийный"
-                                    }}
-                                </span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Оборудование (если есть) -->
                     <div
-                        v-if="order.equipment?.name || order.equipment_name"
+                        v-if="
+                            order.equipment?.name ||
+                            order.equipment_name ||
+                            equipmentBrandModelLineComputed
+                        "
                         class="info-card"
                     >
                         <div class="info-card-header">
                             <span class="info-icon">⚙️</span>
-                            <span class="info-card-title">Оборудование</span>
+                            <span class="info-card-title"
+                                >Оборудование (ремонт)</span
+                            >
                         </div>
                         <div class="info-card-content">
+                            <div
+                                v-if="equipmentBrandModelLineComputed"
+                                class="info-card-item"
+                            >
+                                <span class="info-card-label"
+                                    >Бренд / модель</span
+                                >
+                                <span class="info-card-value">{{
+                                    equipmentBrandModelLineComputed
+                                }}</span>
+                            </div>
                             <div class="info-card-item">
                                 <span class="info-card-label">Название</span>
                                 <span class="info-card-value">
@@ -154,21 +149,46 @@
                                 </span>
                             </div>
                             <div
-                                v-if="
-                                    order.equipment?.serial_numbers_display ||
-                                    order.equipment_serial_number
+                                v-if="equipmentSerialRowsComputed.length > 0"
+                                class="info-card-item"
+                            >
+                                <span class="info-card-label"
+                                    >Компоненты и серийные номера</span
+                                >
+                                <ul class="equipment-serial-list-work">
+                                    <li
+                                        v-for="(row, idx) in equipmentSerialRowsComputed"
+                                        :key="idx"
+                                        class="info-card-value"
+                                    >
+                                        <template
+                                            v-if="
+                                                row.name && row.serial_number
+                                            "
+                                        >
+                                            {{ row.name }}:
+                                            {{ row.serial_number }}
+                                        </template>
+                                        <template
+                                            v-else-if="row.serial_number"
+                                            >{{ row.serial_number }}</template
+                                        >
+                                        <template v-else>{{ row.name }}</template>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div
+                                v-else-if="
+                                    order.equipment?.serial_numbers_display
                                 "
                                 class="info-card-item"
                             >
                                 <span class="info-card-label"
-                                    >Серийный номер</span
+                                    >Серийные номера</span
                                 >
-                                <span class="info-card-value">
-                                    {{
-                                        order.equipment?.serial_numbers_display ||
-                                        order.equipment_serial_number
-                                    }}
-                                </span>
+                                <span class="info-card-value">{{
+                                    order.equipment.serial_numbers_display
+                                }}</span>
                             </div>
                         </div>
                     </div>
@@ -340,11 +360,12 @@
                 </div>
             </div>
 
-            <!-- Материалы заказа -->
-            <div class="materials-section">
+            <!-- Материалы заказа (только просмотр; добавляет менеджер) -->
+            <div class="materials-section materials-section-readonly">
                 <h2 class="section-title">Материалы и запчасти</h2>
-
-                <!-- Список материалов -->
+                <p class="materials-hint">
+                    Добавление и изменение номенклатуры — в панели менеджера.
+                </p>
                 <div v-if="materialsLoading" class="loading">
                     Загрузка материалов...
                 </div>
@@ -352,7 +373,7 @@
                     v-else-if="materials.length === 0"
                     class="empty-state-inline"
                 >
-                    Материалы не добавлены
+                    Не указано менеджером
                 </div>
                 <div v-else class="materials-list">
                     <div
@@ -374,152 +395,6 @@
                                     >Количество: {{ material.quantity }}</span
                                 >
                             </div>
-                            <button
-                                @click="removeMaterial(material.id)"
-                                class="btn-delete btn-delete-inline"
-                                :disabled="isRemovingMaterial[material.id]"
-                            >
-                                Удалить
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Форма добавления материала -->
-                <div class="add-material-form">
-                    <form @submit.prevent="addMaterial" class="material-form">
-                        <div class="material-form-row">
-                            <div class="material-form-search">
-                                <label class="form-label"
-                                    >Материал или запчасть *</label
-                                >
-                                <button
-                                    type="button"
-                                    class="btn-select-material"
-                                    @click="openMaterialSearchModal"
-                                >
-                                    <span v-if="selectedMaterialName">
-                                        {{ selectedMaterialName }}
-                                    </span>
-                                    <span v-else class="placeholder-text">
-                                        Выберите материал...
-                                    </span>
-                                    <span class="btn-select-arrow">▼</span>
-                                </button>
-                                <input
-                                    v-model="materialForm.warehouse_item_id"
-                                    type="hidden"
-                                />
-                            </div>
-                            <div class="material-form-quantity">
-                                <label class="form-label">Количество *</label>
-                                <input
-                                    v-model.number="materialForm.quantity"
-                                    type="number"
-                                    step="0.001"
-                                    min="0.001"
-                                    class="form-input quantity-input"
-                                    placeholder="1.000"
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <button
-                            type="submit"
-                            class="btn-primary btn-add-material"
-                            :disabled="
-                                isAddingMaterial ||
-                                !materialForm.warehouse_item_id
-                            "
-                        >
-                            <span v-if="isAddingMaterial">Сохранение...</span>
-                            <span v-else>+ Добавить запчасть/материал</span>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Модалка поиска материалов -->
-                <div
-                    v-if="showMaterialSearchModal"
-                    class="modal-overlay"
-                    @click.self="closeMaterialSearchModal"
-                >
-                    <div class="modal-container material-search-modal">
-                        <div class="modal-header">
-                            <h2 class="modal-title">Поиск материала</h2>
-                            <button
-                                @click="closeMaterialSearchModal"
-                                class="modal-close-btn"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="search-input-wrapper">
-                                <input
-                                    v-model="materialSearchQuery"
-                                    type="text"
-                                    class="form-input search-input-full"
-                                    placeholder="Введите название материала или артикул..."
-                                    @input="handleMaterialSearch"
-                                    autofocus
-                                />
-                                <div v-if="isSearching" class="search-loading">
-                                    Поиск...
-                                </div>
-                            </div>
-
-                            <div
-                                v-if="materialSearchResults.length > 0"
-                                class="search-results-list"
-                            >
-                                <div
-                                    v-for="item in materialSearchResults"
-                                    :key="item.id"
-                                    class="search-result-item-modal"
-                                    @click="selectMaterialFromModal(item)"
-                                >
-                                    <div class="result-header">
-                                        <div class="result-name">
-                                            {{ item.name }}
-                                        </div>
-                                        <div
-                                            v-if="item.article"
-                                            class="result-article"
-                                        >
-                                            Арт: {{ item.article }}
-                                        </div>
-                                    </div>
-                                    <div class="result-footer">
-                                        <span class="result-category">
-                                            {{ item.category?.name || "—" }}
-                                        </span>
-                                        <span class="result-available">
-                                            Доступно:
-                                            {{
-                                                item.quantity -
-                                                    item.reserved_quantity || 0
-                                            }}
-                                            {{ item.unit }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                v-else-if="
-                                    materialSearchQuery.trim() && !isSearching
-                                "
-                                class="no-results-message"
-                            >
-                                Ничего не найдено
-                            </div>
-                            <div
-                                v-else-if="!materialSearchQuery.trim()"
-                                class="no-results-message"
-                            >
-                                Введите название материала или артикул для
-                                поиска
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -532,8 +407,12 @@
 import axios from "axios";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import {
+    formatPosOrderPaymentType,
+    getEquipmentBrandModelLine,
+    getEquipmentSerialRows,
+} from "../../composables/usePosOrderDisplay.js";
 import { orderService } from "../../services/pos/OrderService.js";
-import { warehouseService } from "../../services/pos/WarehouseService.js";
 import { toastService } from "../../services/toastService.js";
 import { usePosStore } from "../../stores/posStore.js";
 
@@ -550,7 +429,6 @@ export default {
         const worksLoading = ref(false);
         const materials = ref([]);
         const materialsLoading = ref(false);
-        const warehouseItems = ref([]);
 
         const workForm = reactive({
             description: "",
@@ -559,22 +437,8 @@ export default {
             selectedComponentIndex: "",
         });
 
-        const materialForm = reactive({
-            warehouse_item_id: "",
-            quantity: 1,
-        });
-
-        const materialSearchQuery = ref("");
-        const materialSearchResults = ref([]);
-        const showMaterialSearchModal = ref(false);
-        const selectedMaterialName = ref("");
-        const isSearching = ref(false);
-        let searchDebounceTimer = null;
-
         const isAddingWork = ref(false);
-        const isAddingMaterial = ref(false);
         const isDeletingWork = reactive({});
-        const isRemovingMaterial = reactive({});
         const isCompletingOrder = ref(false);
         const isChangingStatus = ref(false);
         const changingToStatus = ref(null);
@@ -629,67 +493,6 @@ export default {
             }
         };
 
-        const fetchWarehouseItems = async () => {
-            try {
-                const response = await axios.get("/api/pos/warehouse/items");
-                warehouseItems.value = response.data.items || [];
-            } catch (error) {
-                console.error("Error fetching warehouse items:", error);
-            }
-        };
-
-        const handleMaterialSearch = async () => {
-            const query = materialSearchQuery.value.trim();
-
-            // Очищаем предыдущий таймер
-            if (searchDebounceTimer) {
-                clearTimeout(searchDebounceTimer);
-            }
-
-            if (!query) {
-                materialSearchResults.value = [];
-                return;
-            }
-
-            // Дебаунс поиска - ждем 300мс после последнего ввода
-            searchDebounceTimer = setTimeout(async () => {
-                isSearching.value = true;
-                try {
-                    // Ищем через API по всем элементам склада
-                    const result = await warehouseService.getAllItems(
-                        1,
-                        50, // Лимит для модалки
-                        query
-                    );
-
-                    materialSearchResults.value = result.items;
-                } catch (error) {
-                    console.error("Error searching materials:", error);
-                    materialSearchResults.value = [];
-                } finally {
-                    isSearching.value = false;
-                }
-            }, 300);
-        };
-
-        const openMaterialSearchModal = () => {
-            showMaterialSearchModal.value = true;
-            materialSearchQuery.value = "";
-            materialSearchResults.value = [];
-        };
-
-        const closeMaterialSearchModal = () => {
-            showMaterialSearchModal.value = false;
-            materialSearchQuery.value = "";
-            materialSearchResults.value = [];
-        };
-
-        const selectMaterialFromModal = (item) => {
-            materialForm.warehouse_item_id = item.id;
-            selectedMaterialName.value = item.name;
-            closeMaterialSearchModal();
-        };
-
         const addWork = async () => {
             isAddingWork.value = true;
             try {
@@ -738,64 +541,11 @@ export default {
                 );
                 toastService.success("Работа удалена");
                 await fetchWorks();
-                await fetchMaterials(); // Обновляем материалы, так как они привязаны к работам
             } catch (error) {
                 console.error("Error deleting work:", error);
                 toastService.error("Ошибка при удалении работы");
             } finally {
                 isDeletingWork[workId] = false;
-            }
-        };
-
-        const addMaterial = async () => {
-            if (!materialForm.warehouse_item_id) {
-                toastService.error("Выберите материал/запчасть");
-                return;
-            }
-
-            isAddingMaterial.value = true;
-            try {
-                await axios.post(`/api/pos/orders/${orderId.value}/materials`, {
-                    warehouse_item_id: materialForm.warehouse_item_id,
-                    quantity: materialForm.quantity,
-                });
-                toastService.success("Материал добавлен");
-
-                // Очищаем форму
-                materialForm.warehouse_item_id = "";
-                materialForm.quantity = 1;
-                selectedMaterialName.value = "";
-
-                // Обновляем список материалов
-                await fetchMaterials();
-                await fetchWarehouseItems(); // Обновляем остатки на складе
-            } catch (error) {
-                console.error("Error adding material:", error);
-                toastService.error(
-                    error.response?.data?.message ||
-                        "Ошибка при добавлении материала"
-                );
-            } finally {
-                isAddingMaterial.value = false;
-            }
-        };
-
-        const removeMaterial = async (materialId) => {
-            if (!confirm("Удалить этот материал?")) return;
-
-            isRemovingMaterial[materialId] = true;
-            try {
-                await axios.delete(
-                    `/api/pos/orders/${orderId.value}/materials/${materialId}`
-                );
-                toastService.success("Материал удален");
-                await fetchMaterials();
-                await fetchWarehouseItems(); // Обновляем остатки на складе
-            } catch (error) {
-                console.error("Error removing material:", error);
-                toastService.error("Ошибка при удалении материала");
-            } finally {
-                isRemovingMaterial[materialId] = false;
             }
         };
 
@@ -928,17 +678,22 @@ export default {
             }
         };
 
-        // Получаем компоненты оборудования
+        // Компоненты для выбора в форме работы (сырой массив из API)
         const equipmentComponents = computed(() => {
-            if (!order.value?.equipment?.serial_number) {
+            const raw = order.value?.equipment?.serial_number;
+            if (!Array.isArray(raw) || raw.length === 0) {
                 return [];
             }
-            const serialNumbers = order.value.equipment.serial_number;
-            if (!Array.isArray(serialNumbers) || serialNumbers.length === 0) {
-                return [];
-            }
-            return serialNumbers;
+            return raw;
         });
+
+        const equipmentSerialRowsComputed = computed(() =>
+            getEquipmentSerialRows(order.value?.equipment)
+        );
+
+        const equipmentBrandModelLineComputed = computed(() =>
+            getEquipmentBrandModelLine(order.value?.equipment)
+        );
 
         // Проверяем есть ли несколько компонентов оборудования
         const hasEquipmentComponents = computed(() => {
@@ -973,7 +728,6 @@ export default {
                 fetchOrder(),
                 fetchWorks(),
                 fetchMaterials(),
-                fetchWarehouseItems(),
             ]);
 
             // Заполняем форму комментариев существующим значением
@@ -987,25 +741,15 @@ export default {
             worksLoading,
             materials,
             materialsLoading,
-            warehouseItems,
             workForm,
-            materialForm,
-            materialSearchQuery,
-            materialSearchResults,
-            showMaterialSearchModal,
-            selectedMaterialName,
-            isSearching,
             equipmentComponents,
+            equipmentSerialRowsComputed,
+            equipmentBrandModelLineComputed,
             hasEquipmentComponents,
+            formatPosOrderPaymentType,
             onComponentSelected,
-            handleMaterialSearch,
-            openMaterialSearchModal,
-            closeMaterialSearchModal,
-            selectMaterialFromModal,
             isAddingWork,
-            isAddingMaterial,
             isDeletingWork,
-            isRemovingMaterial,
             isCompletingOrder,
             isChangingStatus,
             changingToStatus,
@@ -1017,10 +761,7 @@ export default {
             completeOrder,
             addWork,
             deleteWork,
-            addMaterial,
-            removeMaterial,
             getStatusLabel: orderService.getStatusLabel,
-            getTypeLabel: orderService.getTypeLabel,
             formatPrice: orderService.formatPrice,
             getStatusClass: (status) => {
                 const classes = {
@@ -1390,6 +1131,26 @@ export default {
     border-radius: 0;
     padding: 1.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.materials-hint {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0 0 1rem;
+}
+
+.materials-section-readonly .material-body {
+    justify-content: flex-start;
+}
+
+.equipment-serial-list-work {
+    margin: 0.25rem 0 0;
+    padding-left: 1.25rem;
+    list-style: disc;
+}
+
+.equipment-serial-list-work li {
+    margin-bottom: 0.25rem;
 }
 
 .works-list,
