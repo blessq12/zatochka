@@ -92,6 +92,12 @@ const routes = [
                 component: () => import("../pages/Pos/WarehousePage.vue"),
             },
             {
+                path: "equipment/search",
+                name: "pos.equipment.search",
+                component: () =>
+                    import("../pages/Pos/EquipmentSearchPage.vue"),
+            },
+            {
                 path: "settings/profile",
                 name: "pos.settings.profile",
                 component: () => import("../pages/Pos/SettingsProfilePage.vue"),

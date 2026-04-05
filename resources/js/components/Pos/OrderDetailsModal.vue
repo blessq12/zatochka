@@ -40,9 +40,9 @@
                                     </span>
                                 </div>
                                 <div class="detail-item">
-                                    <span class="detail-label">Тип услуги</span>
+                                    <span class="detail-label">Тип заказа</span>
                                     <span class="detail-value">{{
-                                        getTypeLabel(order.service_type)
+                                        formatPosOrderPaymentType(order)
                                     }}</span>
                                 </div>
                                 <div class="detail-item">
@@ -63,12 +63,6 @@
                                     </span>
                                 </div>
                                 <div class="detail-item">
-                                    <span class="detail-label">Филиал</span>
-                                    <span class="detail-value">{{
-                                        order.branch?.name || "—"
-                                    }}</span>
-                                </div>
-                                <div class="detail-item">
                                     <span class="detail-label"
                                         >Дата создания</span
                                     >
@@ -81,15 +75,30 @@
 
                         <!-- Оборудование -->
                         <div
-                            v-if="order.equipment?.name || order.equipment_name"
+                            v-if="
+                                order.equipment?.name ||
+                                order.equipment_name ||
+                                equipmentBrandModelLine
+                            "
                             class="details-section"
                         >
                             <div class="details-section-header">
                                 <h3 class="details-section-title">
-                                    Оборудование
+                                    Оборудование (ремонт)
                                 </h3>
                             </div>
                             <div class="details-grid">
+                                <div
+                                    v-if="equipmentBrandModelLine"
+                                    class="detail-item"
+                                >
+                                    <span class="detail-label"
+                                        >Бренд / модель</span
+                                    >
+                                    <span class="detail-value">{{
+                                        equipmentBrandModelLine
+                                    }}</span>
+                                </div>
                                 <div class="detail-item">
                                     <span class="detail-label">Название</span>
                                     <span class="detail-value">
@@ -100,21 +109,49 @@
                                     </span>
                                 </div>
                                 <div
-                                    v-if="
-                                        order.equipment?.serial_numbers_display ||
-                                        order.equipment_serial_number
+                                    v-if="equipmentSerialRows.length > 0"
+                                    class="detail-item full-width"
+                                >
+                                    <span class="detail-label"
+                                        >Компоненты и серийные номера</span
+                                    >
+                                    <ul class="equipment-serial-list-modal">
+                                        <li
+                                            v-for="(row, idx) in equipmentSerialRows"
+                                            :key="idx"
+                                            class="detail-value"
+                                        >
+                                            <template
+                                                v-if="
+                                                    row.name &&
+                                                    row.serial_number
+                                                "
+                                            >
+                                                {{ row.name }}:
+                                                {{ row.serial_number }}
+                                            </template>
+                                            <template
+                                                v-else-if="row.serial_number"
+                                                >{{ row.serial_number }}</template
+                                            >
+                                            <template v-else>{{
+                                                row.name
+                                            }}</template>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div
+                                    v-else-if="
+                                        order.equipment?.serial_numbers_display
                                     "
                                     class="detail-item"
                                 >
                                     <span class="detail-label"
-                                        >Серийный номер</span
+                                        >Серийные номера</span
                                     >
-                                    <span class="detail-value">
-                                        {{
-                                            order.equipment?.serial_numbers_display ||
-                                            order.equipment_serial_number
-                                        }}
-                                    </span>
+                                    <span class="detail-value">{{
+                                        order.equipment.serial_numbers_display
+                                    }}</span>
                                 </div>
                             </div>
                         </div>
@@ -243,23 +280,6 @@
                                 </h3>
                             </div>
                             <div class="details-grid">
-                                <div class="detail-item">
-                                    <span class="detail-label">Тип оплаты</span>
-                                    <span
-                                        class="detail-badge payment-type"
-                                        :class="
-                                            order.order_payment_type === 'paid'
-                                                ? 'paid'
-                                                : 'warranty'
-                                        "
-                                    >
-                                        {{
-                                            order.order_payment_type === "paid"
-                                                ? "Платный"
-                                                : "Гарантийный"
-                                        }}
-                                    </span>
-                                </div>
                                 <div
                                     v-if="order.delivery_address"
                                     class="detail-item full-width"
@@ -327,6 +347,11 @@
 
 <script>
 import { computed, ref, watch } from "vue";
+import {
+    formatPosOrderPaymentType,
+    getEquipmentBrandModelLine,
+    getEquipmentSerialRows,
+} from "../../composables/usePosOrderDisplay.js";
 import { orderService } from "../../services/pos/OrderService.js";
 
 export default {
@@ -349,6 +374,14 @@ export default {
         const orderMaterialsList = computed(() => {
             return order.value?.order_materials ?? [];
         });
+
+        const equipmentSerialRows = computed(() =>
+            getEquipmentSerialRows(order.value?.equipment)
+        );
+
+        const equipmentBrandModelLine = computed(() =>
+            getEquipmentBrandModelLine(order.value?.equipment)
+        );
 
         const fetchOrder = async (orderId) => {
             if (!orderId) {
@@ -425,10 +458,12 @@ export default {
             order,
             isLoading,
             orderMaterialsList,
+            equipmentSerialRows,
+            equipmentBrandModelLine,
+            formatPosOrderPaymentType,
             close,
             formatDate,
             getStatusLabel: orderService.getStatusLabel,
-            getTypeLabel: orderService.getTypeLabel,
             getStatusClass,
         };
     },
@@ -654,6 +689,16 @@ export default {
 
 .detail-item.full-width {
     grid-column: 1 / -1;
+}
+
+.equipment-serial-list-modal {
+    margin: 0.25rem 0 0;
+    padding-left: 1.25rem;
+    list-style: disc;
+}
+
+.equipment-serial-list-modal li {
+    margin-bottom: 0.25rem;
 }
 
 .detail-label {

@@ -68,6 +68,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', 'dashboard');
         Route::get('/orders', 'orders');
         Route::get('/orders/count', 'ordersCount'); // Должен быть ПЕРЕД /orders/{id}
+        Route::get('/equipment/search', 'searchEquipment');
+        Route::get('/equipment/{id}/orders', 'equipmentOrderHistory');
         Route::get('/orders/{id}', 'order');
         Route::patch('/orders/{id}/update', 'updateOrder');
         Route::patch('/orders/{id}/status', 'updateOrderStatus');
