@@ -1,0 +1,17 @@
+---
+description: OrderFulfillment — application layer
+globs: app/Application/OrderFulfillment/**
+alwaysApply: false
+---
+
+# OrderFulfillment / Application
+
+## Scope
+
+Use cases: CreateOrder, AssignMasterToOrder, TakeOrderToWork, IssueOrder, RecalculateOrderPrice, …
+
+## TODO
+
+- [ ] Command + Handler на каждую команду из es/04-команды
+- [ ] CreateOrder из SiteLead (cross-BC с ClientPortal)
+- [ ] Транзакции + синхронные domain events

@@ -1,0 +1,18 @@
+---
+description: OrderFulfillment — presentation layer
+globs: app/Http/**/*Order*,app/Filament/**/*Order*
+alwaysApply: false
+---
+
+# OrderFulfillment / Presentation
+
+## Каналы
+
+- **Filament `/cp`** — менеджер: создание, назначение мастера, выдача, цены
+- **POS `/api/pos/*`** — мастер: воронка, работы, статусы
+
+## TODO
+
+- [ ] Маппинг команд → endpoints по каналам
+- [ ] Фильтрация POS: только заказы с `master_id` = текущий мастер
+- [ ] Request/Resource DTO, без бизнес-логики

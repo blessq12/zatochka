@@ -1,0 +1,17 @@
+---
+description: Identity — domain layer
+globs: app/Models/User.php,app/Policies/**,database/migrations/*users*
+alwaysApply: false
+---
+
+# Identity / Domain
+
+## Scope
+
+User — не доменный агрегат в классическом DDD, но отдельный BC по ES.
+
+## TODO
+
+- [ ] User vs Client — не смешивать модели и guards
+- [ ] master_id на Order → User
+- [ ] Policies для Filament / POS

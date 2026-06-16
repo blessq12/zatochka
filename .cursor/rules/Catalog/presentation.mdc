@@ -1,0 +1,17 @@
+---
+description: Catalog — presentation layer
+globs: app/Filament/**/*Price*,app/Filament/**/*Branch*,app/Http/**/*Bootstrap*
+alwaysApply: false
+---
+
+# Catalog / Presentation
+
+## Каналы
+
+- **Filament** — редактирование прайса, филиала
+- **Публичный API** — GetPublicBootstrap
+
+## TODO
+
+- [ ] ADR-004: один endpoint bootstrap
+- [ ] Filament resources для PriceBlock

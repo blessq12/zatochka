@@ -1,0 +1,18 @@
+---
+description: OrderFulfillment — domain layer
+globs: app/Domain/OrderFulfillment/**
+alwaysApply: false
+---
+
+# OrderFulfillment / Domain
+
+## Scope
+
+Модели: Order, OrderWork, OrderTool, OrderMaterial. Enum: OrderStatus, OrderSource, OrderUrgency.
+
+## TODO
+
+- [ ] Инварианты Order (INV-01 … INV-05 из es/06-политики)
+- [ ] Жизненный цикл статусов
+- [ ] Domain events: OrderCreated, OrderTakenToWork, …
+- [ ] OrderNumberGenerator — domain service

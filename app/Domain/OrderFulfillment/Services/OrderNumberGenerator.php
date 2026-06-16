@@ -2,25 +2,29 @@
 
 namespace App\Domain\OrderFulfillment\Services;
 
-use App\Domain\OrderFulfillment\Models\Order;
-use Illuminate\Support\Str;
+use App\Domain\OrderFulfillment\Repositories\OrderRepositoryInterface;
+use App\Domain\OrderFulfillment\ValueObjects\OrderNumber;
 
-class OrderNumberGenerator
+final class OrderNumberGenerator
 {
-    public function generate(): string
-    {
-        $year = now()->format('Y');
-        $lastNumber = Order::query()
-            ->where('order_number', 'like', "ORD-{$year}-%")
-            ->orderByDesc('id')
-            ->value('order_number');
+    public function __construct(
+        private OrderRepositoryInterface $orders,
+    ) {}
 
+    public function generate(): OrderNumber
+    {
+        $year = (int) date('Y');
+        $lastNumber = $this->orders->findLastOrderNumberForYear($year);
         $sequence = 1;
 
         if ($lastNumber !== null && preg_match('/ORD-\d{4}-(\d+)/', $lastNumber, $matches)) {
             $sequence = (int) $matches[1] + 1;
         }
 
-        return sprintf('ORD-%s-%s', $year, Str::padLeft((string) $sequence, 4, '0'));
+        return new OrderNumber(sprintf(
+            'ORD-%s-%04d',
+            $year,
+            $sequence,
+        ));
     }
 }

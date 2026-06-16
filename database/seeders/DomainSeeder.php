@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use App\Domain\Catalog\Enums\PriceType;
-use App\Domain\Catalog\Models\Branch;
-use App\Domain\Catalog\Models\PriceBlock;
-use App\Domain\Catalog\Models\PriceItem;
-use App\Domain\Catalog\Models\SiteSetting;
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\Catalog\BranchModel;
+use App\Infrastructure\Persistence\Eloquent\Models\Catalog\PriceBlockModel;
+use App\Infrastructure\Persistence\Eloquent\Models\Catalog\PriceItemModel;
+use App\Infrastructure\Persistence\Eloquent\Models\Catalog\SiteSettingModel;
+use App\Infrastructure\Persistence\Eloquent\Models\Identity\UserModel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,7 +15,7 @@ class DomainSeeder extends Seeder
 {
     public function run(): void
     {
-        $branch = Branch::query()->firstOrCreate(
+        $branch = BranchModel::query()->firstOrCreate(
             ['name' => 'Центральный филиал'],
             [
                 'address' => 'г. Томск',
@@ -24,7 +24,7 @@ class DomainSeeder extends Seeder
             ],
         );
 
-        User::query()->firstOrCreate(
+        UserModel::query()->firstOrCreate(
             ['email' => 'master@zatochka.local'],
             [
                 'name' => 'Демо',
@@ -40,28 +40,28 @@ class DomainSeeder extends Seeder
 
     private function seedPrices(): void
     {
-        $sharpeningBlock = PriceBlock::query()->firstOrCreate(
+        $sharpeningBlock = PriceBlockModel::query()->firstOrCreate(
             ['type' => PriceType::Sharpening, 'title' => 'Заточка инструмента'],
             ['sort_order' => 1],
         );
 
-        PriceItem::query()->firstOrCreate(
+        PriceItemModel::query()->firstOrCreate(
             ['price_block_id' => $sharpeningBlock->id, 'name' => 'Маникюрный инструмент (1 шт.)'],
             ['price' => 300, 'sort_order' => 1],
         );
 
-        $repairBlock = PriceBlock::query()->firstOrCreate(
+        $repairBlock = PriceBlockModel::query()->firstOrCreate(
             ['type' => PriceType::Repair, 'title' => 'Ремонт аппаратов'],
             ['sort_order' => 2],
         );
 
-        PriceItem::query()->firstOrCreate(
+        PriceItemModel::query()->firstOrCreate(
             ['price_block_id' => $repairBlock->id, 'name' => 'Диагностика'],
             ['price' => 500, 'sort_order' => 1],
         );
     }
 
-    private function seedSiteSettings(Branch $branch): void
+    private function seedSiteSettings(BranchModel $branch): void
     {
         $settings = [
             'contacts' => [
@@ -84,7 +84,7 @@ class DomainSeeder extends Seeder
         ];
 
         foreach ($settings as $key => $value) {
-            SiteSetting::query()->updateOrCreate(
+            SiteSettingModel::query()->updateOrCreate(
                 ['key' => $key],
                 ['value' => $value],
             );

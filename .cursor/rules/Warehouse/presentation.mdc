@@ -1,0 +1,17 @@
+---
+description: Warehouse — presentation layer
+globs: app/Filament/**/*Warehouse*,app/Filament/**/*Stock*,app/Http/**/*Warehouse*
+alwaysApply: false
+---
+
+# Warehouse / Presentation
+
+## Каналы
+
+- **Filament** — номенклатура, приход, списание
+- **POS** — read-only просмотр склада
+
+## TODO
+
+- [ ] CRUD WarehouseItem в Filament
+- [ ] POS: список/поиск без мутаций

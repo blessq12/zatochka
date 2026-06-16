@@ -1,0 +1,20 @@
+---
+description: Границы bounded contexts и cross-BC интеграция
+globs: app/**/*.php
+alwaysApply: false
+---
+
+# Cross-BC
+
+6 BC: OrderFulfillment, ClientPortal, Equipment, Warehouse, Catalog, Identity.
+
+## Правила
+
+- Связь между BC — только через `*_id` (FK), не через Eloquent-связи в доменной логике
+- Кросс-BC сценарии — application services (CreateOrder из Lead, SubmitReview)
+- Общая БД, один деплой (монолит)
+
+## TODO
+
+- [ ] Список разрешённых cross-BC application services
+- [ ] Запреты: какие связи Eloquent допустимы только в read/query слое

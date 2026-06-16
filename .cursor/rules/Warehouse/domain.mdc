@@ -1,0 +1,17 @@
+---
+description: Warehouse — domain layer
+globs: app/Domain/Warehouse/**
+alwaysApply: false
+---
+
+# Warehouse / Domain
+
+## Scope
+
+Модели: WarehouseItem, StockMovement. Enum: StockMovementType.
+
+## TODO
+
+- [ ] MVP: ручной приход/списание, без автосписания при AddMaterialToOrder
+- [ ] OrderMaterial — snapshot цены, ссылка warehouse_item_id
+- [ ] Events: StockReceived, StockWrittenOff

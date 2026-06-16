@@ -1,0 +1,16 @@
+---
+description: Identity — application layer
+globs: app/Application/Identity/**
+alwaysApply: false
+---
+
+# Identity / Application
+
+## Scope
+
+Auth мастеров (Sanctum POS), управление пользователями в Filament.
+
+## TODO
+
+- [ ] POS token issuance
+- [ ] AssignMasterToOrder — валидация что User = master

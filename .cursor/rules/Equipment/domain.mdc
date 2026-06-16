@@ -1,0 +1,17 @@
+---
+description: Equipment — domain layer
+globs: app/Domain/Equipment/**
+alwaysApply: false
+---
+
+# Equipment / Domain
+
+## Scope
+
+Модель Equipment. Order хранит `equipment_id` — данные не дублируются (MVP).
+
+## TODO
+
+- [ ] serial_numbers — json array
+- [ ] Events: EquipmentRegistered, EquipmentLinkedToOrder
+- [ ] История ремонтов — read query по Order.equipment_id

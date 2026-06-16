@@ -1,0 +1,39 @@
+---
+description: Слоистая архитектура бэкенда Laravel (DDD + Hexagonal)
+alwaysApply: true
+---
+
+# Слои бэкенда
+
+Scope: `app/`, `database/`, `config/` (auth, domain). Только бэкенд.
+
+## Структура
+
+```
+app/
+├── Domain/{BC}/              # Ядро: Entities, Enums, ValueObjects, Repositories (ports), Services
+├── Application/{BC}/         # Use cases: Commands, Handlers (orchestration)
+├── Infrastructure/           # Adapters: Eloquent, Mappers, Repository implementations
+│   └── Persistence/
+│       ├── Eloquent/Models/
+│       ├── Mappers/
+│       └── Repositories/
+└── Http/ | Filament/         # Driving adapters (presentation)
+```
+
+## Зависимости (Hexagonal)
+
+- Domain — **zero** Laravel/Eloquent
+- Application → Domain (ports)
+- Infrastructure → Domain (implements ports)
+- Presentation → Application
+
+## Cross-BC
+
+- Domain: только `*_id`, без foreign Eloquent relations
+- Cross-BC orchestration — Application layer
+- Read/query joins — Infrastructure или dedicated read models
+
+## DI
+
+Регистрация портов: `Infrastructure/Providers/PersistenceServiceProvider.php`

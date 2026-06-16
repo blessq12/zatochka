@@ -1,0 +1,16 @@
+---
+description: Catalog — application layer
+globs: app/Application/Catalog/**
+alwaysApply: false
+---
+
+# Catalog / Application
+
+## Scope
+
+CRUD справочников (Filament). GetPublicBootstrap — read query.
+
+## TODO
+
+- [ ] Query: агрегация прайсов + настроек для bootstrap
+- [ ] Без cross-BC мутаций

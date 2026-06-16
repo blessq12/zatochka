@@ -1,0 +1,17 @@
+---
+description: Equipment — presentation layer
+globs: app/Filament/**/*Equipment*,app/Http/**/*Equipment*
+alwaysApply: false
+---
+
+# Equipment / Presentation
+
+## Каналы
+
+- **Filament** — RegisterEquipment, карточка
+- **POS** — поиск, read-only история
+
+## TODO
+
+- [ ] CRUD в Filament для менеджера
+- [ ] POS endpoints: search, repair history

@@ -1,0 +1,18 @@
+---
+description: ClientPortal — domain layer
+globs: app/Domain/ClientPortal/**
+alwaysApply: false
+---
+
+# ClientPortal / Domain
+
+## Scope
+
+Модели: Client, Review, SiteLead. Enum: ReviewStatus.
+
+## TODO
+
+- [ ] SiteLead: converted + order_id после CreateOrder
+- [ ] Review: только для issued-заказов
+- [ ] Client.phone — уникальный ключ
+- [ ] Events: SiteLeadReceived, ClientRegistered, ReviewSubmitted

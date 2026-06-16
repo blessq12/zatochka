@@ -1,0 +1,17 @@
+---
+description: ClientPortal — application layer
+globs: app/Application/ClientPortal/**
+alwaysApply: false
+---
+
+# ClientPortal / Application
+
+## Scope
+
+SubmitSiteLead, RegisterClient, SubmitReview, LinkGuestOrdersToClient (частично cross-BC).
+
+## TODO
+
+- [ ] SubmitSiteLead — не создаёт Order
+- [ ] SubmitReview — проверка order.status = issued через ID
+- [ ] Guard `client` для публичного API

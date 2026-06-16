@@ -1,0 +1,24 @@
+---
+description: Конвенции именования и языка бэкенда
+globs: app/**/*.php
+alwaysApply: false
+---
+
+# Конвенции
+
+## Язык
+
+- Документация, ES, комментарии к бизнес-логике — русский
+- Код (классы, методы, enum) — английский
+
+## Команды и события
+
+| | Документация | Код |
+|---|--------------|-----|
+| Команда | русский, повелительное | PascalCase imperative: `CreateOrder` |
+| Событие | русский, прошедшее время | PascalCase past tense: `OrderCreated` |
+
+## TODO
+
+- [ ] Конвенции для migrations и seeders
+- [ ] Конвенции для Filament vs REST vs POS endpoints

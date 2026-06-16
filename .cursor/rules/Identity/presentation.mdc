@@ -1,0 +1,17 @@
+---
+description: Identity — presentation layer
+globs: app/Http/**/*Auth*,app/Filament/**/*User*,config/auth.php
+alwaysApply: false
+---
+
+# Identity / Presentation
+
+## Каналы
+
+- **Filament** — CRUD мастеров
+- **POS** — Sanctum login
+
+## TODO
+
+- [ ] Guard separation: web / client / sanctum
+- [ ] Не использовать User для публичного клиентского API

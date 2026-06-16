@@ -1,0 +1,17 @@
+---
+description: ClientPortal — presentation layer
+globs: app/Http/**/*Client*,app/Http/**/*Lead*,app/Http/**/*Review*,routes/api.php
+alwaysApply: false
+---
+
+# ClientPortal / Presentation
+
+## Каналы
+
+- **Публичный API `/api/*`** — bootstrap, lead, auth, ЛК, отзывы
+
+## TODO
+
+- [ ] GetPublicBootstrap — один endpoint
+- [ ] ЛК: bucket active/history без статусов цеха (ADR-005)
+- [ ] Request validation, без доменной логики

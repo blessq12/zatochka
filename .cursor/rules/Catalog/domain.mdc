@@ -1,0 +1,17 @@
+---
+description: Catalog — domain layer
+globs: app/Domain/Catalog/**
+alwaysApply: false
+---
+
+# Catalog / Domain
+
+## Scope
+
+Модели: PriceBlock, PriceItem, Branch, SiteSetting. Enum: PriceType.
+
+## TODO
+
+- [ ] PriceBlock: sharpening | repair
+- [ ] Branch — singleton (одна запись)
+- [ ] SiteSetting для GetPublicBootstrap
