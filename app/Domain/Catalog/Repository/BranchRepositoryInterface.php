@@ -8,5 +8,7 @@ interface BranchRepositoryInterface
 {
     public function findById(int $id): ?Branch;
 
+    public function findFirstActive(): ?Branch;
+
     public function save(Branch $branch): Branch;
 }

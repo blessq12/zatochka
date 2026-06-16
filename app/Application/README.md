@@ -1,34 +1,58 @@
 # Application Layer
 
-Use cases по bounded contexts. **Сейчас — только каркас папок.**
+Use cases по bounded contexts.
 
 ## Статус
 
-| BC | Command | CommandHandler | Query | QueryHandler | Presenter |
-|----|---------|----------------|-------|--------------|-----------|
-| Все 6 BC | `.gitkeep` | `.gitkeep` | `.gitkeep` | `.gitkeep` | `.gitkeep` |
+### OrderFulfillment
+Lifecycle, POS queries, цены, материалы, привязка оборудования.
 
-Классов PHP нет. Бизнес-сценарии из `es/04-команды` ещё не реализованы.
+### ClientPortal
+| Тип | Реализовано |
+|-----|-------------|
+| **Commands** | `SubmitSiteLead`, `RegisterClient`, `UpdateClientProfile`, `SetClientPassword`, `SubmitReview`, `LinkGuestOrdersToClient`, `ApproveReview`, `RejectReview` |
+| **Queries** | `GetClientProfile`, `GetClientOrders` (active/history), `GetClientOrderDetail` |
+| **Presenters** | `ClientProfilePresenter`, `ClientOrderPresenter`, `ReviewPresenter` |
+| **Events** | `SiteLeadReceived`, `ClientRegistered`, `GuestOrdersLinkedToClient`, `ReviewSubmitted`, `ReviewApproved`, `ReviewRejected` |
 
-## Структура (факт)
+### Catalog
+| Тип | Реализовано |
+|-----|-------------|
+| **Queries** | `GetPublicBootstrap` |
 
-```
-app/Application/{BC}/
-├── Command/
-├── CommandHandler/
-├── Query/
-├── QueryHandler/
-└── Presenter/
-```
+### Warehouse
+| Тип | Реализовано |
+|-----|-------------|
+| **Commands** | `ReceiveStock`, `WriteOffStock` |
+| **Queries** | `SearchWarehouseItems` |
+| **Presenters** | `WarehouseItemPresenter` |
+| **Events** | `StockReceived`, `StockWrittenOff` |
 
-BC: `OrderFulfillment`, `ClientPortal`, `Catalog`, `Equipment`, `Warehouse`, `Identity`
+### Equipment
+| Тип | Реализовано |
+|-----|-------------|
+| **Commands** | `RegisterEquipment` |
+| **Queries** | `SearchEquipment`, `GetEquipmentOrderHistory` |
+| **Presenters** | `EquipmentPresenter` |
+| **Events** | `EquipmentRegistered` |
 
-## Правила (на реализацию)
+Cross-BC: `LinkEquipmentToOrder` (OrderFulfillment) → `EquipmentLinkedToOrder`.
+
+### OrderFulfillment (документы и read models)
+| Тип | Реализовано |
+|-----|-------------|
+| **Commands** | `GenerateDocument` (receipt, handover_act) |
+| **Queries** | `GetPosDashboard` |
+| **Read models** | `OrderDocumentReadModelBuilder`, `PosOrderReadModelBuilder` |
+| **Events** | `DocumentGenerated` |
+| **Port** | `PdfRendererInterface` → DomPDF |
+
+## Правила
 
 - Handler → `Domain/{BC}/Repository/*Interface`, не Eloquent
-- Cross-BC — только в CommandHandler (inject ports соседних BC)
+- Cross-BC — только в CommandHandler
 - Http/Filament вызывает Handler, не Domain напрямую
 
 ## DI
 
-Repository bindings: `app/Infrastructure/Shared/Provider/PersistenceServiceProvider.php`
+`app/Infrastructure/Shared/Provider/PersistenceServiceProvider.php`

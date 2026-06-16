@@ -2,6 +2,8 @@
 
 namespace App\Domain\Warehouse\Entity;
 
+use App\Domain\Warehouse\Exception\WarehousePolicyViolation;
+
 final class WarehouseItem
 {
     public function __construct(
@@ -47,5 +49,46 @@ final class WarehouseItem
     public function price(): string
     {
         return $this->price;
+    }
+
+    public static function create(
+        string $name,
+        string $sku,
+        string $quantity,
+        string $unit,
+        string $price,
+        ?string $categoryName = null,
+    ): self {
+        return new self(null, $name, $sku, $categoryName, $quantity, $unit, $price);
+    }
+
+    public function receive(string $quantity): self
+    {
+        if (bccomp($quantity, '0', 3) <= 0) {
+            throw new WarehousePolicyViolation('Количество прихода должно быть больше нуля.');
+        }
+
+        $clone = clone $this;
+        $clone->quantity = bcadd($this->quantity, $quantity, 3);
+
+        return $clone;
+    }
+
+    public function writeOff(string $quantity): self
+    {
+        if (bccomp($quantity, '0', 3) <= 0) {
+            throw new WarehousePolicyViolation('Количество списания должно быть больше нуля.');
+        }
+
+        $remaining = bcsub($this->quantity, $quantity, 3);
+
+        if (bccomp($remaining, '0', 3) < 0) {
+            throw new WarehousePolicyViolation('Недостаточно остатка на складе.');
+        }
+
+        $clone = clone $this;
+        $clone->quantity = $remaining;
+
+        return $clone;
     }
 }

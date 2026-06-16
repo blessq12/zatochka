@@ -28,4 +28,15 @@ final class EloquentSiteSettingRepository implements SiteSettingRepositoryInterf
 
         return $this->mapper->toDomain($model);
     }
+
+    public function getValuesByKeys(array $keys): array
+    {
+        return SiteSettingModel::query()
+            ->whereIn('key', $keys)
+            ->get()
+            ->mapWithKeys(fn (SiteSettingModel $model) => [
+                $model->key => $model->value ?? [],
+            ])
+            ->all();
+    }
 }

@@ -7,7 +7,7 @@ DDD + Hexagonal, BC-first. Описание **текущего кода**, не 
 | Слой | Статус |
 |------|--------|
 | `app/Shared/ValueObject/` | ✅ EntityId, Phone, Email, Money (VO-заглушки, в домене пока не используются) |
-| `app/Domain/{BC}/` | ✅ Entity, Enum, Repository (ports), Service/ValueObject где нужно |
+| `app/Domain/{BC}/` | ✅ Entity, Enum, Repository (ports), Service/ValueObject где нужно; поведение Order |
 | `app/Infrastructure/{BC}/` | ✅ Persistence (Eloquent, Mapper, Repository adapters), Auth где нужно |
 | `app/Application/{BC}/` | ⬜ каркас папок (`.gitkeep`), **классов нет** |
 | `app/Http/`, Filament | ⬜ SPA catch-all; API/Filament по BC **не реализованы** |

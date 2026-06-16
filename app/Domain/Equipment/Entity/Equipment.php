@@ -40,4 +40,22 @@ final class Equipment
     {
         return $this->serialNumbers;
     }
+
+    /**
+     * @param  list<string>  $serialNumbers
+     */
+    public static function register(
+        string $name,
+        array $serialNumbers = [],
+        ?string $brand = null,
+        ?string $model = null,
+    ): self {
+        return new self(
+            id: null,
+            name: $name,
+            brand: $brand,
+            model: $model,
+            serialNumbers: $serialNumbers,
+        );
+    }
 }

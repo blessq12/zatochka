@@ -20,6 +20,13 @@ final class EloquentReviewRepository implements ReviewRepositoryInterface
         return $model ? $this->mapper->toDomain($model) : null;
     }
 
+    public function findByOrderId(int $orderId): ?Review
+    {
+        $model = ReviewModel::query()->where('order_id', $orderId)->first();
+
+        return $model ? $this->mapper->toDomain($model) : null;
+    }
+
     public function save(Review $review): Review
     {
         $model = $review->id() !== null

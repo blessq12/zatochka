@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Application\ClientPortal\CommandHandler;
+
+use App\Application\ClientPortal\Command\RejectReviewCommand;
+use App\Domain\ClientPortal\Entity\Review;
+use App\Domain\ClientPortal\Event\ReviewRejected;
+use App\Domain\ClientPortal\Exception\ReviewPolicyViolation;
+use App\Domain\ClientPortal\Repository\ReviewRepositoryInterface;
+
+final class RejectReviewHandler
+{
+    public function __construct(
+        private ReviewRepositoryInterface $reviews,
+    ) {}
+
+    public function handle(RejectReviewCommand $command): Review
+    {
+        $review = $this->reviews->findById($command->reviewId);
+
+        if ($review === null) {
+            throw new ReviewPolicyViolation('Отзыв не найден.');
+        }
+
+        $saved = $this->reviews->save($review->reject());
+
+        event(new ReviewRejected($saved));
+
+        return $saved;
+    }
+}

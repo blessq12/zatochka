@@ -12,9 +12,10 @@ alwaysApply: false
 - **Enum:** `ReviewStatus` — pending, approved, rejected
 - **Repository:** `ClientRepositoryInterface`, `SiteLeadRepositoryInterface`, `ReviewRepositoryInterface`
 
-## Поля SiteLead (entity)
+## Поведение SiteLead
 
-`converted`, `orderId` — есть в entity/migration; логика конвертации **не** в Application.
+- `markConverted(int $orderId)` — POL-09, один раз
+- Исключение: `Exception\SiteLeadPolicyViolation`
 
 ## Нет в коде
 

@@ -226,8 +226,8 @@ app/
 | Warehouse | WarehouseItem, StockMovement | *Model |
 | Identity | Master | UserModel |
 
-**Реализовано:** Domain + Infrastructure (persistence), миграции, DomainSeeder (Catalog + demo Master).  
-**Не реализовано:** Application handlers, API/Filament/POS, domain events, инварианты на Entity.
+**Реализовано:** Domain + Infrastructure (persistence), миграции, DomainSeeder (Catalog + demo Master); поведение `Order` (переходы статусов, POL/INV), `SiteLead::markConverted`.  
+**Не реализовано:** Application handlers, API/Filament/POS, domain events.
 
 **Правило:** cross-BC в Domain — только `*_id`; orchestration — будущий Application layer.
 

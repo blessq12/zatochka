@@ -8,11 +8,11 @@ alwaysApply: false
 
 ## Сейчас
 
-Папки `Command/`, `CommandHandler/`, `Query/`, `QueryHandler/`, `Presenter/` — **пустые** (`.gitkeep`).
+Реализованы Command/Query/Handler/Presenter для lifecycle заказа и POS read API.
 
-## Целевые use cases (ES, не в коде)
+## Целевые use cases (ES)
 
-`CreateOrder`, `AssignMasterToOrder`, `TakeOrderToWork`, `IssueOrder`, `RecalculateOrderPrice`, …
+`SubmitSiteLead`, `RegisterClient`, `LinkGuestOrdersToClient`, … — фаза 3+
 
 ## Правило
 

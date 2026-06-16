@@ -3,6 +3,7 @@
 namespace App\Domain\ClientPortal\Entity;
 
 use App\Domain\ClientPortal\Enum\ReviewStatus;
+use App\Domain\ClientPortal\Exception\ReviewPolicyViolation;
 
 final class Review
 {
@@ -43,5 +44,49 @@ final class Review
     public function status(): ReviewStatus
     {
         return $this->status;
+    }
+
+    public static function submit(
+        int $orderId,
+        int $clientId,
+        int $rating,
+        ?string $comment,
+    ): self {
+        if ($rating < 1 || $rating > 5) {
+            throw new ReviewPolicyViolation('Оценка должна быть от 1 до 5.');
+        }
+
+        return new self(
+            id: null,
+            orderId: $orderId,
+            clientId: $clientId,
+            rating: $rating,
+            comment: $comment,
+            status: ReviewStatus::Pending,
+        );
+    }
+
+    public function approve(): self
+    {
+        $clone = clone $this;
+        $clone->status = ReviewStatus::Approved;
+
+        return $clone;
+    }
+
+    public function reject(): self
+    {
+        $clone = clone $this;
+        $clone->status = ReviewStatus::Rejected;
+
+        return $clone;
+    }
+
+    public function assignId(int $id): self
+    {
+        $clone = clone $this;
+        $clone->id = $id;
+
+        return $clone;
     }
 }

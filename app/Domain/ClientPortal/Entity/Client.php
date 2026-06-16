@@ -48,4 +48,53 @@ final class Client
     {
         return $this->requiresPasswordSet;
     }
+
+    public static function register(
+        string $phone,
+        string $fullName,
+        ?string $email = null,
+        ?string $birthDate = null,
+        ?string $deliveryAddress = null,
+    ): self {
+        return new self(
+            id: null,
+            phone: $phone,
+            fullName: $fullName,
+            email: $email,
+            birthDate: $birthDate,
+            deliveryAddress: $deliveryAddress,
+            requiresPasswordSet: false,
+        );
+    }
+
+    public function updateProfile(
+        string $fullName,
+        ?string $email,
+        ?string $birthDate,
+        ?string $deliveryAddress,
+    ): self {
+        $clone = clone $this;
+        $clone->fullName = $fullName;
+        $clone->email = $email;
+        $clone->birthDate = $birthDate;
+        $clone->deliveryAddress = $deliveryAddress;
+
+        return $clone;
+    }
+
+    public function markPasswordSet(): self
+    {
+        $clone = clone $this;
+        $clone->requiresPasswordSet = false;
+
+        return $clone;
+    }
+
+    public function assignId(int $id): self
+    {
+        $clone = clone $this;
+        $clone->id = $id;
+
+        return $clone;
+    }
 }

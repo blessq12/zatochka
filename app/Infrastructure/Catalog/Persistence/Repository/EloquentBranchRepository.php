@@ -20,6 +20,13 @@ final class EloquentBranchRepository implements BranchRepositoryInterface
         return $model ? $this->mapper->toDomain($model) : null;
     }
 
+    public function findFirstActive(): ?Branch
+    {
+        $model = BranchModel::query()->where('is_active', true)->orderBy('id')->first();
+
+        return $model ? $this->mapper->toDomain($model) : null;
+    }
+
     public function save(Branch $branch): Branch
     {
         $model = $branch->id() !== null

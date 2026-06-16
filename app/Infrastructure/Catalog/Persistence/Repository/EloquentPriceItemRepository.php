@@ -24,4 +24,14 @@ final class EloquentPriceItemRepository implements PriceItemRepositoryInterface
 
         return $this->mapper->toDomain($model);
     }
+
+    public function findByPriceBlockId(int $priceBlockId): array
+    {
+        return PriceItemModel::query()
+            ->where('price_block_id', $priceBlockId)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (PriceItemModel $model) => $this->mapper->toDomain($model))
+            ->all();
+    }
 }

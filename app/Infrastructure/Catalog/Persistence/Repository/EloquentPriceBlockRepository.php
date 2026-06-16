@@ -31,4 +31,13 @@ final class EloquentPriceBlockRepository implements PriceBlockRepositoryInterfac
 
         return $this->mapper->toDomain($model);
     }
+
+    public function findAllOrdered(): array
+    {
+        return PriceBlockModel::query()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (PriceBlockModel $model) => $this->mapper->toDomain($model))
+            ->all();
+    }
 }

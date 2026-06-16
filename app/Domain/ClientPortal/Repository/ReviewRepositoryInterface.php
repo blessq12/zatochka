@@ -8,5 +8,7 @@ interface ReviewRepositoryInterface
 {
     public function findById(int $id): ?Review;
 
+    public function findByOrderId(int $orderId): ?Review;
+
     public function save(Review $review): Review;
 }

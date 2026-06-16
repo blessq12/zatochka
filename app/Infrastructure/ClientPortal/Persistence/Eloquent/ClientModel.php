@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\ClientPortal\Persistence\Eloquent;
 
-use App\Domain\ClientPortal\Enum\ReviewStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class ClientModel extends Model

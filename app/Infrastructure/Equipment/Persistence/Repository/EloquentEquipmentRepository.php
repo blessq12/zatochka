@@ -31,4 +31,37 @@ final class EloquentEquipmentRepository implements EquipmentRepositoryInterface
 
         return $this->mapper->toDomain($model);
     }
+
+    public function findBySerialNumber(string $serial): ?Equipment
+    {
+        $model = EquipmentModel::query()
+            ->whereRaw('CAST(serial_numbers AS TEXT) LIKE ?', ['%"'.$serial.'"%'])
+            ->first();
+
+        return $model ? $this->mapper->toDomain($model) : null;
+    }
+
+    public function search(?string $query, int $page, int $perPage): array
+    {
+        $builder = EquipmentModel::query();
+
+        if ($query !== null && $query !== '') {
+            $builder->where(function ($q) use ($query): void {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('brand', 'like', "%{$query}%")
+                    ->orWhere('model', 'like', "%{$query}%")
+                    ->orWhereRaw('CAST(serial_numbers AS TEXT) LIKE ?', ['%'.$query.'%']);
+            });
+        }
+
+        $builder->orderBy('name');
+
+        $total = (clone $builder)->count();
+        $models = $builder->forPage($page, $perPage)->get();
+
+        return [
+            'items' => $models->map(fn (EquipmentModel $model) => $this->mapper->toDomain($model))->all(),
+            'total' => $total,
+        ];
+    }
 }

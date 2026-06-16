@@ -2,6 +2,8 @@
 
 namespace App\Domain\ClientPortal\Entity;
 
+use App\Domain\ClientPortal\Exception\SiteLeadPolicyViolation;
+
 final class SiteLead
 {
     /**
@@ -69,5 +71,53 @@ final class SiteLead
     public function orderId(): ?int
     {
         return $this->orderId;
+    }
+
+    public function assignId(int $id): self
+    {
+        $clone = clone $this;
+        $clone->id = $id;
+
+        return $clone;
+    }
+
+    /**
+     * @param  list<string>  $serviceTypes
+     */
+    public static function create(
+        string $fullName,
+        string $phone,
+        array $serviceTypes,
+        ?string $email = null,
+        ?string $comment = null,
+        bool $needsDelivery = false,
+        ?string $deliveryAddress = null,
+    ): self {
+        return new self(
+            id: null,
+            fullName: $fullName,
+            phone: $phone,
+            email: $email,
+            serviceTypes: $serviceTypes,
+            comment: $comment,
+            needsDelivery: $needsDelivery,
+            deliveryAddress: $deliveryAddress,
+            converted: false,
+            orderId: null,
+        );
+    }
+
+    /** POL-09: конвертация один раз. */
+    public function markConverted(int $orderId): self
+    {
+        if ($this->converted) {
+            throw new SiteLeadPolicyViolation('Заявка уже конвертирована в заказ.');
+        }
+
+        $clone = clone $this;
+        $clone->converted = true;
+        $clone->orderId = $orderId;
+
+        return $clone;
     }
 }

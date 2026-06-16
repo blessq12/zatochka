@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Shared\Provider;
 
+use App\Application\OrderFulfillment\Port\PdfRendererInterface;
 use App\Domain\Catalog\Repository\BranchRepositoryInterface;
 use App\Domain\Catalog\Repository\PriceBlockRepositoryInterface;
 use App\Domain\Catalog\Repository\PriceItemRepositoryInterface;
@@ -23,6 +24,7 @@ use App\Infrastructure\ClientPortal\Persistence\Repository\EloquentReviewReposit
 use App\Infrastructure\ClientPortal\Persistence\Repository\EloquentSiteLeadRepository;
 use App\Infrastructure\Equipment\Persistence\Repository\EloquentEquipmentRepository;
 use App\Infrastructure\Identity\Persistence\Repository\EloquentMasterRepository;
+use App\Infrastructure\OrderFulfillment\Pdf\DomPdfRenderer;
 use App\Infrastructure\OrderFulfillment\Persistence\Repository\EloquentOrderRepository;
 use App\Infrastructure\Warehouse\Persistence\Repository\EloquentStockMovementRepository;
 use App\Infrastructure\Warehouse\Persistence\Repository\EloquentWarehouseItemRepository;
@@ -44,5 +46,6 @@ final class PersistenceServiceProvider extends ServiceProvider
         WarehouseItemRepositoryInterface::class => EloquentWarehouseItemRepository::class,
         StockMovementRepositoryInterface::class => EloquentStockMovementRepository::class,
         MasterRepositoryInterface::class => EloquentMasterRepository::class,
+        PdfRendererInterface::class => DomPdfRenderer::class,
     ];
 }

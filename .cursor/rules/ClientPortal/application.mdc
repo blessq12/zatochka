@@ -8,10 +8,10 @@ alwaysApply: false
 
 ## Сейчас
 
-Пустые папки Command/CommandHandler/Query/QueryHandler/Presenter.
+Commands, Queries, Handlers, Presenters — реализованы (фаза 3).
+
+Cross-BC: `SubmitReview`, `LinkGuestOrdersToClient` → `OrderRepositoryInterface`.
 
 ## Целевое (ES)
 
-`SubmitSiteLead`, `RegisterClient`, `UpdateClientProfile`, `SubmitReview`
-
-Cross-BC: `SubmitReview` проверяет `order_id` + статус issued через OrderFulfillment port.
+`GetPublicBootstrap` — Catalog BC, фаза 4.

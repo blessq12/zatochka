@@ -8,9 +8,9 @@ alwaysApply: false
 
 ## Сейчас
 
-- Auth provider: `ClientAuthModel`, guard `client` (Sanctum)
-- REST endpoints для ЛК/lead/review — **нет**
-
-## Целевое (ES)
-
-`/api/*` — bootstrap, lead, auth, ЛК, отзывы
+- `POST /api/leads` — заявка с сайта
+- `POST /api/auth/register`, `POST /api/auth/login`
+- `GET|PATCH /api/client/profile`, `POST /api/client/password`
+- `GET /api/client/orders/active`, `GET /api/client/orders/history`, `GET /api/client/orders/{id}`
+- `POST /api/client/orders/{id}/review`
+- Filament: заявки, клиенты, отзывы

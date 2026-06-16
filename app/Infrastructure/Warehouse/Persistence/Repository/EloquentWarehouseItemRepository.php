@@ -31,4 +31,26 @@ final class EloquentWarehouseItemRepository implements WarehouseItemRepositoryIn
 
         return $this->mapper->toDomain($model);
     }
+
+    public function search(?string $query, int $page, int $perPage): array
+    {
+        $builder = WarehouseItemModel::query();
+
+        if ($query !== null && $query !== '') {
+            $builder->where(function ($q) use ($query): void {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('sku', 'like', "%{$query}%");
+            });
+        }
+
+        $builder->orderBy('name');
+
+        $total = (clone $builder)->count();
+        $models = $builder->forPage($page, $perPage)->get();
+
+        return [
+            'items' => $models->map(fn (WarehouseItemModel $model) => $this->mapper->toDomain($model))->all(),
+            'total' => $total,
+        ];
+    }
 }

@@ -20,6 +20,13 @@ alwaysApply: false
 
 `leadId`, `clientId`, `equipmentId`, `masterId`, `branchId`, `warrantyParentOrderId`
 
+## Поведение Order (Entity)
+
+- `Order::create()` — фабрика, INV-07 (snapshot для гостя)
+- Переходы: `assignMaster`, `takeToWork`, `markWaitingForParts`, `resume`, `markReady`, `returnToWork`, `issue`, `cancel`
+- Содержимое: `addWork`, `removeWork` (по `sortOrder`), `setWorkPrice`, `addMaterial`, `removeMaterial`, `recalculatePrice`, `linkWarranty`
+- Исключение: `Exception\OrderPolicyViolation`
+
 ## Нет в коде
 
-Domain events, инварианты/переходы статусов, фабрики агрегата
+Domain events, Application CommandHandlers

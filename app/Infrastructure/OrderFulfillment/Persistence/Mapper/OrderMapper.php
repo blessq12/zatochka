@@ -41,6 +41,7 @@ final class OrderMapper
             takenAt: $this->toImmutable($model->taken_at),
             readyAt: $this->toImmutable($model->ready_at),
             issuedAt: $this->toImmutable($model->issued_at),
+            createdAt: $this->toImmutable($model->created_at),
             works: $model->relationLoaded('works')
                 ? $model->works->map(fn (OrderWorkModel $work) => new OrderWork(
                     id: $work->id,

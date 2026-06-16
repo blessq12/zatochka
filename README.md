@@ -1,61 +1,52 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ЗАТОЧКА.ТСК
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Бэкенд мастерской (заточка + ремонт, Томск). Laravel-монолит, DDD + Hexagonal, 6 bounded contexts.
 
-## About Laravel
+## Документация домена
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Источник истины по бизнес-логике: [`es/`](es/README.md) (Event Storming, 12 групп — завершён).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Корневой контекст: **OrderFulfillment** → агрегат **Order**.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Статус слоёв
 
-## Learning Laravel
+| Слой | Статус |
+|------|--------|
+| `app/Domain/{BC}/` | ✅ сущности, enum, ports, поведение Order |
+| `app/Infrastructure/{BC}/` | ✅ Eloquent, Mapper, Repository |
+| `app/Application/{BC}/` | ✅ все 6 BC (use cases) |
+| API публичный `/api/*` | ✅ bootstrap, leads, auth, ЛК |
+| API POS `/api/pos/*` | ✅ заказы, склад, оборудование, dashboard |
+| Filament `/cp` | ✅ заказы, заявки, клиенты, отзывы, склад, оборудование |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Подробнее: [`.cursor/index.md`](.cursor/index.md), [`app/Application/README.md`](app/Application/README.md).
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Структура
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```
+app/
+├── Domain/{BC}/          # Entity, Enum, Repository (ports), Service
+├── Application/{BC}/     # Command, Query, Handler, Presenter
+├── Infrastructure/{BC}/  # Persistence, Auth
+└── Shared/ValueObject/   # EntityId, Phone, Email, Money
+```
 
-## Laravel Sponsors
+BC: `OrderFulfillment`, `ClientPortal`, `Catalog`, `Equipment`, `Warehouse`, `Identity`.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Запуск
 
-### Premium Partners
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## План реализации
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+1. **Фаза 0** — Domain: поведение Order, инварианты ✅
+2. **Фаза 1** — lifecycle заказа (Application + Filament + POS) ✅
+3. **Фаза 2** — цены, материалы, заметки мастера ✅
+4. **Фаза 3** — клиентский контур (Lead, ЛК, отзывы) ✅
+5. **Фаза 4** — bootstrap, склад, оборудование ✅
+6. **Фаза 5** — PDF on-the-fly, read models ✅

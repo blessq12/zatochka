@@ -6,6 +6,8 @@ use App\Domain\OrderFulfillment\Entity\Order;
 use App\Domain\OrderFulfillment\Entity\OrderMaterial;
 use App\Domain\OrderFulfillment\Entity\OrderTool;
 use App\Domain\OrderFulfillment\Entity\OrderWork;
+use App\Domain\OrderFulfillment\Enum\OrderStatus;
+use App\Domain\OrderFulfillment\Enum\PosOrderListTab;
 use App\Domain\OrderFulfillment\Repository\OrderRepositoryInterface;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderMaterialModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
@@ -55,6 +57,134 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
             ->where('order_number', 'like', "ORD-{$year}-%")
             ->orderByDesc('id')
             ->value('order_number');
+    }
+
+  /** @return array{items: list<Order>, total: int} */
+    public function findForMaster(int $masterId, ?PosOrderListTab $tab, int $page, int $perPage): array
+    {
+        $query = OrderModel::query()
+            ->with(['works', 'tools', 'materials'])
+            ->where('master_id', $masterId);
+
+        if ($tab !== null) {
+            $query->where('status', $tab->orderStatus());
+        }
+
+        $query
+            ->orderByRaw("CASE WHEN urgency = 'urgent' THEN 0 ELSE 1 END")
+            ->orderByDesc('created_at');
+
+        $total = (clone $query)->count();
+        $models = $query->forPage($page, $perPage)->get();
+
+        return [
+            'items' => $models->map(fn (OrderModel $model) => $this->mapper->toDomain($model))->all(),
+            'total' => $total,
+        ];
+    }
+
+    public function countByTabForMaster(int $masterId): array
+    {
+        $raw = OrderModel::query()
+            ->where('master_id', $masterId)
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        return [
+            'new' => (int) ($raw[OrderStatus::New->value] ?? 0),
+            'active' => (int) ($raw[OrderStatus::InWork->value] ?? 0),
+            'waiting_parts' => (int) ($raw[OrderStatus::WaitingParts->value] ?? 0),
+            'completed' => (int) ($raw[OrderStatus::Ready->value] ?? 0),
+        ];
+    }
+
+    public function findActiveForClient(int $clientId, int $page, int $perPage): array
+    {
+        $query = OrderModel::query()
+            ->with(['works', 'tools', 'materials'])
+            ->where('client_id', $clientId)
+            ->whereNotIn('status', [OrderStatus::Issued, OrderStatus::Cancelled]);
+
+        return $this->paginateOrders($query, $page, $perPage);
+    }
+
+    public function findHistoryForClient(int $clientId, int $page, int $perPage): array
+    {
+        $query = OrderModel::query()
+            ->with(['works', 'tools', 'materials'])
+            ->where('client_id', $clientId)
+            ->whereIn('status', [OrderStatus::Issued, OrderStatus::Cancelled]);
+
+        return $this->paginateOrders($query, $page, $perPage);
+    }
+
+    public function findByIdForClient(int $orderId, int $clientId): ?Order
+    {
+        $model = OrderModel::query()
+            ->with(['works', 'tools', 'materials'])
+            ->where('id', $orderId)
+            ->where('client_id', $clientId)
+            ->first();
+
+        return $model ? $this->mapper->toDomain($model) : null;
+    }
+
+    public function linkGuestOrdersByPhone(int $clientId, string $phone): int
+    {
+        return OrderModel::query()
+            ->whereNull('client_id')
+            ->where('client_snapshot->phone', $phone)
+            ->update(['client_id' => $clientId]);
+    }
+
+    public function findByEquipmentId(int $equipmentId, int $limit = 20): array
+    {
+        return OrderModel::query()
+            ->with(['works', 'tools', 'materials'])
+            ->where('equipment_id', $equipmentId)
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn (OrderModel $model) => $this->mapper->toDomain($model))
+            ->all();
+    }
+
+    public function averageWorkDurationSecondsForMaster(int $masterId): ?int
+    {
+        $models = OrderModel::query()
+            ->where('master_id', $masterId)
+            ->whereNotNull('taken_at')
+            ->get(['taken_at', 'ready_at']);
+
+        if ($models->isEmpty()) {
+            return null;
+        }
+
+        $totalSeconds = 0;
+
+        foreach ($models as $model) {
+            $end = $model->ready_at ?? now();
+            $totalSeconds += $model->taken_at->diffInSeconds($end);
+        }
+
+        return (int) round($totalSeconds / $models->count());
+    }
+
+    /**
+     * @return array{items: list<Order>, total: int}
+     */
+    private function paginateOrders(\Illuminate\Database\Eloquent\Builder $query, int $page, int $perPage): array
+    {
+        $query->orderByDesc('created_at');
+
+        $total = (clone $query)->count();
+        $models = $query->forPage($page, $perPage)->get();
+
+        return [
+            'items' => $models->map(fn (OrderModel $model) => $this->mapper->toDomain($model))->all(),
+            'total' => $total,
+        ];
     }
 
     /** @param list<OrderWork> $works */

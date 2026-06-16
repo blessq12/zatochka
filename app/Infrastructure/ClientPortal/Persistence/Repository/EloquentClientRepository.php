@@ -27,13 +27,18 @@ final class EloquentClientRepository implements ClientRepositoryInterface
         return $model ? $this->mapper->toDomain($model) : null;
     }
 
-    public function save(Client $client): Client
+    public function save(Client $client, ?string $hashedPassword = null): Client
     {
         $model = $client->id() !== null
             ? ClientModel::query()->findOrFail($client->id())
             : new ClientModel;
 
         $this->mapper->fillModel($client, $model);
+
+        if ($hashedPassword !== null) {
+            $model->password = $hashedPassword;
+        }
+
         $model->save();
 
         return $this->mapper->toDomain($model);

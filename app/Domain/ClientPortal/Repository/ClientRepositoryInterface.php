@@ -10,5 +10,5 @@ interface ClientRepositoryInterface
 
     public function findByPhone(string $phone): ?Client;
 
-    public function save(Client $client): Client;
+    public function save(Client $client, ?string $hashedPassword = null): Client;
 }

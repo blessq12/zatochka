@@ -34,8 +34,33 @@ class DomainSeeder extends Seeder
             ],
         );
 
+        UserModel::query()->firstOrCreate(
+            ['email' => 'manager@zatochka.local'],
+            [
+                'name' => 'Демо',
+                'surname' => 'Менеджер',
+                'phone' => '+79000000002',
+                'password' => Hash::make('password'),
+            ],
+        );
+
         $this->seedPrices();
         $this->seedSiteSettings($branch);
+        $this->seedWarehouse();
+    }
+
+    private function seedWarehouse(): void
+    {
+        \App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel::query()->firstOrCreate(
+            ['sku' => 'DEMO-001'],
+            [
+                'name' => 'Демо-запчасть',
+                'category_name' => 'Расходники',
+                'quantity' => 10,
+                'unit' => 'шт',
+                'price' => 250,
+            ],
+        );
     }
 
     private function seedPrices(): void
