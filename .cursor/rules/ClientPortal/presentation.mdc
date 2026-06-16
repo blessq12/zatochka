@@ -1,17 +1,16 @@
 ---
-description: ClientPortal — presentation layer
-globs: app/Http/**/*Client*,app/Http/**/*Lead*,app/Http/**/*Review*,routes/api.php
+description: ClientPortal — presentation (текущий код)
+globs: app/Http/**,routes/api.php,config/auth.php
 alwaysApply: false
 ---
 
 # ClientPortal / Presentation
 
-## Каналы
+## Сейчас
 
-- **Публичный API `/api/*`** — bootstrap, lead, auth, ЛК, отзывы
+- Auth provider: `ClientAuthModel`, guard `client` (Sanctum)
+- REST endpoints для ЛК/lead/review — **нет**
 
-## TODO
+## Целевое (ES)
 
-- [ ] GetPublicBootstrap — один endpoint
-- [ ] ЛК: bucket active/history без статусов цеха (ADR-005)
-- [ ] Request validation, без доменной логики
+`/api/*` — bootstrap, lead, auth, ЛК, отзывы

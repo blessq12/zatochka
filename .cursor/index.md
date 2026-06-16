@@ -1,22 +1,34 @@
 # Индекс правил Cursor — бэкенд
 
-DDD + Hexagonal, **BC-first на каждом слое**.
+DDD + Hexagonal, BC-first. Описание **текущего кода**, не roadmap.
 
-## Слои
+## Статус слоёв (сейчас)
 
-| Слой | Путь |
-|------|------|
-| Shared Kernel | `app/Shared/ValueObject/` |
-| Domain | `app/Domain/{BC}/Entity|ValueObject|Enum|Repository|Service/` |
-| Application | `app/Application/{BC}/Command|CommandHandler|Query|QueryHandler|Presenter/` |
-| Infrastructure | `app/Infrastructure/{BC}/Persistence|Auth/` |
-| DI | `app/Infrastructure/Shared/Provider/` |
+| Слой | Статус |
+|------|--------|
+| `app/Shared/ValueObject/` | ✅ EntityId, Phone, Email, Money (VO-заглушки, в домене пока не используются) |
+| `app/Domain/{BC}/` | ✅ Entity, Enum, Repository (ports), Service/ValueObject где нужно |
+| `app/Infrastructure/{BC}/` | ✅ Persistence (Eloquent, Mapper, Repository adapters), Auth где нужно |
+| `app/Application/{BC}/` | ⬜ каркас папок (`.gitkeep`), **классов нет** |
+| `app/Http/`, Filament | ⬜ SPA catch-all; API/Filament по BC **не реализованы** |
 
 ## BC
 
-OrderFulfillment · ClientPortal · Catalog · Equipment · Warehouse · Identity
+| BC | README | Domain | Infrastructure |
+|----|--------|--------|----------------|
+| OrderFulfillment | [rules/OrderFulfillment](./rules/OrderFulfillment/) | 10 классов | Eloquent×4, Mapper, Repository |
+| ClientPortal | [rules/ClientPortal](./rules/ClientPortal/) | 7 классов | Eloquent×3, Auth, Mapper×3, Repository×3 |
+| Catalog | [rules/Catalog](./rules/Catalog/) | 8 классов | Eloquent×4, Mapper×4, Repository×4 |
+| Equipment | [rules/Equipment](./rules/Equipment/) | 2 класса | Eloquent, Mapper, Repository |
+| Warehouse | [rules/Warehouse](./rules/Warehouse/) | 4 класса | Eloquent×2, Mapper×2, Repository×2 |
+| Identity | [rules/Identity](./rules/Identity/) | 2 класса | UserModel, Mapper, Repository |
 
-## Документация
+## Общие правила
 
-- Домен: `es/`
-- DI: `PersistenceServiceProvider.php`
+- [backend/](./rules/backend/) — слои, cross-BC, конвенции
+
+## Источники
+
+- Бизнес-правила (ES): `es/`
+- DI портов: `app/Infrastructure/Shared/Provider/PersistenceServiceProvider.php`
+- Сидер: `database/seeders/DomainSeeder.php` (пишет через Eloquent models)

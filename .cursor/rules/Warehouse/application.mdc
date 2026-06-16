@@ -1,16 +1,9 @@
 ---
-description: Warehouse — application layer
+description: Warehouse — application layer (текущий код)
 globs: app/Application/Warehouse/**
 alwaysApply: false
 ---
 
 # Warehouse / Application
 
-## Scope
-
-ReceiveStock, WriteOffStock. AddMaterialToOrder — в OrderFulfillment (cross-BC).
-
-## TODO
-
-- [ ] ReceiveStock / WriteOffStock — менеджер в Filament
-- [ ] Проверка quantity >= 0
+Пустой каркас. Целевое: `ReceiveStock`, `WriteOffStock` (Filament).

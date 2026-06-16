@@ -1,13 +1,25 @@
 ---
-description: OrderFulfillment — domain layer
+description: OrderFulfillment — domain layer (текущий код)
 globs: app/Domain/OrderFulfillment/**
 alwaysApply: false
 ---
 
 # OrderFulfillment / Domain
 
-## Scope
+Чистый PHP, без Eloquent.
 
-Entity: Order, OrderWork, OrderTool, OrderMaterial. Enum: OrderStatus, OrderSource, OrderUrgency. Service: OrderNumberGenerator.
+## Классы
 
-Пути: `app/Domain/OrderFulfillment/Entity|Enum|ValueObject|Repository|Service/`
+- **Entity:** `Order`, `OrderWork`, `OrderTool`, `OrderMaterial`
+- **Enum:** `OrderStatus`, `OrderSource`, `OrderUrgency`
+- **ValueObject:** `OrderNumber`, `ClientSnapshot`
+- **Repository:** `OrderRepositoryInterface` — `findById`, `save`, `findLastOrderNumberForYear`
+- **Service:** `OrderNumberGenerator` → port `OrderRepositoryInterface`
+
+## FK на другие BC (только int|null)
+
+`leadId`, `clientId`, `equipmentId`, `masterId`, `branchId`, `warrantyParentOrderId`
+
+## Нет в коде
+
+Domain events, инварианты/переходы статусов, фабрики агрегата

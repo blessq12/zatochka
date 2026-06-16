@@ -1,18 +1,18 @@
 ---
-description: OrderFulfillment — presentation layer
-globs: app/Http/**/*Order*,app/Filament/**/*Order*
+description: OrderFulfillment — presentation (текущий код)
+globs: app/Http/**,routes/**
 alwaysApply: false
 ---
 
 # OrderFulfillment / Presentation
 
-## Каналы
+## Сейчас
 
-- **Filament `/cp`** — менеджер: создание, назначение мастера, выдача, цены
-- **POS `/api/pos/*`** — мастер: воронка, работы, статусы
+- `routes/web.php` — SPA catch-all (`MainController`)
+- `routes/api.php` — заглушка `GET /api/user`
+- **Нет** контроллеров заказов, Filament, POS
 
-## TODO
+## Целевые каналы (ES)
 
-- [ ] Маппинг команд → endpoints по каналам
-- [ ] Фильтрация POS: только заказы с `master_id` = текущий мастер
-- [ ] Request/Resource DTO, без бизнес-логики
+- Filament `/cp` — менеджер
+- POS `/api/pos/*` — мастер (фильтр по `master_id`)

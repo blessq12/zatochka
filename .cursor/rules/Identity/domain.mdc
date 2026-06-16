@@ -1,17 +1,18 @@
 ---
-description: Identity — domain layer
-globs: app/Models/User.php,app/Policies/**,database/migrations/*users*
+description: Identity — domain layer (текущий код)
+globs: app/Domain/Identity/**,app/Infrastructure/Identity/**,app/Models/User.php
 alwaysApply: false
 ---
 
 # Identity / Domain
 
-## Scope
+- **Entity:** `Master` (доменное имя мастера)
+- **Repository:** `MasterRepositoryInterface`
 
-User — не доменный агрегат в классическом DDD, но отдельный BC по ES.
+Persistence/auth: `UserModel` + `App\Models\User` — не domain entity, infrastructure adapter.
 
-## TODO
+`Order.masterId` в OrderFulfillment ссылается на `users.id`.
 
-- [ ] User vs Client — не смешивать модели и guards
-- [ ] master_id на Order → User
-- [ ] Policies для Filament / POS
+## Нет в коде
+
+Policies, POS token issuance handlers

@@ -1,16 +1,9 @@
 ---
-description: Equipment — application layer
+description: Equipment — application layer (текущий код)
 globs: app/Application/Equipment/**
 alwaysApply: false
 ---
 
 # Equipment / Application
 
-## Scope
-
-RegisterEquipment, LinkEquipmentToOrder.
-
-## TODO
-
-- [ ] LinkEquipmentToOrder — cross-BC: обновление Order.equipment_id
-- [ ] Поиск оборудования для POS (query)
+Пустой каркас. Целевое: `RegisterEquipment`, `LinkEquipmentToOrder` (cross-BC → Order).

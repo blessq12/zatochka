@@ -1,20 +1,25 @@
 ---
-description: Границы bounded contexts и cross-BC интеграция
+description: Границы bounded contexts — текущий код
 globs: app/**/*.php
 alwaysApply: false
 ---
 
-# Cross-BC
+# Cross-BC (как в коде сейчас)
 
 6 BC: OrderFulfillment, ClientPortal, Equipment, Warehouse, Catalog, Identity.
 
-## Правила
+## Реализовано
 
-- Связь между BC — только через `*_id` (FK), не через Eloquent-связи в доменной логике
-- Кросс-BC сценарии — application services (CreateOrder из Lead, SubmitReview)
-- Общая БД, один деплой (монолит)
+- Domain Entity хранят только `*_id` на другие BC (без объектных ссылок)
+- Eloquent models **без** cross-BC `belongsTo`/`hasMany` (кроме дочерних сущностей агрегата Order)
+- Общая БД, монолит, FK в миграциях
 
-## TODO
+## Ещё не реализовано
 
-- [ ] Список разрешённых cross-BC application services
-- [ ] Запреты: какие связи Eloquent допустимы только в read/query слое
+- Application orchestration (CreateOrder из SiteLead, SubmitReview)
+- Read models / query joins across BC
+- Список явных cross-BC application services
+
+## Правило на будущее
+
+Кросс-BC сценарии — только `Application/{BC}/CommandHandler`, не Domain и не Eloquent-связи.

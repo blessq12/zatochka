@@ -1,18 +1,21 @@
 ---
-description: ClientPortal — domain layer
+description: ClientPortal — domain layer (текущий код)
 globs: app/Domain/ClientPortal/**
 alwaysApply: false
 ---
 
 # ClientPortal / Domain
 
-## Scope
+## Классы
 
-Модели: Client, Review, SiteLead. Enum: ReviewStatus.
+- **Entity:** `Client`, `SiteLead`, `Review`
+- **Enum:** `ReviewStatus` — pending, approved, rejected
+- **Repository:** `ClientRepositoryInterface`, `SiteLeadRepositoryInterface`, `ReviewRepositoryInterface`
 
-## TODO
+## Поля SiteLead (entity)
 
-- [ ] SiteLead: converted + order_id после CreateOrder
-- [ ] Review: только для issued-заказов
-- [ ] Client.phone — уникальный ключ
-- [ ] Events: SiteLeadReceived, ClientRegistered, ReviewSubmitted
+`converted`, `orderId` — есть в entity/migration; логика конвертации **не** в Application.
+
+## Нет в коде
+
+Events, валидация SubmitReview (issued), auth use cases

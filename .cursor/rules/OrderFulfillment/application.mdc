@@ -1,20 +1,19 @@
 ---
-description: OrderFulfillment — application layer
+description: OrderFulfillment — application layer (текущий код)
 globs: app/Application/OrderFulfillment/**
 alwaysApply: false
 ---
 
 # OrderFulfillment / Application
 
-## Структура
+## Сейчас
 
-```
-app/Application/OrderFulfillment/
-├── Command/
-├── CommandHandler/
-├── Query/
-├── QueryHandler/
-└── Presenter/
-```
+Папки `Command/`, `CommandHandler/`, `Query/`, `QueryHandler/`, `Presenter/` — **пустые** (`.gitkeep`).
 
-Use cases: CreateOrder, AssignMasterToOrder, TakeOrderToWork, IssueOrder, RecalculateOrderPrice, …
+## Целевые use cases (ES, не в коде)
+
+`CreateOrder`, `AssignMasterToOrder`, `TakeOrderToWork`, `IssueOrder`, `RecalculateOrderPrice`, …
+
+## Правило
+
+Handler инжектит `OrderRepositoryInterface` и порты других BC, не Eloquent.

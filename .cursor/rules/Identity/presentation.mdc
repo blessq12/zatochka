@@ -1,17 +1,16 @@
 ---
-description: Identity — presentation layer
-globs: app/Http/**/*Auth*,app/Filament/**/*User*,config/auth.php
+description: Identity — presentation (текущий код)
+globs: app/Http/**,routes/**,config/auth.php
 alwaysApply: false
 ---
 
 # Identity / Presentation
 
-## Каналы
+## Сейчас
 
-- **Filament** — CRUD мастеров
-- **POS** — Sanctum login
+- `config/auth.php` — guards `web`, `client`
+- Нет login endpoints для POS / Filament
 
-## TODO
+## Правило
 
-- [ ] Guard separation: web / client / sanctum
-- [ ] Не использовать User для публичного клиентского API
+Не использовать `User` для публичного клиентского API — только `ClientAuthModel`.

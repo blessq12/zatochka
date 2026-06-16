@@ -1,17 +1,17 @@
 ---
-description: ClientPortal — application layer
+description: ClientPortal — application layer (текущий код)
 globs: app/Application/ClientPortal/**
 alwaysApply: false
 ---
 
 # ClientPortal / Application
 
-## Scope
+## Сейчас
 
-SubmitSiteLead, RegisterClient, SubmitReview, LinkGuestOrdersToClient (частично cross-BC).
+Пустые папки Command/CommandHandler/Query/QueryHandler/Presenter.
 
-## TODO
+## Целевое (ES)
 
-- [ ] SubmitSiteLead — не создаёт Order
-- [ ] SubmitReview — проверка order.status = issued через ID
-- [ ] Guard `client` для публичного API
+`SubmitSiteLead`, `RegisterClient`, `UpdateClientProfile`, `SubmitReview`
+
+Cross-BC: `SubmitReview` проверяет `order_id` + статус issued через OrderFulfillment port.

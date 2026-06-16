@@ -1,26 +1,41 @@
 # BC: Идентичность (Identity)
 
-Мастера (User), auth guards. Client — отдельная модель в ClientPortal.
+Мастера (User/Master). Клиент — отдельный BC ClientPortal.
 
-## Сущности
+## Состояние кода
 
-- `User` — мастер, Sanctum POS token
-- Guards: `web` (Filament), `client` (API), `sanctum` (POS)
+| Слой | Статус |
+|------|--------|
+| Domain | ✅ |
+| Infrastructure | ✅ |
+| Application | ⬜ каркас |
+| Presentation | ⬜ (только Laravel auth config) |
 
-## Код
+## Domain (`app/Domain/Identity/`)
 
-- `app/Models/User.php`
-- `config/auth.php`
-- Application: `app/Application/Identity/` _(будущее)_
+| Папка | Классы |
+|-------|--------|
+| `Entity/` | `Master` — name, surname, email, phone, notificationsEnabled |
+| `Repository/` | `MasterRepositoryInterface` |
 
-## Правила по слоям
+## Infrastructure (`app/Infrastructure/Identity/`)
 
-| Файл | Слой | Globs |
-|------|------|-------|
-| `domain.mdc` | Domain | User, policies |
-| `application.mdc` | Application | auth use cases |
-| `presentation.mdc` | Presentation | login, token endpoints |
+| Папка | Классы |
+|-------|--------|
+| `Persistence/Eloquent/` | `UserModel` — таблица `users`, Sanctum, Factory |
+| `Persistence/Mapper/` | `MasterMapper` |
+| `Persistence/Repository/` | `EloquentMasterRepository` |
+
+## Laravel glue
+
+- `app/Models/User.php` extends `UserModel`
+- `config/auth.php`: guard `web` → User; guard `client` → `ClientAuthModel` (ClientPortal)
+- `DomainSeeder`: demo `master@zatochka.local`
+
+## Application / Presentation
+
+Нет POS login, Filament user CRUD, policies.
 
 ## ES
 
-- [05-агрегаты — Идентичность](../../../es/05-агрегаты/README.md#bc-идентичность)
+- [Идентичность](../../../es/05-агрегаты/README.md#bc-идентичность)

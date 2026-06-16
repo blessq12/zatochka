@@ -1,26 +1,47 @@
 # BC: Исполнение заказа (OrderFulfillment)
 
-**Корень домена:** Order. Центральный агрегат системы.
+**Корень домена:** `Order` (ES). Центральный агрегат.
 
-## Агрегаты
+## Состояние кода
 
-- `Order` (корень) — Work, OrderTool, OrderMaterial
-- Конвертация `SiteLead` → Order (cross-BC с ClientPortal)
+| Слой | Статус |
+|------|--------|
+| Domain | ✅ |
+| Infrastructure | ✅ |
+| Application | ⬜ каркас |
+| Presentation | ⬜ нет API/Filament |
 
-## Код
+## Domain (`app/Domain/OrderFulfillment/`)
 
-- Domain: `app/Domain/OrderFulfillment/`
-- Application: `app/Application/OrderFulfillment/` _(будущее)_
+| Папка | Классы |
+|-------|--------|
+| `Entity/` | `Order`, `OrderWork`, `OrderTool`, `OrderMaterial` |
+| `Enum/` | `OrderStatus`, `OrderSource`, `OrderUrgency` |
+| `ValueObject/` | `OrderNumber`, `ClientSnapshot` |
+| `Repository/` | `OrderRepositoryInterface` |
+| `Service/` | `OrderNumberGenerator` |
 
-## Правила по слоям
+Поведение на `Order`: `isActive()`, `clientDisplayName()`, `clientDisplayPhone()`. Cross-BC — только ID-поля.
 
-| Файл | Слой | Globs |
-|------|------|-------|
-| `domain.mdc` | Domain | `app/Domain/OrderFulfillment/**` |
-| `application.mdc` | Application | `app/Application/OrderFulfillment/**` |
-| `presentation.mdc` | Presentation | POS + Filament endpoints заказа |
+## Infrastructure (`app/Infrastructure/OrderFulfillment/`)
+
+| Папка | Классы |
+|-------|--------|
+| `Persistence/Eloquent/` | `OrderModel`, `OrderWorkModel`, `OrderToolModel`, `OrderMaterialModel` |
+| `Persistence/Mapper/` | `OrderMapper` |
+| `Persistence/Repository/` | `EloquentOrderRepository` (save агрегата + sync children) |
+
+`OrderModel`: relations только на works/tools/materials (внутри агрегата).
+
+## Application
+
+`app/Application/OrderFulfillment/{Command,CommandHandler,Query,QueryHandler,Presenter}/` — пусто.
+
+## Presentation
+
+Не реализовано. Целевые каналы по ES: Filament `/cp`, POS `/api/pos/*`.
 
 ## ES
 
-- [05-агрегаты — Order](../../../es/05-агрегаты/README.md#агрегат-order-корень-bc-исполнение-заказа)
-- [04-команды](../../../es/04-команды/README.md)
+- [Order](../../../es/05-агрегаты/README.md#агрегат-order-корень-bc-исполнение-заказа)
+- [Команды](../../../es/04-команды/README.md)

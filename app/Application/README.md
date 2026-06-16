@@ -1,24 +1,34 @@
 # Application Layer
 
-Use cases по bounded contexts. CQRS-lite.
+Use cases по bounded contexts. **Сейчас — только каркас папок.**
 
-## Структура
+## Статус
+
+| BC | Command | CommandHandler | Query | QueryHandler | Presenter |
+|----|---------|----------------|-------|--------------|-----------|
+| Все 6 BC | `.gitkeep` | `.gitkeep` | `.gitkeep` | `.gitkeep` | `.gitkeep` |
+
+Классов PHP нет. Бизнес-сценарии из `es/04-команды` ещё не реализованы.
+
+## Структура (факт)
 
 ```
 app/Application/{BC}/
-├── Command/           # write intent + input DTO
-├── CommandHandler/    # orchestration, транзакции
-├── Query/             # read intent + input DTO
-├── QueryHandler/      # чтение через domain ports
-└── Presenter/         # output DTO для API/Filament
+├── Command/
+├── CommandHandler/
+├── Query/
+├── QueryHandler/
+└── Presenter/
 ```
 
-## BC
+BC: `OrderFulfillment`, `ClientPortal`, `Catalog`, `Equipment`, `Warehouse`, `Identity`
 
-OrderFulfillment, ClientPortal, Catalog, Equipment, Warehouse, Identity
+## Правила (на реализацию)
 
-## Правила
+- Handler → `Domain/{BC}/Repository/*Interface`, не Eloquent
+- Cross-BC — только в CommandHandler (inject ports соседних BC)
+- Http/Filament вызывает Handler, не Domain напрямую
 
-- Handler → Domain ports (`*RepositoryInterface`), не Eloquent
-- Cross-BC — только в CommandHandler/QueryHandler
-- Http/Filament вызывает Handler, не Domain
+## DI
+
+Repository bindings: `app/Infrastructure/Shared/Provider/PersistenceServiceProvider.php`

@@ -1,26 +1,39 @@
 # BC: Клиентский портал (ClientPortal)
 
-Регистрация, ЛК, отзывы, приём заявок с сайта.
+ЛК, отзывы, заявки с сайта (ES). Владелец `SiteLead`.
 
-## Агрегаты
+## Состояние кода
 
-- `Client` — auth публичного API
-- `Review` — отзывы после выдачи заказа
-- `SiteLead` — заявка с сайта (владелец записи)
+| Слой | Статус |
+|------|--------|
+| Domain | ✅ |
+| Infrastructure | ✅ (+ Auth) |
+| Application | ⬜ каркас |
+| Presentation | ⬜ нет `/api` по BC |
 
-## Код
+## Domain (`app/Domain/ClientPortal/`)
 
-- Domain: `app/Domain/ClientPortal/`
-- Application: `app/Application/ClientPortal/` _(будущее)_
+| Папка | Классы |
+|-------|--------|
+| `Entity/` | `Client`, `SiteLead`, `Review` |
+| `Enum/` | `ReviewStatus` |
+| `Repository/` | `ClientRepositoryInterface`, `SiteLeadRepositoryInterface`, `ReviewRepositoryInterface` |
 
-## Правила по слоям
+## Infrastructure (`app/Infrastructure/ClientPortal/`)
 
-| Файл | Слой | Globs |
-|------|------|-------|
-| `domain.mdc` | Domain | `app/Domain/ClientPortal/**` |
-| `application.mdc` | Application | `app/Application/ClientPortal/**` |
-| `presentation.mdc` | Presentation | публичный `/api/*` |
+| Папка | Классы |
+|-------|--------|
+| `Persistence/Eloquent/` | `ClientModel`, `SiteLeadModel`, `ReviewModel` |
+| `Persistence/Mapper/` | `ClientMapper`, `SiteLeadMapper`, `ReviewMapper` |
+| `Persistence/Repository/` | `EloquentClientRepository`, `EloquentSiteLeadRepository`, `EloquentReviewRepository` |
+| `Auth/` | `ClientAuthModel` — guard `client` в `config/auth.php` |
+
+Domain `Client` и `ClientAuthModel` — разные классы (entity vs Laravel auth).
+
+## Application / Presentation
+
+Не реализованы. ES: `SubmitSiteLead`, `RegisterClient`, `SubmitReview`, публичный API.
 
 ## ES
 
-- [05-агрегаты — Client, Review, Lead](../../../es/05-агрегаты/README.md)
+- [Client, Review, Lead](../../../es/05-агрегаты/README.md)

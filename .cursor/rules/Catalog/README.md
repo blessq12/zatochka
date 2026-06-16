@@ -1,26 +1,40 @@
 # BC: Справочники (Catalog)
 
-Прайс, филиал, настройки сайта. Read-heavy.
+Прайс, филиал, настройки сайта. Read-heavy (ES).
 
-## Агрегаты / сущности
+## Состояние кода
 
-- `PriceBlock`, `PriceItem` — прайс заточка/ремонт
-- `Branch` — одна запись (техническое поле на Order)
-- `SiteSetting` — контакты, bootstrap
+| Слой | Статус |
+|------|--------|
+| Domain | ✅ |
+| Infrastructure | ✅ |
+| Application | ⬜ каркас |
+| Presentation | ⬜ нет bootstrap API / Filament |
 
-## Код
+## Domain (`app/Domain/Catalog/`)
 
-- Domain: `app/Domain/Catalog/`
-- Application: `app/Application/Catalog/` _(будущее)_
+| Папка | Классы |
+|-------|--------|
+| `Entity/` | `Branch`, `PriceBlock`, `PriceItem`, `SiteSetting` |
+| `Enum/` | `PriceType` — sharpening, repair |
+| `Repository/` | `BranchRepositoryInterface`, `PriceBlockRepositoryInterface`, `PriceItemRepositoryInterface`, `SiteSettingRepositoryInterface` |
 
-## Правила по слоям
+## Infrastructure (`app/Infrastructure/Catalog/`)
 
-| Файл | Слой | Globs |
-|------|------|-------|
-| `domain.mdc` | Domain | `app/Domain/Catalog/**` |
-| `application.mdc` | Application | `app/Application/Catalog/**` |
-| `presentation.mdc` | Presentation | Filament + GetPublicBootstrap |
+| Папка | Классы |
+|-------|--------|
+| `Persistence/Eloquent/` | `BranchModel`, `PriceBlockModel`, `PriceItemModel`, `SiteSettingModel` |
+| `Persistence/Mapper/` | по одному на entity |
+| `Persistence/Repository/` | `Eloquent*Repository` ×4 |
+
+## Данные
+
+`DomainSeeder` создаёт: филиал «Центральный», 2 блока прайса, `site_settings` (contacts, schedule, …).
+
+## Application / Presentation
+
+Не реализованы. ES: `GetPublicBootstrap`, Filament CRUD прайса.
 
 ## ES
 
-- [05-агрегаты — Справочники](../../../es/05-агрегаты/README.md#справочники-bc-справочники)
+- [Справочники](../../../es/05-агрегаты/README.md#справочники-bc-справочники)

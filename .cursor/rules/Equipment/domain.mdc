@@ -1,17 +1,12 @@
 ---
-description: Equipment — domain layer
+description: Equipment — domain layer (текущий код)
 globs: app/Domain/Equipment/**
 alwaysApply: false
 ---
 
 # Equipment / Domain
 
-## Scope
+- **Entity:** `Equipment`
+- **Repository:** `EquipmentRepositoryInterface` — `findById`, `save`
 
-Модель Equipment. Order хранит `equipment_id` — данные не дублируются (MVP).
-
-## TODO
-
-- [ ] serial_numbers — json array
-- [ ] Events: EquipmentRegistered, EquipmentLinkedToOrder
-- [ ] История ремонтов — read query по Order.equipment_id
+`serialNumbers` — `list<string>` в entity; в БД json.

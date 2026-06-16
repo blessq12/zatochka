@@ -1,25 +1,34 @@
 # BC: Склад (Warehouse)
 
-Номенклатура, остатки, ручное списание/приход.
+Номенклатура и движения (ES). MVP: ручной приход/списание.
 
-## Агрегаты
+## Состояние кода
 
-- `WarehouseItem` — name, sku, quantity, price
-- `StockMovement` — журнал движений (MVP)
+| Слой | Статус |
+|------|--------|
+| Domain | ✅ |
+| Infrastructure | ✅ |
+| Application | ⬜ каркас |
+| Presentation | ⬜ |
 
-## Код
+## Domain (`app/Domain/Warehouse/`)
 
-- Domain: `app/Domain/Warehouse/`
-- Application: `app/Application/Warehouse/` _(будущее)_
+| Папка | Классы |
+|-------|--------|
+| `Entity/` | `WarehouseItem`, `StockMovement` |
+| `Enum/` | `StockMovementType` — received, written_off |
+| `Repository/` | `WarehouseItemRepositoryInterface`, `StockMovementRepositoryInterface` |
 
-## Правила по слоям
+`StockMovement` хранит `userId`, `orderId` как FK (nullable).
 
-| Файл | Слой | Globs |
-|------|------|-------|
-| `domain.mdc` | Domain | `app/Domain/Warehouse/**` |
-| `application.mdc` | Application | `app/Application/Warehouse/**` |
-| `presentation.mdc` | Presentation | Filament + POS read-only |
+## Infrastructure (`app/Infrastructure/Warehouse/`)
+
+Eloquent×2, Mapper×2, Repository×2. `WarehouseItemModel` → hasMany movements (внутри BC).
+
+## Application / Presentation
+
+Не реализованы. ES: `ReceiveStock`, `WriteOffStock`; POS read-only склад.
 
 ## ES
 
-- [05-агрегаты — WarehouseItem](../../../es/05-агрегаты/README.md#агрегат-warehouseitem-bc-склад)
+- [WarehouseItem](../../../es/05-агрегаты/README.md#агрегат-warehouseitem-bc-склад)

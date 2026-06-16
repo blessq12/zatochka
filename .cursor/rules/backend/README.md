@@ -1,16 +1,30 @@
 # Общие правила бэкенда
 
-Cross-cutting правила для всего Laravel-бэкенда. Не привязаны к одному BC.
+Cross-cutting. Отражают **фактическую** структуру репозитория.
 
-## Файлы
+## Файлы правил
 
-| Файл | Назначение | Статус |
-|------|------------|--------|
-| `layers.mdc` | Слоистая архитектура, направление зависимостей | каркас |
-| `cross-bc.mdc` | Границы BC, интеграция по ID | каркас |
-| `conventions.mdc` | Именование команд/событий, язык кода | каркас |
+| Файл | Содержание |
+|------|------------|
+| `layers.mdc` | Дерево слоёв, зависимости (alwaysApply) |
+| `cross-bc.mdc` | Границы BC в текущем коде |
+| `conventions.mdc` | Язык, именование команд/событий (целевые) |
 
-## Связанная документация
+## Что реализовано глобально
 
-- [es/05-агрегаты](../../../es/05-агрегаты/README.md) — карта BC
-- [es/09-решения](../../../es/09-решения/README.md) — ADR
+- Hexagonal: Domain без Laravel; Infrastructure — Eloquent-адаптеры
+- 12 repository ports → bindings в `PersistenceServiceProvider`
+- Миграции + `DomainSeeder` для Catalog, Identity (демо-мастер), ClientPortal-таблицы пустые
+- Auth: `User` (web/sanctum), `ClientAuthModel` (guard `client`) — см. `config/auth.php`
+
+## Чего нет в коде
+
+- Application handlers (Command/Query)
+- Domain events, policies
+- Filament, POS API, публичный REST по ES
+- Тесты домена / use cases
+
+## ES и ADR
+
+- [es/05-агрегаты](../../../es/05-агрегаты/README.md)
+- [es/09-решения](../../../es/09-решения/README.md)

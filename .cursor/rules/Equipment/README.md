@@ -1,24 +1,31 @@
 # BC: Оборудование (Equipment)
 
-Реестр оборудования, серийные номера. История ремонтов — query через Order.
+Реестр оборудования (ES). История ремонтов — query по `Order.equipment_id` (не реализована).
 
-## Агрегаты
+## Состояние кода
 
-- `Equipment` — brand, model, serial_numbers (json)
+| Слой | Статус |
+|------|--------|
+| Domain | ✅ |
+| Infrastructure | ✅ |
+| Application | ⬜ каркас |
+| Presentation | ⬜ |
 
-## Код
+## Domain (`app/Domain/Equipment/`)
 
-- Domain: `app/Domain/Equipment/`
-- Application: `app/Application/Equipment/` _(будущее)_
+| Папка | Классы |
+|-------|--------|
+| `Entity/` | `Equipment` — name, brand, model, serialNumbers[] |
+| `Repository/` | `EquipmentRepositoryInterface` |
 
-## Правила по слоям
+## Infrastructure (`app/Infrastructure/Equipment/`)
 
-| Файл | Слой | Globs |
-|------|------|-------|
-| `domain.mdc` | Domain | `app/Domain/Equipment/**` |
-| `application.mdc` | Application | `app/Application/Equipment/**` |
-| `presentation.mdc` | Presentation | Filament + POS read |
+`EquipmentModel`, `EquipmentMapper`, `EloquentEquipmentRepository`
+
+## Application / Presentation
+
+Не реализованы. ES: `RegisterEquipment`, `LinkEquipmentToOrder`, поиск в POS.
 
 ## ES
 
-- [05-агрегаты — Equipment](../../../es/05-агрегаты/README.md#агрегат-equipment-bc-оборудование)
+- [Equipment](../../../es/05-агрегаты/README.md#агрегат-equipment-bc-оборудование)

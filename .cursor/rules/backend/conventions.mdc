@@ -8,17 +8,24 @@ alwaysApply: false
 
 ## Язык
 
-- Документация, ES, комментарии к бизнес-логике — русский
-- Код (классы, методы, enum) — английский
+- Документация, ES — русский
+- Код — английский
 
-## Команды и события
+## Структура папок (факт)
+
+| Слой | Папка | Пример namespace |
+|------|-------|------------------|
+| Shared | `app/Shared/ValueObject/` | `App\Shared\ValueObject\Phone` |
+| Domain | `app/Domain/{BC}/Entity/` | `App\Domain\OrderFulfillment\Entity\Order` |
+| Domain port | `app/Domain/{BC}/Repository/` | `…\OrderRepositoryInterface` |
+| Infrastructure | `app/Infrastructure/{BC}/Persistence/Eloquent/` | `…\OrderModel` |
+| Application | `app/Application/{BC}/Command/` | *(пока пусто)* |
+
+## Команды и события (целевые, из ES)
 
 | | Документация | Код |
 |---|--------------|-----|
-| Команда | русский, повелительное | PascalCase imperative: `CreateOrder` |
-| Событие | русский, прошедшее время | PascalCase past tense: `OrderCreated` |
+| Команда | повелительное, RU | `CreateOrder` |
+| Событие | прошедшее время, RU | `OrderCreated` |
 
-## TODO
-
-- [ ] Конвенции для migrations и seeders
-- [ ] Конвенции для Filament vs REST vs POS endpoints
+Классов Command/Event в репозитории пока нет.

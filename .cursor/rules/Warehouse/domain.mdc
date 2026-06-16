@@ -1,17 +1,13 @@
 ---
-description: Warehouse — domain layer
+description: Warehouse — domain layer (текущий код)
 globs: app/Domain/Warehouse/**
 alwaysApply: false
 ---
 
 # Warehouse / Domain
 
-## Scope
+- **Entity:** `WarehouseItem`, `StockMovement`
+- **Enum:** `StockMovementType`
+- **Repository:** `WarehouseItemRepositoryInterface` (find/save), `StockMovementRepositoryInterface` (save only)
 
-Модели: WarehouseItem, StockMovement. Enum: StockMovementType.
-
-## TODO
-
-- [ ] MVP: ручной приход/списание, без автосписания при AddMaterialToOrder
-- [ ] OrderMaterial — snapshot цены, ссылка warehouse_item_id
-- [ ] Events: StockReceived, StockWrittenOff
+Автосписание при `AddMaterialToOrder` — **не** в коде (ES: MVP вручную).

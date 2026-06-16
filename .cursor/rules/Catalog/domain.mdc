@@ -1,17 +1,17 @@
 ---
-description: Catalog — domain layer
+description: Catalog — domain layer (текущий код)
 globs: app/Domain/Catalog/**
 alwaysApply: false
 ---
 
 # Catalog / Domain
 
-## Scope
+## Классы
 
-Модели: PriceBlock, PriceItem, Branch, SiteSetting. Enum: PriceType.
+- **Entity:** `Branch`, `PriceBlock`, `PriceItem`, `SiteSetting`
+- **Enum:** `PriceType`
+- **Repository:** 4 interface — find/save; `SiteSettingRepositoryInterface::findByKey`
 
-## TODO
+## Нет в коде
 
-- [ ] PriceBlock: sharpening | repair
-- [ ] Branch — singleton (одна запись)
-- [ ] SiteSetting для GetPublicBootstrap
+Статический `getValue()` (был на старой Eloquent-модели) — только через repository

@@ -1,16 +1,17 @@
 ---
-description: Catalog — application layer
+description: Catalog — application layer (текущий код)
 globs: app/Application/Catalog/**
 alwaysApply: false
 ---
 
 # Catalog / Application
 
-## Scope
+## Сейчас
 
-CRUD справочников (Filament). GetPublicBootstrap — read query.
+Пустые папки Command/Query/…
 
-## TODO
+## Целевое (ES)
 
-- [ ] Query: агрегация прайсов + настроек для bootstrap
-- [ ] Без cross-BC мутаций
+Query `GetPublicBootstrap` — агрегация прайсов + `SiteSetting` для публичного SPA.
+
+Filament CRUD — через handlers или напрямую через repos (решить при реализации).
