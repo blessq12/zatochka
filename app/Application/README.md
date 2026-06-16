@@ -1,23 +1,24 @@
 # Application Layer
 
-Use cases (commands/queries) и orchestration cross-BC.
+Use cases по bounded contexts. CQRS-lite.
 
-## Структура (целевая)
+## Структура
 
 ```
-app/Application/
-├── OrderFulfillment/
-│   ├── Commands/
-│   └── Handlers/
-├── ClientPortal/
-├── Catalog/
-├── Equipment/
-├── Warehouse/
-└── Identity/
+app/Application/{BC}/
+├── Command/           # write intent + input DTO
+├── CommandHandler/    # orchestration, транзакции
+├── Query/             # read intent + input DTO
+├── QueryHandler/      # чтение через domain ports
+└── Presenter/         # output DTO для API/Filament
 ```
+
+## BC
+
+OrderFulfillment, ClientPortal, Catalog, Equipment, Warehouse, Identity
 
 ## Правила
 
-- Handler зависит от **портов** Domain (`*RepositoryInterface`), не от Eloquent
-- Cross-BC сценарии — только здесь (CreateOrder из SiteLead, SubmitReview)
-- Presentation (Http/Filament) вызывает Handler, не Domain напрямую
+- Handler → Domain ports (`*RepositoryInterface`), не Eloquent
+- Cross-BC — только в CommandHandler/QueryHandler
+- Http/Filament вызывает Handler, не Domain

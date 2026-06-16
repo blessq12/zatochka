@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Catalog\Enums\PriceType;
-use App\Infrastructure\Persistence\Eloquent\Models\Catalog\BranchModel;
-use App\Infrastructure\Persistence\Eloquent\Models\Catalog\PriceBlockModel;
-use App\Infrastructure\Persistence\Eloquent\Models\Catalog\PriceItemModel;
-use App\Infrastructure\Persistence\Eloquent\Models\Catalog\SiteSettingModel;
-use App\Infrastructure\Persistence\Eloquent\Models\Identity\UserModel;
+use App\Domain\Catalog\Enum\PriceType;
+use App\Infrastructure\Catalog\Persistence\Eloquent\BranchModel;
+use App\Infrastructure\Catalog\Persistence\Eloquent\PriceBlockModel;
+use App\Infrastructure\Catalog\Persistence\Eloquent\PriceItemModel;
+use App\Infrastructure\Catalog\Persistence\Eloquent\SiteSettingModel;
+use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 

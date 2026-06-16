@@ -8,11 +8,6 @@ alwaysApply: false
 
 ## Scope
 
-Модели: Order, OrderWork, OrderTool, OrderMaterial. Enum: OrderStatus, OrderSource, OrderUrgency.
+Entity: Order, OrderWork, OrderTool, OrderMaterial. Enum: OrderStatus, OrderSource, OrderUrgency. Service: OrderNumberGenerator.
 
-## TODO
-
-- [ ] Инварианты Order (INV-01 … INV-05 из es/06-политики)
-- [ ] Жизненный цикл статусов
-- [ ] Domain events: OrderCreated, OrderTakenToWork, …
-- [ ] OrderNumberGenerator — domain service
+Пути: `app/Domain/OrderFulfillment/Entity|Enum|ValueObject|Repository|Service/`

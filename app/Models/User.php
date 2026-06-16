@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Infrastructure\Persistence\Eloquent\Models\Identity\UserModel;
+use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 
 /**
  * Laravel-алиас для auth/factory. Реализация — UserModel (Infrastructure).

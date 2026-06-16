@@ -25,7 +25,7 @@ return [
         ],
         'clients' => [
             'driver' => 'eloquent',
-            'model' => App\Infrastructure\Persistence\Eloquent\Models\ClientPortal\ClientAuthModel::class,
+            'model' => App\Infrastructure\ClientPortal\Auth\ClientAuthModel::class,
         ],
     ],
 

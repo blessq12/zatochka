@@ -6,12 +6,15 @@ alwaysApply: false
 
 # OrderFulfillment / Application
 
-## Scope
+## Структура
+
+```
+app/Application/OrderFulfillment/
+├── Command/
+├── CommandHandler/
+├── Query/
+├── QueryHandler/
+└── Presenter/
+```
 
 Use cases: CreateOrder, AssignMasterToOrder, TakeOrderToWork, IssueOrder, RecalculateOrderPrice, …
-
-## TODO
-
-- [ ] Command + Handler на каждую команду из es/04-команды
-- [ ] CreateOrder из SiteLead (cross-BC с ClientPortal)
-- [ ] Транзакции + синхронные domain events

@@ -2,5 +2,5 @@
 
 return [
     App\Providers\AppServiceProvider::class,
-    App\Infrastructure\Providers\PersistenceServiceProvider::class,
+    App\Infrastructure\Shared\Provider\PersistenceServiceProvider::class,
 ];

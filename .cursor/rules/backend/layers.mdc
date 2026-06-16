@@ -1,39 +1,41 @@
 ---
-description: Слоистая архитектура бэкенда Laravel (DDD + Hexagonal)
+description: Слоистая архитектура бэкенда (BC-first DDD + Hexagonal)
 alwaysApply: true
 ---
 
 # Слои бэкенда
 
-Scope: `app/`, `database/`, `config/` (auth, domain). Только бэкенд.
+Только бэкенд. BC-first на **каждом** слое.
 
-## Структура
+## Дерево
 
 ```
 app/
-├── Domain/{BC}/              # Ядро: Entities, Enums, ValueObjects, Repositories (ports), Services
-├── Application/{BC}/         # Use cases: Commands, Handlers (orchestration)
-├── Infrastructure/           # Adapters: Eloquent, Mappers, Repository implementations
-│   └── Persistence/
-│       ├── Eloquent/Models/
-│       ├── Mappers/
-│       └── Repositories/
-└── Http/ | Filament/         # Driving adapters (presentation)
+├── Shared/ValueObject/          # Phone, Email, Money, EntityId
+├── Domain/{BC}/
+│   ├── Entity/ ValueObject/ Enum/
+│   ├── Repository/              # ports
+│   └── Service/
+├── Application/{BC}/
+│   ├── Command/ CommandHandler/
+│   ├── Query/ QueryHandler/
+│   └── Presenter/
+├── Infrastructure/{BC}/
+│   ├── Persistence/Eloquent|Mapper|Repository/
+│   └── Auth/                    # где нужно
+└── Infrastructure/Shared/Provider/
 ```
 
-## Зависимости (Hexagonal)
+## Зависимости
 
-- Domain — **zero** Laravel/Eloquent
-- Application → Domain (ports)
-- Infrastructure → Domain (implements ports)
-- Presentation → Application
+Presentation → Application → Domain ← Infrastructure
+Shared — без BC-семантики
 
 ## Cross-BC
 
-- Domain: только `*_id`, без foreign Eloquent relations
-- Cross-BC orchestration — Application layer
-- Read/query joins — Infrastructure или dedicated read models
+- Domain: только `*_id`
+- Orchestration: Application/{BC}/CommandHandler
 
 ## DI
 
-Регистрация портов: `Infrastructure/Providers/PersistenceServiceProvider.php`
+`App\Infrastructure\Shared\Provider\PersistenceServiceProvider`
