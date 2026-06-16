@@ -7,10 +7,14 @@ import 'bootstrap';
  */
 
 import axios from 'axios';
+import { installMockApi } from './mocks/installMockApi.js';
+
 window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 window.axios.defaults.withCredentials = true;
+
+installMockApi(window.axios);
 
 // Interceptor для автоматической подстановки токенов авторизации
 window.axios.interceptors.request.use(
