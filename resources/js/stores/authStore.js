@@ -97,6 +97,9 @@ export const useAuthStore = defineStore("auth", {
                 await this.fetchProfile();
                 return true;
             } catch (error) {
+                if (error.response?.status === 401) {
+                    await this.logout();
+                }
                 console.error("Auth check failed:", error);
                 return false;
             } finally {

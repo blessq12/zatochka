@@ -14,7 +14,7 @@ import "./bootstrap";
 
 //services
 import App from "./App.vue";
-import { seedDevAuth } from "./mocks/seedDevAuth.js";
+import { initDevEnvironment } from "./mocks/seedDevAuth.js";
 import router from "./router";
 import themeTogglerService from "./services/themeTogglerService";
 
@@ -40,7 +40,7 @@ axios.interceptors.response.use(
 const app = createApp(App);
 const pinia = createPinia();
 
-seedDevAuth(pinia);
+initDevEnvironment(pinia);
 
 app.directive("maska", vMaska);
 app.use(pinia);

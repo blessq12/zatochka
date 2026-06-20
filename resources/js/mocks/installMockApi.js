@@ -1,6 +1,5 @@
 import { resolveMockResponse } from "./handlers.js";
-
-const useMocks = () => import.meta.env.VITE_USE_API_MOCKS !== "false";
+import { shouldMockRequest, useApiMocks, useClientApiMocks } from "./mockConfig.js";
 
 const createMockAdapter = (config) =>
     Promise.resolve({
@@ -9,12 +8,12 @@ const createMockAdapter = (config) =>
     });
 
 export const installMockApi = (axiosInstance) => {
-    if (!useMocks()) {
+    if (!useApiMocks()) {
         return;
     }
 
     axiosInstance.interceptors.request.use((config) => {
-        if (!String(config.url || "").startsWith("/api/")) {
+        if (!shouldMockRequest(config)) {
             return config;
         }
 
@@ -22,7 +21,7 @@ export const installMockApi = (axiosInstance) => {
         return config;
     });
 
-    if (import.meta.env.DEV) {
-        console.info("[mock-api] Фронт работает на моках API (VITE_USE_API_MOCKS)");
+    if (import.meta.env.DEV && !useClientApiMocks()) {
+        console.info("[mock-api] Клиентский API на бэкенде (моки клиента выключены)");
     }
 };
