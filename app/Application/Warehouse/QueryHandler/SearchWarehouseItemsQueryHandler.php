@@ -16,7 +16,7 @@ final class SearchWarehouseItemsQueryHandler
      */
     public function handle(SearchWarehouseItemsQuery $query): array
     {
-        $result = $this->items->search($query->query, $query->page, $query->perPage);
+        $result = $this->items->search($query->query, $query->type, $query->page, $query->perPage);
 
         return [
             'items' => $result['items'],

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('sku')->unique();
-            $table->string('category_name')->nullable();
+            $table->string('type')->default('consumable');
             $table->decimal('quantity', 10, 3)->default(0);
             $table->string('unit')->default('шт');
             $table->decimal('price', 10, 2)->default(0);

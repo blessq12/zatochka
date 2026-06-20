@@ -2,20 +2,17 @@
 
 namespace App\Application\PublicSite\QueryHandler;
 
-use App\Application\Company\Query\GetCompanyPublicProfileQuery;
-use App\Application\Company\QueryHandler\GetCompanyPublicProfileQueryHandler;
+use App\Application\Company\Query\GetPublicSiteContentQuery;
+use App\Application\Company\QueryHandler\GetPublicSiteContentQueryHandler;
 use App\Application\Pricing\Query\GetPublicPriceListQuery;
 use App\Application\Pricing\QueryHandler\GetPublicPriceListQueryHandler;
 use App\Application\PublicSite\Query\GetPublicBootstrapQuery;
-use App\Application\SiteSettings\Query\GetSiteContentQuery;
-use App\Application\SiteSettings\QueryHandler\GetSiteContentQueryHandler;
 
 final class GetPublicBootstrapQueryHandler
 {
     public function __construct(
-        private GetCompanyPublicProfileQueryHandler $companyProfile,
+        private GetPublicSiteContentQueryHandler $siteContent,
         private GetPublicPriceListQueryHandler $priceList,
-        private GetSiteContentQueryHandler $siteContent,
     ) {}
 
     /**
@@ -23,15 +20,14 @@ final class GetPublicBootstrapQueryHandler
      */
     public function handle(GetPublicBootstrapQuery $query): array
     {
-        $profile = $this->companyProfile->handle(new GetCompanyPublicProfileQuery);
-        $content = $this->siteContent->handle(new GetSiteContentQuery);
+        $content = $this->siteContent->handle(new GetPublicSiteContentQuery);
 
         return [
             'prices' => $this->priceList->handle(new GetPublicPriceListQuery),
-            'contacts' => $profile['contacts'],
-            'schedule' => $profile['schedule'],
+            'contacts' => $content['contacts'],
+            'schedule' => $content['schedule'],
             'delivery_info' => $content['delivery_info'],
-            'company' => $profile['company'],
+            'company' => $content['company'],
             'faq' => $content['faq'],
         ];
     }

@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Warehouse\Persistence\Repository;
 
 use App\Domain\Warehouse\Entity\WarehouseItem;
+use App\Domain\Warehouse\Enum\WarehouseItemType;
 use App\Domain\Warehouse\Repository\WarehouseItemRepositoryInterface;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 use App\Infrastructure\Warehouse\Persistence\Mapper\WarehouseItemMapper;
@@ -32,7 +33,7 @@ final class EloquentWarehouseItemRepository implements WarehouseItemRepositoryIn
         return $this->mapper->toDomain($model);
     }
 
-    public function search(?string $query, int $page, int $perPage): array
+    public function search(?string $query, ?WarehouseItemType $type, int $page, int $perPage): array
     {
         $builder = WarehouseItemModel::query();
 
@@ -41,6 +42,10 @@ final class EloquentWarehouseItemRepository implements WarehouseItemRepositoryIn
                 $q->where('name', 'like', "%{$query}%")
                     ->orWhere('sku', 'like', "%{$query}%");
             });
+        }
+
+        if ($type !== null) {
+            $builder->where('type', $type);
         }
 
         $builder->orderBy('name');

@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Warehouse\Persistence\Eloquent;
 
+use App\Domain\Warehouse\Enum\WarehouseItemType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -12,7 +13,7 @@ class WarehouseItemModel extends Model
     protected $fillable = [
         'name',
         'sku',
-        'category_name',
+        'type',
         'quantity',
         'unit',
         'price',
@@ -21,6 +22,7 @@ class WarehouseItemModel extends Model
     protected function casts(): array
     {
         return [
+            'type' => WarehouseItemType::class,
             'quantity' => 'decimal:3',
             'price' => 'decimal:2',
         ];

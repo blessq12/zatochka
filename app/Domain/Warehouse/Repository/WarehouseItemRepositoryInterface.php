@@ -3,6 +3,7 @@
 namespace App\Domain\Warehouse\Repository;
 
 use App\Domain\Warehouse\Entity\WarehouseItem;
+use App\Domain\Warehouse\Enum\WarehouseItemType;
 
 interface WarehouseItemRepositoryInterface
 {
@@ -13,5 +14,5 @@ interface WarehouseItemRepositoryInterface
     /**
      * @return array{items: list<WarehouseItem>, total: int}
      */
-    public function search(?string $query, int $page, int $perPage): array;
+    public function search(?string $query, ?WarehouseItemType $type, int $page, int $perPage): array;
 }

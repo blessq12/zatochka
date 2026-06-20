@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources\Orders\Actions;
 
+use App\Application\OrderFulfillment\Command\AddMaterialToOrderCommand;
+use App\Application\OrderFulfillment\CommandHandler\AddMaterialToOrderHandler;
 use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
+use App\Domain\Warehouse\Enum\WarehouseItemType;
 use App\Filament\Support\OrderPersistence;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
@@ -161,10 +164,15 @@ final class OrderManageActions
             ->form([
                 Select::make('warehouse_item_id')
                     ->label('Позиция склада')
-                    ->options(fn (): array => WarehouseItemModel::query()
-                        ->orderBy('name')
-                        ->pluck('name', 'id')
-                        ->all())
+                    ->options(function (OrderModel $record): array {
+                        $query = WarehouseItemModel::query()->orderBy('name');
+
+                        if (! in_array('repair', $record->service_types ?? [], true)) {
+                            $query->where('type', WarehouseItemType::Consumable);
+                        }
+
+                        return $query->pluck('name', 'id')->all();
+                    })
                     ->required()
                     ->searchable(),
                 TextInput::make('quantity')

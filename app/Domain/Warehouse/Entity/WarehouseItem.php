@@ -2,6 +2,7 @@
 
 namespace App\Domain\Warehouse\Entity;
 
+use App\Domain\Warehouse\Enum\WarehouseItemType;
 use App\Domain\Warehouse\Exception\WarehousePolicyViolation;
 
 final class WarehouseItem
@@ -10,7 +11,7 @@ final class WarehouseItem
         private ?int $id,
         private string $name,
         private string $sku,
-        private ?string $categoryName,
+        private WarehouseItemType $type,
         private string $quantity,
         private string $unit,
         private string $price,
@@ -31,9 +32,9 @@ final class WarehouseItem
         return $this->sku;
     }
 
-    public function categoryName(): ?string
+    public function type(): WarehouseItemType
     {
-        return $this->categoryName;
+        return $this->type;
     }
 
     public function quantity(): string
@@ -54,12 +55,12 @@ final class WarehouseItem
     public static function create(
         string $name,
         string $sku,
+        WarehouseItemType $type,
         string $quantity,
         string $unit,
         string $price,
-        ?string $categoryName = null,
     ): self {
-        return new self(null, $name, $sku, $categoryName, $quantity, $unit, $price);
+        return new self(null, $name, $sku, $type, $quantity, $unit, $price);
     }
 
     public function receive(string $quantity): self

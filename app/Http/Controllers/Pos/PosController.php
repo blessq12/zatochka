@@ -32,6 +32,7 @@ use App\Application\Equipment\Query\GetEquipmentOrderHistoryQuery;
 use App\Application\Equipment\Query\SearchEquipmentQuery;
 use App\Application\Equipment\QueryHandler\GetEquipmentOrderHistoryQueryHandler;
 use App\Application\Equipment\QueryHandler\SearchEquipmentQueryHandler;
+use App\Domain\Warehouse\Enum\WarehouseItemType;
 use App\Application\Warehouse\Presenter\WarehouseItemPresenter;
 use App\Application\Warehouse\Query\SearchWarehouseItemsQuery;
 use App\Application\Warehouse\QueryHandler\SearchWarehouseItemsQueryHandler;
@@ -224,12 +225,18 @@ final class PosController
     {
         $validated = $request->validate([
             'query' => ['nullable', 'string', 'max:100'],
+            'type' => ['nullable', 'string', 'in:consumable,spare_part'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
 
+        $type = isset($validated['type'])
+            ? WarehouseItemType::from($validated['type'])
+            : null;
+
         $result = $handler->handle(new SearchWarehouseItemsQuery(
             query: $validated['query'] ?? null,
+            type: $type,
             page: (int) ($validated['page'] ?? 1),
             perPage: (int) ($validated['per_page'] ?? 20),
         ));

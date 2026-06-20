@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Warehouse\Persistence\Mapper;
 
 use App\Domain\Warehouse\Entity\WarehouseItem;
+use App\Domain\Warehouse\Enum\WarehouseItemType;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 
 final class WarehouseItemMapper
@@ -13,7 +14,9 @@ final class WarehouseItemMapper
             id: $model->id,
             name: $model->name,
             sku: $model->sku,
-            categoryName: $model->category_name,
+            type: $model->type instanceof WarehouseItemType
+                ? $model->type
+                : WarehouseItemType::from($model->type),
             quantity: (string) $model->quantity,
             unit: $model->unit,
             price: (string) $model->price,
@@ -25,7 +28,7 @@ final class WarehouseItemMapper
         $model->fill([
             'name' => $item->name(),
             'sku' => $item->sku(),
-            'category_name' => $item->categoryName(),
+            'type' => $item->type(),
             'quantity' => $item->quantity(),
             'unit' => $item->unit(),
             'price' => $item->price(),

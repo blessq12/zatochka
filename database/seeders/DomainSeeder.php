@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 /**
  * Демо-данные по BC (порядок = зависимости).
  *
- * Company → Pricing → SiteSettings → Identity → Warehouse → Equipment → ClientPortal → OrderFulfillment
+ * Company → Pricing → Identity → Warehouse → Equipment → ClientPortal → OrderFulfillment
  */
 class DomainSeeder extends Seeder
 {
@@ -16,7 +16,6 @@ class DomainSeeder extends Seeder
         $this->call([
             CompanySeeder::class,
             PricingSeeder::class,
-            SiteSettingsSeeder::class,
             IdentitySeeder::class,
             WarehouseSeeder::class,
             EquipmentSeeder::class,

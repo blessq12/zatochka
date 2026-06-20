@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Application\Warehouse\Command\ReceiveStockCommand;
 use App\Application\Warehouse\CommandHandler\ReceiveStockHandler;
+use App\Domain\Warehouse\Enum\WarehouseItemType;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 use Illuminate\Database\Seeder;
@@ -16,7 +17,7 @@ final class WarehouseSeeder extends Seeder
             [
                 'sku' => 'DEMO-001',
                 'name' => 'Подшипник 608ZZ',
-                'category_name' => 'Запчасти',
+                'type' => WarehouseItemType::SparePart,
                 'quantity' => 0,
                 'unit' => 'шт',
                 'price' => 250,
@@ -25,7 +26,7 @@ final class WarehouseSeeder extends Seeder
             [
                 'sku' => 'PART-BELT-V',
                 'name' => 'Приводной ремень V-belt',
-                'category_name' => 'Запчасти',
+                'type' => WarehouseItemType::SparePart,
                 'quantity' => 0,
                 'unit' => 'шт',
                 'price' => 180,
@@ -34,7 +35,7 @@ final class WarehouseSeeder extends Seeder
             [
                 'sku' => 'CONSUMABLE-OIL',
                 'name' => 'Масло для смазки подшипников',
-                'category_name' => 'Расходники',
+                'type' => WarehouseItemType::Consumable,
                 'quantity' => 0,
                 'unit' => 'мл',
                 'price' => 5,
@@ -43,7 +44,7 @@ final class WarehouseSeeder extends Seeder
             [
                 'sku' => 'CONSUMABLE-ABRASIVE',
                 'name' => 'Абразивная лента для заточки',
-                'category_name' => 'Расходники',
+                'type' => WarehouseItemType::Consumable,
                 'quantity' => 0,
                 'unit' => 'м',
                 'price' => 120,

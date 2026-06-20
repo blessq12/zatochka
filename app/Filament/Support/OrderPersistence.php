@@ -7,10 +7,11 @@ use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\OrderFulfillment\Enum\OrderUrgency;
 use App\Infrastructure\Company\Persistence\Eloquent\BranchModel;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\SiteLeadModel;
+use App\Application\OrderFulfillment\Command\AddMaterialToOrderCommand;
+use App\Application\OrderFulfillment\CommandHandler\AddMaterialToOrderHandler;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderMaterialModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderWorkModel;
-use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -164,17 +165,11 @@ final class OrderPersistence
 
     public static function addMaterial(OrderModel $order, int $warehouseItemId, string $quantity): void
     {
-        $item = WarehouseItemModel::query()->findOrFail($warehouseItemId);
-        $unitPrice = number_format((float) $item->price, 2, '.', '');
-        $totalPrice = bcmul($quantity, $unitPrice, 2);
-
-        OrderMaterialModel::query()->create([
-            'order_id' => $order->id,
-            'warehouse_item_id' => $warehouseItemId,
-            'quantity' => $quantity,
-            'unit_price' => $unitPrice,
-            'total_price' => $totalPrice,
-        ]);
+        app(AddMaterialToOrderHandler::class)->handle(new AddMaterialToOrderCommand(
+            orderId: $order->id,
+            warehouseItemId: $warehouseItemId,
+            quantity: $quantity,
+        ));
     }
 
     public static function removeMaterial(OrderModel $order, int $materialId): void

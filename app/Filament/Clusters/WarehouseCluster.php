@@ -11,6 +11,8 @@ class WarehouseCluster extends Cluster
 {
     protected static ?string $navigationLabel = 'Склад';
 
+    protected static ?string $clusterBreadcrumb = 'Склад';
+
     protected static ?string $slug = 'warehouse';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;

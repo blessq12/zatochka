@@ -5,6 +5,7 @@ namespace App\Filament\Resources\WarehouseItems\Tables;
 use App\Domain\Warehouse\Enum\StockMovementType;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\StockMovementModel;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
+use Filament\Actions\EditAction;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -21,14 +22,18 @@ class WarehouseItemsTable
         return $table
             ->defaultSort('name')
             ->columns([
-                TextColumn::make('sku')->label('Артикул'),
-                TextColumn::make('name')->label('Название'),
-                TextColumn::make('category_name')->label('Категория')->placeholder('—'),
+                TextColumn::make('sku')
+                    ->label('Артикул')
+                    ->searchable(),
+                TextColumn::make('name')
+                    ->label('Название')
+                    ->searchable(),
                 TextColumn::make('quantity')->label('Остаток'),
                 TextColumn::make('unit')->label('Ед.'),
                 TextColumn::make('price')->label('Цена')->money('RUB'),
             ])
             ->recordActions([
+                EditAction::make(),
                 Action::make('receive')
                     ->label('Приход')
                     ->icon('heroicon-o-plus-circle')

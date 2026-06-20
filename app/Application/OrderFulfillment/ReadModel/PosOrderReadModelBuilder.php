@@ -80,6 +80,8 @@ final class PosOrderReadModelBuilder
                 'id' => $material->id,
                 'warehouse_item_id' => $material->warehouseItemId,
                 'name' => $item?->name(),
+                'type' => $item?->type()->value,
+                'type_label' => $item?->type()->label(),
                 'quantity' => $material->quantity,
                 'unit' => $item?->unit(),
                 'unit_price' => $material->unitPrice,
