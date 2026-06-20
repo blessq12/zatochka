@@ -3,12 +3,15 @@
 namespace Database\Seeders;
 
 use App\Application\ClientPortal\Command\ApproveReviewCommand;
+use App\Application\ClientPortal\Command\RejectReviewCommand;
 use App\Application\ClientPortal\Command\SubmitReviewCommand;
 use App\Application\ClientPortal\CommandHandler\ApproveReviewHandler;
+use App\Application\ClientPortal\CommandHandler\RejectReviewHandler;
 use App\Application\ClientPortal\CommandHandler\SubmitReviewHandler;
 use App\Application\OrderFulfillment\Command\AddMaterialToOrderCommand;
 use App\Application\OrderFulfillment\Command\AddWorkCommand;
 use App\Application\OrderFulfillment\Command\AssignMasterToOrderCommand;
+use App\Application\OrderFulfillment\Command\CancelOrderCommand;
 use App\Application\OrderFulfillment\Command\CreateOrderCommand;
 use App\Application\OrderFulfillment\Command\IssueOrderCommand;
 use App\Application\OrderFulfillment\Command\LinkEquipmentToOrderCommand;
@@ -20,6 +23,7 @@ use App\Application\OrderFulfillment\Command\UpdateInternalNotesCommand;
 use App\Application\OrderFulfillment\CommandHandler\AddMaterialToOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\AddWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\AssignMasterToOrderHandler;
+use App\Application\OrderFulfillment\CommandHandler\CancelOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\IssueOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\LinkEquipmentToOrderHandler;
@@ -39,10 +43,16 @@ use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
+/**
+ * Prod-demo: воронка заказов, отзывы, POS для двух мастеров.
+ *
+ * Маркер DEMO: в internal_notes — идемпотентность при повторном db:seed.
+ */
 final class DemoOrderSeeder extends Seeder
 {
-    private const DEMO_MARKER = 'DEMO:';
+    public const DEMO_MARKER = 'DEMO:';
 
     public function run(): void
     {
@@ -50,16 +60,15 @@ final class DemoOrderSeeder extends Seeder
             return;
         }
 
-        $master = UserModel::query()
-            ->where('email', IdentitySeeder::MASTER_EMAIL)
-            ->firstOrFail();
+        $master = $this->requireMaster(IdentitySeeder::MASTER_EMAIL);
+        $master2 = $this->requireMaster(IdentitySeeder::MASTER_2_EMAIL);
 
-        $client = ClientModel::query()
-            ->where('phone', ClientPortalSeeder::DEMO_CLIENT_PHONE)
-            ->firstOrFail();
+        $demoClient = $this->requireClient(ClientPortalSeeder::DEMO_CLIENT_PHONE);
+        $client2 = $this->requireClient(ClientPortalSeeder::DEMO_CLIENT_2_PHONE);
+        $client3 = $this->requireClient(ClientPortalSeeder::DEMO_CLIENT_3_PHONE);
 
         $equipment = EquipmentModel::query()
-            ->where('name', 'Аппарат Strong 2100')
+            ->where('name', EquipmentSeeder::STRONG_2100_NAME)
             ->firstOrFail();
 
         $warehouseItem = WarehouseItemModel::query()
@@ -67,13 +76,21 @@ final class DemoOrderSeeder extends Seeder
             ->firstOrFail();
 
         $this->seedNewOrders($master);
+        $this->seedCancelledOrder($master);
         $this->seedActiveOrder($master);
+        $this->seedDemoClientActiveOrder($master, $demoClient);
         $this->seedWaitingPartsOrder($master, $warehouseItem);
         $this->seedReadyOrder($master);
-        $this->seedIssuedOrderWithReview($master, $client);
+        $this->seedDeliveryOrder($master);
+        $this->seedComboOrder($master);
+        $this->seedIssuedOrderWithApprovedReview($master, $demoClient);
+        $this->seedIssuedOrderWithPendingReview($master, $client2);
+        $this->seedIssuedOrderWithRejectedReview($master, $client3);
         $this->seedRepairOrder($master, $equipment);
+        $this->seedEquipmentHistoryOrder($master, $equipment);
         $this->seedConvertedLeadOrder($master);
         $this->seedGuestOrderForLinking($master);
+        $this->seedSecondMasterOrders($master2);
     }
 
     private function alreadySeeded(): bool
@@ -103,6 +120,19 @@ final class DemoOrderSeeder extends Seeder
         );
     }
 
+    private function seedCancelledOrder(UserModel $master): void
+    {
+        $orderId = $this->requireOrderId($this->createAssignedOrder(
+            masterId: $master->id,
+            marker: self::DEMO_MARKER.'cancelled',
+            serviceTypes: ['sharpening'],
+            snapshot: new ClientSnapshot(['full_name' => 'Клиент отменил', 'phone' => '+79001110099']),
+            tools: [new OrderTool(null, 'manicure', 1)],
+        ));
+
+        app(CancelOrderHandler::class)->handle(new CancelOrderCommand($orderId));
+    }
+
     private function seedActiveOrder(UserModel $master): void
     {
         $orderId = $this->requireOrderId($this->createAssignedOrder(
@@ -116,6 +146,26 @@ final class DemoOrderSeeder extends Seeder
         $this->takeToWork($orderId, $master->id);
         $this->addWork($orderId, $master->id, 'Заточка кусачек');
         $this->addWork($orderId, $master->id, 'Полировка рабочих поверхностей');
+    }
+
+    private function seedDemoClientActiveOrder(UserModel $master, ClientModel $client): void
+    {
+        $snapshot = new ClientSnapshot([
+            'full_name' => $client->full_name,
+            'phone' => $client->phone,
+        ]);
+
+        $orderId = $this->requireOrderId($this->createAssignedOrder(
+            masterId: $master->id,
+            marker: self::DEMO_MARKER.'client-active',
+            serviceTypes: ['sharpening'],
+            snapshot: $snapshot,
+            clientId: $client->id,
+            tools: [new OrderTool(null, 'manicure', 4)],
+        ));
+
+        $this->takeToWork($orderId, $master->id);
+        $this->addWork($orderId, $master->id, 'Заточка маникюрного набора');
     }
 
     private function seedWaitingPartsOrder(UserModel $master, WarehouseItemModel $warehouseItem): void
@@ -163,36 +213,44 @@ final class DemoOrderSeeder extends Seeder
         ));
     }
 
-    private function seedIssuedOrderWithReview(UserModel $master, ClientModel $client): void
+    private function seedDeliveryOrder(UserModel $master): void
     {
-        $snapshot = new ClientSnapshot([
-            'full_name' => $client->full_name,
-            'phone' => $client->phone,
-        ]);
-
-        $orderId = $this->requireOrderId(app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+        $this->createAssignedOrder(
+            masterId: $master->id,
+            marker: self::DEMO_MARKER.'delivery',
             serviceTypes: ['sharpening'],
-            clientId: $client->id,
-            clientSnapshot: $snapshot,
-            tools: [new OrderTool(null, 'manicure', 2)],
-        )));
+            snapshot: new ClientSnapshot(['full_name' => 'Алина Курьерова', 'phone' => '+79001110007']),
+            needsDelivery: true,
+            deliveryAddress: 'г. Томск, ул. Мокрушина, 9, кв. 12',
+            tools: [new OrderTool(null, 'manicure', 6)],
+        );
+    }
 
-        app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand(
-            orderId: $orderId,
+    private function seedComboOrder(UserModel $master): void
+    {
+        $orderId = $this->requireOrderId($this->createAssignedOrder(
             masterId: $master->id,
+            marker: self::DEMO_MARKER.'combo',
+            serviceTypes: ['sharpening', 'repair'],
+            snapshot: new ClientSnapshot(['full_name' => 'Екатерина Комбо', 'phone' => '+79001110008']),
+            problemDescription: 'Заточка + ремонт аппарата в одном заказе',
+            tools: [new OrderTool(null, 'barber', 2)],
         ));
-        $this->markDemo($orderId, $master->id, self::DEMO_MARKER.'issued');
+
         $this->takeToWork($orderId, $master->id);
-        $this->addWork($orderId, $master->id, 'Заточка маникюрного инструмента');
-        app(SetWorkPricesHandler::class)->handle(new SetWorkPricesCommand(
-            orderId: $orderId,
-            pricesBySortOrder: [0 => '600.00'],
-        ));
-        app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand(
-            orderId: $orderId,
-            masterId: $master->id,
-        ));
-        app(IssueOrderHandler::class)->handle(new IssueOrderCommand($orderId));
+        $this->addWork($orderId, $master->id, 'Заточка ножниц');
+        $this->addWork($orderId, $master->id, 'Диагностика аппарата');
+    }
+
+    private function seedIssuedOrderWithApprovedReview(UserModel $master, ClientModel $client): void
+    {
+        $orderId = $this->issueClientOrder(
+            master: $master,
+            client: $client,
+            marker: self::DEMO_MARKER.'issued-approved',
+            workDescription: 'Заточка маникюрного инструмента',
+            price: '600.00',
+        );
 
         $review = app(SubmitReviewHandler::class)->handle(new SubmitReviewCommand(
             clientId: $client->id,
@@ -205,6 +263,42 @@ final class DemoOrderSeeder extends Seeder
 
         if ($reviewId !== null) {
             app(ApproveReviewHandler::class)->handle(new ApproveReviewCommand($reviewId));
+        }
+    }
+
+    private function seedIssuedOrderWithPendingReview(UserModel $master, ClientModel $client): void
+    {
+        $this->issueClientOrder(
+            master: $master,
+            client: $client,
+            marker: self::DEMO_MARKER.'issued-pending-review',
+            workDescription: 'Заточка парикмахерских ножниц',
+            price: '800.00',
+            submitReview: true,
+        );
+    }
+
+    private function seedIssuedOrderWithRejectedReview(UserModel $master, ClientModel $client): void
+    {
+        $orderId = $this->issueClientOrder(
+            master: $master,
+            client: $client,
+            marker: self::DEMO_MARKER.'issued-rejected-review',
+            workDescription: 'Заточка топора',
+            price: '350.00',
+        );
+
+        $review = app(SubmitReviewHandler::class)->handle(new SubmitReviewCommand(
+            clientId: $client->id,
+            orderId: $orderId,
+            rating: 2,
+            comment: 'Долго ждала, но качество нормальное.',
+        ));
+
+        $reviewId = $review->id();
+
+        if ($reviewId !== null) {
+            app(RejectReviewHandler::class)->handle(new RejectReviewCommand($reviewId));
         }
     }
 
@@ -224,6 +318,33 @@ final class DemoOrderSeeder extends Seeder
         ));
         $this->takeToWork($orderId, $master->id);
         $this->addWork($orderId, $master->id, 'Диагностика и замена ремня');
+    }
+
+    private function seedEquipmentHistoryOrder(UserModel $master, EquipmentModel $equipment): void
+    {
+        $orderId = $this->requireOrderId($this->createAssignedOrder(
+            masterId: $master->id,
+            marker: self::DEMO_MARKER.'equipment-history',
+            serviceTypes: ['repair'],
+            snapshot: new ClientSnapshot(['full_name' => 'История SN', 'phone' => '+79001110010']),
+            problemDescription: 'Прошлый ремонт подшипника',
+        ));
+
+        app(LinkEquipmentToOrderHandler::class)->handle(new LinkEquipmentToOrderCommand(
+            orderId: $orderId,
+            equipmentId: $equipment->id,
+        ));
+        $this->takeToWork($orderId, $master->id);
+        $this->addWork($orderId, $master->id, 'Замена подшипника 608ZZ');
+        app(SetWorkPricesHandler::class)->handle(new SetWorkPricesCommand(
+            orderId: $orderId,
+            pricesBySortOrder: [0 => '1200.00'],
+        ));
+        app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+        ));
+        app(IssueOrderHandler::class)->handle(new IssueOrderCommand($orderId));
     }
 
     private function seedConvertedLeadOrder(UserModel $master): void
@@ -266,6 +387,100 @@ final class DemoOrderSeeder extends Seeder
         );
     }
 
+    private function seedSecondMasterOrders(UserModel $master): void
+    {
+        $this->createAssignedOrder(
+            masterId: $master->id,
+            marker: self::DEMO_MARKER.'master2-new',
+            serviceTypes: ['sharpening'],
+            snapshot: new ClientSnapshot(['full_name' => 'Заказ Ивана', 'phone' => '+79002220001']),
+            tools: [new OrderTool(null, 'manicure', 2)],
+        );
+
+        $activeId = $this->requireOrderId($this->createAssignedOrder(
+            masterId: $master->id,
+            marker: self::DEMO_MARKER.'master2-active',
+            serviceTypes: ['repair'],
+            snapshot: new ClientSnapshot(['full_name' => 'Заказ Ивана 2', 'phone' => '+79002220002']),
+            problemDescription: 'Проверка педальки',
+        ));
+
+        $this->takeToWork($activeId, $master->id);
+        $this->addWork($activeId, $master->id, 'Диагностика педали');
+
+        $readyId = $this->requireOrderId($this->createAssignedOrder(
+            masterId: $master->id,
+            marker: self::DEMO_MARKER.'master2-ready',
+            serviceTypes: ['sharpening'],
+            snapshot: new ClientSnapshot(['full_name' => 'Заказ Ивана 3', 'phone' => '+79002220003']),
+            tools: [new OrderTool(null, 'barber', 1)],
+        ));
+
+        $this->takeToWork($readyId, $master->id);
+        $this->addWork($readyId, $master->id, 'Заточка филировочных ножниц');
+        app(SetWorkPricesHandler::class)->handle(new SetWorkPricesCommand(
+            orderId: $readyId,
+            pricesBySortOrder: [0 => '400.00'],
+        ));
+        app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand(
+            orderId: $readyId,
+            masterId: $master->id,
+        ));
+    }
+
+    private function issueClientOrder(
+        UserModel $master,
+        ClientModel $client,
+        string $marker,
+        string $workDescription,
+        string $price,
+        bool $submitReview = false,
+    ): int {
+        $snapshot = new ClientSnapshot([
+            'full_name' => $client->full_name,
+            'phone' => $client->phone,
+        ]);
+
+        $orderId = $this->requireOrderId(app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+            serviceTypes: ['sharpening'],
+            clientId: $client->id,
+            clientSnapshot: $snapshot,
+            tools: [new OrderTool(null, 'manicure', 2)],
+        )));
+
+        app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+        ));
+        $this->markDemo($orderId, $master->id, $marker);
+        $this->takeToWork($orderId, $master->id);
+        $this->addWork($orderId, $master->id, $workDescription);
+        app(SetWorkPricesHandler::class)->handle(new SetWorkPricesCommand(
+            orderId: $orderId,
+            pricesBySortOrder: [0 => $price],
+        ));
+        app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+        ));
+        app(IssueOrderHandler::class)->handle(new IssueOrderCommand($orderId));
+
+        if ($submitReview) {
+            app(SubmitReviewHandler::class)->handle(new SubmitReviewCommand(
+                clientId: $client->id,
+                orderId: $orderId,
+                rating: 4,
+                comment: 'Хорошо, но хотелось бы быстрее.',
+            ));
+        }
+
+        return $orderId;
+    }
+
+    /**
+     * @param  list<string>  $serviceTypes
+     * @param  list<OrderTool>  $tools
+     */
     private function createAssignedOrder(
         int $masterId,
         string $marker,
@@ -274,11 +489,17 @@ final class DemoOrderSeeder extends Seeder
         ?OrderUrgency $urgency = null,
         array $tools = [],
         ?string $problemDescription = null,
+        ?int $clientId = null,
+        bool $needsDelivery = false,
+        ?string $deliveryAddress = null,
     ): Order {
         $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
             serviceTypes: $serviceTypes,
+            clientId: $clientId,
             clientSnapshot: $snapshot,
             urgency: $urgency,
+            needsDelivery: $needsDelivery,
+            deliveryAddress: $deliveryAddress,
             problemDescription: $problemDescription,
             tools: $tools,
         ));
@@ -321,12 +542,22 @@ final class DemoOrderSeeder extends Seeder
         ));
     }
 
+    private function requireMaster(string $email): UserModel
+    {
+        return UserModel::query()->where('email', $email)->firstOrFail();
+    }
+
+    private function requireClient(string $phone): ClientModel
+    {
+        return ClientModel::query()->where('phone', $phone)->firstOrFail();
+    }
+
     private function requireOrderId(Order $order): int
     {
         $orderId = $order->id();
 
         if ($orderId === null) {
-            throw new \RuntimeException('Заказ не получил id после сохранения.');
+            throw new RuntimeException('Заказ не получил id после сохранения.');
         }
 
         return $orderId;

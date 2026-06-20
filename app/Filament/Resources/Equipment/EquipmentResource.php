@@ -20,7 +20,7 @@ class EquipmentResource extends Resource
 
     protected static ?string $model = EquipmentModel::class;
 
-    protected static ?string $navigationLabel = 'Реестр';
+    protected static ?string $navigationLabel = 'Оборудование';
 
     protected static ?string $slug = 'registry';
 

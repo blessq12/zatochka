@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\SiteLeads;
 
-use App\Filament\Clusters\ClientPortalCluster;
+use App\Filament\Clusters\OrderFulfillmentCluster;
 use App\Filament\Resources\SiteLeads\Pages\ListSiteLeads;
 use App\Filament\Resources\SiteLeads\Tables\SiteLeadsTable;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\SiteLeadModel;
@@ -14,17 +14,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SiteLeadResource extends Resource
 {
-    protected static ?string $cluster = ClientPortalCluster::class;
+    protected static ?string $cluster = OrderFulfillmentCluster::class;
 
     protected static ?string $model = SiteLeadModel::class;
 
-    protected static ?string $navigationLabel = 'Заявки';
+    protected static ?string $navigationLabel = 'Лиды';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 0;
 
-    protected static ?string $modelLabel = 'заявка';
+    protected static ?string $modelLabel = 'лид';
 
-    protected static ?string $pluralModelLabel = 'Заявки';
+    protected static ?string $pluralModelLabel = 'Лиды';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInbox;
 

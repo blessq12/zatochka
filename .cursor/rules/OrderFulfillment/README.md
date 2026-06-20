@@ -87,7 +87,7 @@
 
 | Канал | Путь |
 |-------|------|
-| Filament | `Orders/OrderResource` — список, создание, просмотр, действия менеджера |
+| Filament | `SiteLeads/SiteLeadResource` — лиды (`converted=false`); `Orders/OrderResource` — список, создание, просмотр, действия менеджера |
 | PDF | `GET /cp/orders/{id}/documents/{receipt\|handover_act}` |
 | POS | `/api/pos/orders/*`, `/api/pos/dashboard` |
 

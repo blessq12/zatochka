@@ -17,7 +17,7 @@ class SiteContentResource extends Resource
 
     protected static ?string $model = SiteContentModel::class;
 
-    protected static ?string $navigationLabel = 'Контент сайта';
+    protected static ?string $navigationLabel = 'Контент';
 
     protected static ?string $slug = 'site-content';
 
@@ -25,7 +25,7 @@ class SiteContentResource extends Resource
 
     protected static ?string $modelLabel = 'контент';
 
-    protected static ?string $pluralModelLabel = 'Контент сайта';
+    protected static ?string $pluralModelLabel = 'Контент';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
 

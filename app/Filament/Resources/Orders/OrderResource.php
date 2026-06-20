@@ -23,6 +23,8 @@ class OrderResource extends Resource
 
     protected static ?string $model = OrderModel::class;
 
+    protected static ?string $recordTitleAttribute = 'order_number';
+
     protected static ?string $navigationLabel = 'Заказы';
 
     protected static ?int $navigationSort = 1;

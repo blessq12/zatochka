@@ -8,6 +8,7 @@ alwaysApply: false
 
 ## Filament `/cp`
 
+- `SiteLeads/SiteLeadResource` — лиды (`converted=false`), action «Создать заказ» → `OrderPersistence` / `CreateOrderHandler`
 - `Orders/OrderResource` — CRUD заказов
 - `OrderManageActions` — назначение мастера, цены, материалы, выдача, отмена, оборудование, PDF
 - `ViewOrder` — карточка с works/materials

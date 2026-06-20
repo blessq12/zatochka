@@ -36,7 +36,7 @@ class ManageSiteContent extends Page
 
     protected static string $resource = SiteContentResource::class;
 
-    protected static ?string $title = 'Контент сайта';
+    protected static ?string $title = 'Контент';
 
     /** @var array<string, mixed>|null */
     public ?array $data = [];
@@ -107,7 +107,7 @@ class ManageSiteContent extends Page
 
     public function getTitle(): string | Htmlable
     {
-        return static::$title ?? 'Контент сайта';
+        return static::$title ?? 'Контент';
     }
 
     /**

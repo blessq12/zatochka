@@ -7,7 +7,9 @@ use App\Application\OrderFulfillment\CommandHandler\AddMaterialToOrderHandler;
 use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\Warehouse\Enum\WarehouseItemType;
+use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Support\OrderPersistence;
+use App\Filament\Support\OrderViewPresenter;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
@@ -35,13 +37,14 @@ final class OrderManageActions
                             $user->id => trim($user->name.' '.$user->surname),
                         ])
                         ->all())
+                    ->default(fn (OrderModel $record): ?int => $record->master_id)
                     ->required()
                     ->searchable(),
             ])
-            ->action(function (OrderModel $record, array $data): void {
+            ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
                 OrderPersistence::assignMaster($record, (int) $data['master_id']);
 
-                self::notifySuccess('Мастер назначен');
+                self::complete('Мастер назначен', $livewire);
             });
     }
 
@@ -72,7 +75,7 @@ final class OrderManageActions
 
                 return $fields;
             })
-            ->action(function (OrderModel $record, array $data): void {
+            ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
                 if (! isset($data['prices']) || $data['prices'] === []) {
                     return;
                 }
@@ -84,7 +87,7 @@ final class OrderManageActions
 
                 OrderPersistence::setWorkPrices($record, $prices);
 
-                self::notifySuccess('Цены на работы сохранены');
+                self::complete('Цены на работы сохранены', $livewire);
             });
     }
 
@@ -95,11 +98,12 @@ final class OrderManageActions
             ->icon('heroicon-o-calculator')
             ->color('warning')
             ->requiresConfirmation()
+            ->modalDescription('Итог = сумма работ с ценами + материалы на заказе.')
             ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
-            ->action(function (OrderModel $record): void {
+            ->action(function (OrderModel $record, ViewOrder $livewire): void {
                 $price = OrderPersistence::recalculatePrice($record);
 
-                self::notifySuccess('Итог: '.($price ?? '0').' ₽');
+                self::complete('Итог: '.($price ?? '0').' ₽', $livewire);
             });
     }
 
@@ -108,7 +112,8 @@ final class OrderManageActions
         return Action::make('linkEquipment')
             ->label('Привязать оборудование')
             ->icon('heroicon-o-cpu-chip')
-            ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
+            ->visible(fn (OrderModel $record): bool => in_array('repair', $record->service_types ?? [], true)
+                && ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
             ->form([
                 Select::make('equipment_id')
                     ->label('Оборудование')
@@ -119,13 +124,14 @@ final class OrderManageActions
                             $equipment->id => trim($equipment->name.' '.($equipment->brand ?? '').' '.($equipment->model ?? '')),
                         ])
                         ->all())
+                    ->default(fn (OrderModel $record): ?int => $record->equipment_id)
                     ->required()
                     ->searchable(),
             ])
-            ->action(function (OrderModel $record, array $data): void {
+            ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
                 OrderPersistence::linkEquipment($record, (int) $data['equipment_id']);
 
-                self::notifySuccess('Оборудование привязано');
+                self::complete('Оборудование привязано', $livewire);
             });
     }
 
@@ -159,7 +165,7 @@ final class OrderManageActions
     {
         return Action::make('addMaterial')
             ->label('Добавить материал')
-            ->icon('heroicon-o-cube')
+            ->icon('heroicon-o-plus')
             ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
             ->form([
                 Select::make('warehouse_item_id')
@@ -182,14 +188,14 @@ final class OrderManageActions
                     ->required()
                     ->default(1),
             ])
-            ->action(function (OrderModel $record, array $data): void {
+            ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
                 OrderPersistence::addMaterial(
                     $record,
                     (int) $data['warehouse_item_id'],
                     number_format((float) $data['quantity'], 3, '.', ''),
                 );
 
-                self::notifySuccess('Материал добавлен. Не забудь пересчитать цену.');
+                self::complete('Материал добавлен. Пересчитай итоговую цену.', $livewire);
             });
     }
 
@@ -207,29 +213,35 @@ final class OrderManageActions
                     ->options(fn (): array => $record->materials()
                         ->get()
                         ->mapWithKeys(fn ($material): array => [
-                            $material->id => "ID {$material->warehouse_item_id} × {$material->quantity}",
+                            $material->id => sprintf(
+                                '%s × %s',
+                                OrderViewPresenter::warehouseItemName((int) $material->warehouse_item_id),
+                                $material->quantity,
+                            ),
                         ])
                         ->all())
                     ->required(),
             ])
-            ->action(function (OrderModel $record, array $data): void {
+            ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
                 OrderPersistence::removeMaterial($record, (int) $data['material_id']);
 
-                self::notifySuccess('Материал удалён');
+                self::complete('Материал удалён', $livewire);
             });
     }
 
     public static function issue(): Action
     {
         return Action::make('issue')
-            ->label('Выдать')
+            ->label('Выдать клиенту')
             ->icon('heroicon-o-check-circle')
             ->color('success')
             ->requiresConfirmation()
+            ->modalDescription('Заказ перейдёт в статус «Выдан». Клиент сможет оставить отзыв.')
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready)
-            ->action(function (OrderModel $record): void {
+            ->action(function (OrderModel $record, ViewOrder $livewire): void {
                 OrderPersistence::issue($record);
-                self::notifySuccess('Заказ выдан');
+
+                self::complete('Заказ выдан', $livewire);
             });
     }
 
@@ -241,14 +253,17 @@ final class OrderManageActions
             ->color('danger')
             ->requiresConfirmation()
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::New)
-            ->action(function (OrderModel $record): void {
+            ->action(function (OrderModel $record, ViewOrder $livewire): void {
                 OrderPersistence::cancel($record);
-                self::notifySuccess('Заказ отменён');
+
+                self::complete('Заказ отменён', $livewire);
             });
     }
 
-    private static function notifySuccess(string $title): void
+    private static function complete(string $title, ViewOrder $livewire): void
     {
         Notification::make()->success()->title($title)->send();
+
+        $livewire->refreshOrderRecord();
     }
 }

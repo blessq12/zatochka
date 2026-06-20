@@ -20,7 +20,7 @@ class BranchResource extends Resource
 
     protected static ?string $model = BranchModel::class;
 
-    protected static ?string $navigationLabel = 'Филиал';
+    protected static ?string $navigationLabel = 'Филиалы';
 
     protected static ?string $slug = 'branches';
 

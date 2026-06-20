@@ -9,7 +9,9 @@ use Filament\Support\Icons\Heroicon;
 
 class PricingCluster extends Cluster
 {
-    protected static ?string $navigationLabel = 'Прайс';
+    protected static ?string $navigationLabel = 'Прайс-лист';
+
+    protected static ?string $clusterBreadcrumb = 'Прайс-лист';
 
     protected static ?string $slug = 'pricing';
 

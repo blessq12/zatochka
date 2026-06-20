@@ -90,9 +90,10 @@
 
 ### Filament `/cp`
 
-- `SiteLeads/SiteLeadResource` — заявки (`converted=false`), action «Создать заказ»
 - `Clients/ClientResource` — action «Привязать гостевые заказы»
 - `Reviews/ReviewResource` — модерация approve/reject (кнопки только для `pending`)
+
+Лиды — `SiteLeads/SiteLeadResource` в кластере **Заказы** (см. [OrderFulfillment/README](../OrderFulfillment/README.md)).
 
 ### Vue SPA
 

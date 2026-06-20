@@ -9,9 +9,9 @@ use Filament\Support\Icons\Heroicon;
 
 class CompanyCluster extends Cluster
 {
-    protected static ?string $navigationLabel = 'Сайт и компания';
+    protected static ?string $navigationLabel = 'Компания';
 
-    protected static ?string $clusterBreadcrumb = 'Сайт и компания';
+    protected static ?string $clusterBreadcrumb = 'Компания';
 
     protected static ?string $slug = 'company';
 

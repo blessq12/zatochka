@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Tables;
 use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Filament\Support\OrderPersistence;
+use App\Filament\Support\OrderViewPresenter;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use Filament\Actions\Action;
@@ -27,6 +28,7 @@ class OrdersTable
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
+                    ->color(fn (OrderStatus $state): string => OrderViewPresenter::statusColor($state))
                     ->formatStateUsing(fn (OrderStatus $state): string => $state->label()),
                 TextColumn::make('client_snapshot.full_name')
                     ->label('Клиент')

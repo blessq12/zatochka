@@ -5,9 +5,11 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 
 /**
- * Демо-данные по BC (порядок = зависимости).
+ * Prod-demo данные по BC (порядок = зависимости).
  *
  * Company → Pricing → Identity → Warehouse → Equipment → ClientPortal → OrderFulfillment
+ *
+ * Аккаунты: root@root.com / master@master.com / ivan.petrov@zatochka.local / +79001234567 — password
  */
 class DomainSeeder extends Seeder
 {

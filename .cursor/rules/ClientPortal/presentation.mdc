@@ -25,9 +25,10 @@ alwaysApply: false
 
 ## Filament `/cp`
 
-- `SiteLeads/SiteLeadResource` — заявки (`converted=false`)
 - `Clients/ClientResource` — список клиентов
 - `Reviews/ReviewResource` — модерация (approve/reject)
+
+Лиды (`SiteLeads/SiteLeadResource`) — в кластере **Заказы** (см. [OrderFulfillment/presentation.mdc](../OrderFulfillment/presentation.mdc)).
 
 ## Auth
 
@@ -49,6 +50,5 @@ Guard `client` → `ClientAuthModel`. Не путать с `User` (мастер/
 
 ## Filament actions (факт)
 
-- SiteLeads: «Создать заказ» → `CreateOrderHandler`
 - Clients: «Привязать гостевые заказы» → `LinkGuestOrdersToClientHandler`
 - Reviews: «Одобрить» / «Отклонить» (только `pending`)

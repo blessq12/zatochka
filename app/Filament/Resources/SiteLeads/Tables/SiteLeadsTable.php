@@ -47,7 +47,7 @@ class SiteLeadsTable
 
                         Notification::make()
                             ->success()
-                            ->title('Заказ создан из заявки')
+                            ->title('Заказ создан из лида')
                             ->send();
                     }),
             ]);

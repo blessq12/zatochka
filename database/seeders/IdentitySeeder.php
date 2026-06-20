@@ -11,6 +11,8 @@ final class IdentitySeeder extends Seeder
 {
     public const MASTER_EMAIL = 'master@master.com';
 
+    public const MASTER_2_EMAIL = 'ivan.petrov@zatochka.local';
+
     public const MANAGER_EMAIL = 'root@root.com';
 
     public const DEMO_PASSWORD = 'password';

@@ -9,7 +9,9 @@ use Filament\Support\Icons\Heroicon;
 
 class ClientPortalCluster extends Cluster
 {
-    protected static ?string $navigationLabel = 'Клиентский портал';
+    protected static ?string $navigationLabel = 'Клиенты';
+
+    protected static ?string $clusterBreadcrumb = 'Клиенты';
 
     protected static ?string $slug = 'client-portal';
 

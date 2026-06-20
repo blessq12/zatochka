@@ -9,7 +9,9 @@ use Filament\Support\Icons\Heroicon;
 
 class OrderFulfillmentCluster extends Cluster
 {
-    protected static ?string $navigationLabel = 'Исполнение заказов';
+    protected static ?string $navigationLabel = 'Заказы';
+
+    protected static ?string $clusterBreadcrumb = 'Заказы';
 
     protected static ?string $slug = 'order-fulfillment';
 

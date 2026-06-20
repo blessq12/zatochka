@@ -2,16 +2,20 @@
 
 namespace Database\Seeders;
 
+use App\Application\Equipment\Command\RegisterEquipmentCommand;
+use App\Application\Equipment\CommandHandler\RegisterEquipmentHandler;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 use Illuminate\Database\Seeder;
 
 final class EquipmentSeeder extends Seeder
 {
+    public const STRONG_2100_NAME = 'Аппарат Strong 2100';
+
     public function run(): void
     {
         $items = [
             [
-                'name' => 'Аппарат Strong 2100',
+                'name' => self::STRONG_2100_NAME,
                 'brand' => 'Strong',
                 'model' => '2100',
                 'serial_numbers' => ['SN-STR-2100-001'],
@@ -30,15 +34,19 @@ final class EquipmentSeeder extends Seeder
             ],
         ];
 
+        $register = app(RegisterEquipmentHandler::class);
+
         foreach ($items as $item) {
-            EquipmentModel::query()->updateOrCreate(
-                ['name' => $item['name']],
-                [
-                    'brand' => $item['brand'],
-                    'model' => $item['model'],
-                    'serial_numbers' => $item['serial_numbers'],
-                ],
-            );
+            if (EquipmentModel::query()->where('name', $item['name'])->exists()) {
+                continue;
+            }
+
+            $register->handle(new RegisterEquipmentCommand(
+                name: $item['name'],
+                serialNumbers: $item['serial_numbers'],
+                brand: $item['brand'],
+                model: $item['model'],
+            ));
         }
     }
 }

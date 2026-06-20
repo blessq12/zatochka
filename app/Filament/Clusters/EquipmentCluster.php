@@ -11,6 +11,8 @@ class EquipmentCluster extends Cluster
 {
     protected static ?string $navigationLabel = 'Оборудование';
 
+    protected static ?string $clusterBreadcrumb = 'Оборудование';
+
     protected static ?string $slug = 'equipment';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
