@@ -1,117 +1,120 @@
 import axios from "axios";
 
+const POS_ORDERS_BASE = "/api/pos/orders";
+
 /**
- * Сервис для работы с заказами в POS панели мастера
+ * Сервис для работы с заказами в POS панели мастера.
+ * Контракты соответствуют PosController (бэкенд — источник истины).
  */
 export const orderService = {
     /**
-     * Получить список заказов с фильтрацией по статусу
-     * @param {string|null} status - Статус заказов: 'new', 'active', 'completed' или null для всех
-     * @returns {Promise<Array>} Массив заказов
-     */
-    async getOrders(status = null) {
-        try {
-            const params = status ? { status } : {};
-            const response = await axios.get("/api/pos/orders", { params });
-            return response.data.orders || [];
-        } catch (error) {
-            console.error("Error fetching orders:", error);
-            throw error;
-        }
-    },
-
-    /**
-     * Получить новые заказы
+     * @param {string|null} status — таб воронки: new | active | waiting_parts | completed
      * @returns {Promise<Array>}
      */
+    async getOrders(status = null, page = 1, perPage = 20) {
+        const params = { page, per_page: perPage };
+        if (status) {
+            params.status = status;
+        }
+
+        const response = await axios.get(POS_ORDERS_BASE, { params });
+        return response.data.data || [];
+    },
+
     async getNewOrders() {
         return this.getOrders("new");
     },
 
-    /**
-     * Получить активные заказы
-     * @returns {Promise<Array>}
-     */
     async getActiveOrders() {
         return this.getOrders("active");
     },
 
-    /**
-     * Получить заказы в ожидании запчастей
-     * @returns {Promise<Array>}
-     */
     async getWaitingPartsOrders() {
         return this.getOrders("waiting_parts");
     },
 
-    /**
-     * Получить завершенные заказы
-     * @returns {Promise<Array>}
-     */
     async getCompletedOrders() {
         return this.getOrders("completed");
     },
 
     /**
-     * Получить детали заказа по ID
-     * @param {number|string} orderId
-     * @returns {Promise<Object>}
-     */
-    async getOrderById(orderId) {
-        try {
-            const response = await axios.get(`/api/pos/orders/${orderId}`);
-            return response.data.order;
-        } catch (error) {
-            console.error("Error fetching order:", error);
-            throw error;
-        }
-    },
-
-    /**
-     * Получить счетчики заказов
-     * @returns {Promise<Object>} Объект с полями new и in_work
+     * @returns {Promise<Object>} { new, in_work, waiting_parts, ready }
      */
     async getOrdersCount() {
-        try {
-            const response = await axios.get("/api/pos/orders/count");
-            return {
-                new: response.data.new || 0,
-                in_work: response.data.in_work || 0,
-                waiting_parts: response.data.waiting_parts || 0,
-                ready: response.data.ready || 0,
-            };
-        } catch (error) {
-            console.error("Error fetching orders count:", error);
-            return { new: 0, in_work: 0, waiting_parts: 0, ready: 0 };
-        }
+        const response = await axios.get(`${POS_ORDERS_BASE}/counts`);
+        const counts = response.data.data || {};
+
+        return {
+            new: counts.new || 0,
+            in_work: counts.active || 0,
+            waiting_parts: counts.waiting_parts || 0,
+            ready: counts.completed || 0,
+        };
     },
 
-    /**
-     * Обновить статус заказа
-     * @param {number|string} orderId
-     * @param {string} status
-     * @returns {Promise<Object>}
-     */
-    async updateOrderStatus(orderId, status) {
-        try {
-            const response = await axios.patch(
-                `/api/pos/orders/${orderId}/status`,
-                {
-                    status,
-                }
-            );
-            return response.data.order;
-        } catch (error) {
-            console.error("Error updating order status:", error);
-            throw error;
-        }
+    async getOrderById(orderId) {
+        const response = await axios.get(`${POS_ORDERS_BASE}/${orderId}`);
+        return response.data.data;
     },
 
-    /**
-     * Получить метку статуса заказа
-     * @param {string} status
-     * @returns {string}
-     */
+    async takeToWork(orderId) {
+        const response = await axios.post(
+            `${POS_ORDERS_BASE}/${orderId}/take-to-work`
+        );
+        return response.data.data;
+    },
+
+    async markWaitingForParts(orderId) {
+        const response = await axios.post(
+            `${POS_ORDERS_BASE}/${orderId}/waiting-parts`
+        );
+        return response.data.data;
+    },
+
+    async resume(orderId) {
+        const response = await axios.post(
+            `${POS_ORDERS_BASE}/${orderId}/resume`
+        );
+        return response.data.data;
+    },
+
+    async markReady(orderId) {
+        const response = await axios.post(
+            `${POS_ORDERS_BASE}/${orderId}/mark-ready`
+        );
+        return response.data.data;
+    },
+
+    async returnToWork(orderId) {
+        const response = await axios.post(
+            `${POS_ORDERS_BASE}/${orderId}/return-to-work`
+        );
+        return response.data.data;
+    },
+
+    async updateInternalNotes(orderId, notes) {
+        const response = await axios.patch(
+            `${POS_ORDERS_BASE}/${orderId}/internal-notes`,
+            { notes }
+        );
+        return response.data.data;
+    },
+
+    async addWork(orderId, description) {
+        const response = await axios.post(`${POS_ORDERS_BASE}/${orderId}/works`, {
+            description,
+        });
+        return response.data.data;
+    },
+
+    async removeWork(orderId, sortOrder) {
+        const response = await axios.delete(
+            `${POS_ORDERS_BASE}/${orderId}/works`,
+            { data: { sort_order: sortOrder } }
+        );
+        return response.data.data;
+    },
+
     getStatusLabel(status) {
         const statuses = {
             new: "Новый",
@@ -124,11 +127,6 @@ export const orderService = {
         return statuses[status] || status;
     },
 
-    /**
-     * Получить метку типа заказа
-     * @param {string} type
-     * @returns {string}
-     */
     getTypeLabel(type) {
         const types = {
             repair: "Ремонт",
@@ -140,11 +138,6 @@ export const orderService = {
         return types[type] || type;
     },
 
-    /**
-     * Форматировать цену для отображения
-     * @param {number|string} price
-     * @returns {string}
-     */
     formatPrice(price) {
         if (!price) return "0";
         return new Intl.NumberFormat("ru-RU").format(price);

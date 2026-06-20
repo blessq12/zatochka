@@ -5,13 +5,17 @@ const CLIENT_PORTAL_PREFIXES = [
     "/api/bootstrap",
 ];
 
-/** Глобальный переключатель моков (POS и прочее). */
+/** Глобальный переключатель моков. */
 export const useApiMocks = () =>
     import.meta.env.VITE_USE_API_MOCKS !== "false";
 
 /** Клиентский API на моках — только явное VITE_USE_CLIENT_API_MOCKS=true. */
 export const useClientApiMocks = () =>
     import.meta.env.VITE_USE_CLIENT_API_MOCKS === "true";
+
+/** POS API на моках — только явное VITE_USE_POS_API_MOCKS=true. */
+export const usePosApiMocks = () =>
+    import.meta.env.VITE_USE_POS_API_MOCKS === "true";
 
 export const isClientPortalRequest = (url) => {
     const path = String(url || "").split("?")[0];
@@ -29,6 +33,12 @@ export const isClientPortalRequest = (url) => {
     });
 };
 
+export const isPosRequest = (url) => {
+    const path = String(url || "").split("?")[0];
+
+    return path === "/api/pos" || path.startsWith("/api/pos/");
+};
+
 export const shouldMockRequest = (config) => {
     if (!useApiMocks()) {
         return false;
@@ -40,6 +50,10 @@ export const shouldMockRequest = (config) => {
     }
 
     if (!useClientApiMocks() && isClientPortalRequest(url)) {
+        return false;
+    }
+
+    if (!usePosApiMocks() && isPosRequest(url)) {
         return false;
     }
 

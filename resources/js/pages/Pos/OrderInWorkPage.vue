@@ -178,16 +178,14 @@
                                 </ul>
                             </div>
                             <div
-                                v-else-if="
-                                    order.equipment?.serial_numbers_display
-                                "
+                                v-else-if="order.equipment?.serial_numbers?.length"
                                 class="info-card-item"
                             >
                                 <span class="info-card-label"
                                     >Серийные номера</span
                                 >
                                 <span class="info-card-value">{{
-                                    order.equipment.serial_numbers_display
+                                    order.equipment.serial_numbers.join(", ")
                                 }}</span>
                             </div>
                         </div>
@@ -275,8 +273,7 @@
                 <h2 class="section-title">Выполненные работы</h2>
 
                 <!-- Список работ -->
-                <div v-if="worksLoading" class="loading">Загрузка работ...</div>
-                <div v-else-if="works.length === 0" class="empty-state-inline">
+                <div v-if="works.length === 0" class="empty-state-inline">
                     Пока нет выполненных работ
                 </div>
                 <div v-else class="works-list">
@@ -286,15 +283,9 @@
                                 <span class="work-description">{{
                                     work.description
                                 }}</span>
-                                <span
-                                    v-if="work.equipment_component_name || work.equipment_component_serial_number"
-                                    class="work-equipment-component"
-                                >
-                                    [{{ work.equipment_component_name || 'Элемент' }}{{ work.equipment_component_serial_number ? ` (SN: ${work.equipment_component_serial_number})` : '' }}]
-                                </span>
                             </div>
                             <button
-                                @click="deleteWork(work.id)"
+                                @click="deleteWork(work)"
                                 class="btn-delete btn-delete-inline"
                                 :disabled="isDeletingWork[work.id]"
                             >
@@ -321,33 +312,6 @@
                                 />
                             </div>
                         </div>
-                        <div
-                            v-if="hasEquipmentComponents"
-                            class="form-row-inline"
-                        >
-                            <div class="form-group flex-1">
-                                <label class="form-label"
-                                    >Элемент оборудования</label
-                                >
-                                <div class="select-wrapper">
-                                    <select
-                                        v-model="workForm.selectedComponentIndex"
-                                        class="form-select equipment-component-select"
-                                        @change="onComponentSelected"
-                                    >
-                                        <option value="">Не указывать</option>
-                                        <option
-                                            v-for="(component, index) in equipmentComponents"
-                                            :key="index"
-                                            :value="index"
-                                        >
-                                            {{ component.name || 'Элемент' }}{{ component.serial_number ? ` (SN: ${component.serial_number})` : '' }}
-                                        </option>
-                                    </select>
-                                    <span class="select-arrow">▼</span>
-                                </div>
-                            </div>
-                        </div>
                         <button
                             type="submit"
                             class="btn-primary btn-add-work"
@@ -359,52 +323,11 @@
                     </form>
                 </div>
             </div>
-
-            <!-- Материалы заказа (только просмотр; добавляет менеджер) -->
-            <div class="materials-section materials-section-readonly">
-                <h2 class="section-title">Материалы и запчасти</h2>
-                <p class="materials-hint">
-                    Добавление и изменение номенклатуры — в панели менеджера.
-                </p>
-                <div v-if="materialsLoading" class="loading">
-                    Загрузка материалов...
-                </div>
-                <div
-                    v-else-if="materials.length === 0"
-                    class="empty-state-inline"
-                >
-                    Не указано менеджером
-                </div>
-                <div v-else class="materials-list">
-                    <div
-                        v-for="material in materials"
-                        :key="material.id"
-                        class="material-item"
-                    >
-                        <div class="material-body">
-                            <div class="material-info">
-                                <span class="material-name">{{
-                                    material.name
-                                }}</span>
-                                <span
-                                    v-if="material.article"
-                                    class="material-article"
-                                    >Арт: {{ material.article }}</span
-                                >
-                                <span class="material-quantity"
-                                    >Количество: {{ material.quantity }}</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </template>
 
 <script>
-import axios from "axios";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
@@ -426,15 +349,9 @@ export default {
         const order = ref(null);
         const isLoading = ref(false);
         const works = ref([]);
-        const worksLoading = ref(false);
-        const materials = ref([]);
-        const materialsLoading = ref(false);
 
         const workForm = reactive({
             description: "",
-            equipment_component_name: "",
-            equipment_component_serial_number: "",
-            selectedComponentIndex: "",
         });
 
         const isAddingWork = ref(false);
@@ -448,13 +365,18 @@ export default {
             internal_notes: "",
         });
 
+        const syncOrderDetails = (orderData) => {
+            order.value = orderData;
+            works.value = orderData?.works || [];
+        };
+
         const fetchOrder = async () => {
             isLoading.value = true;
             try {
                 const orderData = await orderService.getOrderById(
                     orderId.value
                 );
-                order.value = orderData;
+                syncOrderDetails(orderData);
             } catch (error) {
                 console.error("Error fetching order:", error);
                 toastService.error("Ошибка при загрузке заказа");
@@ -463,63 +385,16 @@ export default {
             }
         };
 
-        const fetchWorks = async () => {
-            worksLoading.value = true;
-            try {
-                const response = await axios.get(
-                    `/api/pos/orders/${orderId.value}/works`
-                );
-                works.value = response.data.works || [];
-            } catch (error) {
-                console.error("Error fetching works:", error);
-                toastService.error("Ошибка при загрузке работ");
-            } finally {
-                worksLoading.value = false;
-            }
-        };
-
-        const fetchMaterials = async () => {
-            materialsLoading.value = true;
-            try {
-                const response = await axios.get(
-                    `/api/pos/orders/${orderId.value}/materials`
-                );
-                materials.value = response.data.materials || [];
-            } catch (error) {
-                console.error("Error fetching materials:", error);
-                toastService.error("Ошибка при загрузке материалов");
-            } finally {
-                materialsLoading.value = false;
-            }
-        };
-
         const addWork = async () => {
             isAddingWork.value = true;
             try {
-                const payload = {
-                    description: workForm.description,
-                };
-
-                // Добавляем данные элемента оборудования, если выбран
-                if (workForm.equipment_component_name || workForm.equipment_component_serial_number) {
-                    payload.equipment_component_name = workForm.equipment_component_name || null;
-                    payload.equipment_component_serial_number = workForm.equipment_component_serial_number || null;
-                }
-
-                await axios.post(
-                    `/api/pos/orders/${orderId.value}/works`,
-                    payload
+                const orderData = await orderService.addWork(
+                    orderId.value,
+                    workForm.description
                 );
+                syncOrderDetails(orderData);
                 toastService.success("Работа добавлена");
-
-                // Очищаем форму
                 workForm.description = "";
-                workForm.equipment_component_name = "";
-                workForm.equipment_component_serial_number = "";
-                workForm.selectedComponentIndex = "";
-
-                // Обновляем список работ
-                await fetchWorks();
             } catch (error) {
                 console.error("Error adding work:", error);
                 toastService.error(
@@ -531,21 +406,22 @@ export default {
             }
         };
 
-        const deleteWork = async (workId) => {
+        const deleteWork = async (work) => {
             if (!confirm("Удалить эту работу?")) return;
 
-            isDeletingWork[workId] = true;
+            isDeletingWork[work.id] = true;
             try {
-                await axios.delete(
-                    `/api/pos/orders/${orderId.value}/works/${workId}`
+                const orderData = await orderService.removeWork(
+                    orderId.value,
+                    work.sort_order
                 );
+                syncOrderDetails(orderData);
                 toastService.success("Работа удалена");
-                await fetchWorks();
             } catch (error) {
                 console.error("Error deleting work:", error);
                 toastService.error("Ошибка при удалении работы");
             } finally {
-                isDeletingWork[workId] = false;
+                isDeletingWork[work.id] = false;
             }
         };
 
@@ -557,13 +433,10 @@ export default {
             isChangingStatus.value = true;
             changingToStatus.value = "in_work";
             try {
-                await orderService.updateOrderStatus(orderId.value, "in_work");
+                const orderData = await orderService.resume(orderId.value);
+                syncOrderDetails(orderData);
                 toastService.success("Заказ переведен в работу");
 
-                // Обновляем данные заказа
-                await fetchOrder();
-
-                // Обновляем счетчики заказов
                 const posStore = usePosStore();
                 await posStore.getOrdersCount();
             } catch (error) {
@@ -586,16 +459,12 @@ export default {
             isChangingStatus.value = true;
             changingToStatus.value = "waiting_parts";
             try {
-                await orderService.updateOrderStatus(
-                    orderId.value,
-                    "waiting_parts"
+                const orderData = await orderService.markWaitingForParts(
+                    orderId.value
                 );
+                syncOrderDetails(orderData);
                 toastService.success("Заказ переведен в ожидание запчастей");
 
-                // Обновляем данные заказа
-                await fetchOrder();
-
-                // Обновляем счетчики заказов
                 const posStore = usePosStore();
                 await posStore.getOrdersCount();
             } catch (error) {
@@ -611,17 +480,21 @@ export default {
         };
 
         const saveComment = async () => {
+            const newNote = commentForm.internal_notes.trim();
+            if (!newNote) {
+                return;
+            }
+
             isSavingComment.value = true;
             try {
-                await axios.patch(`/api/pos/orders/${orderId.value}/update`, {
-                    internal_notes: commentForm.internal_notes,
-                });
+                const existing = order.value?.internal_notes?.trim();
+                const notes = existing ? `${existing}\n${newNote}` : newNote;
+                const orderData = await orderService.updateInternalNotes(
+                    orderId.value,
+                    notes
+                );
+                syncOrderDetails(orderData);
                 toastService.success("Комментарий сохранен");
-
-                // Обновляем данные заказа
-                await fetchOrder();
-
-                // Очищаем форму после сохранения
                 commentForm.internal_notes = "";
             } catch (error) {
                 console.error("Error saving comment:", error);
@@ -635,7 +508,6 @@ export default {
         };
 
         const completeOrder = async () => {
-            // Проверяем наличие выполненных работ
             if (works.value.length === 0) {
                 toastService.error(
                     "Нельзя завершить заказ без выполненных работ. Добавьте хотя бы одну работу."
@@ -653,17 +525,13 @@ export default {
 
             isCompletingOrder.value = true;
             try {
-                await orderService.updateOrderStatus(orderId.value, "ready");
+                const orderData = await orderService.markReady(orderId.value);
+                syncOrderDetails(orderData);
                 toastService.success("Заказ завершен");
 
-                // Обновляем данные заказа
-                await fetchOrder();
-
-                // Обновляем счетчики заказов
                 const posStore = usePosStore();
                 await posStore.getOrdersCount();
 
-                // Перенаправляем на страницу активных заказов через небольшую задержку
                 setTimeout(() => {
                     router.push({ name: "pos.orders.active" });
                 }, 1500);
@@ -678,15 +546,6 @@ export default {
             }
         };
 
-        // Компоненты для выбора в форме работы (сырой массив из API)
-        const equipmentComponents = computed(() => {
-            const raw = order.value?.equipment?.serial_number;
-            if (!Array.isArray(raw) || raw.length === 0) {
-                return [];
-            }
-            return raw;
-        });
-
         const equipmentSerialRowsComputed = computed(() =>
             getEquipmentSerialRows(order.value?.equipment)
         );
@@ -695,59 +554,18 @@ export default {
             getEquipmentBrandModelLine(order.value?.equipment)
         );
 
-        // Проверяем есть ли несколько компонентов оборудования
-        const hasEquipmentComponents = computed(() => {
-            return equipmentComponents.value.length > 1;
-        });
-
-        // Обработка выбора компонента оборудования
-        const onComponentSelected = () => {
-            if (workForm.selectedComponentIndex === "" || workForm.selectedComponentIndex === null) {
-                workForm.equipment_component_name = "";
-                workForm.equipment_component_serial_number = "";
-                return;
-            }
-
-            const index = parseInt(workForm.selectedComponentIndex);
-            const component = equipmentComponents.value[index];
-            if (component) {
-                workForm.equipment_component_name = component.name || "";
-                workForm.equipment_component_serial_number = component.serial_number || "";
-            }
-        };
-
-        // Следим за изменениями заказа и обновляем форму комментариев
-        const updateCommentForm = () => {
-            if (order.value?.internal_notes && !commentForm.internal_notes) {
-                commentForm.internal_notes = order.value.internal_notes;
-            }
-        };
-
         onMounted(async () => {
-            await Promise.all([
-                fetchOrder(),
-                fetchWorks(),
-                fetchMaterials(),
-            ]);
-
-            // Заполняем форму комментариев существующим значением
-            updateCommentForm();
+            await fetchOrder();
         });
 
         return {
             order,
             isLoading,
             works,
-            worksLoading,
-            materials,
-            materialsLoading,
             workForm,
-            equipmentComponents,
             equipmentSerialRowsComputed,
             equipmentBrandModelLineComputed,
-            hasEquipmentComponents,
             formatPosOrderPaymentType,
-            onComponentSelected,
             isAddingWork,
             isDeletingWork,
             isCompletingOrder,

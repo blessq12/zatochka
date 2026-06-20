@@ -61,7 +61,20 @@ export default {
             }
             try {
                 const res = await axios.get("/api/pos/dashboard");
-                stats.value = res.data;
+                const payload = res.data.data || {};
+                const counts = payload.counts || {};
+
+                stats.value = {
+                    counts,
+                    avg_work_duration_seconds:
+                        payload.avg_work_duration_seconds ?? null,
+                    status_stats: {
+                        new: counts.new ?? 0,
+                        in_work: counts.active ?? 0,
+                        waiting_parts: counts.waiting_parts ?? 0,
+                        ready: counts.completed ?? 0,
+                    },
+                };
                 error.value = null;
             } catch (e) {
                 console.error("Error fetching dashboard stats:", e);

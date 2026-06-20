@@ -98,16 +98,6 @@ const routes = [
                     import("../pages/Pos/EquipmentSearchPage.vue"),
             },
             {
-                path: "settings/profile",
-                name: "pos.settings.profile",
-                component: () => import("../pages/Pos/SettingsProfilePage.vue"),
-            },
-            {
-                path: "settings/telegram",
-                name: "pos.settings.telegram",
-                component: () => import("../pages/Pos/SettingsTelegramPage.vue"),
-            },
-            {
                 path: "",
                 redirect: { name: "pos.dashboard" },
             },

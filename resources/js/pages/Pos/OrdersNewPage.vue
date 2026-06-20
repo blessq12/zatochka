@@ -82,7 +82,7 @@ export default {
 
             isUpdatingStatus[orderId] = true;
             try {
-                await orderService.updateOrderStatus(orderId, "in_work");
+                await orderService.takeToWork(orderId);
                 toastService.success("Заказ взят в работу");
 
                 // Обновляем список заказов

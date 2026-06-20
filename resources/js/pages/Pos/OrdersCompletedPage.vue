@@ -82,7 +82,7 @@ export default {
 
             isReturningToWork[orderId] = true;
             try {
-                await orderService.updateOrderStatus(orderId, "in_work");
+                await orderService.returnToWork(orderId);
                 toastService.success("Заказ возвращен в работу");
 
                 // Обновляем список заказов

@@ -3,6 +3,12 @@
  */
 
 export function formatPosOrderPaymentType(order) {
+    if (order?.is_warranty === true) {
+        return "Гарантийный";
+    }
+    if (order?.is_warranty === false) {
+        return "Платный";
+    }
     if (!order?.order_payment_type) {
         return "—";
     }
@@ -11,9 +17,20 @@ export function formatPosOrderPaymentType(order) {
 
 /** Строки компонентов оборудования: { name, serial_number } */
 export function getEquipmentSerialRows(equipment) {
-    if (!equipment?.serial_number || !Array.isArray(equipment.serial_number)) {
+    if (!equipment) {
         return [];
     }
+
+    if (Array.isArray(equipment.serial_numbers)) {
+        return equipment.serial_numbers
+            .filter((sn) => sn && String(sn).trim() !== "")
+            .map((sn) => ({ name: null, serial_number: String(sn) }));
+    }
+
+    if (!equipment.serial_number || !Array.isArray(equipment.serial_number)) {
+        return [];
+    }
+
     return equipment.serial_number.filter(
         (row) =>
             (row?.name && String(row.name).trim() !== "") ||

@@ -47,9 +47,6 @@ const matchRoute = (method, url) => {
         ["GET", /^\/api\/client\/orders\/history$/, "clientHistoryOrders"],
         ["POST", /^\/api\/client\/orders\/(\d+)\/review$/, "createReview"],
         ["POST", /^\/api\/pos\/login$/, "posLogin"],
-        ["POST", /^\/api\/pos\/logout$/, "posLogout"],
-        ["GET", /^\/api\/pos\/me$/, "posMe"],
-        ["POST", /^\/api\/pos\/profile\/update$/, "posProfileUpdate"],
         ["GET", /^\/api\/pos\/dashboard$/, "posDashboard"],
         ["GET", /^\/api\/pos\/orders\/count$/, "posOrdersCount"],
         ["GET", /^\/api\/pos\/orders$/, "posOrdersList"],
@@ -59,14 +56,9 @@ const matchRoute = (method, url) => {
         ["GET", /^\/api\/pos\/orders\/(\d+)\/works$/, "posOrderWorksList"],
         ["POST", /^\/api\/pos\/orders\/(\d+)\/works$/, "posOrderWorkCreate"],
         ["DELETE", /^\/api\/pos\/orders\/(\d+)\/works\/(\d+)$/, "posOrderWorkDelete"],
-        ["GET", /^\/api\/pos\/orders\/(\d+)\/materials$/, "posOrderMaterialsList"],
-        ["POST", /^\/api\/pos\/orders\/(\d+)\/materials$/, "posOrderMaterialCreate"],
-        ["DELETE", /^\/api\/pos\/orders\/(\d+)\/materials\/(\d+)$/, "posOrderMaterialDelete"],
         ["GET", /^\/api\/pos\/equipment\/search$/, "posEquipmentSearch"],
         ["GET", /^\/api\/pos\/equipment\/(\d+)\/orders$/, "posEquipmentOrders"],
         ["GET", /^\/api\/pos\/warehouse\/items$/, "posWarehouseItems"],
-        ["POST", /^\/api\/pos\/telegram\/send-verification-code$/, "posTelegramSend"],
-        ["POST", /^\/api\/pos\/telegram\/verify-code$/, "posTelegramVerify"],
     ];
 
     for (const [routeMethod, pattern, name] of routes) {

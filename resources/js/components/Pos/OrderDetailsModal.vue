@@ -237,41 +237,6 @@
                             </div>
                         </div>
 
-                        <!-- Материалы (привязаны к заказу) -->
-                        <div
-                            v-if="orderMaterialsList.length > 0"
-                            class="details-section"
-                        >
-                            <div class="details-section-header">
-                                <h3 class="details-section-title">
-                                    Материалы и запчасти
-                                </h3>
-                            </div>
-                            <div class="materials-list-details">
-                                <div
-                                    v-for="material in orderMaterialsList"
-                                    :key="material.id"
-                                    class="material-detail-item"
-                                >
-                                    <div class="material-detail-info">
-                                        <span class="material-detail-name">{{
-                                            material.name
-                                        }}</span>
-                                        <span
-                                            v-if="material.article"
-                                            class="material-detail-article"
-                                        >
-                                            Арт: {{ material.article }}
-                                        </span>
-                                    </div>
-                                    <div class="material-detail-quantity">
-                                        {{ material.quantity || 0 }}
-                                        {{ material.unit || "шт" }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Информация об оплате и доставке -->
                         <div class="details-section financial-section">
                             <div class="details-section-header">
@@ -371,10 +336,6 @@ export default {
         const order = ref(null);
         const isLoading = ref(false);
 
-        const orderMaterialsList = computed(() => {
-            return order.value?.order_materials ?? [];
-        });
-
         const equipmentSerialRows = computed(() =>
             getEquipmentSerialRows(order.value?.equipment)
         );
@@ -457,7 +418,6 @@ export default {
         return {
             order,
             isLoading,
-            orderMaterialsList,
             equipmentSerialRows,
             equipmentBrandModelLine,
             formatPosOrderPaymentType,

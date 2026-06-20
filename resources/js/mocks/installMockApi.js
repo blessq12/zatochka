@@ -1,5 +1,10 @@
 import { resolveMockResponse } from "./handlers.js";
-import { shouldMockRequest, useApiMocks, useClientApiMocks } from "./mockConfig.js";
+import {
+    shouldMockRequest,
+    useApiMocks,
+    useClientApiMocks,
+    usePosApiMocks,
+} from "./mockConfig.js";
 
 const createMockAdapter = (config) =>
     Promise.resolve({
@@ -23,5 +28,9 @@ export const installMockApi = (axiosInstance) => {
 
     if (import.meta.env.DEV && !useClientApiMocks()) {
         console.info("[mock-api] Клиентский API на бэкенде (моки клиента выключены)");
+    }
+
+    if (import.meta.env.DEV && !usePosApiMocks()) {
+        console.info("[mock-api] POS API на бэкенде (моки POS выключены)");
     }
 };

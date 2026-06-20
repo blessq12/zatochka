@@ -65,8 +65,7 @@
                                 <th>№</th>
                                 <th>Дата</th>
                                 <th>Статус</th>
-                                <th>Мастер</th>
-                                <th>Проблема</th>
+                                <th>Клиент</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -77,11 +76,8 @@
                             >
                                 <td>№{{ ord.order_number }}</td>
                                 <td>{{ formatDate(ord.created_at) }}</td>
-                                <td>{{ statusLabel(ord.status) }}</td>
-                                <td>{{ masterName(ord.master) }}</td>
-                                <td class="problem-cell">
-                                    {{ truncate(ord.problem_description, 80) }}
-                                </td>
+                                <td>{{ ord.status_label || statusLabel(ord.status) }}</td>
+                                <td>{{ ord.client_name || "—" }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -122,19 +118,6 @@ export default {
         };
 
         const statusLabel = (s) => orderService.getStatusLabel(s);
-
-        const masterName = (m) => {
-            if (!m) return "—";
-            if (m.surname) {
-                return `${m.surname} ${m.name}`.trim();
-            }
-            return m.name || "—";
-        };
-
-        const truncate = (text, n) => {
-            if (!text) return "—";
-            return text.length <= n ? text : text.slice(0, n) + "…";
-        };
 
         const runSearch = async () => {
             const q = searchQuery.value.trim();
@@ -204,8 +187,7 @@ export default {
             selectEquipment,
             formatDate,
             statusLabel,
-            masterName,
-            truncate,
+            selectEquipment,
         };
     },
 };

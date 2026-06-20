@@ -57,10 +57,10 @@ export default {
         const isCheckingAuth = ref(true);
         const isMobileMenuOpen = ref(false);
 
-        const checkAuth = async () => {
+        const checkAuth = () => {
             isCheckingAuth.value = true;
             try {
-                await posStore.getMe();
+                posStore.restoreSession();
             } finally {
                 isCheckingAuth.value = false;
             }
