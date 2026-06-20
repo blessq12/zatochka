@@ -17,6 +17,7 @@ use App\Application\OrderFulfillment\CommandHandler\RecalculateOrderPriceHandler
 use App\Application\OrderFulfillment\CommandHandler\SetWorkPricesHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
+use Database\Seeders\IdentitySeeder;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +31,7 @@ final class OrderPricingTest extends TestCase
     {
         $this->seed(\Database\Seeders\DomainSeeder::class);
 
-        $master = UserModel::query()->where('email', 'master@zatochka.local')->firstOrFail();
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
         $warehouseItem = WarehouseItemModel::query()->where('sku', 'DEMO-001')->firstOrFail();
 
         $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(

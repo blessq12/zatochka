@@ -24,6 +24,7 @@ use App\Domain\OrderFulfillment\Enum\DocumentType;
 use App\Domain\OrderFulfillment\Exception\OrderPolicyViolation;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
+use Database\Seeders\IdentitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -54,7 +55,7 @@ final class DocumentGenerationTest extends TestCase
     {
         $this->seed(\Database\Seeders\DomainSeeder::class);
 
-        $master = UserModel::query()->where('email', 'master@zatochka.local')->firstOrFail();
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
 
         $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
             serviceTypes: ['repair'],
@@ -75,7 +76,7 @@ final class DocumentGenerationTest extends TestCase
     {
         $this->seed(\Database\Seeders\DomainSeeder::class);
 
-        $master = UserModel::query()->where('email', 'master@zatochka.local')->firstOrFail();
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
 
         $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
             serviceTypes: ['sharpening'],
@@ -98,7 +99,7 @@ final class DocumentGenerationTest extends TestCase
     {
         $this->seed(\Database\Seeders\DomainSeeder::class);
 
-        $master = UserModel::query()->where('email', 'master@zatochka.local')->firstOrFail();
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
 
         $equipment = app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
             name: 'Аппарат',
@@ -124,8 +125,8 @@ final class DocumentGenerationTest extends TestCase
         app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand($orderId, $master->id));
 
         $login = $this->postJson('/api/pos/login', [
-            'email' => 'master@zatochka.local',
-            'password' => 'password',
+            'email' => IdentitySeeder::MASTER_EMAIL,
+            'password' => IdentitySeeder::DEMO_PASSWORD,
         ]);
 
         $this->getJson("/api/pos/orders/{$orderId}", [

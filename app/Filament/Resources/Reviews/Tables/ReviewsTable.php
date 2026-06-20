@@ -2,10 +2,6 @@
 
 namespace App\Filament\Resources\Reviews\Tables;
 
-use App\Application\ClientPortal\Command\ApproveReviewCommand;
-use App\Application\ClientPortal\Command\RejectReviewCommand;
-use App\Application\ClientPortal\CommandHandler\ApproveReviewHandler;
-use App\Application\ClientPortal\CommandHandler\RejectReviewHandler;
 use App\Domain\ClientPortal\Enum\ReviewStatus;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\ReviewModel;
 use Filament\Actions\Action;
@@ -44,8 +40,8 @@ class ReviewsTable
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->visible(fn (ReviewModel $record): bool => $record->status === ReviewStatus::Pending)
-                    ->action(function (ReviewModel $record, ApproveReviewHandler $handler): void {
-                        $handler->handle(new ApproveReviewCommand($record->id));
+                    ->action(function (ReviewModel $record): void {
+                        $record->update(['status' => ReviewStatus::Approved]);
 
                         Notification::make()->success()->title('Отзыв одобрен')->send();
                     }),
@@ -55,8 +51,8 @@ class ReviewsTable
                     ->color('danger')
                     ->requiresConfirmation()
                     ->visible(fn (ReviewModel $record): bool => $record->status === ReviewStatus::Pending)
-                    ->action(function (ReviewModel $record, RejectReviewHandler $handler): void {
-                        $handler->handle(new RejectReviewCommand($record->id));
+                    ->action(function (ReviewModel $record): void {
+                        $record->update(['status' => ReviewStatus::Rejected]);
 
                         Notification::make()->success()->title('Отзыв отклонён')->send();
                     }),

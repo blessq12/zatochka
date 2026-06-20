@@ -13,6 +13,7 @@ use App\Application\OrderFulfillment\Command\LinkEquipmentToOrderCommand;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\LinkEquipmentToOrderHandler;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
+use Database\Seeders\IdentitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -69,8 +70,8 @@ final class EquipmentTest extends TestCase
         ));
 
         $login = $this->postJson('/api/pos/login', [
-            'email' => 'master@zatochka.local',
-            'password' => 'password',
+            'email' => IdentitySeeder::MASTER_EMAIL,
+            'password' => IdentitySeeder::DEMO_PASSWORD,
         ]);
 
         $token = $login->json('token');

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\PriceItems\Schemas;
 
-use App\Infrastructure\Catalog\Persistence\Eloquent\PriceBlockModel;
+use App\Infrastructure\Pricing\Persistence\Eloquent\PriceBlockModel;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;

@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\PriceItems;
 
-use App\Filament\Clusters\CatalogCluster;
+use App\Filament\Clusters\PricingCluster;
 use App\Filament\Resources\PriceItems\Pages\CreatePriceItem;
 use App\Filament\Resources\PriceItems\Pages\EditPriceItem;
 use App\Filament\Resources\PriceItems\Pages\ListPriceItems;
 use App\Filament\Resources\PriceItems\Schemas\PriceItemForm;
 use App\Filament\Resources\PriceItems\Tables\PriceItemsTable;
-use App\Infrastructure\Catalog\Persistence\Eloquent\PriceItemModel;
+use App\Infrastructure\Pricing\Persistence\Eloquent\PriceItemModel;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class PriceItemResource extends Resource
 {
-    protected static ?string $cluster = CatalogCluster::class;
+    protected static ?string $cluster = PricingCluster::class;
 
     protected static ?string $model = PriceItemModel::class;
 

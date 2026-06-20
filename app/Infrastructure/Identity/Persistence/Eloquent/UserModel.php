@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Identity\Persistence\Eloquent;
 
+use App\Domain\Identity\Enum\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -21,6 +22,7 @@ class UserModel extends Authenticatable
         'name',
         'surname',
         'email',
+        'role',
         'phone',
         'password',
         'telegram_username',
@@ -36,11 +38,22 @@ class UserModel extends Authenticatable
     protected function casts(): array
     {
         return [
+            'role' => UserRole::class,
             'email_verified_at' => 'datetime',
             'telegram_verified_at' => 'datetime',
             'password' => 'hashed',
             'notifications_enabled' => 'boolean',
         ];
+    }
+
+    public function isMaster(): bool
+    {
+        return $this->role === UserRole::Master;
+    }
+
+    public function isManager(): bool
+    {
+        return $this->role === UserRole::Manager;
     }
 
     protected static function newFactory(): UserFactory

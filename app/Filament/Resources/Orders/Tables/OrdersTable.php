@@ -2,13 +2,9 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
-use App\Application\OrderFulfillment\Command\AssignMasterToOrderCommand;
-use App\Application\OrderFulfillment\Command\CancelOrderCommand;
-use App\Application\OrderFulfillment\Command\IssueOrderCommand;
-use App\Application\OrderFulfillment\CommandHandler\AssignMasterToOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\CancelOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\IssueOrderHandler;
+use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
+use App\Filament\Support\OrderPersistence;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use Filament\Actions\Action;
@@ -64,6 +60,7 @@ class OrdersTable
                         Select::make('master_id')
                             ->label('Мастер')
                             ->options(fn (): array => UserModel::query()
+                                ->where('role', UserRole::Master)
                                 ->select(['id', 'name', 'surname'])
                                 ->get()
                                 ->mapWithKeys(fn (UserModel $user): array => [
@@ -73,11 +70,8 @@ class OrdersTable
                             ->required()
                             ->searchable(),
                     ])
-                    ->action(function (OrderModel $record, array $data, AssignMasterToOrderHandler $handler): void {
-                        $handler->handle(new AssignMasterToOrderCommand(
-                            orderId: $record->id,
-                            masterId: (int) $data['master_id'],
-                        ));
+                    ->action(function (OrderModel $record, array $data): void {
+                        OrderPersistence::assignMaster($record, (int) $data['master_id']);
 
                         Notification::make()
                             ->success()
@@ -90,8 +84,8 @@ class OrdersTable
                     ->color('success')
                     ->requiresConfirmation()
                     ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready)
-                    ->action(function (OrderModel $record, IssueOrderHandler $handler): void {
-                        $handler->handle(new IssueOrderCommand($record->id));
+                    ->action(function (OrderModel $record): void {
+                        OrderPersistence::issue($record);
 
                         Notification::make()
                             ->success()
@@ -104,8 +98,8 @@ class OrdersTable
                     ->color('danger')
                     ->requiresConfirmation()
                     ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::New)
-                    ->action(function (OrderModel $record, CancelOrderHandler $handler): void {
-                        $handler->handle(new CancelOrderCommand($record->id));
+                    ->action(function (OrderModel $record): void {
+                        OrderPersistence::cancel($record);
 
                         Notification::make()
                             ->success()

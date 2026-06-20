@@ -3,7 +3,7 @@
 namespace App\Application\OrderFulfillment\CommandHandler;
 
 use App\Application\OrderFulfillment\Command\CreateOrderCommand;
-use App\Domain\Catalog\Repository\BranchRepositoryInterface;
+use App\Domain\Company\Repository\BranchRepositoryInterface;
 use App\Domain\ClientPortal\Exception\SiteLeadPolicyViolation;
 use App\Domain\ClientPortal\Repository\SiteLeadRepositoryInterface;
 use App\Domain\OrderFulfillment\Entity\Order;

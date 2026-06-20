@@ -2,11 +2,9 @@
 
 namespace App\Filament\Resources\SiteSettings\Pages;
 
-use App\Application\Catalog\Command\SaveSiteSettingCommand;
-use App\Application\Catalog\CommandHandler\SaveSiteSettingHandler;
 use App\Filament\Resources\SiteSettings\SiteSettingResource;
 use App\Filament\Resources\SiteSettings\Tables\SiteSettingsTable;
-use App\Infrastructure\Catalog\Persistence\Eloquent\SiteSettingModel;
+use App\Infrastructure\SiteSettings\Persistence\Eloquent\SiteSettingModel;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
@@ -53,11 +51,8 @@ class EditSiteSetting extends EditRecord
             ]);
         }
 
-        $setting = app(SaveSiteSettingHandler::class)->handle(new SaveSiteSettingCommand(
-            key: $record->key,
-            value: $value,
-        ));
+        $record->update(['value' => $value]);
 
-        return SiteSettingModel::query()->findOrFail($setting->id());
+        return $record;
     }
 }

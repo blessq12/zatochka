@@ -2,21 +2,24 @@
 
 namespace App\Filament\Resources\SiteSettings;
 
-use App\Filament\Clusters\CatalogCluster;
+use App\Filament\Clusters\SiteSettingsCluster;
 use App\Filament\Resources\SiteSettings\Pages\EditSiteSetting;
 use App\Filament\Resources\SiteSettings\Pages\ListSiteSettings;
 use App\Filament\Resources\SiteSettings\Schemas\SiteSettingForm;
 use App\Filament\Resources\SiteSettings\Tables\SiteSettingsTable;
-use App\Infrastructure\Catalog\Persistence\Eloquent\SiteSettingModel;
+use App\Infrastructure\SiteSettings\Persistence\Eloquent\SiteSettingModel;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class SiteSettingResource extends Resource
 {
-    protected static ?string $cluster = CatalogCluster::class;
+    private const KEYS = ['faq', 'delivery_info'];
+
+    protected static ?string $cluster = SiteSettingsCluster::class;
 
     protected static ?string $model = SiteSettingModel::class;
 
@@ -48,6 +51,11 @@ class SiteSettingResource extends Resource
             'index' => ListSiteSettings::route('/'),
             'edit' => EditSiteSetting::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->whereIn('key', self::KEYS);
     }
 
     public static function canCreate(): bool

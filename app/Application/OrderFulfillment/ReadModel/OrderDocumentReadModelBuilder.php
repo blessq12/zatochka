@@ -2,8 +2,8 @@
 
 namespace App\Application\OrderFulfillment\ReadModel;
 
-use App\Domain\Catalog\Repository\BranchRepositoryInterface;
-use App\Domain\Catalog\Repository\SiteSettingRepositoryInterface;
+use App\Domain\Company\Repository\BranchRepositoryInterface;
+use App\Domain\Company\Repository\CompanySettingRepositoryInterface;
 use App\Domain\Equipment\Repository\EquipmentRepositoryInterface;
 use App\Domain\Identity\Repository\MasterRepositoryInterface;
 use App\Domain\OrderFulfillment\Entity\Order;
@@ -17,7 +17,7 @@ final class OrderDocumentReadModelBuilder
 {
     public function __construct(
         private BranchRepositoryInterface $branches,
-        private SiteSettingRepositoryInterface $siteSettings,
+        private CompanySettingRepositoryInterface $companySettings,
         private EquipmentRepositoryInterface $equipment,
         private MasterRepositoryInterface $masters,
         private WarehouseItemRepositoryInterface $warehouseItems,
@@ -26,7 +26,7 @@ final class OrderDocumentReadModelBuilder
     public function build(Order $order, ?string $managerName = null): OrderDocumentData
     {
         $branch = $this->branches->findById($order->branchId());
-        $settings = $this->siteSettings->getValuesByKeys(['company', 'contacts']);
+        $settings = $this->companySettings->getValuesByKeys(['company', 'contacts']);
         $company = $settings['company'] ?? [];
         $contacts = $settings['contacts'] ?? [];
 

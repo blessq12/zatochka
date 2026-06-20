@@ -2,26 +2,11 @@
 
 namespace App\Filament\Resources\Orders\Actions;
 
-use App\Application\OrderFulfillment\Command\AddMaterialToOrderCommand;
-use App\Application\OrderFulfillment\Command\AssignMasterToOrderCommand;
-use App\Application\OrderFulfillment\Command\CancelOrderCommand;
-use App\Application\OrderFulfillment\Command\IssueOrderCommand;
-use App\Application\OrderFulfillment\Command\LinkEquipmentToOrderCommand;
-use App\Application\OrderFulfillment\Command\RecalculateOrderPriceCommand;
-use App\Application\OrderFulfillment\Command\RemoveMaterialFromOrderCommand;
-use App\Application\OrderFulfillment\Command\SetWorkPricesCommand;
-use App\Application\OrderFulfillment\CommandHandler\AddMaterialToOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\AssignMasterToOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\CancelOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\IssueOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\LinkEquipmentToOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\RecalculateOrderPriceHandler;
-use App\Application\OrderFulfillment\CommandHandler\RemoveMaterialFromOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\SetWorkPricesHandler;
-use App\Application\OrderFulfillment\Support\OrderLoader;
+use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
-use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
+use App\Filament\Support\OrderPersistence;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
+use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 use Filament\Actions\Action;
@@ -41,6 +26,7 @@ final class OrderManageActions
                 Select::make('master_id')
                     ->label('Мастер')
                     ->options(fn (): array => UserModel::query()
+                        ->where('role', UserRole::Master)
                         ->get()
                         ->mapWithKeys(fn (UserModel $user): array => [
                             $user->id => trim($user->name.' '.$user->surname),
@@ -49,11 +35,8 @@ final class OrderManageActions
                     ->required()
                     ->searchable(),
             ])
-            ->action(function (OrderModel $record, array $data, AssignMasterToOrderHandler $handler): void {
-                $handler->handle(new AssignMasterToOrderCommand(
-                    orderId: $record->id,
-                    masterId: (int) $data['master_id'],
-                ));
+            ->action(function (OrderModel $record, array $data): void {
+                OrderPersistence::assignMaster($record, (int) $data['master_id']);
 
                 self::notifySuccess('Мастер назначен');
             });
@@ -66,11 +49,11 @@ final class OrderManageActions
             ->icon('heroicon-o-currency-dollar')
             ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
             ->form(function (OrderModel $record): array {
-                $order = app(OrderLoader::class)->load($record->id);
+                $works = $record->works()->get();
                 $fields = [];
 
-                foreach ($order->works() as $work) {
-                    $fields[] = TextInput::make("prices.{$work->sortOrder}")
+                foreach ($works as $work) {
+                    $fields[] = TextInput::make("prices.{$work->sort_order}")
                         ->label($work->description)
                         ->numeric()
                         ->minValue(0)
@@ -86,22 +69,17 @@ final class OrderManageActions
 
                 return $fields;
             })
-            ->action(function (OrderModel $record, array $data, SetWorkPricesHandler $handler): void {
+            ->action(function (OrderModel $record, array $data): void {
                 if (! isset($data['prices']) || $data['prices'] === []) {
                     return;
                 }
 
                 $prices = [];
                 foreach ($data['prices'] as $sortOrder => $price) {
-                    $prices[(int) $sortOrder] = $price !== null && $price !== ''
-                        ? number_format((float) $price, 2, '.', '')
-                        : null;
+                    $prices[(int) $sortOrder] = $price;
                 }
 
-                $handler->handle(new SetWorkPricesCommand(
-                    orderId: $record->id,
-                    pricesBySortOrder: $prices,
-                ));
+                OrderPersistence::setWorkPrices($record, $prices);
 
                 self::notifySuccess('Цены на работы сохранены');
             });
@@ -115,10 +93,10 @@ final class OrderManageActions
             ->color('warning')
             ->requiresConfirmation()
             ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
-            ->action(function (OrderModel $record, RecalculateOrderPriceHandler $handler): void {
-                $order = $handler->handle(new RecalculateOrderPriceCommand($record->id));
+            ->action(function (OrderModel $record): void {
+                $price = OrderPersistence::recalculatePrice($record);
 
-                self::notifySuccess('Итог: '.($order->price() ?? '0').' ₽');
+                self::notifySuccess('Итог: '.($price ?? '0').' ₽');
             });
     }
 
@@ -141,11 +119,8 @@ final class OrderManageActions
                     ->required()
                     ->searchable(),
             ])
-            ->action(function (OrderModel $record, array $data, LinkEquipmentToOrderHandler $handler): void {
-                $handler->handle(new LinkEquipmentToOrderCommand(
-                    orderId: $record->id,
-                    equipmentId: (int) $data['equipment_id'],
-                ));
+            ->action(function (OrderModel $record, array $data): void {
+                OrderPersistence::linkEquipment($record, (int) $data['equipment_id']);
 
                 self::notifySuccess('Оборудование привязано');
             });
@@ -199,12 +174,12 @@ final class OrderManageActions
                     ->required()
                     ->default(1),
             ])
-            ->action(function (OrderModel $record, array $data, AddMaterialToOrderHandler $handler): void {
-                $handler->handle(new AddMaterialToOrderCommand(
-                    orderId: $record->id,
-                    warehouseItemId: (int) $data['warehouse_item_id'],
-                    quantity: number_format((float) $data['quantity'], 3, '.', ''),
-                ));
+            ->action(function (OrderModel $record, array $data): void {
+                OrderPersistence::addMaterial(
+                    $record,
+                    (int) $data['warehouse_item_id'],
+                    number_format((float) $data['quantity'], 3, '.', ''),
+                );
 
                 self::notifySuccess('Материал добавлен. Не забудь пересчитать цену.');
             });
@@ -229,11 +204,8 @@ final class OrderManageActions
                         ->all())
                     ->required(),
             ])
-            ->action(function (OrderModel $record, array $data, RemoveMaterialFromOrderHandler $handler): void {
-                $handler->handle(new RemoveMaterialFromOrderCommand(
-                    orderId: $record->id,
-                    materialId: (int) $data['material_id'],
-                ));
+            ->action(function (OrderModel $record, array $data): void {
+                OrderPersistence::removeMaterial($record, (int) $data['material_id']);
 
                 self::notifySuccess('Материал удалён');
             });
@@ -247,8 +219,8 @@ final class OrderManageActions
             ->color('success')
             ->requiresConfirmation()
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready)
-            ->action(function (OrderModel $record, IssueOrderHandler $handler): void {
-                $handler->handle(new IssueOrderCommand($record->id));
+            ->action(function (OrderModel $record): void {
+                OrderPersistence::issue($record);
                 self::notifySuccess('Заказ выдан');
             });
     }
@@ -261,8 +233,8 @@ final class OrderManageActions
             ->color('danger')
             ->requiresConfirmation()
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::New)
-            ->action(function (OrderModel $record, CancelOrderHandler $handler): void {
-                $handler->handle(new CancelOrderCommand($record->id));
+            ->action(function (OrderModel $record): void {
+                OrderPersistence::cancel($record);
                 self::notifySuccess('Заказ отменён');
             });
     }

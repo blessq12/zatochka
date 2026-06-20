@@ -16,6 +16,7 @@ use App\Application\OrderFulfillment\CommandHandler\MarkOrderReadyHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
+use Database\Seeders\IdentitySeeder;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -28,7 +29,7 @@ final class OrderLifecycleTest extends TestCase
     {
         $this->seed(\Database\Seeders\DomainSeeder::class);
 
-        $master = UserModel::query()->where('email', 'master@zatochka.local')->firstOrFail();
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
 
         $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
             serviceTypes: ['sharpening'],

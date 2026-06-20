@@ -35,6 +35,7 @@ use App\Application\Equipment\QueryHandler\SearchEquipmentQueryHandler;
 use App\Application\Warehouse\Presenter\WarehouseItemPresenter;
 use App\Application\Warehouse\Query\SearchWarehouseItemsQuery;
 use App\Application\Warehouse\QueryHandler\SearchWarehouseItemsQueryHandler;
+use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\PosOrderListTab;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use Illuminate\Http\JsonResponse;
@@ -57,6 +58,10 @@ final class PosController
 
         if ($user === null || ! Hash::check($credentials['password'], $user->password)) {
             return response()->json(['message' => 'Неверные учётные данные.'], 401);
+        }
+
+        if ($user->role !== UserRole::Master) {
+            return response()->json(['message' => 'В POS могут входить только мастера.'], 403);
         }
 
         $token = $user->createToken('pos')->plainTextToken;

@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Clients\Tables;
 
-use App\Application\ClientPortal\Command\LinkGuestOrdersToClientCommand;
-use App\Application\ClientPortal\CommandHandler\LinkGuestOrdersToClientHandler;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\ClientModel;
+use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
@@ -30,8 +29,11 @@ class ClientsTable
                     ->icon('heroicon-o-link')
                     ->requiresConfirmation()
                     ->modalDescription('Привяжет заказы без client_id, где телефон в снимке совпадает с телефоном клиента.')
-                    ->action(function (ClientModel $record, LinkGuestOrdersToClientHandler $handler): void {
-                        $count = $handler->handle(new LinkGuestOrdersToClientCommand($record->id));
+                    ->action(function (ClientModel $record): void {
+                        $count = OrderModel::query()
+                            ->whereNull('client_id')
+                            ->where('client_snapshot->phone', $record->phone)
+                            ->update(['client_id' => $record->id]);
 
                         Notification::make()
                             ->success()

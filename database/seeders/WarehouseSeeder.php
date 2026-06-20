@@ -53,7 +53,7 @@ final class WarehouseSeeder extends Seeder
 
         $manager = UserModel::query()
             ->where('email', IdentitySeeder::MANAGER_EMAIL)
-            ->first();
+            ->firstOrFail();
 
         $receiveStock = app(ReceiveStockHandler::class);
 
@@ -61,7 +61,7 @@ final class WarehouseSeeder extends Seeder
             $receiveQty = $data['receive_qty'];
             unset($data['receive_qty']);
 
-            $model = WarehouseItemModel::query()->firstOrCreate(
+            $model = WarehouseItemModel::query()->updateOrCreate(
                 ['sku' => $data['sku']],
                 $data,
             );
@@ -74,7 +74,7 @@ final class WarehouseSeeder extends Seeder
                 warehouseItemId: $model->id,
                 quantity: $receiveQty,
                 comment: 'Начальный остаток (сидер)',
-                userId: $manager?->id,
+                userId: $manager->id,
             ));
         }
     }

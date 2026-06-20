@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Identity\Persistence\Mapper;
 
 use App\Domain\Identity\Entity\Master;
+use App\Domain\Identity\Enum\UserRole;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 
 final class MasterMapper
@@ -27,6 +28,7 @@ final class MasterMapper
             'email' => $master->email(),
             'phone' => $master->phone(),
             'notifications_enabled' => $master->notificationsEnabled(),
+            'role' => UserRole::Master,
         ]);
     }
 }

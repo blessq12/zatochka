@@ -2,9 +2,7 @@
 
 namespace App\Filament\Resources\SiteLeads\Tables;
 
-use App\Application\OrderFulfillment\Command\CreateOrderCommand;
-use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
-use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
+use App\Filament\Support\OrderPersistence;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\SiteLeadModel;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -37,18 +35,15 @@ class SiteLeadsTable
                     ->icon('heroicon-o-document-plus')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->action(function (SiteLeadModel $record, CreateOrderHandler $handler): void {
-                        $handler->handle(new CreateOrderCommand(
-                            serviceTypes: $record->service_types ?? [],
-                            clientSnapshot: new ClientSnapshot([
-                                'full_name' => $record->full_name,
-                                'phone' => $record->phone,
-                            ]),
-                            leadId: $record->id,
-                            needsDelivery: $record->needs_delivery,
-                            deliveryAddress: $record->delivery_address,
-                            problemDescription: $record->comment,
-                        ));
+                    ->action(function (SiteLeadModel $record): void {
+                        OrderPersistence::createFromFormData([
+                            'service_types' => $record->service_types ?? [],
+                            'full_name' => $record->full_name,
+                            'phone' => $record->phone,
+                            'needs_delivery' => $record->needs_delivery,
+                            'delivery_address' => $record->delivery_address,
+                            'comment' => $record->comment,
+                        ], $record);
 
                         Notification::make()
                             ->success()

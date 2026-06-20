@@ -2,10 +2,8 @@
 
 namespace App\Filament\Resources\WarehouseItems\Tables;
 
-use App\Application\Warehouse\Command\ReceiveStockCommand;
-use App\Application\Warehouse\Command\WriteOffStockCommand;
-use App\Application\Warehouse\CommandHandler\ReceiveStockHandler;
-use App\Application\Warehouse\CommandHandler\WriteOffStockHandler;
+use App\Domain\Warehouse\Enum\StockMovementType;
+use App\Infrastructure\Warehouse\Persistence\Eloquent\StockMovementModel;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
@@ -14,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class WarehouseItemsTable
 {
@@ -44,13 +43,20 @@ class WarehouseItemsTable
                             ->label('Комментарий')
                             ->maxLength(500),
                     ])
-                    ->action(function (WarehouseItemModel $record, array $data, ReceiveStockHandler $handler): void {
-                        $handler->handle(new ReceiveStockCommand(
-                            warehouseItemId: $record->id,
-                            quantity: number_format((float) $data['quantity'], 3, '.', ''),
-                            comment: $data['comment'] ?? null,
-                            userId: Auth::id(),
-                        ));
+                    ->action(function (WarehouseItemModel $record, array $data): void {
+                        $quantity = number_format((float) $data['quantity'], 3, '.', '');
+
+                        DB::transaction(function () use ($record, $quantity, $data): void {
+                            $record->increment('quantity', $quantity);
+
+                            StockMovementModel::query()->create([
+                                'warehouse_item_id' => $record->id,
+                                'type' => StockMovementType::Received,
+                                'quantity' => $quantity,
+                                'comment' => $data['comment'] ?? null,
+                                'user_id' => Auth::id(),
+                            ]);
+                        });
 
                         Notification::make()->success()->title('Приход оформлен')->send();
                     }),
@@ -69,13 +75,29 @@ class WarehouseItemsTable
                             ->label('Комментарий')
                             ->maxLength(500),
                     ])
-                    ->action(function (WarehouseItemModel $record, array $data, WriteOffStockHandler $handler): void {
-                        $handler->handle(new WriteOffStockCommand(
-                            warehouseItemId: $record->id,
-                            quantity: number_format((float) $data['quantity'], 3, '.', ''),
-                            comment: $data['comment'] ?? null,
-                            userId: Auth::id(),
-                        ));
+                    ->action(function (WarehouseItemModel $record, array $data): void {
+                        $quantity = number_format((float) $data['quantity'], 3, '.', '');
+
+                        if (bccomp((string) $record->quantity, $quantity, 3) < 0) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Недостаточно остатка на складе')
+                                ->send();
+
+                            return;
+                        }
+
+                        DB::transaction(function () use ($record, $quantity, $data): void {
+                            $record->decrement('quantity', $quantity);
+
+                            StockMovementModel::query()->create([
+                                'warehouse_item_id' => $record->id,
+                                'type' => StockMovementType::WrittenOff,
+                                'quantity' => $quantity,
+                                'comment' => $data['comment'] ?? null,
+                                'user_id' => Auth::id(),
+                            ]);
+                        });
 
                         Notification::make()->success()->title('Списание оформлено')->send();
                     }),

@@ -31,7 +31,7 @@ final class EquipmentSeeder extends Seeder
         ];
 
         foreach ($items as $item) {
-            EquipmentModel::query()->firstOrCreate(
+            EquipmentModel::query()->updateOrCreate(
                 ['name' => $item['name']],
                 [
                     'brand' => $item['brand'],

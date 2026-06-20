@@ -2,9 +2,7 @@
 
 namespace App\Filament\Resources\Masters\Pages;
 
-use App\Application\Identity\Command\RegisterMasterCommand;
-use App\Application\Identity\CommandHandler\RegisterMasterHandler;
-use App\Domain\Identity\Exception\MasterAlreadyExistsException;
+use App\Domain\Identity\Enum\UserRole;
 use App\Filament\Resources\Masters\MasterResource;
 use App\Filament\Resources\Masters\Schemas\MasterForm;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
@@ -24,21 +22,20 @@ class CreateMaster extends CreateRecord
 
     protected function handleRecordCreation(array $data): Model
     {
-        try {
-            $master = app(RegisterMasterHandler::class)->handle(new RegisterMasterCommand(
-                name: $data['name'],
-                surname: $data['surname'] ?? '',
-                email: $data['email'],
-                phone: $data['phone'] ?? null,
-                password: $data['password'],
-                notificationsEnabled: (bool) ($data['notifications_enabled'] ?? false),
-            ));
-        } catch (MasterAlreadyExistsException $exception) {
+        if (UserModel::query()->where('email', $data['email'])->exists()) {
             throw ValidationException::withMessages([
-                'email' => $exception->getMessage(),
+                'email' => 'Мастер с таким email уже существует.',
             ]);
         }
 
-        return UserModel::query()->findOrFail($master->id());
+        return UserModel::query()->create([
+            'name' => $data['name'],
+            'surname' => $data['surname'] ?? '',
+            'email' => $data['email'],
+            'role' => UserRole::Master,
+            'phone' => $data['phone'] ?? null,
+            'password' => $data['password'],
+            'notifications_enabled' => (bool) ($data['notifications_enabled'] ?? false),
+        ]);
     }
 }

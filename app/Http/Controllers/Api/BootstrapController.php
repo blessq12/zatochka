@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Application\Catalog\Query\GetPublicBootstrapQuery;
-use App\Application\Catalog\QueryHandler\GetPublicBootstrapQueryHandler;
+use App\Application\PublicSite\Query\GetPublicBootstrapQuery;
+use App\Application\PublicSite\QueryHandler\GetPublicBootstrapQueryHandler;
 use Illuminate\Http\JsonResponse;
 
 final class BootstrapController

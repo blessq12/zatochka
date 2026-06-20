@@ -9,10 +9,7 @@ use Filament\Tables\Table;
 class SiteSettingsTable
 {
     private const LABELS = [
-        'contacts' => 'Контакты',
-        'schedule' => 'График работы',
         'delivery_info' => 'Доставка',
-        'company' => 'Компания',
         'faq' => 'FAQ',
     ];
 

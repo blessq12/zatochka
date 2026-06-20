@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /** Company (branches), Pricing (price_*), shared site_settings table. */
     public function up(): void
     {
         Schema::create('branches', function (Blueprint $table) {

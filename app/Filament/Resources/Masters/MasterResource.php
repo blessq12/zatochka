@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Masters;
 
+use App\Domain\Identity\Enum\UserRole;
 use App\Filament\Clusters\IdentityCluster;
 use App\Filament\Resources\Masters\Pages\CreateMaster;
 use App\Filament\Resources\Masters\Pages\EditMaster;
@@ -14,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MasterResource extends Resource
 {
@@ -50,5 +52,10 @@ class MasterResource extends Resource
             'create' => CreateMaster::route('/create'),
             'edit' => EditMaster::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('role', UserRole::Master);
     }
 }

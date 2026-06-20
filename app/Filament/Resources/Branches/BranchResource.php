@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Branches;
 
-use App\Filament\Clusters\CatalogCluster;
+use App\Filament\Clusters\CompanyCluster;
 use App\Filament\Resources\Branches\Pages\EditBranch;
 use App\Filament\Resources\Branches\Pages\ListBranches;
 use App\Filament\Resources\Branches\Schemas\BranchForm;
 use App\Filament\Resources\Branches\Tables\BranchesTable;
-use App\Infrastructure\Catalog\Persistence\Eloquent\BranchModel;
+use App\Infrastructure\Company\Persistence\Eloquent\BranchModel;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,7 +16,7 @@ use Filament\Tables\Table;
 
 class BranchResource extends Resource
 {
-    protected static ?string $cluster = CatalogCluster::class;
+    protected static ?string $cluster = CompanyCluster::class;
 
     protected static ?string $model = BranchModel::class;
 
