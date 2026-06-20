@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders;
 
+use App\Filament\Clusters\OrderFulfillmentCluster;
 use App\Filament\Resources\Orders\Pages\CreateOrder;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
@@ -18,9 +19,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class OrderResource extends Resource
 {
+    protected static ?string $cluster = OrderFulfillmentCluster::class;
+
     protected static ?string $model = OrderModel::class;
 
     protected static ?string $navigationLabel = 'Заказы';
+
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $modelLabel = 'заказ';
 

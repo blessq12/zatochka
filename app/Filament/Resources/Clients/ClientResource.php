@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Clients;
 
+use App\Filament\Clusters\ClientPortalCluster;
 use App\Filament\Resources\Clients\Pages\ListClients;
 use App\Filament\Resources\Clients\Tables\ClientsTable;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\ClientModel;
@@ -12,9 +13,13 @@ use Filament\Tables\Table;
 
 class ClientResource extends Resource
 {
+    protected static ?string $cluster = ClientPortalCluster::class;
+
     protected static ?string $model = ClientModel::class;
 
     protected static ?string $navigationLabel = 'Клиенты';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'клиент';
 

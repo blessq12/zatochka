@@ -17,9 +17,21 @@ class EquipmentTable
                 TextColumn::make('model')->label('Модель')->placeholder('—'),
                 TextColumn::make('serial_numbers')
                     ->label('Серийные номера')
-                    ->formatStateUsing(fn (?array $state): string => $state !== null && $state !== []
-                        ? implode(', ', $state)
-                        : '—'),
+                    ->formatStateUsing(function (mixed $state): string {
+                        if ($state === null || $state === [] || $state === '') {
+                            return '—';
+                        }
+
+                        if (is_string($state)) {
+                            $decoded = json_decode($state, true);
+
+                            return is_array($decoded) && $decoded !== []
+                                ? implode(', ', $decoded)
+                                : $state;
+                        }
+
+                        return implode(', ', $state);
+                    }),
             ]);
     }
 }

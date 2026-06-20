@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SiteLeads;
 
+use App\Filament\Clusters\ClientPortalCluster;
 use App\Filament\Resources\SiteLeads\Pages\ListSiteLeads;
 use App\Filament\Resources\SiteLeads\Tables\SiteLeadsTable;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\SiteLeadModel;
@@ -13,9 +14,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SiteLeadResource extends Resource
 {
+    protected static ?string $cluster = ClientPortalCluster::class;
+
     protected static ?string $model = SiteLeadModel::class;
 
     protected static ?string $navigationLabel = 'Заявки';
+
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $modelLabel = 'заявка';
 
