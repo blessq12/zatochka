@@ -31,6 +31,7 @@ final class GetPublicPriceListQueryHandler
                 $items[] = [
                     'name' => $item->name(),
                     'price' => $item->price(),
+                    'prefix' => $item->pricePrefix()?->value,
                     'description' => $item->description(),
                 ];
             }

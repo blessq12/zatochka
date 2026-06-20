@@ -16,7 +16,6 @@ final class MasterMapper
             surname: $model->surname ?? '',
             email: $model->email,
             phone: $model->phone,
-            notificationsEnabled: $model->notifications_enabled,
         );
     }
 
@@ -27,7 +26,6 @@ final class MasterMapper
             'surname' => $master->surname(),
             'email' => $master->email(),
             'phone' => $master->phone(),
-            'notifications_enabled' => $master->notificationsEnabled(),
             'role' => UserRole::Master,
         ]);
     }

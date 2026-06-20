@@ -15,7 +15,7 @@
 
 | Папка | Классы |
 |-------|--------|
-| `Entity/` | `Master` — name, surname, email, phone, notificationsEnabled |
+| `Entity/` | `Master` — name, surname, email, phone |
 | `Repository/` | `MasterRepositoryInterface` — `findById`, `findByEmail`, `save` |
 
 ## Infrastructure (`app/Infrastructure/Identity/`)

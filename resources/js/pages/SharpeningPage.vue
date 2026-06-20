@@ -2,6 +2,7 @@
 import SharpeningForm from "../components/Forms/SharpeningForm.vue";
 import PageHero from "../components/Layout/PageHero.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
+import { formatPriceItem } from "../utils/formatPriceItem.js";
 
 export default {
     name: "SharpeningPage",
@@ -19,6 +20,7 @@ export default {
         await this.loadPrices();
     },
     methods: {
+        formatPriceItem,
         async loadPrices() {
             this.isLoading = true;
             const bootstrapStore = useBootstrapStore();
@@ -112,7 +114,7 @@ export default {
                             <p
                                 class="text-lg sm:text-xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C]"
                             >
-                                {{ item.price }}₽
+                                {{ formatPriceItem(item) }}
                             </p>
                         </div>
                     </div>

@@ -27,7 +27,6 @@ final class RegisterMasterHandler
             surname: $command->surname,
             email: $command->email,
             phone: $command->phone,
-            notificationsEnabled: $command->notificationsEnabled,
         ));
 
         $userId = $master->id();

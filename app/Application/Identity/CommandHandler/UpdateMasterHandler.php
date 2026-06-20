@@ -35,7 +35,6 @@ final class UpdateMasterHandler
             surname: $command->surname,
             email: $command->email,
             phone: $command->phone,
-            notificationsEnabled: $command->notificationsEnabled,
         ));
 
         if ($command->password !== null && $command->password !== '') {

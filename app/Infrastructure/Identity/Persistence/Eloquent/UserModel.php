@@ -25,9 +25,6 @@ class UserModel extends Authenticatable
         'role',
         'phone',
         'password',
-        'telegram_username',
-        'notifications_enabled',
-        'telegram_verified_at',
     ];
 
     protected $hidden = [
@@ -40,9 +37,7 @@ class UserModel extends Authenticatable
         return [
             'role' => UserRole::class,
             'email_verified_at' => 'datetime',
-            'telegram_verified_at' => 'datetime',
             'password' => 'hashed',
-            'notifications_enabled' => 'boolean',
         ];
     }
 

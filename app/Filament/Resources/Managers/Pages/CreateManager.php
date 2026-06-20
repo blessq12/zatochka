@@ -35,7 +35,6 @@ class CreateManager extends CreateRecord
             'role' => UserRole::Manager,
             'phone' => $data['phone'] ?? null,
             'password' => $data['password'],
-            'notifications_enabled' => false,
         ]);
     }
 }

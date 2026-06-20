@@ -30,6 +30,8 @@ final class BootstrapTest extends TestCase
         $prices = $response->json('data.prices');
         $this->assertNotEmpty($prices);
         $this->assertSame('Заточка инструмента', $prices[0]['title']);
+        $this->assertArrayHasKey('prefix', $prices[0]['items'][0]);
+        $this->assertNull($prices[0]['items'][0]['prefix']);
         $this->assertSame('zatochka.tsk@yandex.ru', $response->json('data.contacts.email'));
         $this->assertNotEmpty($response->json('data.faq.items'));
     }

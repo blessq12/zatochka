@@ -35,7 +35,6 @@ class CreateMaster extends CreateRecord
             'role' => UserRole::Master,
             'phone' => $data['phone'] ?? null,
             'password' => $data['password'],
-            'notifications_enabled' => (bool) ($data['notifications_enabled'] ?? false),
         ]);
     }
 }

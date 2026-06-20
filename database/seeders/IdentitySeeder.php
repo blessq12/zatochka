@@ -25,28 +25,24 @@ final class IdentitySeeder extends Seeder
                 'name' => 'Демо',
                 'surname' => 'Мастер',
                 'phone' => '+79000000001',
-                'notifications_enabled' => true,
             ],
             [
                 'email' => 'ivan.petrov@zatochka.local',
                 'name' => 'Иван',
                 'surname' => 'Петров',
                 'phone' => '+79000000011',
-                'notifications_enabled' => true,
             ],
             [
                 'email' => 'sergey.orlov@zatochka.local',
                 'name' => 'Сергей',
                 'surname' => 'Орлов',
                 'phone' => '+79000000012',
-                'notifications_enabled' => true,
             ],
             [
                 'email' => 'anna.kuznetsova@zatochka.local',
                 'name' => 'Анна',
                 'surname' => 'Кузнецова',
                 'phone' => '+79000000013',
-                'notifications_enabled' => false,
             ],
         ];
 
@@ -59,7 +55,6 @@ final class IdentitySeeder extends Seeder
                     'role' => UserRole::Master,
                     'phone' => $master['phone'],
                     'password' => $password,
-                    'notifications_enabled' => $master['notifications_enabled'],
                 ],
             );
         }
@@ -94,7 +89,6 @@ final class IdentitySeeder extends Seeder
                     'role' => UserRole::Manager,
                     'phone' => $manager['phone'],
                     'password' => $password,
-                    'notifications_enabled' => false,
                 ],
             );
         }

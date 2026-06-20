@@ -5,38 +5,31 @@ namespace Database\Seeders;
 use App\Infrastructure\Company\Persistence\Eloquent\BranchModel;
 use App\Infrastructure\Company\Persistence\Eloquent\CompanySettingModel;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 final class CompanySeeder extends Seeder
 {
     public function run(): void
     {
-        $branches = [
-            [
-                'name' => 'Центральный филиал',
-                'address' => 'г. Томск, пер. Карповский, 12',
-                'phone' => '+7 983 233 5907',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Филиал на Ленина',
-                'address' => 'г. Томск, пр. Ленина, 169',
-                'phone' => '+7 983 233 5908',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Складской пункт (закрыт)',
-                'address' => 'г. Томск, ул. Иркутский тракт, 44',
-                'phone' => null,
-                'is_active' => false,
-            ],
+        $branch = [
+            'name' => 'ЗАТОЧКА.ТСК',
+            'address' => 'г. Томск, пр. Ленина, 169 / пер. Карповский, 12',
+            'phone' => '+7 983 233 5907',
+            'is_active' => true,
         ];
 
-        foreach ($branches as $branch) {
-            BranchModel::query()->updateOrCreate(
-                ['name' => $branch['name']],
-                $branch,
-            );
-        }
+        $record = BranchModel::query()->updateOrCreate(
+            ['name' => $branch['name']],
+            $branch,
+        );
+
+        DB::table('orders')
+            ->where('branch_id', '!=', $record->id)
+            ->update(['branch_id' => $record->id]);
+
+        BranchModel::query()
+            ->where('id', '!=', $record->id)
+            ->delete();
 
         $settings = [
             'contacts' => [

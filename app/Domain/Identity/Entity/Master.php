@@ -10,7 +10,6 @@ final class Master
         private string $surname,
         private string $email,
         private ?string $phone,
-        private bool $notificationsEnabled,
     ) {}
 
     public function id(): ?int
@@ -41,10 +40,5 @@ final class Master
     public function phone(): ?string
     {
         return $this->phone;
-    }
-
-    public function notificationsEnabled(): bool
-    {
-        return $this->notificationsEnabled;
     }
 }

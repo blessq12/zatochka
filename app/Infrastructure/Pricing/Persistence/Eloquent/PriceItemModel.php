@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Pricing\Persistence\Eloquent;
 
+use App\Domain\Pricing\Enum\PricePrefix;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +14,7 @@ class PriceItemModel extends Model
         'price_block_id',
         'name',
         'price',
+        'price_prefix',
         'description',
         'sort_order',
     ];
@@ -21,6 +23,7 @@ class PriceItemModel extends Model
     {
         return [
             'price' => 'decimal:2',
+            'price_prefix' => PricePrefix::class,
         ];
     }
 

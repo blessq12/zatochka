@@ -11,6 +11,5 @@ final readonly class UpdateMasterCommand
         public string $email,
         public ?string $phone,
         public ?string $password,
-        public bool $notificationsEnabled,
     ) {}
 }

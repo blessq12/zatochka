@@ -2,6 +2,8 @@
 
 namespace App\Domain\Pricing\Entity;
 
+use App\Domain\Pricing\Enum\PricePrefix;
+
 final class PriceItem
 {
     public function __construct(
@@ -9,6 +11,7 @@ final class PriceItem
         private int $priceBlockId,
         private string $name,
         private string $price,
+        private ?PricePrefix $pricePrefix,
         private ?string $description,
         private int $sortOrder,
     ) {}
@@ -31,6 +34,11 @@ final class PriceItem
     public function price(): string
     {
         return $this->price;
+    }
+
+    public function pricePrefix(): ?PricePrefix
+    {
+        return $this->pricePrefix;
     }
 
     public function description(): ?string

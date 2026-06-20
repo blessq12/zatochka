@@ -11,6 +11,8 @@ class SiteSettingsCluster extends Cluster
 {
     protected static ?string $navigationLabel = 'Настройки сайта';
 
+    protected static ?string $clusterBreadcrumb = 'Настройки сайта';
+
     protected static ?string $slug = 'site-settings';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;

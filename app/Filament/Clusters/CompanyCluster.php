@@ -11,6 +11,8 @@ class CompanyCluster extends Cluster
 {
     protected static ?string $navigationLabel = 'Компания';
 
+    protected static ?string $clusterBreadcrumb = 'Компания';
+
     protected static ?string $slug = 'company';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;

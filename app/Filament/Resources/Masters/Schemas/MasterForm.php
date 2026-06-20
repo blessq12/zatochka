@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Masters\Schemas;
 
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class MasterForm
@@ -35,9 +34,6 @@ class MasterForm
                     ->required($isCreate)
                     ->dehydrated(fn (?string $state): bool => filled($state))
                     ->maxLength(255),
-                Toggle::make('notifications_enabled')
-                    ->label('Уведомления')
-                    ->default(true),
             ]);
     }
 }

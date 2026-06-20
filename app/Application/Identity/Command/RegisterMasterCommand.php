@@ -10,6 +10,5 @@ final readonly class RegisterMasterCommand
         public string $email,
         public ?string $phone,
         public string $password,
-        public bool $notificationsEnabled,
     ) {}
 }

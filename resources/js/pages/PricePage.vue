@@ -1,6 +1,7 @@
 <script>
 import PageHero from "../components/Layout/PageHero.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
+import { formatPriceItem } from "../utils/formatPriceItem.js";
 
 export default {
     name: "PricePage",
@@ -18,6 +19,7 @@ export default {
         await this.loadPrices();
     },
     methods: {
+        formatPriceItem,
         async loadPrices() {
             this.isLoading = true;
             const bootstrapStore = useBootstrapStore();
@@ -121,7 +123,7 @@ export default {
                             <p
                                 class="text-lg sm:text-xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C]"
                             >
-                                {{ item.price }}₽
+                                {{ formatPriceItem(item) }}
                             </p>
                         </div>
                     </div>
@@ -193,7 +195,7 @@ export default {
                                 v-if="item.price"
                                 class="text-sm sm:text-base font-jost-regular text-[#C20A6C] dark:text-[#C20A6C] flex-shrink-0"
                             >
-                                {{ item.price }}₽
+                                {{ formatPriceItem(item) }}
                             </p>
                         </div>
                     </div>

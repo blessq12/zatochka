@@ -29,7 +29,6 @@ class EditMaster extends EditRecord
             'surname' => $data['surname'] ?? '',
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,
-            'notifications_enabled' => (bool) ($data['notifications_enabled'] ?? false),
         ]);
 
         if (($data['password'] ?? null) !== null && $data['password'] !== '') {

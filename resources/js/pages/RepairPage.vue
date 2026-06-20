@@ -2,6 +2,7 @@
 import PageHero from "../components/Layout/PageHero.vue";
 import RepairForm from "../components/Forms/RepairForm.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
+import { formatPriceItem } from "../utils/formatPriceItem.js";
 
 export default {
     name: "RepairPage",
@@ -19,6 +20,7 @@ export default {
         await this.loadPrices();
     },
     methods: {
+        formatPriceItem,
         async loadPrices() {
             this.isLoading = true;
             const bootstrapStore = useBootstrapStore();
@@ -160,7 +162,7 @@ export default {
                                 v-if="item.price"
                                 class="text-sm sm:text-base font-jost-regular text-[#C20A6C] dark:text-[#C20A6C] flex-shrink-0"
                             >
-                                {{ item.price }}₽
+                                {{ formatPriceItem(item) }}
                             </p>
                         </div>
                     </div>

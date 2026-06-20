@@ -19,6 +19,7 @@ final class SavePriceItemHandler
             priceBlockId: $command->priceBlockId,
             name: $command->name,
             price: number_format((float) $command->price, 2, '.', ''),
+            pricePrefix: $command->pricePrefix,
             description: $command->description,
             sortOrder: $command->sortOrder,
         ));
