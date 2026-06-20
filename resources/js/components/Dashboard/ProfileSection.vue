@@ -14,7 +14,6 @@ export default {
                 email: "",
                 birth_date: "",
                 delivery_address: "",
-                telegram: "",
             },
             errors: {},
             schema: yup.object().shape({
@@ -22,18 +21,12 @@ export default {
                     .string()
                     .required("ФИО обязательно для заполнения")
                     .min(2, "ФИО должно содержать минимум 2 символа"),
-                phone: yup
-                    .string()
-                    .required("Телефон обязателен для заполнения")
-                    .min(18, "Номер телефона должен быть 18 символов")
-                    .max(18, "Номер телефона должен быть 18 символов"),
                 email: yup
                     .string()
                     .email("Неверный формат email")
                     .nullable(),
                 birth_date: yup.date().nullable(),
                 delivery_address: yup.string().nullable(),
-                telegram: yup.string().nullable(),
             }),
             isSaving: false,
         };
@@ -62,7 +55,6 @@ export default {
                 email: this.user.email || "",
                 birth_date: this.user.birth_date || "",
                 delivery_address: this.user.delivery_address || "",
-                telegram: this.user.telegram || "",
             };
         },
         startEdit() {
@@ -80,17 +72,22 @@ export default {
             this.isSaving = true;
 
             try {
-                await this.schema.validate(this.form, {
-                    abortEarly: false,
+                await this.schema.validate(
+                    {
+                        full_name: this.form.full_name,
+                        email: this.form.email,
+                        birth_date: this.form.birth_date,
+                        delivery_address: this.form.delivery_address,
+                    },
+                    { abortEarly: false }
+                );
+
+                const result = await this.authStore.updateClient({
+                    full_name: this.form.full_name,
+                    email: this.form.email,
+                    birth_date: this.form.birth_date,
+                    delivery_address: this.form.delivery_address,
                 });
-
-                // Убираем @ из telegram, если есть
-                const formData = { ...this.form };
-                if (formData.telegram) {
-                    formData.telegram = formData.telegram.replace(/^@/, "");
-                }
-
-                const result = await this.authStore.updateClient(formData);
 
                 if (result.success) {
                     this.isEditing = false;
@@ -124,29 +121,6 @@ export default {
 
 <template>
     <div class="space-y-6">
-        <!-- Информация о бонусном счете -->
-        <div
-            class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
-        >
-            <h2
-                class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[90%] px-4 sm:px-6 bg-white dark:bg-dark-blue-500 text-lg sm:text-xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] text-center whitespace-nowrap"
-            >
-                БОНУСНЫЙ СЧЕТ
-            </h2>
-            <div class="text-center mt-4">
-                <p
-                    class="text-3xl sm:text-4xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-2"
-                >
-                    {{ user.bonus_points || 0 }}
-                </p>
-                <p
-                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
-                >
-                    Доступно к списанию
-                </p>
-            </div>
-        </div>
-
         <!-- Форма профиля -->
         <div
             class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
@@ -206,18 +180,6 @@ export default {
                             class="px-4 py-3 bg-white/60 backdrop-blur-md border border-white/20 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                         >
                             {{ formatDate(user.birth_date) || "—" }}
-                        </div>
-                    </div>
-                    <div>
-                        <label
-                            class="block text-sm sm:text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
-                        >
-                            Telegram
-                        </label>
-                        <div
-                            class="px-4 py-3 bg-white/60 backdrop-blur-md border border-white/20 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
-                        >
-                            {{ user.telegram ? `@${user.telegram.replace('@', '')}` : "—" }}
                         </div>
                     </div>
                     <div>
@@ -287,20 +249,12 @@ export default {
                         </label>
                         <input
                             v-model="form.phone"
-                            v-maska
-                            data-maska="+7 (###) ###-##-##"
                             type="tel"
-                            placeholder="+7 (999) 123-45-67"
-                            class="w-full px-4 py-3 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C3006B]/50 focus:border-[#C3006B]/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
-                            :class="{
-                                'border-red-500': errors.phone,
-                            }"
+                            readonly
+                            class="w-full px-4 py-3 bg-gray-100/80 border border-white/20 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-700/60 dark:border-gray-700/20 cursor-not-allowed"
                         />
-                        <p
-                            v-if="errors.phone"
-                            class="mt-1 text-sm text-red-500"
-                        >
-                            {{ errors.phone }}
+                        <p class="mt-1 text-xs font-jost-regular text-dark-gray-400 dark:text-gray-400">
+                            Телефон нельзя изменить — по нему привязываются заказы
                         </p>
                     </div>
                     <div>
@@ -343,31 +297,6 @@ export default {
                             class="mt-1 text-sm text-red-500"
                         >
                             {{ errors.birth_date }}
-                        </p>
-                    </div>
-                    <div>
-                        <label
-                            class="block text-sm sm:text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
-                        >
-                            Telegram
-                        </label>
-                        <input
-                            v-model="form.telegram"
-                            type="text"
-                            placeholder="@username или username"
-                            class="w-full px-4 py-3 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C3006B]/50 focus:border-[#C3006B]/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
-                            :class="{
-                                'border-red-500': errors.telegram,
-                            }"
-                        />
-                        <p
-                            v-if="errors.telegram"
-                            class="mt-1 text-sm text-red-500"
-                        >
-                            {{ errors.telegram }}
-                        </p>
-                        <p class="mt-1 text-xs font-jost-regular text-dark-gray-400 dark:text-gray-400">
-                            Укажите ваш Telegram username (с @ или без)
                         </p>
                     </div>
                     <div>

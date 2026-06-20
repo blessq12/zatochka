@@ -7,11 +7,9 @@ export const demoClient = {
     full_name: "Иван Петров",
     phone: "+7 (900) 123-45-67",
     email: "ivan@example.com",
-    telegram_username: "ivan_petrov",
-    telegram_verified_at: null,
+    birth_date: null,
+    delivery_address: null,
     requires_password_set: false,
-    created_at: iso(30),
-    updated_at: iso(1),
 };
 
 export const demoMaster = {
@@ -180,7 +178,6 @@ export const createDemoOrders = () => [
         is_warranty: false,
         master_id: 1,
         is_deleted: false,
-        review_exists: true,
     },
 ];
 

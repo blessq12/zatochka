@@ -22,7 +22,7 @@ export default {
         async loadPrices() {
             this.isLoading = true;
             const priceStore = usePriceStore();
-            const result = await priceStore.fetchRepairPrices();
+            const result = await priceStore.fetchBootstrap();
             if (result.success) {
                 this.priceBlocks = priceStore.repairBlocks;
             }

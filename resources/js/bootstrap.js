@@ -33,9 +33,21 @@ window.axios.interceptors.request.use(
         }
         // Если запрос к клиентскому API (не POS), добавляем клиентский токен
         else if (config.url?.startsWith('/api/') && !config.url.startsWith('/api/pos/')) {
-            const clientToken = localStorage.getItem('auth_token');
-            if (clientToken) {
-                config.headers.Authorization = `Bearer ${clientToken}`;
+            const publicPaths = [
+                '/api/auth/login',
+                '/api/auth/register',
+                '/api/leads',
+                '/api/bootstrap',
+            ];
+            const isPublic = publicPaths.some((path) =>
+                config.url?.startsWith(path)
+            );
+
+            if (!isPublic) {
+                const clientToken = localStorage.getItem('auth_token');
+                if (clientToken) {
+                    config.headers.Authorization = `Bearer ${clientToken}`;
+                }
             }
         }
 

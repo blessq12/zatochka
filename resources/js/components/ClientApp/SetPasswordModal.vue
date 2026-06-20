@@ -16,7 +16,7 @@ export default {
                 new_password: yup
                     .string()
                     .required("Пароль обязателен")
-                    .min(6, "Минимум 6 символов"),
+                    .min(8, "Минимум 8 символов"),
                 new_password_confirmation: yup
                     .string()
                     .required("Подтвердите пароль")
@@ -95,7 +95,7 @@ export default {
                         <input
                             v-model="form.new_password"
                             type="password"
-                            placeholder="Минимум 6 символов"
+                            placeholder="Минимум 8 символов"
                             class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#C3006B] focus:border-transparent"
                             :class="{ 'border-red-500': errors.new_password }"
                         />

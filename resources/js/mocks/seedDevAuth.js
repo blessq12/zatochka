@@ -30,9 +30,6 @@ export const seedDevAuth = (pinia) => {
         token: CLIENT_TOKEN,
         user: client,
         requiresPasswordSet: client.requires_password_set === true,
-        telegramVerified:
-            client.telegram_verified_at !== null &&
-            client.telegram_verified_at !== undefined,
     });
 
     usePosStore(pinia).$patch({

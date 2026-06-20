@@ -3,62 +3,38 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 
 export const usePriceStore = defineStore("price", {
     state: () => ({
-        sharpeningBlocks: [],
-        repairBlocks: [],
-        isLoading: false,
-        error: null,
+        bootstrap: null,
     }),
 
+    getters: {
+        sharpeningBlocks(state) {
+            return (state.bootstrap?.prices || [])
+                .filter((block) => block.type === "sharpening")
+                .map(({ title, items }) => ({ title, items }));
+        },
+
+        repairBlocks(state) {
+            return (state.bootstrap?.prices || [])
+                .filter((block) => block.type === "repair")
+                .map(({ title, items }) => ({ title, items }));
+        },
+    },
+
     actions: {
-        async fetchSharpeningPrices() {
-            this.isLoading = true;
-            this.error = null;
-
-            try {
-                const response = await axios.get("/api/prices/sharpening");
-                this.sharpeningBlocks = response.data.priceBlocks || [];
-                return { success: true, data: response.data };
-            } catch (error) {
-                this.error =
-                    error.response?.data?.message || "Ошибка загрузки прайс-листа";
-                return { success: false, error: this.error };
-            } finally {
-                this.isLoading = false;
+        async fetchBootstrap() {
+            if (this.bootstrap) {
+                return { success: true, data: this.bootstrap };
             }
-        },
-
-        async fetchRepairPrices() {
-            this.isLoading = true;
-            this.error = null;
 
             try {
-                const response = await axios.get("/api/prices/repair");
-                this.repairBlocks = response.data.priceBlocks || [];
-                return { success: true, data: response.data };
+                const response = await axios.get("/api/bootstrap");
+                this.bootstrap = response.data.data;
+                return { success: true, data: this.bootstrap };
             } catch (error) {
-                this.error =
-                    error.response?.data?.message || "Ошибка загрузки прайс-листа";
-                return { success: false, error: this.error };
-            } finally {
-                this.isLoading = false;
-            }
-        },
-
-        async fetchAllPrices() {
-            this.isLoading = true;
-            this.error = null;
-
-            try {
-                const response = await axios.get("/api/prices/all");
-                this.sharpeningBlocks = response.data.sharpeningBlocks || [];
-                this.repairBlocks = response.data.repairBlocks || [];
-                return { success: true, data: response.data };
-            } catch (error) {
-                this.error =
-                    error.response?.data?.message || "Ошибка загрузки прайс-листа";
-                return { success: false, error: this.error };
-            } finally {
-                this.isLoading = false;
+                const message =
+                    error.response?.data?.message ||
+                    "Ошибка загрузки данных сайта";
+                return { success: false, error: message };
             }
         },
     },

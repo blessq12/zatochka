@@ -1,14 +1,12 @@
 <script>
 import { mapStores } from "pinia";
-import { useAuthStore } from "../../stores/authStore.js";
 import { useOrderStore } from "../../stores/orderStore.js";
+import { formatServiceTypes } from "../../utils/serviceTypes.js";
 
 export default {
     name: "OrdersHistorySection",
     data() {
         return {
-            currentPage: 1,
-            perPage: 10,
             reviewModalOrder: null,
             reviewForm: {
                 rating: 5,
@@ -19,88 +17,34 @@ export default {
         };
     },
     computed: {
-        ...mapStores(useAuthStore, useOrderStore),
+        ...mapStores(useOrderStore),
         historyOrders() {
-            if (
-                !this.orderStore.orders ||
-                this.orderStore.orders.length === 0
-            ) {
-                return [];
-            }
-            return this.orderStore.orders.filter(
-                (order) =>
-                    order.status === "issued" || order.status === "cancelled"
-            );
+            return this.orderStore.historyOrders || [];
         },
         isLoading() {
-            return this.orderStore.isLoading;
+            return this.orderStore.isLoadingHistory;
         },
         pagination() {
-            return (
-                this.orderStore.pagination || {
-                    current_page: 1,
-                    last_page: 1,
-                    per_page: 10,
-                    total: 0,
-                    has_more_pages: false,
-                }
-            );
-        },
-        paginatedOrders() {
-            const start = (this.currentPage - 1) * this.perPage;
-            const end = start + this.perPage;
-            return this.historyOrders.slice(start, end);
+            return this.orderStore.historyPagination;
         },
         totalPages() {
-            return Math.ceil(this.historyOrders.length / this.perPage);
+            const { total, per_page } = this.pagination;
+            if (!per_page) return 1;
+            return Math.max(1, Math.ceil(total / per_page));
         },
-    },
-    async mounted() {
-        // Заказы уже загружаются в AuthorizedApp, но если их нет - загружаем
-        if (!this.orderStore.orders || this.orderStore.orders.length === 0) {
-            await this.orderStore.getClientOrders(this.authStore.token, 1, 50);
-        }
     },
     methods: {
-        changePage(page) {
-            if (page >= 1 && page <= this.totalPages) {
-                this.currentPage = page;
-                window.scrollTo({ top: 0, behavior: "smooth" });
+        formatServiceTypes,
+        async changePage(page) {
+            if (page < 1 || page > this.totalPages) {
+                return;
             }
-        },
-        getStatusLabel(status) {
-            const statusMap = {
-                new: "Новый",
-                in_work: "В работе",
-                waiting_parts: "Ожидание запчастей",
-                ready: "Готов",
-                issued: "Выдан",
-                cancelled: "Отменен",
-            };
-            return statusMap[status] || status;
-        },
-        getStatusColor(status) {
-            const colorMap = {
-                issued: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-                cancelled:
-                    "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-            };
-            return (
-                colorMap[status] ||
-                "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+
+            await this.orderStore.fetchHistoryOrders(
+                page,
+                this.pagination.per_page
             );
-        },
-        getTypeLabel(type) {
-            const typeMap = {
-                repair: "Ремонт",
-                sharpening: "Заточка",
-                diagnostic: "Диагностика",
-                replacement: "Замена",
-                maintenance: "Обслуживание",
-                consultation: "Консультация",
-                warranty: "Гарантийный",
-            };
-            return typeMap[type] || type;
+            window.scrollTo({ top: 0, behavior: "smooth" });
         },
         formatDate(dateString) {
             if (!dateString) return "";
@@ -121,7 +65,7 @@ export default {
             }).format(price);
         },
         canLeaveReview(order) {
-            return order.status === "issued" && !order.review_exists;
+            return !order.review_exists;
         },
         openReviewModal(order) {
             this.reviewModalOrder = order;
@@ -144,20 +88,12 @@ export default {
             }
             this.reviewSubmitting = true;
             const result = await this.orderStore.createReview(
-                this.authStore.token,
                 this.reviewModalOrder.id,
                 this.reviewForm.rating,
                 this.reviewForm.comment.trim()
             );
             this.reviewSubmitting = false;
             if (result.success) {
-                this.reviewModalOrder.review_exists = true;
-                this.reviewModalOrder.review = {
-                    rating: this.reviewForm.rating,
-                    comment: this.reviewForm.comment,
-                    reply: null,
-                    created_at: new Date().toISOString(),
-                };
                 this.closeReviewModal();
             } else {
                 this.reviewErrors.general = result.error;
@@ -194,14 +130,13 @@ export default {
                 <p
                     class="text-dark-gray-500 dark:text-gray-200 font-jost-regular text-base sm:text-lg"
                 >
-                    У вас пока нет завершенных заказов
+                    У вас пока нет завершённых заказов
                 </p>
             </div>
 
             <div v-else class="mt-4 space-y-4">
-                <!-- Список заказов -->
                 <div
-                    v-for="order in paginatedOrders"
+                    v-for="order in historyOrders"
                     :key="order.id"
                     class="border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 bg-white/60 backdrop-blur-md dark:bg-gray-800/60 hover:shadow-lg transition-all duration-300"
                 >
@@ -209,21 +144,11 @@ export default {
                         class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                     >
                         <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-3">
-                                <h3
-                                    class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
-                                >
-                                    Заказ №{{ order.order_number }}
-                                </h3>
-                                <span
-                                    :class="[
-                                        'px-3 py-1 rounded-full text-xs sm:text-sm font-jost-medium',
-                                        getStatusColor(order.status),
-                                    ]"
-                                >
-                                    {{ getStatusLabel(order.status) }}
-                                </span>
-                            </div>
+                            <h3
+                                class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-3"
+                            >
+                                Заказ №{{ order.order_number }}
+                            </h3>
                             <div
                                 class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm sm:text-base"
                             >
@@ -236,19 +161,19 @@ export default {
                                     <span
                                         class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
                                     >
-                                        {{ getTypeLabel(order.service_type || order.type) }}
+                                        {{ formatServiceTypes(order.service_types) }}
                                     </span>
                                 </div>
                                 <div>
                                     <span
                                         class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
                                     >
-                                        Завершен:
+                                        Дата:
                                     </span>
                                     <span
                                         class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
                                     >
-                                        {{ formatDate(order.updated_at) }}
+                                        {{ formatDate(order.created_at) }}
                                     </span>
                                 </div>
                                 <div v-if="order.price">
@@ -265,7 +190,7 @@ export default {
                                 </div>
                             </div>
                             <div
-                                v-if="order.problem_description"
+                                v-if="order.description"
                                 class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
                             >
                                 <p
@@ -274,35 +199,26 @@ export default {
                                     <span
                                         class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
                                     >
-                                        Описание проблемы:
+                                        Описание:
                                     </span>
-                                    {{ order.problem_description }}
+                                    {{ order.description }}
                                 </p>
                             </div>
                             <div
-                                v-if="order.review"
-                                class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20 space-y-3"
+                                v-if="order.review_exists"
+                                class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
                             >
-                                <p class="text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200">
-                                    Ваш отзыв
-                                    <span class="font-jost-regular text-gray-500 dark:text-gray-400">
-                                        ({{ order.review.rating }} из 5 · {{ formatDate(order.review.created_at) }})
+                                <p
+                                    class="text-sm font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                                >
+                                    Отзыв отправлен
+                                    <span
+                                        v-if="order.review_status"
+                                        class="text-gray-500 dark:text-gray-400"
+                                    >
+                                        ({{ order.review_status === "pending" ? "на модерации" : order.review_status }})
                                     </span>
                                 </p>
-                                <p class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300">
-                                    {{ order.review.comment }}
-                                </p>
-                                <div
-                                    v-if="order.review.reply"
-                                    class="pl-3 sm:pl-4 border-l-2 border-[#C3006B]/50 dark:border-[#C20A6C]/50"
-                                >
-                                    <p class="text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-1">
-                                        Ответ компании
-                                    </p>
-                                    <p class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300 whitespace-pre-wrap">
-                                        {{ order.review.reply }}
-                                    </p>
-                                </div>
                             </div>
                             <div
                                 v-if="canLeaveReview(order)"
@@ -320,7 +236,6 @@ export default {
                     </div>
                 </div>
 
-                <!-- Модалка: написать отзыв -->
                 <Teleport to="body">
                     <div
                         v-if="reviewModalOrder"
@@ -332,33 +247,65 @@ export default {
                             class="bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-600 rounded-xl max-w-md w-full p-6 sm:p-8"
                             @click.stop
                         >
-                            <h3 class="text-lg font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-1">
+                            <h3
+                                class="text-lg font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-1"
+                            >
                                 Отзыв на заказ №{{ reviewModalOrder.order_number }}
                             </h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                            <p
+                                class="text-sm text-gray-600 dark:text-gray-400 mb-6"
+                            >
                                 Оцените качество услуги и оставьте комментарий.
                             </p>
-                            <form @submit.prevent="submitReview" class="space-y-4">
-                                <div v-if="reviewErrors.general" class="text-sm text-red-600 dark:text-red-400">
+                            <form
+                                @submit.prevent="submitReview"
+                                class="space-y-4"
+                            >
+                                <div
+                                    v-if="reviewErrors.general"
+                                    class="text-sm text-red-600 dark:text-red-400"
+                                >
                                     {{ reviewErrors.general }}
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                                    >
                                         Оценка
                                     </label>
                                     <select
                                         v-model.number="reviewForm.rating"
                                         class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#C3006B] focus:border-transparent"
-                                        :class="{ 'border-red-500': reviewErrors.rating }"
+                                        :class="{
+                                            'border-red-500': reviewErrors.rating,
+                                        }"
                                     >
-                                        <option v-for="n in 5" :key="n" :value="n">{{ n }} {{ n === 1 ? 'звезда' : n < 5 ? 'звезды' : 'звезд' }}</option>
+                                        <option
+                                            v-for="n in 5"
+                                            :key="n"
+                                            :value="n"
+                                        >
+                                            {{ n }}
+                                            {{
+                                                n === 1
+                                                    ? "звезда"
+                                                    : n < 5
+                                                      ? "звезды"
+                                                      : "звезд"
+                                            }}
+                                        </option>
                                     </select>
-                                    <p v-if="reviewErrors.rating" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                                    <p
+                                        v-if="reviewErrors.rating"
+                                        class="mt-1 text-sm text-red-600 dark:text-red-400"
+                                    >
                                         {{ reviewErrors.rating }}
                                     </p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                                    >
                                         Комментарий
                                     </label>
                                     <textarea
@@ -366,9 +313,14 @@ export default {
                                         rows="4"
                                         placeholder="Расскажите о качестве услуги..."
                                         class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#C3006B] focus:border-transparent resize-none"
-                                        :class="{ 'border-red-500': reviewErrors.comment }"
+                                        :class="{
+                                            'border-red-500': reviewErrors.comment,
+                                        }"
                                     ></textarea>
-                                    <p v-if="reviewErrors.comment" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                                    <p
+                                        v-if="reviewErrors.comment"
+                                        class="mt-1 text-sm text-red-600 dark:text-red-400"
+                                    >
                                         {{ reviewErrors.comment }}
                                     </p>
                                 </div>
@@ -385,7 +337,11 @@ export default {
                                         :disabled="reviewSubmitting"
                                         class="flex-1 px-4 py-3 font-jost-bold bg-[#C3006B] text-white rounded-lg hover:bg-[#A8005A] disabled:opacity-50 disabled:cursor-not-allowed transition"
                                     >
-                                        {{ reviewSubmitting ? 'Отправка...' : 'Отправить отзыв' }}
+                                        {{
+                                            reviewSubmitting
+                                                ? "Отправка..."
+                                                : "Отправить отзыв"
+                                        }}
                                     </button>
                                 </div>
                             </form>
@@ -393,14 +349,13 @@ export default {
                     </div>
                 </Teleport>
 
-                <!-- Пагинация -->
                 <div
                     v-if="totalPages > 1"
                     class="flex items-center justify-center gap-2 pt-6 mt-6 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
                 >
                     <button
-                        @click="changePage(currentPage - 1)"
-                        :disabled="currentPage === 1"
+                        @click="changePage(pagination.page - 1)"
+                        :disabled="pagination.page === 1"
                         class="px-4 py-2 font-jost-medium text-sm sm:text-base transition-all duration-300 border border-dark-blue-500/30 dark:border-dark-gray-200/90 text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Назад
@@ -413,7 +368,7 @@ export default {
                             @click="changePage(page)"
                             :class="[
                                 'px-4 py-2 font-jost-medium text-sm sm:text-base transition-all duration-300 border',
-                                currentPage === page
+                                pagination.page === page
                                     ? 'bg-[#C3006B] text-white border-[#C3006B] shadow-lg'
                                     : 'border-dark-blue-500/30 dark:border-dark-gray-200/90 text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
                             ]"
@@ -423,21 +378,20 @@ export default {
                     </div>
 
                     <button
-                        @click="changePage(currentPage + 1)"
-                        :disabled="currentPage === totalPages"
+                        @click="changePage(pagination.page + 1)"
+                        :disabled="pagination.page === totalPages"
                         class="px-4 py-2 font-jost-medium text-sm sm:text-base transition-all duration-300 border border-dark-blue-500/30 dark:border-dark-gray-200/90 text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Вперед
                     </button>
                 </div>
 
-                <!-- Информация о пагинации -->
                 <div
                     v-if="historyOrders.length > 0"
                     class="text-center pt-4 text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
                 >
-                    Показано {{ paginatedOrders.length }} из
-                    {{ historyOrders.length }} заказов
+                    Показано {{ historyOrders.length }} из
+                    {{ pagination.total }} заказов
                 </div>
             </div>
         </div>

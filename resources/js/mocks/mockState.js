@@ -18,7 +18,6 @@ export const createMockState = () => {
         client: clone(demoClient),
         master: clone(demoMaster),
         orders: createDemoOrders(),
-        clientOrders: [],
         works: createDemoWorks(),
         materials: createDemoMaterials(),
         equipment: clone(demoEquipment),
@@ -26,26 +25,54 @@ export const createMockState = () => {
         reviews: {},
         telegramCode: "123456",
         nextWorkId: 10,
-        nextOrderId: 200,
     };
 
-    state.clientOrders = state.orders
-        .filter((order) => order.client?.id === state.client.id)
-        .map((order) => ({
-            id: order.id,
-            order_number: order.order_number,
-            service_type: order.service_type,
-            status: order.status,
-            urgency: order.urgency,
-            price: order.price,
-            problem_description: order.problem_description,
-            created_at: order.created_at,
-            updated_at: order.updated_at,
-            review_exists: Boolean(state.reviews[order.id]),
-            review: state.reviews[order.id] || null,
-        }));
-
     return state;
+};
+
+export const getBootstrapData = () => ({
+    prices: [
+        ...demoPriceBlocks.sharpening.map((block) => ({
+            type: "sharpening",
+            title: block.title,
+            items: block.items,
+        })),
+        ...demoPriceBlocks.repair.map((block) => ({
+            type: "repair",
+            title: block.title,
+            items: block.items,
+        })),
+    ],
+    contacts: {},
+    schedule: {},
+    delivery_info: {},
+    company: {},
+});
+
+const toClientOrderDto = (order, state) => ({
+    id: order.id,
+    order_number: order.order_number,
+    service_types: [order.service_type],
+    price: order.price,
+    created_at: order.created_at,
+    description: order.problem_description,
+    review_exists: Boolean(state.reviews[order.id]),
+    review_status: state.reviews[order.id]?.status || null,
+});
+
+export const getClientOrdersForBucket = (bucket, page = 1, perPage = 10) => {
+    const state = getMockState();
+    const isHistory = bucket === "history";
+
+    const items = state.orders
+        .filter((order) => order.client?.id === state.client.id)
+        .filter((order) => {
+            const finished = ["issued", "cancelled"].includes(order.status);
+            return isHistory ? finished : !finished;
+        })
+        .map((order) => toClientOrderDto(order, state));
+
+    return paginate(items, page, perPage);
 };
 
 let state = createMockState();
@@ -121,19 +148,5 @@ export const getDashboardStats = () => {
         week: { orders: 8, revenue: 21400 },
         month: { orders: 24, revenue: 87300 },
         works: { total: 12, completed: 9 },
-    };
-};
-
-export const getPriceBlocks = (type) => {
-    if (type === "sharpening") {
-        return { priceBlocks: clone(demoPriceBlocks.sharpening) };
-    }
-    if (type === "repair") {
-        return { priceBlocks: clone(demoPriceBlocks.repair) };
-    }
-
-    return {
-        sharpeningBlocks: clone(demoPriceBlocks.sharpening),
-        repairBlocks: clone(demoPriceBlocks.repair),
     };
 };

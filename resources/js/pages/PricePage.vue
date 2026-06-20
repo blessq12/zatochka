@@ -21,7 +21,7 @@ export default {
         async loadPrices() {
             this.isLoading = true;
             const priceStore = usePriceStore();
-            const result = await priceStore.fetchAllPrices();
+            const result = await priceStore.fetchBootstrap();
             if (result.success) {
                 this.sharpeningBlocks = priceStore.sharpeningBlocks;
                 this.repairBlocks = priceStore.repairBlocks;

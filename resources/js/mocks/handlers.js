@@ -2,9 +2,10 @@ import {
     countPosOrders,
     filterPosOrders,
     findOrder,
+    getBootstrapData,
+    getClientOrdersForBucket,
     getDashboardStats,
     getMockState,
-    getPriceBlocks,
     paginate,
 } from "./mockState.js";
 
@@ -35,22 +36,16 @@ const parseBody = (config) => {
 const matchRoute = (method, url) => {
     const normalized = url.split("?")[0];
     const routes = [
-        ["POST", /^\/api\/login$/, "clientLogin"],
-        ["POST", /^\/api\/register$/, "clientRegister"],
-        ["POST", /^\/api\/logout$/, "clientLogout"],
-        ["GET", /^\/api\/client\/self$/, "clientSelf"],
-        ["POST", /^\/api\/client\/update$/, "clientUpdate"],
-        ["POST", /^\/api\/client\/set-password$/, "clientSetPassword"],
-        ["POST", /^\/api\/telegram\/check-chat-is-exists$/, "clientTelegramCheck"],
-        ["POST", /^\/api\/telegram\/send-verification-code$/, "clientTelegramSend"],
-        ["POST", /^\/api\/telegram\/verify-code$/, "clientTelegramVerify"],
-        ["POST", /^\/api\/order\/create$/, "createOrder"],
-        ["GET", /^\/api\/client\/orders-get$/, "clientOrders"],
-        ["POST", /^\/api\/review\/create$/, "createReview"],
-        ["GET", /^\/api\/review\/order\/(\d+)$/, "getReview"],
-        ["GET", /^\/api\/prices\/sharpening$/, "pricesSharpening"],
-        ["GET", /^\/api\/prices\/repair$/, "pricesRepair"],
-        ["GET", /^\/api\/prices\/all$/, "pricesAll"],
+        ["GET", /^\/api\/bootstrap$/, "bootstrap"],
+        ["POST", /^\/api\/auth\/login$/, "clientLogin"],
+        ["POST", /^\/api\/auth\/register$/, "clientRegister"],
+        ["GET", /^\/api\/client\/profile$/, "clientProfile"],
+        ["PATCH", /^\/api\/client\/profile$/, "clientUpdate"],
+        ["POST", /^\/api\/client\/password$/, "clientSetPassword"],
+        ["POST", /^\/api\/leads$/, "submitLead"],
+        ["GET", /^\/api\/client\/orders\/active$/, "clientActiveOrders"],
+        ["GET", /^\/api\/client\/orders\/history$/, "clientHistoryOrders"],
+        ["POST", /^\/api\/client\/orders\/(\d+)\/review$/, "createReview"],
         ["POST", /^\/api\/pos\/login$/, "posLogin"],
         ["POST", /^\/api\/pos\/logout$/, "posLogout"],
         ["GET", /^\/api\/pos\/me$/, "posMe"],
@@ -89,6 +84,10 @@ const matchRoute = (method, url) => {
 };
 
 const handlers = {
+    bootstrap() {
+        return json({ data: getBootstrapData() });
+    },
+
     clientLogin(_config, body) {
         const state = getMockState();
         state.client = {
@@ -97,10 +96,11 @@ const handlers = {
         };
 
         return json({
-            message: "Login successful",
             token: state.clientToken,
-            client: state.client,
-            requires_password_set: false,
+            client: {
+                ...state.client,
+                requires_password_set: false,
+            },
         });
     },
 
@@ -111,11 +111,11 @@ const handlers = {
             id: 1,
             full_name: body.full_name || "Новый клиент",
             phone: body.phone || state.client.phone,
+            email: body.email || state.client.email,
         };
 
         return json(
             {
-                message: "Registration successful",
                 token: state.clientToken,
                 client: state.client,
             },
@@ -123,142 +123,94 @@ const handlers = {
         );
     },
 
-    clientLogout() {
-        return json({ message: "Logout successful" });
-    },
-
-    clientSelf() {
-        return json({ client: getMockState().client });
+    clientProfile() {
+        return json({ data: getMockState().client });
     },
 
     clientUpdate(_config, body) {
         const state = getMockState();
-        state.client = { ...state.client, ...body, id: state.client.id };
-        return json({ message: "Client updated", client: state.client });
+        state.client = {
+            ...state.client,
+            ...body,
+            id: state.client.id,
+            phone: state.client.phone,
+        };
+
+        return json({ data: state.client });
     },
 
-    clientSetPassword(_config, body) {
+    clientSetPassword() {
         const state = getMockState();
         state.client = {
             ...state.client,
             requires_password_set: false,
         };
 
-        return json({
-            message: "Password set",
-            client: state.client,
-        });
+        return json({ data: state.client });
     },
 
-    clientTelegramCheck() {
-        return json({ chat_exists: false });
+    submitLead() {
+        return json(
+            {
+                data: {
+                    id: 1,
+                    message: "Заявка принята. Менеджер свяжется с вами.",
+                },
+            },
+            201
+        );
     },
 
-    clientTelegramSend() {
-        const state = getMockState();
-        return json({
-            success: true,
-            message: "Verification code sent",
-            telegram_username: state.client.telegram_username,
-            expires_in_minutes: 5,
-        });
-    },
-
-    clientTelegramVerify(_config, body) {
-        const state = getMockState();
-        if (body.code !== state.telegramCode) {
-            return json({ success: false, message: "Invalid code" }, 400);
-        }
-
-        state.client.telegram_verified_at = new Date().toISOString();
-        return json({
-            success: true,
-            message: "Verified",
-            telegram_username: state.client.telegram_username,
-            verified_at: state.client.telegram_verified_at,
-            client: state.client,
-        });
-    },
-
-    createOrder(_config, body) {
-        const state = getMockState();
-        const order = {
-            id: state.nextOrderId++,
-            order_number: `Z-2026-${state.nextOrderId}`,
-            service_type: body.service_type || "sharpening",
-            status: "new",
-            urgency: body.urgency || "normal",
-            price: body.service_type === "repair" ? 2500 : 900,
-            problem_description: body.problem_description || "",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            client: state.client,
-            review_exists: false,
-        };
-
-        state.orders.unshift(order);
-        state.clientOrders.unshift(order);
-
-        return json({
-            message: "Order created",
-            order,
-        });
-    },
-
-    clientOrders(config) {
+    clientActiveOrders(config) {
         const params = config.params || {};
-        const result = paginate(
-            getMockState().clientOrders,
+        const result = getClientOrdersForBucket(
+            "active",
             params.page,
             params.per_page
         );
 
         return json({
-            orders: result.items,
-            pagination: result.pagination,
+            data: result.items,
+            meta: {
+                total: result.pagination.total,
+                page: result.pagination.current_page,
+                per_page: result.pagination.per_page,
+            },
         });
     },
 
-    createReview(_config, body) {
+    clientHistoryOrders(config) {
+        const params = config.params || {};
+        const result = getClientOrdersForBucket(
+            "history",
+            params.page,
+            params.per_page
+        );
+
+        return json({
+            data: result.items,
+            meta: {
+                total: result.pagination.total,
+                page: result.pagination.current_page,
+                per_page: result.pagination.per_page,
+            },
+        });
+    },
+
+    createReview(_config, body, params) {
         const state = getMockState();
+        const orderId = Number(params[0]);
         const review = {
             id: Object.keys(state.reviews).length + 1,
-            order_id: body.order_id,
+            order_id: orderId,
             rating: body.rating,
             comment: body.comment,
-            reply: null,
-            created_at: new Date().toISOString(),
+            status: "pending",
         };
 
-        state.reviews[body.order_id] = review;
-        const order = state.clientOrders.find((item) => item.id === body.order_id);
-        if (order) {
-            order.review_exists = true;
-            order.review = review;
-        }
+        state.reviews[orderId] = review;
 
-        return json({ message: "Review created", review });
-    },
-
-    getReview(_config, _body, params) {
-        const review = getMockState().reviews[Number(params[0])];
-        if (!review) {
-            return json({ review: null });
-        }
-
-        return json({ review });
-    },
-
-    pricesSharpening() {
-        return json(getPriceBlocks("sharpening"));
-    },
-
-    pricesRepair() {
-        return json(getPriceBlocks("repair"));
-    },
-
-    pricesAll() {
-        return json(getPriceBlocks("all"));
+        return json({ data: review }, 201);
     },
 
     posLogin(_config, body) {
