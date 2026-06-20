@@ -1,6 +1,6 @@
 ---
 description: POS — presentation vertical (API + Vue SPA, текущий код)
-globs: app/Http/Controllers/Pos/**,routes/api.php,resources/js/pages/Pos/**,resources/js/pages/PosPage.vue,resources/js/components/Pos/**,resources/js/stores/posStore.js,resources/js/services/pos/**,resources/js/composables/usePosOrderDisplay.js,resources/js/mocks/**
+globs: app/Http/Controllers/Pos/**,routes/api.php,resources/js/pages/Pos/**,resources/js/pages/PosPage.vue,resources/js/components/Pos/**,resources/js/stores/posStore.js,resources/js/services/pos/**,resources/js/composables/usePosOrderDisplay.js
 alwaysApply: false
 ---
 
@@ -87,15 +87,6 @@ Router guards **нет** — проверка сессии в `PosPage.vue`.
 
 `/api/pos/*` (кроме `/login`) → `Authorization: Bearer {pos_token}` из `localStorage`.
 
-## Моки (dev)
-
-| Env | Эффект |
-|-----|--------|
-| `VITE_USE_POS_API_MOCKS=true` | axios adapter mocks |
-| `VITE_DEV_AUTO_AUTH=true` | автовход (`seedDevAuth.js`) |
-
-По умолчанию POS ходит на бэкенд. Моки в `handlers.js` **устарели** относительно реального API (другие пути, контракты).
-
-## Только Filament (не POS)
+Моков API нет — POS всегда ходит на бэкенд.
 
 `AssignMasterToOrder`, `LinkEquipmentToOrder`, `SetWorkPrices`, `RecalculateOrderPrice`, `AddMaterialToOrder`, `RemoveMaterialFromOrder`, `IssueOrder`, `CancelOrder`, PDF — `OrderManageActions` в `/cp`.

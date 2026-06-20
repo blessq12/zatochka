@@ -21,7 +21,7 @@ DDD + Hexagonal, BC-first. Описание **текущего кода**, не 
 | OrderFulfillment | [rules/OrderFulfillment](./rules/OrderFulfillment/) | lifecycle, цены, PDF, POS | Filament заказы, POS, PDF |
 | ClientPortal | [rules/ClientPortal](./rules/ClientPortal/) | ЛК, заявки, отзывы | `/api/leads`, `/api/auth`, `/api/client`, Vue `/client/dashboard`, Filament |
 | POS (вертикаль) | [rules/POS](./rules/POS/) | — (OrderFulfillment + Equipment + Warehouse + Identity) | `/api/pos/*`, Vue `/pos` |
-| Catalog | [rules/Catalog](./rules/Catalog/) | `GetPublicBootstrap` | `GET /api/bootstrap` |
+| Catalog | [rules/Catalog](./rules/Catalog/) | `GetPublicBootstrap` | `GET /api/bootstrap`, Vue `bootstrapStore` |
 | Equipment | [rules/Equipment](./rules/Equipment/) | register, search, history | Filament, POS |
 | Warehouse | [rules/Warehouse](./rules/Warehouse/) | приход/списание, search | Filament, POS read-only |
 | Identity | [rules/Identity](./rules/Identity/) | ⬜ каркас | POS login, Filament web auth |
@@ -36,4 +36,5 @@ DDD + Hexagonal, BC-first. Описание **текущего кода**, не 
 - Use cases: `app/Application/README.md`
 - DI портов: `app/Infrastructure/Shared/Provider/PersistenceServiceProvider.php`
 - Сидер: `database/seeders/DomainSeeder.php`
+- Публичный контент SPA: `GET /api/bootstrap` → `resources/js/stores/bootstrapStore.js` (моков API нет)
 - Исключения API: `bootstrap/app.php`

@@ -43,7 +43,7 @@ Guard `client` → `ClientAuthModel`. Не путать с `User` (мастер/
 **Stores:** `authStore` (`localStorage.auth_token`), `orderStore`  
 **Axios:** `bootstrap.js` — Bearer для `/api/*` кроме public paths (`/api/auth/login`, `/api/auth/register`, `/api/leads`, `/api/bootstrap`)
 
-**Моки:** `VITE_USE_CLIENT_API_MOCKS=true` → `mocks/handlers.js`
+Публичный контент сайта (контакты, график, FAQ и т.д.) — BC Catalog, store `bootstrapStore` (см. [Catalog/presentation.mdc](../Catalog/presentation.mdc)). Моков API нет.
 
 **Не используется во фронте:** `GET /api/client/orders/{id}` (есть в API).
 

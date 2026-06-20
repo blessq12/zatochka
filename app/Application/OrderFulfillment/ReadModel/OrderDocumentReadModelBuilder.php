@@ -88,11 +88,11 @@ final class OrderDocumentReadModelBuilder
             managerName: $managerName,
             masterName: $masterName,
             companyName: $company['name'] ?? null,
-            companyLegalName: $company['legal_name'] ?? null,
+            companyLegalName: $company['legal_name'] ?? $company['owner_name'] ?? null,
             companyInn: $company['inn'] ?? null,
             companyKpp: $company['kpp'] ?? null,
             companyOgrn: $company['ogrn'] ?? null,
-            companyAddress: $contacts['address'] ?? null,
+            companyAddress: $this->resolveCompanyAddress($contacts, $company),
             companyPhone: $contacts['phone'] ?? null,
             works: $works,
             materials: $materials,
@@ -112,6 +112,22 @@ final class OrderDocumentReadModelBuilder
         }
 
         return $labels !== [] ? implode(', ', $labels) : '—';
+    }
+
+    /** @param array<string, mixed> $contacts @param array<string, mixed> $company */
+    private function resolveCompanyAddress(array $contacts, array $company): ?string
+    {
+        $address = $contacts['address'] ?? null;
+
+        if (is_array($address)) {
+            return $address['main'] ?? null;
+        }
+
+        if (is_string($address) && $address !== '') {
+            return $address;
+        }
+
+        return $company['actual_address'] ?? null;
     }
 
     /** @return array{name: string, quantity: string, price: float} */

@@ -23,12 +23,14 @@ final class BootstrapTest extends TestCase
                     'schedule',
                     'delivery_info',
                     'company',
+                    'faq',
                 ],
             ]);
 
         $prices = $response->json('data.prices');
         $this->assertNotEmpty($prices);
         $this->assertSame('Заточка инструмента', $prices[0]['title']);
-        $this->assertSame('info@zatochka.tsk', $response->json('data.contacts.email'));
+        $this->assertSame('zatochka.tsk@yandex.ru', $response->json('data.contacts.email'));
+        $this->assertNotEmpty($response->json('data.faq.items'));
     }
 }

@@ -101,7 +101,7 @@
 | `/client/dashboard` | ЛК: login/register → профиль, активные, история |
 | `/sharpening`, `/repair`, `/delivery` | публичные формы → `POST /api/leads` |
 
-Stores: `authStore` (`auth_token`), `orderStore` (заказы, отзывы). Отдельного `services/client/*` нет.  
+Stores: `authStore` (`auth_token`), `orderStore` (заказы, отзывы). Публичный контент сайта — `bootstrapStore` (BC Catalog, см. [Catalog/README](../Catalog/README.md)).  
 `GET /api/client/orders/{id}` в API есть, во фронте **не вызывается** (списки + модалки на list data).
 
 Подробнее: [presentation.mdc](./presentation.mdc)

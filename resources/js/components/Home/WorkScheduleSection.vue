@@ -33,7 +33,7 @@ export default {
                     <h3
                         class="absolute top-0 left-4 sm:left-6 -translate-y-1/2 px-3 bg-white dark:bg-dark-blue-500/90 text-lg sm:text-xl font-jost-bold uppercase tracking-wide"
                         :class="
-                            day.isWeekend
+                            day.is_day_off
                                 ? 'text-[#C20A6C] dark:text-[#C20A6C]'
                                 : 'text-dark-blue-500 dark:text-dark-blue-300'
                         "
@@ -42,20 +42,23 @@ export default {
                     </h3>
 
                     <div class="space-y-2 text-sm sm:text-base">
-                        <template v-if="day.isWeekend">
+                        <template v-if="day.is_day_off">
                             <p
                                 class="font-jost-bold text-[#C20A6C] dark:text-[#C20A6C]"
                             >
-                                ВСЕГДА ВЫХОДНОЙ
+                                {{ day.day_off_text }}
                             </p>
                         </template>
                         <template v-else>
                             <p
-                                v-for="(line, index) in day.lines"
-                                :key="index"
                                 class="font-jost-regular text-dark-gray-500 dark:text-gray-200"
                             >
-                                {{ line }}
+                                {{ day.workshop }}
+                            </p>
+                            <p
+                                class="font-jost-regular text-[#C20A6C] dark:text-[#C20A6C]"
+                            >
+                                {{ day.delivery }}
                             </p>
                         </template>
                     </div>

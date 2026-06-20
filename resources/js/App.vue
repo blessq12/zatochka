@@ -1,6 +1,6 @@
 <script>
 import MainLayout from "./components/Layout/MainLayout.vue";
-import { usePriceStore } from "./stores/priceStore.js";
+import { useBootstrapStore } from "./stores/bootstrapStore.js";
 import { useRoute } from "vue-router";
 
 export default {
@@ -21,8 +21,8 @@ export default {
     },
     async mounted() {
         if (!this.isPosRoute) {
-            const priceStore = usePriceStore();
-            await priceStore.fetchBootstrap();
+            const bootstrapStore = useBootstrapStore();
+            await bootstrapStore.fetchBootstrap();
         }
     },
 };

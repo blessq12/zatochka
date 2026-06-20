@@ -61,7 +61,7 @@ export default {
                             class="px-4 sm:px-6 pb-4 text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
                         >
                             <p
-                                v-for="(line, i) in item.answerLines"
+                                v-for="(line, i) in item.answer_lines"
                                 :key="i"
                                 class="mb-2"
                             >

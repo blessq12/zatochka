@@ -13,9 +13,11 @@
 
 ## Хранение данных bootstrap
 
-Контакты, график, условия доставки, company — **в БД**, редактирование через Filament (настройки).
+Контакты, график, доставка, company, FAQ — **в БД** (`site_settings`, JSON по ключам). Сидер: `DomainSeeder`. Filament CRUD настроек — **не** в MVP.
 
-Прайс — `PriceBlock` в BC Справочники.
+Прайс — `PriceBlock` / `PriceItem` в BC Справочники.
+
+Фронт: `GET /api/bootstrap` → Pinia `bootstrapStore`; каталог `resources/js/mocks/` удалён.
 
 ## Будущее (не MVP)
 

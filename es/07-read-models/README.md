@@ -23,10 +23,13 @@
 | Поле | Источник |
 |------|----------|
 | `prices` | BC Справочники (`PriceBlock` sharpening + repair) |
-| `contacts` | настройки / конфиг / БД |
-| `schedule` | график работы |
-| `delivery_info` | условия доставки |
-| `company` | название, юр. данные |
+| `contacts` | `SiteSetting` — телефон, email, адрес, соцсети |
+| `schedule` | `SiteSetting` — `days[]` по дням недели |
+| `delivery_info` | `SiteSetting` — условия бесплатной доставки, преимущества |
+| `company` | `SiteSetting` — название, ИП, ИНН, ОГРН, адреса |
+| `faq` | `SiteSetting` — вопросы/ответы для главной |
+
+**Vue:** `bootstrapStore` — один запрос при старте SPA; хардкод и axios-моки убраны.
 
 _Отдельные `/api/prices/*` можно не дублировать, если всё в bootstrap._
 

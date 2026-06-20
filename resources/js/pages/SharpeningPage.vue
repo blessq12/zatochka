@@ -1,7 +1,7 @@
 <script>
 import SharpeningForm from "../components/Forms/SharpeningForm.vue";
 import PageHero from "../components/Layout/PageHero.vue";
-import { usePriceStore } from "../stores/priceStore.js";
+import { useBootstrapStore } from "../stores/bootstrapStore.js";
 
 export default {
     name: "SharpeningPage",
@@ -21,10 +21,10 @@ export default {
     methods: {
         async loadPrices() {
             this.isLoading = true;
-            const priceStore = usePriceStore();
-            const result = await priceStore.fetchBootstrap();
+            const bootstrapStore = useBootstrapStore();
+            const result = await bootstrapStore.fetchBootstrap();
             if (result.success) {
-                this.priceBlocks = priceStore.sharpeningBlocks;
+                this.priceBlocks = bootstrapStore.sharpeningBlocks;
             }
             this.isLoading = false;
         },

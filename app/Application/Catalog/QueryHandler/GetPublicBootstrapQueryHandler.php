@@ -9,7 +9,7 @@ use App\Domain\Catalog\Repository\SiteSettingRepositoryInterface;
 
 final class GetPublicBootstrapQueryHandler
 {
-    private const SETTING_KEYS = ['contacts', 'schedule', 'delivery_info', 'company'];
+    private const SETTING_KEYS = ['contacts', 'schedule', 'delivery_info', 'company', 'faq'];
 
     public function __construct(
         private PriceBlockRepositoryInterface $priceBlocks,
@@ -18,7 +18,7 @@ final class GetPublicBootstrapQueryHandler
     ) {}
 
     /**
-     * @return array{prices: list<array<string, mixed>>, contacts: array, schedule: array, delivery_info: array, company: array}
+     * @return array{prices: list<array<string, mixed>>, contacts: array, schedule: array, delivery_info: array, company: array, faq: array}
      */
     public function handle(GetPublicBootstrapQuery $query): array
     {
@@ -53,6 +53,7 @@ final class GetPublicBootstrapQueryHandler
             'schedule' => $settings['schedule'] ?? [],
             'delivery_info' => $settings['delivery_info'] ?? [],
             'company' => $settings['company'] ?? [],
+            'faq' => $settings['faq'] ?? [],
         ];
     }
 }

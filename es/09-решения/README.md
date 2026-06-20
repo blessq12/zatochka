@@ -27,8 +27,8 @@
 **Статус:** принято  
 **Дата:** 2026-06-16  
 **Контекст:** загрузка публичного SPA.  
-**Решение:** один endpoint `GetPublicBootstrap`: прайсы, контакты, график, доставка, company.  
-**Последствия:** меньше round-trips; контент вынести в БД/настройки.  
+**Решение:** один endpoint `GetPublicBootstrap`: прайсы, contacts, schedule, delivery_info, company, faq.  
+**Последствия:** один round-trip; контент в `site_settings` + прайс в Catalog; Vue читает через `bootstrapStore`, без моков.  
 **Альтернативы:** отдельные `/api/prices/*` — можно оставить как thin wrapper.
 
 ## ADR-005: ЛК без статусов цеха
