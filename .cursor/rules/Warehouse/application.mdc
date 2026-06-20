@@ -6,4 +6,23 @@ alwaysApply: false
 
 # Warehouse / Application
 
-Пустой каркас. Целевое: `ReceiveStock`, `WriteOffStock` (Filament).
+## Commands
+
+| Команда | Событие | Побочный эффект |
+|---------|---------|-----------------|
+| `ReceiveStock` | `StockReceived` | обновляет qty + `StockMovement` |
+| `WriteOffStock` | `StockWrittenOff` | обновляет qty + `StockMovement` |
+
+Опционально: `userId`, `comment` в movement.
+
+## Query
+
+`SearchWarehouseItems` — поиск по name/sku, пагинация 20.
+
+## Presenter
+
+`WarehouseItemPresenter` — POS API
+
+## Cross-BC
+
+`AddMaterialToOrderHandler` (OrderFulfillment) → `WarehouseItemRepositoryInterface::findById` (только чтение цены/имени).

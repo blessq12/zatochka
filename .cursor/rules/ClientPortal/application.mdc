@@ -6,12 +6,34 @@ alwaysApply: false
 
 # ClientPortal / Application
 
-## Сейчас
+## Commands
 
-Commands, Queries, Handlers, Presenters — реализованы (фаза 3).
+| Команда | Событие |
+|---------|---------|
+| `SubmitSiteLead` | `SiteLeadReceived` |
+| `RegisterClient` | `ClientRegistered` |
+| `UpdateClientProfile` | — |
+| `SetClientPassword` | — |
+| `SubmitReview` | `ReviewSubmitted` |
+| `LinkGuestOrdersToClient` | `GuestOrdersLinkedToClient` |
+| `ApproveReview` | `ReviewApproved` |
+| `RejectReview` | `ReviewRejected` |
 
-Cross-BC: `SubmitReview`, `LinkGuestOrdersToClient` → `OrderRepositoryInterface`.
+## Queries
 
-## Целевое (ES)
+`GetClientProfile`, `GetClientOrders` (active/history bucket), `GetClientOrderDetail`
 
-`GetPublicBootstrap` — Catalog BC, фаза 4.
+## Presenters
+
+- `ClientOrderPresenter` — **без** статусов цеха (только active/history)
+- `ClientProfilePresenter`, `ReviewPresenter`
+
+## Support
+
+`ClientLoader`
+
+## Cross-BC
+
+`SubmitReviewHandler`, `LinkGuestOrdersToClientHandler` → `OrderRepositoryInterface`
+
+Handler инжектит repository ports, не Eloquent.

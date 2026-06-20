@@ -1,9 +1,21 @@
 ---
 description: Equipment — presentation (текущий код)
-globs: app/Http/**,routes/**
+globs: app/Http/**,app/Filament/**,routes/**
 alwaysApply: false
 ---
 
 # Equipment / Presentation
 
-Не реализовано. Целевое: Filament CRUD, POS search/read-only.
+## Filament `/cp`
+
+- `Equipment/EquipmentResource` — список + `CreateEquipment` (через `RegisterEquipmentHandler`)
+- `Orders/OrderManageActions::linkEquipment()` — Select + `LinkEquipmentToOrder`
+
+## POS `/api/pos/*`
+
+| Метод | Путь |
+|-------|------|
+| GET | `equipment?query=&page=` |
+| GET | `equipment/{equipmentId}/orders` |
+
+Read-only для мастера (история ремонтов).

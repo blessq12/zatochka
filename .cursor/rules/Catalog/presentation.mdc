@@ -6,10 +6,17 @@ alwaysApply: false
 
 # Catalog / Presentation
 
-## Сейчас
+## Публичный API
 
-Нет endpoints для прайса/bootstrap. Filament не установлен.
+`GET /api/bootstrap` — единый ответ для SPA при загрузке.
 
-## Целевое (ES)
+Контроллер: `app/Http/Controllers/Api/BootstrapController.php`
 
-ADR-004: один endpoint bootstrap; Filament — прайс и филиал.
+## Косвенное использование
+
+- `OrderDocumentReadModelBuilder` — company/contacts + branch для PDF
+- `CreateOrderHandler` — `BranchRepositoryInterface::findFirstActive`
+
+## Filament
+
+CRUD прайса и филиала — **не** реализован. Данные — `DomainSeeder`.

@@ -6,4 +6,20 @@ alwaysApply: false
 
 # Identity / Application
 
-Пустой каркас. Целевое: Sanctum login для POS, управление мастерами в Filament.
+## Сейчас
+
+Папки `Command/`, `Query/`, `Presenter/` — каркас (`.gitkeep`), классов нет.
+
+## Фактическая логика auth
+
+- POS login — `PosController::login` (Presentation), напрямую `UserModel` + Sanctum
+- Filament — Laravel session auth на `UserModel`
+
+## Целевое (не реализовано)
+
+Application handlers: `AuthenticatePosMaster`, CRUD мастеров для Filament, policies.
+
+## Использование Master в других BC
+
+- `PosOrderReadModelBuilder` → `MasterRepositoryInterface`
+- `OrderDocumentReadModelBuilder` → `MasterRepositoryInterface`

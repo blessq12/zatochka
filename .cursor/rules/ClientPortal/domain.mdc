@@ -11,12 +11,15 @@ alwaysApply: false
 - **Entity:** `Client`, `SiteLead`, `Review`
 - **Enum:** `ReviewStatus` — pending, approved, rejected
 - **Repository:** `ClientRepositoryInterface`, `SiteLeadRepositoryInterface`, `ReviewRepositoryInterface`
+- **Event:** `SiteLeadReceived`, `ClientRegistered`, `GuestOrdersLinkedToClient`, `ReviewSubmitted`, `ReviewApproved`, `ReviewRejected`
+- **Exception:** `SiteLeadPolicyViolation`, `ClientAlreadyRegisteredException`, `ClientNotFoundException`, `ReviewPolicyViolation`
 
-## Поведение SiteLead
+## Поведение
 
-- `markConverted(int $orderId)` — POL-09, один раз
-- Исключение: `Exception\SiteLeadPolicyViolation`
+- `Client::register()`, `updateProfile()`
+- `SiteLead::create()`, `markConverted(int $orderId)` — POL-09, один раз
+- `Review::submit()`, `approve()`, `reject()` — POL: отзыв только на `issued` заказ
 
-## Нет в коде
+## Cross-BC
 
-Events, валидация SubmitReview (issued), auth use cases
+Проверка заказа при отзыве — в Application (`SubmitReviewHandler` → `OrderRepositoryInterface`), не в entity Review напрямую.

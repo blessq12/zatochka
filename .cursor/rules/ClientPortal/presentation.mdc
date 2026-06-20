@@ -1,16 +1,34 @@
 ---
 description: ClientPortal — presentation (текущий код)
-globs: app/Http/**,routes/api.php,config/auth.php
+globs: app/Http/**,routes/api.php,config/auth.php,app/Filament/**
 alwaysApply: false
 ---
 
 # ClientPortal / Presentation
 
-## Сейчас
+## Публичный API (`/api/*`)
 
-- `POST /api/leads` — заявка с сайта
-- `POST /api/auth/register`, `POST /api/auth/login`
-- `GET|PATCH /api/client/profile`, `POST /api/client/password`
-- `GET /api/client/orders/active`, `GET /api/client/orders/history`, `GET /api/client/orders/{id}`
-- `POST /api/client/orders/{id}/review`
-- Filament: заявки, клиенты, отзывы
+| Метод | Путь | Handler |
+|-------|------|---------|
+| POST | `/api/leads` | `SubmitSiteLead` |
+| POST | `/api/auth/register` | `RegisterClient` |
+| POST | `/api/auth/login` | Sanctum token (guard `client`) |
+| GET | `/api/client/profile` | `GetClientProfile` |
+| PATCH | `/api/client/profile` | `UpdateClientProfile` |
+| POST | `/api/client/password` | `SetClientPassword` |
+| GET | `/api/client/orders/active` | `GetClientOrders` (active) |
+| GET | `/api/client/orders/history` | `GetClientOrders` (history) |
+| GET | `/api/client/orders/{id}` | `GetClientOrderDetail` |
+| POST | `/api/client/orders/{id}/review` | `SubmitReview` |
+
+Контроллеры: `app/Http/Controllers/Api/LeadController`, `ClientAuthController`, `ClientAccountController`.
+
+## Filament `/cp`
+
+- `SiteLeads/SiteLeadResource` — заявки (`converted=false`)
+- `Clients/ClientResource` — список клиентов
+- `Reviews/ReviewResource` — модерация (approve/reject)
+
+## Auth
+
+Guard `client` → `ClientAuthModel`. Не путать с `User` (мастер/менеджер).

@@ -6,8 +6,15 @@ alwaysApply: false
 
 # Warehouse / Domain
 
-- **Entity:** `WarehouseItem`, `StockMovement`
+- **Entity:** `WarehouseItem` (`create`, `receive`, `writeOff`), `StockMovement`
 - **Enum:** `StockMovementType`
-- **Repository:** `WarehouseItemRepositoryInterface` (find/save), `StockMovementRepositoryInterface` (save only)
+- **Repository:** `WarehouseItemRepositoryInterface` (`findById`, `save`, `search`), `StockMovementRepositoryInterface` (`save`)
+- **Event:** `StockReceived`, `StockWrittenOff`
+- **Exception:** `WarehousePolicyViolation`, `WarehouseItemNotFoundException`
 
-Автосписание при `AddMaterialToOrder` — **не** в коде (ES: MVP вручную).
+## POL
+
+- `receive(qty)` / `writeOff(qty)` — qty > 0
+- `writeOff` — остаток не уходит в минус
+
+Автосписание при `AddMaterialToOrder` — **не** в domain (ES: MVP вручную через Filament).

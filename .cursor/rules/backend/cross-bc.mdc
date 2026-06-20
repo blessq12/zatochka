@@ -13,13 +13,25 @@ alwaysApply: false
 - Domain Entity хранят только `*_id` на другие BC (без объектных ссылок)
 - Eloquent models **без** cross-BC `belongsTo`/`hasMany` (кроме дочерних сущностей агрегата Order)
 - Общая БД, монолит, FK в миграциях
+- Cross-BC orchestration — только в `Application/{BC}/CommandHandler`
 
-## Ещё не реализовано
+## Cross-BC handlers (факт)
 
-- Application orchestration (CreateOrder из SiteLead, SubmitReview)
-- Read models / query joins across BC
-- Список явных cross-BC application services
+| Handler | BC | Порты других BC |
+|---------|-----|-----------------|
+| `CreateOrderHandler` | OrderFulfillment | `BranchRepositoryInterface` |
+| `AddMaterialToOrderHandler` | OrderFulfillment | `WarehouseItemRepositoryInterface` |
+| `LinkEquipmentToOrderHandler` | OrderFulfillment | `EquipmentRepositoryInterface` |
+| `SubmitReviewHandler` | ClientPortal | `OrderRepositoryInterface` |
+| `LinkGuestOrdersToClientHandler` | ClientPortal | `OrderRepositoryInterface` |
+| `GenerateDocumentHandler` | OrderFulfillment | Catalog, Equipment, Identity, Warehouse (read model) |
+| `GetEquipmentOrderHistoryQueryHandler` | Equipment | `OrderRepositoryInterface` |
 
-## Правило на будущее
+## Read models across BC
 
-Кросс-BC сценарии — только `Application/{BC}/CommandHandler`, не Domain и не Eloquent-связи.
+- `OrderDocumentReadModelBuilder` — Order + Branch + SiteSetting + Equipment + Master + WarehouseItem
+- `PosOrderReadModelBuilder` — Order + Equipment + Master + WarehouseItem (имена материалов)
+
+## Правило
+
+Кросс-BC сценарии — только `Application/{BC}/CommandHandler` или `ReadModel/*Builder`, не Domain и не Eloquent-связи.

@@ -6,14 +6,34 @@ alwaysApply: false
 
 # OrderFulfillment / Application
 
-## Сейчас
+## Commands
 
-Реализованы Command/Query/Handler/Presenter для lifecycle заказа и POS read API.
-
-## Целевые use cases (ES)
-
-`SubmitSiteLead`, `RegisterClient`, `LinkGuestOrdersToClient`, … — фаза 3+
-
-## Правило
+Lifecycle, цены, материалы, `LinkEquipmentToOrder`, `GenerateDocument`.
 
 Handler инжектит `OrderRepositoryInterface` и порты других BC, не Eloquent.
+
+## Queries (POS)
+
+| Query | Назначение |
+|-------|------------|
+| `GetPosOrders` | воронка по табам, пагинация |
+| `GetPosOrderDetail` | карточка (мастер видит только свои) |
+| `GetPosOrderCounts` | счётчики табов |
+| `GetPosDashboard` | counts + `avg_work_duration_seconds` |
+
+## Read models
+
+- `PosOrderReadModelBuilder` — enrichment для POS API
+- `OrderDocumentReadModelBuilder` — данные для Blade PDF
+
+## Support
+
+`OrderLoader` — `findById` + `OrderNotFoundException`
+
+## Port
+
+`PdfRendererInterface` — реализация `DomPdfRenderer` в Infrastructure
+
+## Cross-BC
+
+`AddMaterialToOrder` → Warehouse; `LinkEquipmentToOrder` → Equipment; `GenerateDocument` → Catalog, Identity, Equipment, Warehouse

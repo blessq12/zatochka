@@ -1,18 +1,40 @@
 ---
 description: OrderFulfillment — presentation (текущий код)
-globs: app/Http/**,routes/**
+globs: app/Http/**,app/Filament/**,routes/**
 alwaysApply: false
 ---
 
 # OrderFulfillment / Presentation
 
-## Сейчас
+## Filament `/cp`
 
-- `routes/web.php` — SPA catch-all (`MainController`)
-- `routes/api.php` — заглушка `GET /api/user`
-- **Нет** контроллеров заказов, Filament, POS
+- `Orders/OrderResource` — CRUD заказов
+- `OrderManageActions` — назначение мастера, цены, материалы, выдача, отмена, оборудование, PDF
+- `ViewOrder` — карточка с works/materials
 
-## Целевые каналы (ES)
+## POS `/api/pos/*` (Sanctum)
 
-- Filament `/cp` — менеджер
-- POS `/api/pos/*` — мастер (фильтр по `master_id`)
+| Метод | Путь | Действие |
+|-------|------|----------|
+| GET | `dashboard` | счётчики + среднее время в работе |
+| GET | `orders/counts` | счётчики воронки |
+| GET | `orders` | список (`status`, page) |
+| GET | `orders/{id}` | карточка (enriched read model) |
+| POST | `orders/{id}/take-to-work` | взять в работу |
+| POST | `orders/{id}/waiting-parts` | ожидание запчастей |
+| POST | `orders/{id}/resume` | возобновить |
+| POST | `orders/{id}/works` | добавить работу |
+| DELETE | `orders/{id}/works` | удалить работу |
+| PATCH | `orders/{id}/internal-notes` | заметки мастера |
+| POST | `orders/{id}/mark-ready` | готов |
+| POST | `orders/{id}/return-to-work` | вернуть в работу |
+
+Мастер видит только заказы с `master_id = auth user`.
+
+## PDF
+
+`GET /cp/orders/{orderId}/documents/{type}` — `receipt` | `handover_act`, inline PDF, auth Filament.
+
+## SPA
+
+`routes/web.php` — catch-all `MainController` (не заказы).

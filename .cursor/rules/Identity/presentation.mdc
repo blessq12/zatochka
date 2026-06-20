@@ -1,15 +1,29 @@
 ---
 description: Identity — presentation (текущий код)
-globs: app/Http/**,routes/**,config/auth.php
+globs: app/Http/**,routes/**,config/auth.php,app/Providers/Filament/**
 alwaysApply: false
 ---
 
 # Identity / Presentation
 
-## Сейчас
+## POS
 
-- `config/auth.php` — guards `web`, `client`
-- Нет login endpoints для POS / Filament
+`POST /api/pos/login` — email/password → Sanctum token + `{ master: { id, name, email } }`
+
+Реализация: `PosController::login` (без Application handler).
+
+## Filament
+
+- `AdminPanelProvider` — path `/cp`, guard `web`
+- Login: `/cp/login`
+
+## Guards (`config/auth.php`)
+
+| Guard | Provider | Назначение |
+|-------|----------|------------|
+| `web` | `users` (UserModel) | Filament, менеджер |
+| `sanctum` | — | POS API (тот же UserModel) |
+| `client` | ClientAuthModel | ЛК клиента |
 
 ## Правило
 

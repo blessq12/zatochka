@@ -8,15 +8,15 @@
 |------|--------|
 | Domain | ✅ |
 | Infrastructure | ✅ |
-| Application | ⬜ каркас |
-| Presentation | ⬜ (только Laravel auth config) |
+| Application | ⬜ каркас (login в Presentation) |
+| Presentation | ✅ POS login, Filament web auth |
 
 ## Domain (`app/Domain/Identity/`)
 
 | Папка | Классы |
 |-------|--------|
 | `Entity/` | `Master` — name, surname, email, phone, notificationsEnabled |
-| `Repository/` | `MasterRepositoryInterface` |
+| `Repository/` | `MasterRepositoryInterface` — `findById`, `findByEmail`, `save` |
 
 ## Infrastructure (`app/Infrastructure/Identity/`)
 
@@ -30,11 +30,21 @@
 
 - `app/Models/User.php` extends `UserModel`
 - `config/auth.php`: guard `web` → User; guard `client` → `ClientAuthModel` (ClientPortal)
-- `DomainSeeder`: demo `master@zatochka.local`
+- `DomainSeeder`: `master@zatochka.local`, `manager@zatochka.local` / `password`
 
-## Application / Presentation
+## Presentation (без Application handlers)
 
-Нет POS login, Filament user CRUD, policies.
+| Канал | Реализация |
+|-------|------------|
+| POS | `PosController::login` — Sanctum token для `UserModel` |
+| Filament | guard `web`, встроенный login `/cp/login` |
+| Read models | `MasterRepository` в `PosOrderReadModelBuilder`, `OrderDocumentReadModelBuilder` |
+
+## Нет в коде
+
+- `Application/Identity` commands (RegisterMaster, …)
+- Filament CRUD мастеров
+- Policies по ролям
 
 ## ES
 

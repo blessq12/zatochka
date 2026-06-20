@@ -6,7 +6,11 @@ alwaysApply: false
 
 # Equipment / Domain
 
-- **Entity:** `Equipment`
-- **Repository:** `EquipmentRepositoryInterface` — `findById`, `save`
+- **Entity:** `Equipment` — `register(name, serialNumbers, brand?, model?)`
+- **Repository:** `EquipmentRepositoryInterface` — `findById`, `save`, `findBySerialNumber`, `search`
+- **Event:** `EquipmentRegistered`
+- **Exception:** `EquipmentNotFoundException`
 
 `serialNumbers` — `list<string>` в entity; в БД json.
+
+Привязка к заказу — `Order::linkEquipment(equipmentId)` в OrderFulfillment, не в Equipment entity.

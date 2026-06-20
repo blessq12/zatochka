@@ -15,14 +15,25 @@ app/
 ├── Domain/{BC}/
 │   ├── Entity/ Enum/ ValueObject/
 │   ├── Repository/               # interfaces (ports)
-│   └── Service/                  # только OrderFulfillment
-├── Application/{BC}/             # каркас: Command, CommandHandler, Query, QueryHandler, Presenter — пусто
+│   ├── Event/ Exception/         # где нужно
+│   └── Service/                  # OrderFulfillment: OrderNumberGenerator
+├── Application/{BC}/
+│   ├── Command/ CommandHandler/
+│   ├── Query/ QueryHandler/
+│   ├── Presenter/ ReadModel/ Port/
+│   └── Support/                  # OrderLoader, ClientLoader
 ├── Infrastructure/{BC}/
 │   ├── Persistence/Eloquent|Mapper|Repository/
+│   ├── Pdf/                      # OrderFulfillment: DomPdfRenderer
 │   └── Auth/                     # ClientPortal, Identity (UserModel)
 ├── Infrastructure/Shared/Provider/PersistenceServiceProvider.php
-├── Models/User.php               # алиас на UserModel
-└── Http/Controllers/             # MainController — SPA, не BC API
+├── Filament/Resources/           # Presentation менеджера (/cp)
+├── Http/Controllers/
+│   ├── Api/                      # публичный REST
+│   ├── Pos/                      # POS мастера
+│   ├── Cp/                       # PDF из Filament
+│   └── MainController.php        # SPA catch-all
+└── Models/User.php               # алиас на UserModel
 ```
 
 ## Зависимости
@@ -34,5 +45,6 @@ Presentation → Application → Domain ← Infrastructure
 | Слой | Готово |
 |------|--------|
 | Domain + Infrastructure | да, по всем 6 BC |
-| Application | только папки |
-| Presentation (API/Filament) | нет |
+| Application | да, кроме Identity (каркас) |
+| Presentation | API + Filament `/cp` |
+| Тесты | Unit Order + Feature по BC |

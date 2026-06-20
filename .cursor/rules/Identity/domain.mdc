@@ -6,13 +6,13 @@ alwaysApply: false
 
 # Identity / Domain
 
-- **Entity:** `Master` (доменное имя мастера)
-- **Repository:** `MasterRepositoryInterface`
+- **Entity:** `Master` — `fullName()`, name, surname, email, phone
+- **Repository:** `MasterRepositoryInterface` — `findById`, `findByEmail`, `save`
 
-Persistence/auth: `UserModel` + `App\Models\User` — не domain entity, infrastructure adapter.
+Persistence/auth: `UserModel` + `App\Models\User` — infrastructure, не domain entity.
 
-`Order.masterId` в OrderFulfillment ссылается на `users.id`.
+`Order.masterId` в OrderFulfillment → `users.id`.
 
-## Нет в коде
+## Нет в domain
 
-Policies, POS token issuance handlers
+Роли, permissions, смена пароля мастера — не моделированы.

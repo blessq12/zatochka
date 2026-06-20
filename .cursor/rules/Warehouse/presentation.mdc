@@ -1,9 +1,23 @@
 ---
 description: Warehouse — presentation (текущий код)
-globs: app/Http/**,routes/**
+globs: app/Http/**,app/Filament/**,routes/**
 alwaysApply: false
 ---
 
 # Warehouse / Presentation
 
-Не реализовано. Целевое: Filament мутации, POS read-only.
+## Filament `/cp`
+
+`WarehouseItems/WarehouseItemResource` — список позиций, действия:
+- **Приход** — `ReceiveStockHandler`
+- **Списание** — `WriteOffStockHandler`
+
+Создание новых SKU через Filament — **не** реализовано (только seeder).
+
+## POS `/api/pos/*`
+
+`GET /api/pos/warehouse/items?query=&page=` — read-only для мастера.
+
+## OrderFulfillment
+
+`OrderManageActions::addMaterial()` — выбор позиции склада при добавлении в заказ.

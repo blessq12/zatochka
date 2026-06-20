@@ -8,8 +8,8 @@
 |------|--------|
 | Domain | ✅ |
 | Infrastructure | ✅ |
-| Application | ⬜ каркас |
-| Presentation | ⬜ нет bootstrap API / Filament |
+| Application | ✅ `GetPublicBootstrap` |
+| Presentation | ✅ `GET /api/bootstrap` |
 
 ## Domain (`app/Domain/Catalog/`)
 
@@ -17,24 +17,42 @@
 |-------|--------|
 | `Entity/` | `Branch`, `PriceBlock`, `PriceItem`, `SiteSetting` |
 | `Enum/` | `PriceType` — sharpening, repair |
-| `Repository/` | `BranchRepositoryInterface`, `PriceBlockRepositoryInterface`, `PriceItemRepositoryInterface`, `SiteSettingRepositoryInterface` |
+| `Repository/` | 4 interface |
+
+### Методы репозиториев (расширения для read)
+
+| Repository | Метод |
+|------------|-------|
+| `BranchRepositoryInterface` | `findById`, `findFirstActive`, `save` |
+| `PriceBlockRepositoryInterface` | `findById`, `save`, `findAllOrdered` |
+| `PriceItemRepositoryInterface` | `findById`, `save`, `findByPriceBlockId` |
+| `SiteSettingRepositoryInterface` | `findByKey`, `save`, `getValuesByKeys` |
 
 ## Infrastructure (`app/Infrastructure/Catalog/`)
 
-| Папка | Классы |
-|-------|--------|
-| `Persistence/Eloquent/` | `BranchModel`, `PriceBlockModel`, `PriceItemModel`, `SiteSettingModel` |
-| `Persistence/Mapper/` | по одному на entity |
-| `Persistence/Repository/` | `Eloquent*Repository` ×4 |
+Eloquent×4, Mapper×4, `Eloquent*Repository` ×4.
+
+## Application (`app/Application/Catalog/`)
+
+| Query | Handler | Ответ |
+|-------|---------|-------|
+| `GetPublicBootstrap` | `GetPublicBootstrapQueryHandler` | prices, contacts, schedule, delivery_info, company |
+
+## Presentation
+
+- `GET /api/bootstrap` — `BootstrapController`
+- Данные для PDF — через `SiteSettingRepository` + `BranchRepository` в `OrderDocumentReadModelBuilder`
+- Filament CRUD прайса — **не** реализован (данные через seeder)
 
 ## Данные
 
-`DomainSeeder` создаёт: филиал «Центральный», 2 блока прайса, `site_settings` (contacts, schedule, …).
+`DomainSeeder`: филиал «Центральный», 2 блока прайса, `site_settings` (contacts, schedule, delivery_info, company).
 
-## Application / Presentation
+## Тесты
 
-Не реализованы. ES: `GetPublicBootstrap`, Filament CRUD прайса.
+`tests/Feature/Catalog/BootstrapTest.php`
 
 ## ES
 
 - [Справочники](../../../es/05-агрегаты/README.md#справочники-bc-справочники)
+- [GetPublicBootstrap](../../../es/07-read-models/README.md)

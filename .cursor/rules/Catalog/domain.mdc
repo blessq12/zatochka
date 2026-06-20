@@ -10,8 +10,17 @@ alwaysApply: false
 
 - **Entity:** `Branch`, `PriceBlock`, `PriceItem`, `SiteSetting`
 - **Enum:** `PriceType`
-- **Repository:** 4 interface — find/save; `SiteSettingRepositoryInterface::findByKey`
+- **Repository:** 4 interface
 
-## Нет в коде
+## Repository ports
 
-Статический `getValue()` (был на старой Eloquent-модели) — только через repository
+- `BranchRepositoryInterface` — `findById`, `findFirstActive`, `save`
+- `PriceBlockRepositoryInterface` — `findById`, `save`, `findAllOrdered`
+- `PriceItemRepositoryInterface` — `findById`, `save`, `findByPriceBlockId`
+- `SiteSettingRepositoryInterface` — `findByKey`, `save`, `getValuesByKeys`
+
+Настройки — json `value` в БД; в domain — array через mapper.
+
+## Нет в domain
+
+Мутации прайса из Filament — пока только seeder; Application commands для CRUD не добавлены.

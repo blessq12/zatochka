@@ -1,6 +1,6 @@
 # BC: Оборудование (Equipment)
 
-Реестр оборудования (ES). История ремонтов — query по `Order.equipment_id` (не реализована).
+Реестр оборудования (ES). История ремонтов — query по `Order.equipment_id`.
 
 ## Состояние кода
 
@@ -8,23 +8,47 @@
 |------|--------|
 | Domain | ✅ |
 | Infrastructure | ✅ |
-| Application | ⬜ каркас |
-| Presentation | ⬜ |
+| Application | ✅ |
+| Presentation | ✅ Filament, POS |
 
 ## Domain (`app/Domain/Equipment/`)
 
-| Папка | Классы |
-|-------|--------|
-| `Entity/` | `Equipment` — name, brand, model, serialNumbers[] |
+| Папка | Содержание |
+|-------|------------|
+| `Entity/` | `Equipment` — `register()`, name, brand, model, serialNumbers[] |
 | `Repository/` | `EquipmentRepositoryInterface` |
+| `Event/` | `EquipmentRegistered` |
+| `Exception/` | `EquipmentNotFoundException` |
+
+### `EquipmentRepositoryInterface`
+
+`findById`, `save`, `findBySerialNumber`, `search(query, page, perPage)`
 
 ## Infrastructure (`app/Infrastructure/Equipment/`)
 
-`EquipmentModel`, `EquipmentMapper`, `EloquentEquipmentRepository`
+`EquipmentModel` (json `serial_numbers`), `EquipmentMapper`, `EloquentEquipmentRepository`
 
-## Application / Presentation
+## Application (`app/Application/Equipment/`)
 
-Не реализованы. ES: `RegisterEquipment`, `LinkEquipmentToOrder`, поиск в POS.
+| Тип | Классы |
+|-----|--------|
+| Command | `RegisterEquipment` → `EquipmentRegistered` |
+| Query | `SearchEquipment`, `GetEquipmentOrderHistory` |
+| Presenter | `EquipmentPresenter` |
+
+`LinkEquipmentToOrder` — в BC OrderFulfillment.
+
+## Presentation
+
+| Канал | Путь |
+|-------|------|
+| Filament | `Equipment/EquipmentResource` — список, создание |
+| Filament (заказ) | действие «Привязать оборудование» на `ViewOrder` |
+| POS | `GET /api/pos/equipment`, `GET /api/pos/equipment/{id}/orders` |
+
+## Тесты
+
+`tests/Feature/Equipment/EquipmentTest.php`
 
 ## ES
 

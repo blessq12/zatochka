@@ -6,12 +6,16 @@ alwaysApply: false
 
 # Catalog / Application
 
-## Сейчас
+## Query
 
-Пустые папки Command/Query/…
+`GetPublicBootstrapQuery` + `GetPublicBootstrapQueryHandler`
 
-## Целевое (ES)
+Агрегирует:
+- `PriceBlock::findAllOrdered` + `PriceItem::findByPriceBlockId` → `prices[]`
+- `SiteSetting::getValuesByKeys` → contacts, schedule, delivery_info, company
 
-Query `GetPublicBootstrap` — агрегация прайсов + `SiteSetting` для публичного SPA.
+Отдельные `/api/prices/*` не дублируются (ADR-004).
 
-Filament CRUD — через handlers или напрямую через repos (решить при реализации).
+## Нет commands
+
+Filament CRUD прайса/филиала — не реализован в Application.

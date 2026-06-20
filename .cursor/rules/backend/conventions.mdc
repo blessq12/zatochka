@@ -18,14 +18,24 @@ alwaysApply: false
 | Shared | `app/Shared/ValueObject/` | `App\Shared\ValueObject\Phone` |
 | Domain | `app/Domain/{BC}/Entity/` | `App\Domain\OrderFulfillment\Entity\Order` |
 | Domain port | `app/Domain/{BC}/Repository/` | `…\OrderRepositoryInterface` |
+| Domain event | `app/Domain/{BC}/Event/` | `App\Domain\OrderFulfillment\Event\OrderCreated` |
 | Infrastructure | `app/Infrastructure/{BC}/Persistence/Eloquent/` | `…\OrderModel` |
-| Application | `app/Application/{BC}/Command/` | *(пока пусто)* |
+| Application | `app/Application/{BC}/Command/` | `App\Application\OrderFulfillment\Command\CreateOrderCommand` |
+| Read model | `app/Application/{BC}/ReadModel/` | `…\OrderDocumentReadModelBuilder` |
 
-## Команды и события (целевые, из ES)
+## Команды и события
 
-| | Документация | Код |
-|---|--------------|-----|
-| Команда | повелительное, RU | `CreateOrder` |
-| Событие | прошедшее время, RU | `OrderCreated` |
+| | Документация (ES) | Код (класс) |
+|---|-------------------|-------------|
+| Команда | повелительное, RU | `CreateOrderCommand` + `CreateOrderHandler` |
+| Событие | прошедшее время, RU | `OrderCreated` (readonly class) |
+| Query | `Get…` | `GetPosOrdersQuery` + `GetPosOrdersQueryHandler` |
 
-Классов Command/Event в репозитории пока нет.
+Handler именуется `{Verb}Handler` (`TakeOrderToWorkHandler`), не `*CommandHandler`.
+
+## Presentation
+
+- Публичный API: `app/Http/Controllers/Api/`
+- POS: `app/Http/Controllers/Pos/PosController.php`
+- Filament: `app/Filament/Resources/`
+- PDF из CP: `app/Http/Controllers/Cp/OrderDocumentController.php`

@@ -11,22 +11,24 @@ alwaysApply: false
 ## Классы
 
 - **Entity:** `Order`, `OrderWork`, `OrderTool`, `OrderMaterial`
-- **Enum:** `OrderStatus`, `OrderSource`, `OrderUrgency`
+- **Enum:** `OrderStatus`, `OrderSource`, `OrderUrgency`, `PosOrderListTab`, `DocumentType`
 - **ValueObject:** `OrderNumber`, `ClientSnapshot`
-- **Repository:** `OrderRepositoryInterface` — `findById`, `save`, `findLastOrderNumberForYear`
-- **Service:** `OrderNumberGenerator` → port `OrderRepositoryInterface`
+- **Repository:** `OrderRepositoryInterface`
+- **Service:** `OrderNumberGenerator`
+- **Event:** lifecycle + `DocumentGenerated`, `EquipmentLinkedToOrder`, `InternalNotesUpdated`, `OrderPriceRecalculated`
+- **Exception:** `OrderPolicyViolation`, `OrderNotFoundException`
 
 ## FK на другие BC (только int|null)
 
 `leadId`, `clientId`, `equipmentId`, `masterId`, `branchId`, `warrantyParentOrderId`
 
-## Поведение Order (Entity)
+## Поведение Order
 
 - `Order::create()` — фабрика, INV-07 (snapshot для гостя)
 - Переходы: `assignMaster`, `takeToWork`, `markWaitingForParts`, `resume`, `markReady`, `returnToWork`, `issue`, `cancel`
-- Содержимое: `addWork`, `removeWork` (по `sortOrder`), `setWorkPrice`, `addMaterial`, `removeMaterial`, `recalculatePrice`, `linkWarranty`
-- Исключение: `Exception\OrderPolicyViolation`
+- Содержимое: `addWork`, `removeWork`, `setWorkPrice`, `addMaterial`, `removeMaterial`, `recalculatePrice`, `linkWarranty`, `linkEquipment`, `updateInternalNotes`
+- POL: отмена только из `new`; выдача из `ready`; акт выдачи — Application (`ready`/`issued`)
 
-## Нет в коде
+## Документы
 
-Domain events, Application CommandHandlers
+PDF — **не** доменный агрегат. `DocumentType` + событие `DocumentGenerated` для аудита.

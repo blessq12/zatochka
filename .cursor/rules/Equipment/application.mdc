@@ -6,4 +6,21 @@ alwaysApply: false
 
 # Equipment / Application
 
-Пустой каркас. Целевое: `RegisterEquipment`, `LinkEquipmentToOrder` (cross-BC → Order).
+## Command
+
+`RegisterEquipmentCommand` + `RegisterEquipmentHandler` → `EquipmentRegistered`
+
+## Queries
+
+| Query | Назначение |
+|-------|------------|
+| `SearchEquipment` | поиск по name/brand/model/SN, пагинация |
+| `GetEquipmentOrderHistory` | заказы по `equipment_id` (cross-BC → `OrderRepositoryInterface`) |
+
+## Presenter
+
+`EquipmentPresenter` — POS API
+
+## Cross-BC
+
+`LinkEquipmentToOrderHandler` — в `Application/OrderFulfillment/`
