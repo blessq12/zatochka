@@ -32,3 +32,23 @@ alwaysApply: false
 ## Auth
 
 Guard `client` → `ClientAuthModel`. Не путать с `User` (мастер/менеджер).
+
+## Vue SPA
+
+| Маршрут | Компонент | API |
+|---------|-----------|-----|
+| `/client/dashboard` | `ClientApp.vue` → `AuthorizedApp` | profile, orders, review |
+| `/sharpening`, `/repair`, `/delivery` | формы | `POST /api/leads` |
+
+**Stores:** `authStore` (`localStorage.auth_token`), `orderStore`  
+**Axios:** `bootstrap.js` — Bearer для `/api/*` кроме public paths (`/api/auth/login`, `/api/auth/register`, `/api/leads`, `/api/bootstrap`)
+
+**Моки:** `VITE_USE_CLIENT_API_MOCKS=true` → `mocks/handlers.js`
+
+**Не используется во фронте:** `GET /api/client/orders/{id}` (есть в API).
+
+## Filament actions (факт)
+
+- SiteLeads: «Создать заказ» → `CreateOrderHandler`
+- Clients: «Привязать гостевые заказы» → `LinkGuestOrdersToClientHandler`
+- Reviews: «Одобрить» / «Отклонить» (только `pending`)

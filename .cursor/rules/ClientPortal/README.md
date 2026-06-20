@@ -9,23 +9,39 @@
 | Domain | ✅ |
 | Infrastructure | ✅ (+ Auth) |
 | Application | ✅ |
-| Presentation | ✅ `/api/*`, Filament |
+| Presentation API | ✅ `/api/*`, Filament |
+| Presentation Vue | ✅ `/client/dashboard`, формы заявок на публичных страницах |
+| Тесты | ⚠️ 1 feature-файл (handler-level) |
+
+## Семантика (ES ↔ код)
+
+| ES / глоссарий | Код | Примечание |
+|----------------|-----|------------|
+| **Lead** (заявка) | `SiteLead` | entity, table `site_leads`, `SubmitSiteLead` |
+| `lead_id` на Order | `Order.leadId` / `lead_id` | `OrderSource::SiteLead` |
+| `converted` + `order_id` | `SiteLead::markConverted()` | POL-09, из `CreateOrderHandler` |
+| **Client** | `Client` | guard `client`, таблица `clients` |
+| Гостевой заказ | `client_snapshot` на Order | `LinkGuestOrdersToClient` по телефону |
+| **Review** | `Review` | только после `issued`; модерация в Filament |
+| `SetPassword` (ES) | `SetClientPassword` | команда Application |
+| `GetClientActiveOrders` / `GetClientOrderHistory` (ES) | один `GetClientOrdersQuery` + флаг `history` | ADR-005: без статусов цеха |
+| `GetOrderReview` (ES) | **нет отдельного query** | `review_exists` в presenter + `ReviewRepository` |
 
 ## Domain (`app/Domain/ClientPortal/`)
 
 | Папка | Содержание |
 |-------|------------|
 | `Entity/` | `Client`, `SiteLead`, `Review` |
-| `Enum/` | `ReviewStatus` |
+| `Enum/` | `ReviewStatus` — pending, approved, rejected |
 | `Repository/` | `ClientRepositoryInterface`, `SiteLeadRepositoryInterface`, `ReviewRepositoryInterface` |
 | `Event/` | `SiteLeadReceived`, `ClientRegistered`, `GuestOrdersLinkedToClient`, `ReviewSubmitted`, `ReviewApproved`, `ReviewRejected` |
 | `Exception/` | `SiteLeadPolicyViolation`, `ClientAlreadyRegisteredException`, `ClientNotFoundException`, `ReviewPolicyViolation` |
 
 ### Поведение
 
-- `Client::register()`, `updateProfile()`
+- `Client::register()`, `updateProfile()`, `markPasswordSet()`, `assignId()`
 - `SiteLead::create()`, `markConverted(orderId)` — POL-09
-- `Review::submit()`, `approve()`, `reject()` — отзыв только после `issued`
+- `Review::submit()`, `approve()`, `reject()`, `assignId()` — отзыв только после `issued` (проверка в Application)
 
 ## Infrastructure (`app/Infrastructure/ClientPortal/`)
 
@@ -48,13 +64,20 @@
 
 ### Presenters
 
-`ClientProfilePresenter`, `ClientOrderPresenter` (без статусов цеха — ADR), `ReviewPresenter`
+`ClientProfilePresenter`, `ClientOrderPresenter` (без статусов цеха — ADR-005, поле `review_exists`), `ReviewPresenter`
+
+### Support
+
+`ClientLoader`
 
 ### Cross-BC
 
-`SubmitReviewHandler`, `LinkGuestOrdersToClientHandler` → `OrderRepositoryInterface`
+`SubmitReviewHandler`, `LinkGuestOrdersToClientHandler`, `GetClientOrdersQueryHandler`, `GetClientOrderDetailQueryHandler` → `OrderRepositoryInterface`  
+`CreateOrderHandler` (OrderFulfillment) → `SiteLeadRepositoryInterface`
 
 ## Presentation
+
+### API
 
 | Endpoint | Назначение |
 |----------|------------|
@@ -65,12 +88,29 @@
 | `GET /api/client/orders/active\|history\|{id}` | заказы клиента |
 | `POST /api/client/orders/{id}/review` | отзыв |
 
-Filament: `SiteLeads`, `Clients`, `Reviews` resources.
+### Filament `/cp`
+
+- `SiteLeads/SiteLeadResource` — заявки (`converted=false`), action «Создать заказ»
+- `Clients/ClientResource` — action «Привязать гостевые заказы»
+- `Reviews/ReviewResource` — модерация approve/reject (кнопки только для `pending`)
+
+### Vue SPA
+
+| Маршрут | Назначение |
+|---------|------------|
+| `/client/dashboard` | ЛК: login/register → профиль, активные, история |
+| `/sharpening`, `/repair`, `/delivery` | публичные формы → `POST /api/leads` |
+
+Stores: `authStore` (`auth_token`), `orderStore` (заказы, отзывы). Отдельного `services/client/*` нет.  
+`GET /api/client/orders/{id}` в API есть, во фронте **не вызывается** (списки + модалки на list data).
+
+Подробнее: [presentation.mdc](./presentation.mdc)
 
 ## Тесты
 
-`tests/Feature/ClientPortal/ClientPortalTest.php`
+`tests/Feature/ClientPortal/ClientPortalTest.php` — заявка, регистрация+link guest, отзыв до/после issued.
 
 ## ES
 
 - [Client, Review, Lead](../../../es/05-агрегаты/README.md)
+- [Глоссарий: Lead = SiteLead](../../../es/11-глоссарий/README.md)

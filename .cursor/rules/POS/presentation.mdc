@@ -1,0 +1,101 @@
+---
+description: POS — presentation vertical (API + Vue SPA, текущий код)
+globs: app/Http/Controllers/Pos/**,routes/api.php,resources/js/pages/Pos/**,resources/js/pages/PosPage.vue,resources/js/components/Pos/**,resources/js/stores/posStore.js,resources/js/services/pos/**,resources/js/composables/usePosOrderDisplay.js,resources/js/mocks/**
+alwaysApply: false
+---
+
+# POS / Presentation
+
+## API `/api/pos/*` (Sanctum, `UserModel`)
+
+Контроллер: `app/Http/Controllers/Pos/PosController.php`  
+Ответ заказа после mutation: trait `RendersPosOrder` → `PosOrderReadModelBuilder`.
+
+| Метод | Путь | Handler / Query |
+|-------|------|-----------------|
+| POST | `login` | — (`UserModel` + token) |
+| GET | `dashboard` | `GetPosDashboardQueryHandler` → `{ counts, avg_work_duration_seconds }` |
+| GET | `orders/counts` | `GetPosOrderCountsQueryHandler` |
+| GET | `orders?status=&page=` | `GetPosOrdersQueryHandler` → `PosOrderPresenter::list` |
+| GET | `orders/{id}` | `GetPosOrderDetailQueryHandler` → `PosOrderReadModelBuilder` |
+| POST | `orders/{id}/take-to-work` | `TakeOrderToWorkHandler` |
+| POST | `orders/{id}/waiting-parts` | `MarkOrderWaitingForPartsHandler` |
+| POST | `orders/{id}/resume` | `ResumeOrderHandler` |
+| POST | `orders/{id}/works` | `AddWorkHandler` |
+| DELETE | `orders/{id}/works` | `RemoveWorkHandler` (body: `sort_order`) |
+| PATCH | `orders/{id}/internal-notes` | `UpdateInternalNotesHandler` |
+| POST | `orders/{id}/mark-ready` | `MarkOrderReadyHandler` |
+| POST | `orders/{id}/return-to-work` | `ReturnOrderToWorkHandler` |
+| GET | `warehouse/items?query=&page=` | `SearchWarehouseItemsQueryHandler` |
+| GET | `equipment?query=&page=` | `SearchEquipmentQueryHandler` |
+| GET | `equipment/{id}/orders` | `GetEquipmentOrderHistoryQueryHandler` |
+
+**Фильтрация:** списки, счётчики, dashboard, detail, mutations — `master_id = auth()->id()` (кроме `equipment/{id}/orders`).
+
+**List vs detail:** список — `PosOrderPresenter` без enrichment; карточка — `PosOrderReadModelBuilder` (+ equipment, master, имена материалов).
+
+## Auth
+
+```
+POST /api/pos/login → { token, master: { id, name, email } }
+```
+
+- Middleware: `auth:sanctum` на всех маршрутах кроме `login`
+- Guard `web` — Filament; POS — тот же `UserModel` через Sanctum token
+- Server logout / revoke token — **нет**; только клиентский `posStore.logout()`
+
+## Vue SPA `/pos`
+
+Layout: `pages/PosPage.vue` (gate: login → Sidebar + Header + `<router-view>`).  
+`App.vue` не рендерит `MainLayout` для `/pos*`.
+
+### Router (`resources/js/router/index.js`)
+
+| Path | Name | Page |
+|------|------|------|
+| `/pos/dashboard` | `pos.dashboard` | `DashboardPage` |
+| `/pos/orders/new` | `pos.orders.new` | `OrdersNewPage` |
+| `/pos/orders/active` | `pos.orders.active` | `OrdersActivePage` |
+| `/pos/orders/waiting-parts` | `pos.orders.waiting-parts` | `OrdersWaitingPartsPage` |
+| `/pos/orders/in-work/:id` | `pos.orders.in-work` | `OrderInWorkPage` |
+| `/pos/orders/completed` | `pos.orders.completed` | `OrdersCompletedPage` |
+| `/pos/warehouse` | `pos.warehouse.index` | `WarehousePage` |
+| `/pos/equipment/search` | `pos.equipment.search` | `EquipmentSearchPage` |
+
+Router guards **нет** — проверка сессии в `PosPage.vue`.
+
+**Без маршрута (мертвый код):** `WarehousePartsPage`, `WarehouseMaterialsPage`.
+
+### Store / Services
+
+| Модуль | Роль |
+|--------|------|
+| `stores/posStore.js` | login, restoreSession, counts, logout; `localStorage`: `pos_token`, `pos_user` |
+| `services/pos/OrderService.js` | все `/api/pos/orders/*` |
+| `services/pos/WarehouseService.js` | warehouse items |
+| `services/pos/EquipmentService.js` | equipment search + history |
+
+### Components
+
+`LoginForm`, `Sidebar`, `Header`, `OrderStats`, `OrderCard`, `OrderDetailsModal`
+
+### Composables
+
+`usePosOrderDisplay`, `useAutoRefresh` (списки 20–30 с), `useHeaderNavigation`
+
+### Axios (`bootstrap.js`)
+
+`/api/pos/*` (кроме `/login`) → `Authorization: Bearer {pos_token}` из `localStorage`.
+
+## Моки (dev)
+
+| Env | Эффект |
+|-----|--------|
+| `VITE_USE_POS_API_MOCKS=true` | axios adapter mocks |
+| `VITE_DEV_AUTO_AUTH=true` | автовход (`seedDevAuth.js`) |
+
+По умолчанию POS ходит на бэкенд. Моки в `handlers.js` **устарели** относительно реального API (другие пути, контракты).
+
+## Только Filament (не POS)
+
+`AssignMasterToOrder`, `LinkEquipmentToOrder`, `SetWorkPrices`, `RecalculateOrderPrice`, `AddMaterialToOrder`, `RemoveMaterialFromOrder`, `IssueOrder`, `CancelOrder`, PDF — `OrderManageActions` в `/cp`.

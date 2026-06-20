@@ -16,9 +16,16 @@ alwaysApply: false
 
 ## Поведение
 
-- `Client::register()`, `updateProfile()`
-- `SiteLead::create()`, `markConverted(int $orderId)` — POL-09, один раз
-- `Review::submit()`, `approve()`, `reject()` — POL: отзыв только на `issued` заказ
+- `Client::register()`, `updateProfile()`, `markPasswordSet()`, `assignId()`
+- `SiteLead::create()`, `markConverted(int $orderId)` — POL-09, один раз; `assignId()`
+- `Review::submit()`, `approve()`, `reject()`, `assignId()` — POL: отзыв только на `issued` заказ
+
+## Семантика ES
+
+| ES | Код |
+|----|-----|
+| Lead (заявка) | `SiteLead`, table `site_leads` |
+| `lead_id` на Order | `SiteLead.id` после конвертации |
 
 ## Cross-BC
 

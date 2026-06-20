@@ -36,7 +36,7 @@
 
 | Канал | Реализация |
 |-------|------------|
-| POS | `PosController::login` — Sanctum token для `UserModel` |
+| POS | `PosController::login` — Sanctum token для `UserModel`; см. `.cursor/rules/POS/` |
 | Filament | guard `web`, встроенный login `/cp/login` |
 | Read models | `MasterRepository` в `PosOrderReadModelBuilder`, `OrderDocumentReadModelBuilder` |
 

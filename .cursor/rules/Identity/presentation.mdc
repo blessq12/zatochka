@@ -22,8 +22,8 @@ alwaysApply: false
 | Guard | Provider | Назначение |
 |-------|----------|------------|
 | `web` | `users` (UserModel) | Filament, менеджер |
-| `sanctum` | — | POS API (тот же UserModel) |
-| `client` | ClientAuthModel | ЛК клиента |
+| `client` | `clients` (ClientAuthModel) | ЛК клиента (`auth:sanctum` на `/api/client/*`) |
+| POS API | middleware `auth:sanctum` | тот же `UserModel`, token из `POST /api/pos/login` |
 
 ## Правило
 

@@ -21,11 +21,13 @@ alwaysApply: false
 
 ## Queries
 
-`GetClientProfile`, `GetClientOrders` (active/history bucket), `GetClientOrderDetail`
+`GetClientProfile`, `GetClientOrders` (флаг `history` вместо двух ES-queries), `GetClientOrderDetail`
+
+Отдельного `GetOrderReview` нет — `review_exists` собирается через `ReviewRepository::findByOrderId` в controller/handler.
 
 ## Presenters
 
-- `ClientOrderPresenter` — **без** статусов цеха (только active/history)
+- `ClientOrderPresenter` — **без** статусов цеха (ADR-005); поля `review_exists` в list/detail
 - `ClientProfilePresenter`, `ReviewPresenter`
 
 ## Support

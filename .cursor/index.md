@@ -10,7 +10,7 @@ DDD + Hexagonal, BC-first. Описание **текущего кода**, не 
 | `app/Domain/{BC}/` | ✅ Entity, Enum, Repository, Event, Exception; поведение агрегатов |
 | `app/Infrastructure/{BC}/` | ✅ Persistence, Auth, DomPDF (OrderFulfillment) |
 | `app/Application/{BC}/` | ✅ use cases по всем BC, кроме Identity (каркас) |
-| Presentation | ✅ публичный `/api/*`, POS `/api/pos/*`, Filament `/cp` |
+| Presentation | ✅ публичный `/api/*`, POS `/api/pos/*` + Vue `/pos`, Filament `/cp` |
 
 **Тесты:** 23 (Unit + Feature). `php artisan test`.
 
@@ -19,7 +19,8 @@ DDD + Hexagonal, BC-first. Описание **текущего кода**, не 
 | BC | README | Application | Presentation |
 |----|--------|-------------|--------------|
 | OrderFulfillment | [rules/OrderFulfillment](./rules/OrderFulfillment/) | lifecycle, цены, PDF, POS | Filament заказы, POS, PDF |
-| ClientPortal | [rules/ClientPortal](./rules/ClientPortal/) | ЛК, заявки, отзывы | `/api/leads`, `/api/auth`, `/api/client`, Filament |
+| ClientPortal | [rules/ClientPortal](./rules/ClientPortal/) | ЛК, заявки, отзывы | `/api/leads`, `/api/auth`, `/api/client`, Vue `/client/dashboard`, Filament |
+| POS (вертикаль) | [rules/POS](./rules/POS/) | — (OrderFulfillment + Equipment + Warehouse + Identity) | `/api/pos/*`, Vue `/pos` |
 | Catalog | [rules/Catalog](./rules/Catalog/) | `GetPublicBootstrap` | `GET /api/bootstrap` |
 | Equipment | [rules/Equipment](./rules/Equipment/) | register, search, history | Filament, POS |
 | Warehouse | [rules/Warehouse](./rules/Warehouse/) | приход/списание, search | Filament, POS read-only |
