@@ -13,6 +13,7 @@ final readonly class SubmitSiteLeadCommand
         public array $serviceTypes,
         public ?string $email = null,
         public ?string $comment = null,
+        public ?array $intakeData = null,
         public bool $needsDelivery = false,
         public ?string $deliveryAddress = null,
     ) {}

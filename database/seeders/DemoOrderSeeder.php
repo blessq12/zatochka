@@ -35,6 +35,8 @@ use App\Domain\OrderFulfillment\Entity\OrderTool;
 use App\Domain\OrderFulfillment\Enum\OrderUrgency;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\ClientModel;
+use App\Filament\Support\LeadToOrderFormData;
+use App\Filament\Support\OrderFormCommandBuilder;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\SiteLeadModel;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
@@ -355,14 +357,19 @@ final class DemoOrderSeeder extends Seeder
             return;
         }
 
-        $orderId = $this->requireOrderId(app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
-            serviceTypes: $lead->service_types,
-            clientSnapshot: new ClientSnapshot(['full_name' => $lead->full_name, 'phone' => $lead->phone]),
-            leadId: $lead->id,
-            needsDelivery: $lead->needs_delivery,
-            deliveryAddress: $lead->delivery_address,
-            problemDescription: $lead->comment,
-        )));
+        $manager = UserModel::query()
+            ->where('email', IdentitySeeder::MANAGER_EMAIL)
+            ->first();
+
+        if ($manager === null) {
+            return;
+        }
+
+        $orderId = $this->requireOrderId(app(CreateOrderHandler::class)->handle(
+            OrderFormCommandBuilder::buildCommand(
+                LeadToOrderFormData::fromLead($lead, $manager->id)
+            )
+        ));
 
         app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand(
             orderId: $orderId,

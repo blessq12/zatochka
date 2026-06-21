@@ -46,8 +46,6 @@ app/
 
 `PublicSite` — только Application-фасад (orchestration bootstrap).
 
-Legacy `Domain/Catalog/` — не используется в runtime.
-
 ## Зависимости
 
 Presentation → Application → Domain ← Infrastructure

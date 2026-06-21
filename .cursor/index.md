@@ -28,8 +28,6 @@ DDD + Hexagonal, BC-first. Описание **текущего кода**, не 
 | Warehouse | [rules/Warehouse](./rules/Warehouse/) | приход/списание, search | Filament «Склад», POS read-only |
 | Identity | [rules/Identity](./rules/Identity/) | Register/Update master | POS login, Filament «Идентичность» |
 
-> **Legacy:** `app/Domain/Catalog/`, `Infrastructure/Catalog/`, `Application/Catalog/` — мёртвый код после split; в DI и runtime не используются.
-
 ## Filament-кластеры `/cp`
 
 | Кластер | Ресурсы |

@@ -16,6 +16,7 @@ final class SiteLead
         private ?string $email,
         private array $serviceTypes,
         private ?string $comment,
+        private ?array $intakeData,
         private bool $needsDelivery,
         private ?string $deliveryAddress,
         private bool $converted,
@@ -51,6 +52,12 @@ final class SiteLead
     public function comment(): ?string
     {
         return $this->comment;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function intakeData(): ?array
+    {
+        return $this->intakeData;
     }
 
     public function needsDelivery(): bool
@@ -90,6 +97,7 @@ final class SiteLead
         array $serviceTypes,
         ?string $email = null,
         ?string $comment = null,
+        ?array $intakeData = null,
         bool $needsDelivery = false,
         ?string $deliveryAddress = null,
     ): self {
@@ -100,6 +108,7 @@ final class SiteLead
             email: $email,
             serviceTypes: $serviceTypes,
             comment: $comment,
+            intakeData: $intakeData,
             needsDelivery: $needsDelivery,
             deliveryAddress: $deliveryAddress,
             converted: false,

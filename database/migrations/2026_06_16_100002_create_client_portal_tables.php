@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->json('service_types');
             $table->text('comment')->nullable();
+            $table->json('intake_data')->nullable();
             $table->boolean('needs_delivery')->default(false);
             $table->string('delivery_address')->nullable();
             $table->boolean('converted')->default(false);

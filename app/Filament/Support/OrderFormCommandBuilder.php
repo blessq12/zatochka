@@ -71,6 +71,8 @@ final class OrderFormCommandBuilder
         $masterIdRaw = (int) ($data['master_id'] ?? 0);
         $masterId = $masterIdRaw > 0 ? $masterIdRaw : null;
         $managerId = (int) ($data['manager_id'] ?? 0);
+        $leadIdRaw = (int) ($data['lead_id'] ?? 0);
+        $leadId = $leadIdRaw > 0 ? $leadIdRaw : null;
 
         if ($managerId === 0) {
             throw new RuntimeException('Назначьте менеджера.');
@@ -80,6 +82,7 @@ final class OrderFormCommandBuilder
             serviceTypes: [$serviceType],
             clientId: $clientId,
             clientSnapshot: $clientSnapshot,
+            leadId: $leadId,
             urgency: isset($data['urgency'])
                 ? OrderUrgency::from($data['urgency'])
                 : OrderUrgency::Standard,

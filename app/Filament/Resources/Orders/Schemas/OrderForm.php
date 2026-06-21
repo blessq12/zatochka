@@ -9,11 +9,13 @@ use App\Infrastructure\ClientPortal\Persistence\Eloquent\ClientModel;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -25,6 +27,13 @@ class OrderForm
         return $schema
             ->columns(1)
             ->components([
+                Hidden::make('lead_id'),
+
+                Callout::make('Создание заказа из лида с сайта. Данные клиента и описание предзаполнены — укажите ответственных и предмет работы.')
+                    ->color('info')
+                    ->visible(fn (Get $get): bool => filled($get('lead_id')))
+                    ->columnSpanFull(),
+
                 Section::make('Параметры заказа')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->description('Тип услуги, срочность и вид оплаты')

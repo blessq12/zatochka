@@ -56,23 +56,34 @@ final class ClientPortalSeeder extends Seeder
             phone: self::DEMO_LEAD_PHONE,
             fullName: 'Елена Заявкина',
             serviceTypes: ['sharpening'],
-            comment: '6 маникюрных кусачек, нужна доставка',
             needsDelivery: true,
             deliveryAddress: 'г. Томск, пр. Ленина, 50',
+            intakeData: [
+                'tool_type' => 'manicure',
+                'tools_count' => 6,
+            ],
         );
 
         $this->seedLead(
             phone: self::DEMO_LEAD_PHONE_2,
             fullName: 'Павел Ремонтников',
             serviceTypes: ['repair'],
-            comment: 'Strong 2100 не включается, нужна диагностика',
+            intakeData: [
+                'equipment_type' => 'clipper',
+                'device_name' => 'Strong 2100',
+                'problem_description' => 'Не включается, нужна диагностика',
+                'urgency_type' => 'standard',
+            ],
         );
 
         $this->seedLead(
             phone: self::DEMO_LEAD_PHONE_3,
             fullName: 'София Заточкина',
             serviceTypes: ['sharpening'],
-            comment: '4 пары парикмахерских ножниц',
+            intakeData: [
+                'tool_type' => 'hair',
+                'tools_count' => 4,
+            ],
         );
     }
 
@@ -97,6 +108,7 @@ final class ClientPortalSeeder extends Seeder
 
     /**
      * @param  list<string>  $serviceTypes
+     * @param  array<string, mixed>|null  $intakeData
      */
     private function seedLead(
         string $phone,
@@ -105,6 +117,7 @@ final class ClientPortalSeeder extends Seeder
         ?string $comment = null,
         bool $needsDelivery = false,
         ?string $deliveryAddress = null,
+        ?array $intakeData = null,
     ): void {
         if (SiteLeadModel::query()->where('phone', $phone)->exists()) {
             return;
@@ -115,6 +128,7 @@ final class ClientPortalSeeder extends Seeder
             phone: $phone,
             serviceTypes: $serviceTypes,
             comment: $comment,
+            intakeData: $intakeData,
             needsDelivery: $needsDelivery,
             deliveryAddress: $deliveryAddress,
         ));

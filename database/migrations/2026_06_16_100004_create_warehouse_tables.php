@@ -8,15 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('equipment', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('brand')->nullable();
-            $table->string('model')->nullable();
-            $table->json('serial_numbers')->nullable();
-            $table->timestamps();
-        });
-
         Schema::create('warehouse_items', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -44,6 +35,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('stock_movements');
         Schema::dropIfExists('warehouse_items');
-        Schema::dropIfExists('equipment');
     }
 };

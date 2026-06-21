@@ -7,8 +7,6 @@
 **Последствия:** нужны application services для кросс-BC сценариев (CreateOrder из Lead, SubmitReview).  
 **Альтернативы:** плоские Models; микросервисы — отклонено для MVP.
 
-> **Эволюция (2026):** BC «Справочники» (Catalog) разделён на Company + Pricing. См. ADR-007.
-
 ## ADR-002: Гостевой заказ без Client
 
 **Статус:** принято  
@@ -50,11 +48,11 @@
 **Последствия:** новая команда в Filament; POS фильтрует все списки по master_id.  
 **Альтернативы:** общая очередь «новых» для всех мастеров — отклонено.
 
-## ADR-007: Split Catalog → Company + Pricing
+## ADR-007: Company + Pricing как отдельные BC
 
 **Статус:** принято  
 **Дата:** 2026-06  
-**Контекст:** рост Filament CRUD для контента сайта и прайса; монолитный BC Catalog смешивал ответственности.  
+**Контекст:** рост Filament CRUD для контента сайта и прайса; единый справочник смешивал ответственности.  
 **Решение:** Domain/Infrastructure/Application разделены на **Company** (Branch, SiteContent) и **Pricing** (PriceBlock, PriceItem). Bootstrap — Application-фасад **PublicSite** (`GetPublicBootstrap`).  
-**Последствия:** DI через `Company/*` и `Pricing/*` repositories; legacy `Domain/Catalog/` не используется.  
-**Альтернативы:** оставить Catalog — отклонено.
+**Последствия:** DI через `Company/*` и `Pricing/*` repositories.  
+**Альтернативы:** один BC на контент и прайс — отклонено.

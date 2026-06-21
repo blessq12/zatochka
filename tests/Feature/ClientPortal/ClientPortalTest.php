@@ -33,10 +33,47 @@ final class ClientPortalTest extends TestCase
             phone: '+79003334455',
             serviceTypes: ['sharpening'],
             comment: 'Ножницы',
+            intakeData: [
+                'tool_type' => 'manicure',
+                'tools_count' => 1,
+            ],
         ));
 
         $this->assertNotNull($lead->id());
         $this->assertFalse($lead->isConverted());
+        $this->assertSame('manicure', $lead->intakeData()['tool_type']);
+        $this->assertSame('Ножницы', $lead->comment());
+    }
+
+    public function test_api_отклоняет_заявку_без_intake_data(): void
+    {
+        $this->seed(\Database\Seeders\DomainSeeder::class);
+
+        $response = $this->postJson('/api/leads', [
+            'full_name' => 'Тест',
+            'phone' => '+79001112233',
+            'service_types' => ['sharpening'],
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['intake_data']);
+    }
+
+    public function test_api_отклоняет_заточку_без_типа_инструмента(): void
+    {
+        $this->seed(\Database\Seeders\DomainSeeder::class);
+
+        $response = $this->postJson('/api/leads', [
+            'full_name' => 'Тест',
+            'phone' => '+79001112244',
+            'service_types' => ['sharpening'],
+            'intake_data' => [
+                'tools_count' => 2,
+            ],
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['intake_data.tool_type']);
     }
 
     public function test_регистрация_лк_и_привязка_гостевых_заказов(): void

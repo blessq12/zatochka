@@ -1,9 +1,0 @@
----
-description: УСТАРЕЛО — см. PublicSite/presentation.mdc
-globs: app/Http/**,routes/**,resources/js/stores/bootstrapStore.js
-alwaysApply: false
----
-
-# ⚠️ Catalog / Presentation — устарело
-
-Актуально: [PublicSite/presentation.mdc](../PublicSite/presentation.mdc), [Company/presentation.mdc](../Company/presentation.mdc), [Pricing/presentation.mdc](../Pricing/presentation.mdc).

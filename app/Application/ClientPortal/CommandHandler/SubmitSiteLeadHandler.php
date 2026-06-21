@@ -21,6 +21,7 @@ final class SubmitSiteLeadHandler
             serviceTypes: $command->serviceTypes,
             email: $command->email,
             comment: $command->comment,
+            intakeData: $command->intakeData,
             needsDelivery: $command->needsDelivery,
             deliveryAddress: $command->deliveryAddress,
         );

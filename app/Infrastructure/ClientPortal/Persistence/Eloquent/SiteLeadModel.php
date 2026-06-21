@@ -14,6 +14,7 @@ class SiteLeadModel extends Model
         'email',
         'service_types',
         'comment',
+        'intake_data',
         'needs_delivery',
         'delivery_address',
         'converted',
@@ -24,6 +25,7 @@ class SiteLeadModel extends Model
     {
         return [
             'service_types' => 'array',
+            'intake_data' => 'array',
             'needs_delivery' => 'boolean',
             'converted' => 'boolean',
         ];

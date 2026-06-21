@@ -256,8 +256,6 @@ app/
 
 **Вертикаль POS** — не BC: API + Vue `/pos` поверх OrderFulfillment, Equipment, Warehouse, Identity. См. `.cursor/rules/POS/`.
 
-**Legacy:** `Domain/Catalog/` — не используется после split на Company + Pricing.
-
 **Реализовано:** все слои по 7 Domain BC + PublicSite; Application handlers; API; Filament (7 кластеров); POS SPA; domain events (синхронно через `event()`).
 
 **Правило:** cross-BC в Domain — только `*_id`; orchestration — `Application/{BC}/CommandHandler` или ReadModel builders.
