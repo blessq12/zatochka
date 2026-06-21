@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Orders\Tables;
 
 use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
-use App\Filament\Support\OrderPersistence;
+use App\Filament\Support\OrderManageActionSupport;
 use App\Filament\Support\OrderViewPresenter;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
@@ -73,7 +73,7 @@ class OrdersTable
                             ->searchable(),
                     ])
                     ->action(function (OrderModel $record, array $data): void {
-                        OrderPersistence::assignMaster($record, (int) $data['master_id']);
+                        OrderManageActionSupport::assignMaster($record->id, (int) $data['master_id']);
 
                         Notification::make()
                             ->success()
@@ -87,7 +87,7 @@ class OrdersTable
                     ->requiresConfirmation()
                     ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready)
                     ->action(function (OrderModel $record): void {
-                        OrderPersistence::issue($record);
+                        OrderManageActionSupport::issue($record->id);
 
                         Notification::make()
                             ->success()
@@ -101,7 +101,7 @@ class OrdersTable
                     ->requiresConfirmation()
                     ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::New)
                     ->action(function (OrderModel $record): void {
-                        OrderPersistence::cancel($record);
+                        OrderManageActionSupport::cancel($record->id);
 
                         Notification::make()
                             ->success()

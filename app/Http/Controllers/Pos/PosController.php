@@ -7,7 +7,6 @@ use App\Application\OrderFulfillment\Command\MarkOrderReadyCommand;
 use App\Application\OrderFulfillment\Command\MarkOrderWaitingForPartsCommand;
 use App\Application\OrderFulfillment\Command\RemoveWorkCommand;
 use App\Application\OrderFulfillment\Command\ResumeOrderCommand;
-use App\Application\OrderFulfillment\Command\ReturnOrderToWorkCommand;
 use App\Application\OrderFulfillment\Command\TakeOrderToWorkCommand;
 use App\Application\OrderFulfillment\Command\UpdateInternalNotesCommand;
 use App\Application\OrderFulfillment\CommandHandler\AddWorkHandler;
@@ -15,7 +14,6 @@ use App\Application\OrderFulfillment\CommandHandler\MarkOrderReadyHandler;
 use App\Application\OrderFulfillment\CommandHandler\MarkOrderWaitingForPartsHandler;
 use App\Application\OrderFulfillment\CommandHandler\RemoveWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\ResumeOrderHandler;
-use App\Application\OrderFulfillment\CommandHandler\ReturnOrderToWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\UpdateInternalNotesHandler;
 use App\Application\OrderFulfillment\Presenter\PosOrderPresenter;
@@ -208,16 +206,6 @@ final class PosController
     public function markReady(int $orderId, Request $request, MarkOrderReadyHandler $handler): JsonResponse
     {
         $order = $handler->handle(new MarkOrderReadyCommand(
-            orderId: $orderId,
-            masterId: $this->masterId($request),
-        ));
-
-        return $this->orderResponse($order);
-    }
-
-    public function returnToWork(int $orderId, Request $request, ReturnOrderToWorkHandler $handler): JsonResponse
-    {
-        $order = $handler->handle(new ReturnOrderToWorkCommand(
             orderId: $orderId,
             masterId: $this->masterId($request),
         ));

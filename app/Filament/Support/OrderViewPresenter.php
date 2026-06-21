@@ -2,8 +2,8 @@
 
 namespace App\Filament\Support;
 
-use App\Domain\OrderFulfillment\Enum\OrderSource;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
+use App\Domain\OrderFulfillment\Enum\OrderSource;
 use App\Domain\OrderFulfillment\Enum\OrderUrgency;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
@@ -75,10 +75,16 @@ final class OrderViewPresenter
                 'Назначьте мастера — после этого заказ появится в POS.',
             $order->status === OrderStatus::New && $order->master_id !== null =>
                 'Мастер назначен. Заказ ждёт начала работы в POS.',
+            $order->status === OrderStatus::InWork && filled($order->rework_feedback) =>
+                'Заказ на доработке у мастера после вашего возврата с приёмки.',
+            $order->status === OrderStatus::InWork && self::hasUnpricedWorks($order) =>
+                'Мастер добавил работы — укажите цены в блоке «Состав и стоимость».',
+            $order->status === OrderStatus::InWork =>
+                'Заказ в работе. Контролируйте состав и итоговую сумму.',
             $order->status === OrderStatus::WaitingParts =>
                 'Заказ на паузе: ожидание запчастей со склада.',
             $order->status === OrderStatus::Ready =>
-                'Заказ готов к выдаче. Можно распечатать акт и выдать клиенту.',
+                'Заказ готов по мнению мастера. Проверьте состав и качество — выдайте клиенту или верните на доработку.',
             $order->status === OrderStatus::Issued =>
                 'Заказ выдан клиенту. Редактирование состава недоступно.',
             $order->status === OrderStatus::Cancelled =>
@@ -208,5 +214,49 @@ final class OrderViewPresenter
     {
         return WarehouseItemModel::query()->find($warehouseItemId)?->name
             ?? "Позиция #{$warehouseItemId}";
+    }
+
+    public static function worksTotal(OrderModel $order): string
+    {
+        $total = '0.00';
+
+        foreach ($order->works as $work) {
+            if ($work->price !== null) {
+                $total = bcadd($total, (string) $work->price, 2);
+            }
+        }
+
+        return $total;
+    }
+
+    public static function materialsTotal(OrderModel $order): string
+    {
+        $total = '0.00';
+
+        foreach ($order->materials as $material) {
+            $total = bcadd($total, (string) $material->total_price, 2);
+        }
+
+        return $total;
+    }
+
+    public static function hasUnpricedWorks(OrderModel $order): bool
+    {
+        foreach ($order->works as $work) {
+            if ($work->price === null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function formatMoney(?string $amount): string
+    {
+        if ($amount === null || bccomp($amount, '0', 2) === 0) {
+            return '0 ₽';
+        }
+
+        return number_format((float) $amount, 2, '.', ' ').' ₽';
     }
 }

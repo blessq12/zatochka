@@ -2,10 +2,11 @@
 
 namespace App\Application\OrderFulfillment\Command;
 
-final readonly class ReturnOrderToWorkCommand
+final readonly class ReturnOrderForReworkCommand
 {
     public function __construct(
         public int $orderId,
-        public int $masterId,
+        public int $managerId,
+        public string $feedback,
     ) {}
 }

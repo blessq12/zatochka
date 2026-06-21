@@ -97,6 +97,13 @@
                     Заказ ожидает запчасти. Переведите в работу, чтобы добавить
                     работы и комментарии.
                 </p>
+                <div
+                    v-if="order.rework_feedback && order.status === 'in_work'"
+                    class="rework-feedback-callout"
+                >
+                    <strong>Менеджер вернул заказ на доработку:</strong>
+                    {{ order.rework_feedback }}
+                </div>
             </div>
 
             <!-- Информация о заказе -->
@@ -798,6 +805,21 @@ export default {
     color: #92400e;
     font-size: 0.875rem;
     font-weight: 500;
+}
+
+.rework-feedback-callout {
+    margin: 0.75rem 0 0;
+    padding: 0.75rem 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.rework-feedback-callout strong {
+    display: block;
+    margin-bottom: 0.25rem;
 }
 
 .btn-status {

@@ -29,6 +29,9 @@ final class Order
         private ?string $deliveryAddress,
         private ?string $problemDescription,
         private ?string $internalNotes,
+        private ?string $reworkFeedback,
+        private ?DateTimeImmutable $reworkReturnedAt,
+        private ?int $reworkReturnedBy,
         private ?string $price,
         private OrderSource $source,
         private ?ClientSnapshot $clientSnapshot,
@@ -84,6 +87,9 @@ final class Order
             deliveryAddress: $deliveryAddress,
             problemDescription: $problemDescription,
             internalNotes: null,
+            reworkFeedback: null,
+            reworkReturnedAt: null,
+            reworkReturnedBy: null,
             price: null,
             source: $source,
             clientSnapshot: $clientSnapshot,
@@ -153,6 +159,21 @@ final class Order
     public function internalNotes(): ?string
     {
         return $this->internalNotes;
+    }
+
+    public function reworkFeedback(): ?string
+    {
+        return $this->reworkFeedback;
+    }
+
+    public function reworkReturnedAt(): ?DateTimeImmutable
+    {
+        return $this->reworkReturnedAt;
+    }
+
+    public function reworkReturnedBy(): ?int
+    {
+        return $this->reworkReturnedBy;
     }
 
     public function price(): ?string
@@ -329,17 +350,30 @@ final class Order
         $clone = clone $this;
         $clone->status = OrderStatus::Ready;
         $clone->readyAt = $at;
+        $clone->reworkFeedback = null;
+        $clone->reworkReturnedAt = null;
+        $clone->reworkReturnedBy = null;
 
         return $clone;
     }
 
-    public function returnToWork(): self
+    /** POL-11: только из ready; POL-12: feedback обязателен. */
+    public function returnForRework(string $feedback, int $returnedByManagerId, DateTimeImmutable $returnedAt): self
     {
         $this->assertStatus(OrderStatus::Ready);
+
+        $trimmed = trim($feedback);
+
+        if ($trimmed === '') {
+            throw new OrderPolicyViolation('Укажите причину возврата на доработку.');
+        }
 
         $clone = clone $this;
         $clone->status = OrderStatus::InWork;
         $clone->readyAt = null;
+        $clone->reworkFeedback = $trimmed;
+        $clone->reworkReturnedAt = $returnedAt;
+        $clone->reworkReturnedBy = $returnedByManagerId;
 
         return $clone;
     }

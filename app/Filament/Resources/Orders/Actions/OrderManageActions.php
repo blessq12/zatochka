@@ -2,13 +2,11 @@
 
 namespace App\Filament\Resources\Orders\Actions;
 
-use App\Application\OrderFulfillment\Command\AddMaterialToOrderCommand;
-use App\Application\OrderFulfillment\CommandHandler\AddMaterialToOrderHandler;
 use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\Warehouse\Enum\WarehouseItemType;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
-use App\Filament\Support\OrderPersistence;
+use App\Filament\Support\OrderManageActionSupport;
 use App\Filament\Support\OrderViewPresenter;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
@@ -16,6 +14,7 @@ use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 
@@ -42,7 +41,7 @@ final class OrderManageActions
                     ->searchable(),
             ])
             ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
-                OrderPersistence::assignMaster($record, (int) $data['master_id']);
+                OrderManageActionSupport::assignMaster($record->id, (int) $data['master_id']);
 
                 self::complete('Мастер назначен', $livewire);
             });
@@ -51,7 +50,7 @@ final class OrderManageActions
     public static function setWorkPrices(): Action
     {
         return Action::make('setWorkPrices')
-            ->label('Цены на работы')
+            ->label('Указать цены работ')
             ->icon('heroicon-o-currency-dollar')
             ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
             ->form(function (OrderModel $record): array {
@@ -70,7 +69,7 @@ final class OrderManageActions
                     $fields[] = TextInput::make('empty')
                         ->label('Нет работ')
                         ->disabled()
-                        ->default('Мастер ещё не добавил работы');
+                        ->default('Мастер ещё не добавил работы в POS');
                 }
 
                 return $fields;
@@ -85,25 +84,12 @@ final class OrderManageActions
                     $prices[(int) $sortOrder] = $price;
                 }
 
-                OrderPersistence::setWorkPrices($record, $prices);
+                $order = OrderManageActionSupport::setWorkPrices($record->id, $prices);
 
-                self::complete('Цены на работы сохранены', $livewire);
-            });
-    }
-
-    public static function recalculatePrice(): Action
-    {
-        return Action::make('recalculatePrice')
-            ->label('Пересчитать цену')
-            ->icon('heroicon-o-calculator')
-            ->color('warning')
-            ->requiresConfirmation()
-            ->modalDescription('Итог = сумма работ с ценами + материалы на заказе.')
-            ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
-            ->action(function (OrderModel $record, ViewOrder $livewire): void {
-                $price = OrderPersistence::recalculatePrice($record);
-
-                self::complete('Итог: '.($price ?? '0').' ₽', $livewire);
+                self::complete(
+                    'Цены сохранены. Итог: '.OrderManageActionSupport::formatPrice($order->price()),
+                    $livewire
+                );
             });
     }
 
@@ -113,7 +99,7 @@ final class OrderManageActions
             ->label('Привязать оборудование')
             ->icon('heroicon-o-cpu-chip')
             ->visible(fn (OrderModel $record): bool => in_array('repair', $record->service_types ?? [], true)
-                && ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
+                && in_array($record->status, [OrderStatus::InWork, OrderStatus::WaitingParts], true))
             ->form([
                 Select::make('equipment_id')
                     ->label('Оборудование')
@@ -129,7 +115,7 @@ final class OrderManageActions
                     ->searchable(),
             ])
             ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
-                OrderPersistence::linkEquipment($record, (int) $data['equipment_id']);
+                OrderManageActionSupport::linkEquipment($record->id, (int) $data['equipment_id']);
 
                 self::complete('Оборудование привязано', $livewire);
             });
@@ -189,13 +175,16 @@ final class OrderManageActions
                     ->default(1),
             ])
             ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
-                OrderPersistence::addMaterial(
-                    $record,
+                $order = OrderManageActionSupport::addMaterial(
+                    $record->id,
                     (int) $data['warehouse_item_id'],
                     number_format((float) $data['quantity'], 3, '.', ''),
                 );
 
-                self::complete('Материал добавлен. Пересчитай итоговую цену.', $livewire);
+                self::complete(
+                    'Материал добавлен. Итог: '.OrderManageActionSupport::formatPrice($order->price()),
+                    $livewire
+                );
             });
     }
 
@@ -223,9 +212,15 @@ final class OrderManageActions
                     ->required(),
             ])
             ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
-                OrderPersistence::removeMaterial($record, (int) $data['material_id']);
+                $order = OrderManageActionSupport::removeMaterial(
+                    $record->id,
+                    (int) $data['material_id']
+                );
 
-                self::complete('Материал удалён', $livewire);
+                self::complete(
+                    'Материал удалён. Итог: '.OrderManageActionSupport::formatPrice($order->price()),
+                    $livewire
+                );
             });
     }
 
@@ -239,9 +234,41 @@ final class OrderManageActions
             ->modalDescription('Заказ перейдёт в статус «Выдан». Клиент сможет оставить отзыв.')
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready)
             ->action(function (OrderModel $record, ViewOrder $livewire): void {
-                OrderPersistence::issue($record);
+                OrderManageActionSupport::issue($record->id);
 
                 self::complete('Заказ выдан', $livewire);
+            });
+    }
+
+    public static function returnForRework(): Action
+    {
+        return Action::make('returnForRework')
+            ->label('Вернуть на доработку')
+            ->icon('heroicon-o-arrow-uturn-left')
+            ->color('warning')
+            ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready)
+            ->form([
+                Textarea::make('feedback')
+                    ->label('Что доработать')
+                    ->placeholder('Опишите, что мастер должен исправить или доделать')
+                    ->required()
+                    ->rows(4)
+                    ->maxLength(2000),
+            ])
+            ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
+                $managerId = auth()->id();
+
+                if ($managerId === null) {
+                    return;
+                }
+
+                OrderManageActionSupport::returnForRework(
+                    $record->id,
+                    (int) $managerId,
+                    $data['feedback'],
+                );
+
+                self::complete('Заказ возвращён мастеру на доработку', $livewire);
             });
     }
 
@@ -254,7 +281,7 @@ final class OrderManageActions
             ->requiresConfirmation()
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::New)
             ->action(function (OrderModel $record, ViewOrder $livewire): void {
-                OrderPersistence::cancel($record);
+                OrderManageActionSupport::cancel($record->id);
 
                 self::complete('Заказ отменён', $livewire);
             });

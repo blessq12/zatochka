@@ -7,12 +7,14 @@ use App\Application\OrderFulfillment\Command\AssignMasterToOrderCommand;
 use App\Application\OrderFulfillment\Command\CreateOrderCommand;
 use App\Application\OrderFulfillment\Command\IssueOrderCommand;
 use App\Application\OrderFulfillment\Command\MarkOrderReadyCommand;
+use App\Application\OrderFulfillment\Command\ReturnOrderForReworkCommand;
 use App\Application\OrderFulfillment\Command\TakeOrderToWorkCommand;
 use App\Application\OrderFulfillment\CommandHandler\AddWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\AssignMasterToOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\IssueOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\MarkOrderReadyHandler;
+use App\Application\OrderFulfillment\CommandHandler\ReturnOrderForReworkHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
 use App\Domain\OrderFulfillment\Enum\OrderSource;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
@@ -92,5 +94,46 @@ final class OrderLifecycleTest extends TestCase
             return $event->order->source() === OrderSource::Manual
                 && $event->order->status() === OrderStatus::New;
         });
+    }
+
+    public function test_менеджер_возвращает_готовый_заказ_на_доработку(): void
+    {
+        $this->seed(\Database\Seeders\DomainSeeder::class);
+
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
+        $manager = UserModel::query()->where('email', IdentitySeeder::MANAGER_EMAIL)->firstOrFail();
+
+        $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+            serviceTypes: ['sharpening'],
+            clientSnapshot: new ClientSnapshot(['full_name' => 'Тест', 'phone' => '+79001112233']),
+        ));
+
+        $orderId = $order->id();
+        $this->assertNotNull($orderId);
+
+        app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand($orderId, $master->id));
+        app(TakeOrderToWorkHandler::class)->handle(new TakeOrderToWorkCommand($orderId, $master->id));
+        app(AddWorkHandler::class)->handle(new AddWorkCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+            description: 'Заточка',
+        ));
+        app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand($orderId, $master->id));
+
+        $order = app(ReturnOrderForReworkHandler::class)->handle(new ReturnOrderForReworkCommand(
+            orderId: $orderId,
+            managerId: $manager->id,
+            feedback: 'Подправить угол заточки',
+        ));
+
+        $this->assertSame(OrderStatus::InWork, $order->status());
+        $this->assertSame('Подправить угол заточки', $order->reworkFeedback());
+        $this->assertSame($manager->id, $order->reworkReturnedBy());
+        $this->assertNull($order->readyAt());
+
+        $order = app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand($orderId, $master->id));
+
+        $this->assertSame(OrderStatus::Ready, $order->status());
+        $this->assertNull($order->reworkFeedback());
     }
 }

@@ -43,7 +43,6 @@ Route::prefix('pos')->group(function (): void {
         Route::delete('orders/{orderId}/works', [PosController::class, 'removeWork']);
         Route::patch('orders/{orderId}/internal-notes', [PosController::class, 'updateInternalNotes']);
         Route::post('orders/{orderId}/mark-ready', [PosController::class, 'markReady']);
-        Route::post('orders/{orderId}/return-to-work', [PosController::class, 'returnToWork']);
 
         Route::get('warehouse/items', [PosController::class, 'searchWarehouseItems']);
         Route::get('equipment', [PosController::class, 'searchEquipment']);

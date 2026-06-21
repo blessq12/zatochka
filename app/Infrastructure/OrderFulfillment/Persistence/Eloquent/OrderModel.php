@@ -22,6 +22,9 @@ class OrderModel extends Model
         'delivery_address',
         'problem_description',
         'internal_notes',
+        'rework_feedback',
+        'rework_returned_at',
+        'rework_returned_by',
         'price',
         'source',
         'client_snapshot',
@@ -51,6 +54,7 @@ class OrderModel extends Model
             'taken_at' => 'datetime',
             'ready_at' => 'datetime',
             'issued_at' => 'datetime',
+            'rework_returned_at' => 'datetime',
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Filament\Resources\Orders\Actions\OrderManageActions;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Support\OrderViewPresenter;
@@ -49,18 +50,35 @@ class ViewOrder extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            OrderManageActions::assignMaster(),
-            OrderManageActions::issue(),
-            OrderManageActions::linkEquipment(),
-            OrderManageActions::cancel(),
-            ActionGroup::make([
-                OrderManageActions::printReceipt(),
-                OrderManageActions::printHandoverAct(),
-            ])
-                ->label('Документы')
-                ->icon('heroicon-o-document-text')
-                ->button(),
-        ];
+        /** @var OrderModel $record */
+        $record = $this->getRecord();
+
+        $documents = ActionGroup::make([
+            OrderManageActions::printReceipt(),
+            OrderManageActions::printHandoverAct(),
+        ])
+            ->label('Документы')
+            ->icon('heroicon-o-document-text')
+            ->button();
+
+        return match ($record->status) {
+            OrderStatus::New => [
+                OrderManageActions::assignMaster(),
+                OrderManageActions::cancel(),
+                $documents,
+            ],
+            OrderStatus::InWork, OrderStatus::WaitingParts => [
+                OrderManageActions::linkEquipment(),
+                $documents,
+            ],
+            OrderStatus::Ready => [
+                OrderManageActions::issue(),
+                OrderManageActions::returnForRework(),
+                $documents,
+            ],
+            default => [
+                $documents,
+            ],
+        };
     }
 }

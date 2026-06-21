@@ -38,6 +38,8 @@ final class PosOrderPresenter
             'delivery_address' => $order->deliveryAddress(),
             'problem_description' => $order->problemDescription(),
             'internal_notes' => $order->internalNotes(),
+            'rework_feedback' => $order->reworkFeedback(),
+            'rework_returned_at' => $order->reworkReturnedAt()?->format(DateTimeInterface::ATOM),
             'tools' => array_map(
                 static fn (OrderTool $tool): array => [
                     'id' => $tool->id,

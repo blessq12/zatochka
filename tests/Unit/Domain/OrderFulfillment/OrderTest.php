@@ -123,6 +123,54 @@ final class OrderTest extends TestCase
         $this->assertSame(OrderStatus::InWork, $order->status());
     }
 
+    public function test_возврат_на_доработку_из_ready(): void
+    {
+        $now = new DateTimeImmutable('2026-06-16 14:00:00');
+
+        $order = $this->newOrder()
+            ->assignMaster(self::MASTER_ID)
+            ->takeToWork(self::MASTER_ID, $now)
+            ->addWork(new OrderWork(null, 'Заточка', null, 0))
+            ->markReady($now)
+            ->returnForRework('Недочистили кромку', 7, $now);
+
+        $this->assertSame(OrderStatus::InWork, $order->status());
+        $this->assertNull($order->readyAt());
+        $this->assertSame('Недочистили кромку', $order->reworkFeedback());
+        $this->assertSame(7, $order->reworkReturnedBy());
+    }
+
+    public function test_возврат_на_доработку_без_комментария_запрещён(): void
+    {
+        $now = new DateTimeImmutable;
+
+        $order = $this->newOrder()
+            ->assignMaster(self::MASTER_ID)
+            ->takeToWork(self::MASTER_ID, $now)
+            ->addWork(new OrderWork(null, 'Работа', null, 0))
+            ->markReady($now);
+
+        $this->expectException(OrderPolicyViolation::class);
+
+        $order->returnForRework('   ', 7, $now);
+    }
+
+    public function test_повторная_готовность_сбрасывает_комментарий_возврата(): void
+    {
+        $now = new DateTimeImmutable;
+
+        $order = $this->newOrder()
+            ->assignMaster(self::MASTER_ID)
+            ->takeToWork(self::MASTER_ID, $now)
+            ->addWork(new OrderWork(null, 'Работа', null, 0))
+            ->markReady($now)
+            ->returnForRework('Доработать', 7, $now)
+            ->markReady($now);
+
+        $this->assertSame(OrderStatus::Ready, $order->status());
+        $this->assertNull($order->reworkFeedback());
+    }
+
     private function newOrder(): Order
     {
         return Order::create(
