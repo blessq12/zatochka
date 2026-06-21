@@ -6,36 +6,8 @@ alwaysApply: false
 
 # Конвенции
 
-## Язык
-
-- Документация, ES — русский
-- Код — английский
-
-## Структура папок (факт)
-
-| Слой | Папка | Пример namespace |
-|------|-------|------------------|
-| Shared | `app/Shared/ValueObject/` | `App\Shared\ValueObject\Phone` |
-| Domain | `app/Domain/{BC}/Entity/` | `App\Domain\OrderFulfillment\Entity\Order` |
-| Domain port | `app/Domain/{BC}/Repository/` | `…\OrderRepositoryInterface` |
-| Domain event | `app/Domain/{BC}/Event/` | `App\Domain\OrderFulfillment\Event\OrderCreated` |
-| Infrastructure | `app/Infrastructure/{BC}/Persistence/Eloquent/` | `…\OrderModel` |
-| Application | `app/Application/{BC}/Command/` | `App\Application\OrderFulfillment\Command\CreateOrderCommand` |
-| Read model | `app/Application/{BC}/ReadModel/` | `…\OrderDocumentReadModelBuilder` |
-
-## Команды и события
-
-| | Документация (ES) | Код (класс) |
-|---|-------------------|-------------|
-| Команда | повелительное, RU | `CreateOrderCommand` + `CreateOrderHandler` |
-| Событие | прошедшее время, RU | `OrderCreated` (readonly class) |
-| Query | `Get…` | `GetPosOrdersQuery` + `GetPosOrdersQueryHandler` |
-
-Handler именуется `{Verb}Handler` (`TakeOrderToWorkHandler`), не `*CommandHandler`.
-
-## Presentation
-
-- Публичный API: `app/Http/Controllers/Api/`
-- POS: `app/Http/Controllers/Pos/PosController.php`
-- Filament: `app/Filament/Resources/`
-- PDF из CP: `app/Http/Controllers/Cp/OrderDocumentController.php`
+- Документация, ES — русский; код — английский
+- Command: `CreateOrderCommand` + `CreateOrderHandler` (не `*CommandHandler`)
+- Event: `OrderCreated` (readonly class)
+- Query: `GetPosOrdersQuery` + `GetPosOrdersQueryHandler`
+- Handler → `Domain/{BC}/Repository/*Interface`, не Eloquent
