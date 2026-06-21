@@ -1,6 +1,6 @@
 # ЗАТОЧКА.ТСК
 
-Бэкенд мастерской (заточка + ремонт, Томск). Laravel-монолит, DDD + Hexagonal, 6 bounded contexts.
+Бэкенд мастерской (заточка + ремонт, Томск). Laravel-монолит, DDD + Hexagonal.
 
 ## Документация домена
 
@@ -14,10 +14,10 @@
 |------|--------|
 | `app/Domain/{BC}/` | ✅ сущности, enum, ports, поведение Order |
 | `app/Infrastructure/{BC}/` | ✅ Eloquent, Mapper, Repository |
-| `app/Application/{BC}/` | ✅ все 6 BC (use cases) |
+| `app/Application/{BC}/` | ✅ use cases по всем BC |
 | API публичный `/api/*` | ✅ bootstrap, leads, auth, ЛК |
 | API POS `/api/pos/*` | ✅ заказы, склад, оборудование, dashboard |
-| Filament `/cp` | ✅ заказы, заявки, клиенты, отзывы, склад, оборудование |
+| Filament `/cp` | ✅ 7 кластеров: заказы, клиенты, склад, оборудование, компания, прайс, идентичность |
 
 Подробнее: [`.cursor/index.md`](.cursor/index.md), [`app/Application/README.md`](app/Application/README.md).
 
@@ -31,7 +31,8 @@ app/
 └── Shared/ValueObject/   # EntityId, Phone, Email, Money
 ```
 
-BC: `OrderFulfillment`, `ClientPortal`, `Catalog`, `Equipment`, `Warehouse`, `Identity`.
+Domain BC: `OrderFulfillment`, `ClientPortal`, `Company`, `Pricing`, `Equipment`, `Warehouse`, `Identity`.  
+Application-фасад: `PublicSite` (bootstrap = Company + Pricing).
 
 ## Запуск
 
@@ -41,6 +42,8 @@ cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
 ```
+
+Демо-аккаунты: `root@root.com` (менеджер), `master@master.com` (мастер) — password.
 
 ## План реализации
 

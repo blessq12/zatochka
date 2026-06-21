@@ -78,11 +78,49 @@ final class OrderTest extends TestCase
     public function test_пересчёт_цены(): void
     {
         $order = $this->newOrder()
+            ->assignMaster(self::MASTER_ID)
+            ->takeToWork(self::MASTER_ID, new DateTimeImmutable)
             ->addWork(new OrderWork(null, 'Работа', '500.00', 0))
             ->setWorkPrice(0, '1500.50')
             ->recalculatePrice();
 
         $this->assertSame('1500.50', $order->price());
+    }
+
+    public function test_нельзя_добавить_работу_в_ожидании_запчастей(): void
+    {
+        $order = $this->newOrder()
+            ->assignMaster(self::MASTER_ID)
+            ->takeToWork(self::MASTER_ID, new DateTimeImmutable)
+            ->markWaitingForParts();
+
+        $this->expectException(OrderPolicyViolation::class);
+
+        $order->addWork(new OrderWork(null, 'Замена детали', null, 0));
+    }
+
+    public function test_нельзя_завершить_из_ожидания_запчастей(): void
+    {
+        $order = $this->newOrder()
+            ->assignMaster(self::MASTER_ID)
+            ->takeToWork(self::MASTER_ID, new DateTimeImmutable)
+            ->addWork(new OrderWork(null, 'Диагностика', null, 0))
+            ->markWaitingForParts();
+
+        $this->expectException(OrderPolicyViolation::class);
+
+        $order->markReady(new DateTimeImmutable);
+    }
+
+    public function test_ожидание_запчастей_возвращается_в_работу(): void
+    {
+        $order = $this->newOrder()
+            ->assignMaster(self::MASTER_ID)
+            ->takeToWork(self::MASTER_ID, new DateTimeImmutable)
+            ->markWaitingForParts()
+            ->resume();
+
+        $this->assertSame(OrderStatus::InWork, $order->status());
     }
 
     private function newOrder(): Order

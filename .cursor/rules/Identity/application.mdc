@@ -6,20 +6,20 @@ alwaysApply: false
 
 # Identity / Application
 
-## Сейчас
+## Commands
 
-Папки `Command/`, `Query/`, `Presenter/` — каркас (`.gitkeep`), классов нет.
+| Command | Handler |
+|---------|---------|
+| `RegisterMasterCommand` | `RegisterMasterHandler` |
+| `UpdateMasterCommand` | `UpdateMasterHandler` |
 
-## Фактическая логика auth
+Filament `CreateMaster` / `EditMaster` / `CreateManager` вызывают handlers.
 
-- POS login — `PosController::login` (Presentation), напрямую `UserModel` + Sanctum
-- Filament — Laravel session auth на `UserModel`
+## Не в Application
 
-## Целевое (не реализовано)
+POS login — `PosController::login` (Presentation), напрямую `UserModel` + Sanctum.
 
-Application handlers: `AuthenticatePosMaster`, CRUD мастеров для Filament, policies.
-
-## Использование Master в других BC
+## Cross-BC read
 
 - `PosOrderReadModelBuilder` → `MasterRepositoryInterface`
 - `OrderDocumentReadModelBuilder` → `MasterRepositoryInterface`

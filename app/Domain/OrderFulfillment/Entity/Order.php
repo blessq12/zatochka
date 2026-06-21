@@ -36,6 +36,7 @@ final class Order
         private ?int $clientId,
         private ?int $equipmentId,
         private ?int $masterId,
+        private ?int $managerId,
         private int $branchId,
         private ?int $warrantyParentOrderId,
         private ?DateTimeImmutable $takenAt,
@@ -68,6 +69,8 @@ final class Order
         ?string $problemDescription = null,
         ?int $equipmentId = null,
         ?int $warrantyParentOrderId = null,
+        ?int $masterId = null,
+        ?int $managerId = null,
         array $tools = [],
     ): self {
         return new self(
@@ -87,7 +90,8 @@ final class Order
             leadId: $leadId,
             clientId: $clientId,
             equipmentId: $equipmentId,
-            masterId: null,
+            masterId: $masterId,
+            managerId: $managerId,
             branchId: $branchId,
             warrantyParentOrderId: $warrantyParentOrderId,
             takenAt: null,
@@ -184,6 +188,11 @@ final class Order
     public function masterId(): ?int
     {
         return $this->masterId;
+    }
+
+    public function managerId(): ?int
+    {
+        return $this->managerId;
     }
 
     public function branchId(): int
@@ -360,7 +369,7 @@ final class Order
 
     public function updateInternalNotes(?string $notes): self
     {
-        $this->assertNotFinal();
+        $this->assertMasterWorkspace();
 
         $clone = clone $this;
         $clone->internalNotes = $notes;
@@ -370,7 +379,7 @@ final class Order
 
     public function addWork(OrderWork $work): self
     {
-        $this->assertNotFinal();
+        $this->assertMasterWorkspace();
 
         $clone = clone $this;
         $clone->works = [...$this->works, $work];
@@ -380,7 +389,7 @@ final class Order
 
     public function removeWork(int $sortOrder): self
     {
-        $this->assertNotFinal();
+        $this->assertMasterWorkspace();
 
         $filtered = array_values(array_filter(
             $this->works,
@@ -521,6 +530,14 @@ final class Order
     {
         if (in_array($this->status, [OrderStatus::Issued, OrderStatus::Cancelled], true)) {
             throw new OrderPolicyViolation('Заказ в финальном статусе и не может быть изменён.');
+        }
+    }
+
+    /** POL: мастер редактирует состав заказа только в статусе «в работе». */
+    private function assertMasterWorkspace(): void
+    {
+        if ($this->status !== OrderStatus::InWork) {
+            throw new OrderPolicyViolation('Заказ нельзя изменить в текущем статусе.');
         }
     }
 

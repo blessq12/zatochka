@@ -51,3 +51,39 @@ export function getEquipmentBrandModelLine(equipment) {
     const parts = [brand, model].filter(Boolean);
     return parts.join(" ").trim();
 }
+
+const TOOL_TYPE_LABELS = {
+    knife: "Нож",
+    scissors: "Ножницы",
+    clipper: "Машинка",
+    other: "Другое",
+};
+
+/** @param {{ tool_type?: string, tool_type_label?: string, name?: string|null, quantity?: number }} tool */
+export function formatPosToolSummaryItem(tool) {
+    if (!tool) {
+        return "—";
+    }
+
+    const label = tool.name || tool.tool_type_label || tool.tool_type || "—";
+    const quantity = tool.quantity ?? 1;
+
+    return `${quantity}× ${label}`;
+}
+
+/** @param {{ tool_type?: string, tool_type_label?: string, name?: string }} tool */
+export function formatPosToolType(tool) {
+    if (!tool) {
+        return "—";
+    }
+
+    if (tool.tool_type_label) {
+        return tool.tool_type_label;
+    }
+
+    if (tool.name) {
+        return tool.name;
+    }
+
+    return TOOL_TYPE_LABELS[tool.tool_type] || tool.tool_type || "—";
+}

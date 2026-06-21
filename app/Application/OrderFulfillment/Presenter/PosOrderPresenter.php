@@ -42,6 +42,14 @@ final class PosOrderPresenter
                 static fn (OrderTool $tool): array => [
                     'id' => $tool->id,
                     'tool_type' => $tool->toolType,
+                    'tool_type_label' => match ($tool->toolType) {
+                        'knife' => 'Нож',
+                        'scissors' => 'Ножницы',
+                        'clipper' => 'Машинка',
+                        'other' => 'Другое',
+                        default => $tool->toolType,
+                    },
+                    'name' => $tool->name,
                     'quantity' => $tool->quantity,
                 ],
                 $order->tools(),

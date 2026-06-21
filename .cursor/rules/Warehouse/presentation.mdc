@@ -6,13 +6,17 @@ alwaysApply: false
 
 # Warehouse / Presentation
 
-## Filament `/cp`
+## Filament `/cp` — кластер «Склад»
 
-`WarehouseItems/WarehouseItemResource` — список позиций, действия:
-- **Приход** — `ReceiveStockHandler`
-- **Списание** — `WriteOffStockHandler`
+| Ресурс | Тип |
+|--------|-----|
+| `ConsumableWarehouseItems/ConsumableWarehouseItemResource` | WarehouseItemType::Consumable |
+| `SparePartWarehouseItems/SparePartWarehouseItemResource` | WarehouseItemType::SparePart |
 
-Создание новых SKU через Filament — **не** реализовано (только seeder).
+Базовый класс: `AbstractWarehouseItemResource`.
+
+На каждой позиции — действия **Приход** (`ReceiveStockHandler`) и **Списание** (`WriteOffStockHandler`).  
+Создание новых SKU — через create-страницы ресурсов.
 
 ## POS `/api/pos/*`
 

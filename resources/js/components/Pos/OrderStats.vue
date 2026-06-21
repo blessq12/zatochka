@@ -1,83 +1,40 @@
 <template>
     <div class="orders-stats">
-        <!-- Десктопная версия -->
         <div class="desktop-stats">
             <router-link
-                :to="{ name: 'pos.orders.new' }"
+                v-for="tab in tabs"
+                :key="tab.routeName"
+                :to="{ name: tab.routeName }"
                 class="nav-btn"
-                :class="{ active: isActive('pos.orders.new') }"
+                :class="{ active: isActive(tab.routeName) }"
             >
-                Новые ({{ ordersCount.new }})
-            </router-link>
-            <router-link
-                :to="{ name: 'pos.orders.active' }"
-                class="nav-btn"
-                :class="{ active: isActive('pos.orders.active') }"
-            >
-                Активные ({{ ordersCount.in_work }})
-            </router-link>
-            <router-link
-                :to="{ name: 'pos.orders.waiting-parts' }"
-                class="nav-btn"
-                :class="{ active: isActive('pos.orders.waiting-parts') }"
-            >
-                Ожидание запчастей ({{ ordersCount.waiting_parts }})
-            </router-link>
-            <router-link
-                :to="{ name: 'pos.orders.completed' }"
-                class="nav-btn"
-                :class="{ active: isActive('pos.orders.completed') }"
-            >
-                Завершенные ({{ ordersCount.ready }})
+                {{ formatPosOrderTabLabel(tab.key, ordersCount) }}
             </router-link>
         </div>
 
-        <!-- Мобильная версия с выпадающим меню -->
         <div class="mobile-stats-wrapper">
-            <button 
-                @click="toggleMobileStats" 
+            <button
+                @click="toggleMobileStats"
                 class="mobile-stats-toggle"
                 :class="{ active: isMobileStatsOpen }"
             >
-                <span>{{ getActiveLabel() }}</span>
+                <span>{{ activeLabel }}</span>
                 <span class="mobile-stats-arrow">▼</span>
             </button>
-            <div 
-                class="mobile-stats-dropdown" 
+            <div
+                class="mobile-stats-dropdown"
                 :class="{ open: isMobileStatsOpen }"
                 v-if="isMobileStatsOpen"
             >
                 <router-link
-                    :to="{ name: 'pos.orders.new' }"
+                    v-for="tab in tabs"
+                    :key="tab.routeName"
+                    :to="{ name: tab.routeName }"
                     class="mobile-stats-item"
-                    :class="{ active: isActive('pos.orders.new') }"
+                    :class="{ active: isActive(tab.routeName) }"
                     @click="closeMobileStats"
                 >
-                    Новые ({{ ordersCount.new }})
-                </router-link>
-                <router-link
-                    :to="{ name: 'pos.orders.active' }"
-                    class="mobile-stats-item"
-                    :class="{ active: isActive('pos.orders.active') }"
-                    @click="closeMobileStats"
-                >
-                    Активные ({{ ordersCount.in_work }})
-                </router-link>
-                <router-link
-                    :to="{ name: 'pos.orders.waiting-parts' }"
-                    class="mobile-stats-item"
-                    :class="{ active: isActive('pos.orders.waiting-parts') }"
-                    @click="closeMobileStats"
-                >
-                    Ожидание запчастей ({{ ordersCount.waiting_parts }})
-                </router-link>
-                <router-link
-                    :to="{ name: 'pos.orders.completed' }"
-                    class="mobile-stats-item"
-                    :class="{ active: isActive('pos.orders.completed') }"
-                    @click="closeMobileStats"
-                >
-                    Завершенные ({{ ordersCount.ready }})
+                    {{ formatPosOrderTabLabel(tab.key, ordersCount) }}
                 </router-link>
             </div>
         </div>
@@ -88,6 +45,12 @@
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePosStore } from "../../stores/posStore.js";
+import {
+    POS_ORDER_TAB_KEYS,
+    POS_ORDER_TABS,
+    formatPosOrderTabLabel,
+    resolvePosOrderTabKey,
+} from "../../composables/usePosOrderTabs.js";
 
 export default {
     name: "OrderStats",
@@ -98,25 +61,20 @@ export default {
         const ordersCount = computed(() => posStore.ordersCount);
         const isMobileStatsOpen = ref(false);
 
-        const isActive = (routeName) => {
-            return route.name === routeName;
-        };
+        const tabs = POS_ORDER_TAB_KEYS.map((key) => ({
+            key,
+            routeName: POS_ORDER_TABS[key].routeName,
+        }));
 
-        const getActiveLabel = () => {
-            if (isActive('pos.orders.new')) {
-                return `Новые (${ordersCount.value.new})`;
+        const isActive = (routeName) => route.name === routeName;
+
+        const activeLabel = computed(() => {
+            const tabKey = resolvePosOrderTabKey(route);
+            if (tabKey) {
+                return formatPosOrderTabLabel(tabKey, ordersCount.value);
             }
-            if (isActive('pos.orders.active')) {
-                return `Активные (${ordersCount.value.in_work})`;
-            }
-            if (isActive('pos.orders.waiting-parts')) {
-                return `Ожидание запчастей (${ordersCount.value.waiting_parts})`;
-            }
-            if (isActive('pos.orders.completed')) {
-                return `Завершенные (${ordersCount.value.ready})`;
-            }
-            return 'Статусы заказов';
-        };
+            return "Статусы заказов";
+        });
 
         const toggleMobileStats = () => {
             isMobileStatsOpen.value = !isMobileStatsOpen.value;
@@ -126,33 +84,35 @@ export default {
             isMobileStatsOpen.value = false;
         };
 
-        // Закрываем меню при клике вне его
         const handleClickOutside = (event) => {
             const target = event.target;
-            if (isMobileStatsOpen.value && 
-                !target.closest('.mobile-stats-wrapper')) {
+            if (
+                isMobileStatsOpen.value &&
+                !target.closest(".mobile-stats-wrapper")
+            ) {
                 closeMobileStats();
             }
         };
 
         onMounted(() => {
-            document.addEventListener('click', handleClickOutside);
+            document.addEventListener("click", handleClickOutside);
         });
 
         onUnmounted(() => {
-            document.removeEventListener('click', handleClickOutside);
+            document.removeEventListener("click", handleClickOutside);
         });
 
-        // Закрываем меню при смене роута
         router.afterEach(() => {
             closeMobileStats();
         });
 
         return {
+            tabs,
             ordersCount,
             isActive,
             isMobileStatsOpen,
-            getActiveLabel,
+            activeLabel,
+            formatPosOrderTabLabel,
             toggleMobileStats,
             closeMobileStats,
         };
@@ -298,7 +258,6 @@ export default {
     font-weight: 700;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
     .desktop-stats {
         display: none;

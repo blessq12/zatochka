@@ -1,10 +1,6 @@
 <template>
     <div class="order-card">
-        <div
-            class="order-card-content"
-            @click="$emit('view-details', order.id)"
-        >
-            <!-- Заголовок с номером и статусами -->
+        <div class="order-card-content" @click="$emit('open-card', order.id)">
             <div class="order-header">
                 <div class="order-header-main">
                     <span class="order-number">№{{ order.order_number }}</span>
@@ -21,112 +17,73 @@
                         >
                             Срочно
                         </span>
+                        <span
+                            v-if="order.needs_delivery"
+                            class="delivery-badge"
+                        >
+                            Доставка
+                        </span>
                     </div>
                 </div>
                 <div class="order-header-meta">
-                    <span class="order-date">{{
-                        formatDateShort(order.created_at)
-                    }}</span>
+                    <span class="order-date">{{ dateLabel }}</span>
+                    <span v-if="order.works_count > 0" class="works-count">
+                        {{ order.works_count }}
+                        {{ worksCountLabel }}
+                    </span>
                 </div>
             </div>
 
-            <!-- Основная информация -->
-            <div class="order-info">
-                <!-- Тип заказа: платный / гарантийный -->
-                <div class="info-block">
-                    <div class="info-item">
-                        <div class="info-content">
-                            <span class="info-label">Тип заказа</span>
-                            <span class="info-value">{{
-                                formatPosOrderPaymentType(order)
-                            }}</span>
-                        </div>
-                    </div>
-                </div>
+            <p v-if="order.subject_line" class="subject-line">
+                {{ order.subject_line }}
+            </p>
 
-                <!-- Оборудование (если есть) -->
+            <div class="order-info">
+                <div class="info-row">
+                    <span class="info-label">Услуга</span>
+                    <span class="info-value">{{
+                        order.service_type_label || "—"
+                    }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Тип заказа</span>
+                    <span class="info-value">{{
+                        formatPosOrderPaymentType(order)
+                    }}</span>
+                </div>
+                <div v-if="showClientName && order.client_name" class="info-row">
+                    <span class="info-label">Клиент</span>
+                    <span class="info-value">{{ order.client_name }}</span>
+                </div>
                 <div
                     v-if="
-                        order.equipment?.name ||
-                        order.equipment_name ||
-                        equipmentBrandModelLine
+                        order.tools_summary &&
+                        order.tools_summary.length > 0 &&
+                        !order.equipment_summary
                     "
-                    class="info-block"
+                    class="tools-row"
                 >
-                    <div class="info-item">
-                        <div class="info-content">
-                            <span class="info-label">Оборудование (ремонт)</span>
-                            <span
-                                v-if="equipmentBrandModelLine"
-                                class="info-value"
-                                >{{ equipmentBrandModelLine }}</span
-                            >
-                            <span class="info-value">{{
-                                order.equipment?.name || order.equipment_name
-                            }}</span>
-                            <ul
-                                v-if="equipmentSerialRows.length > 0"
-                                class="equipment-serial-list"
-                            >
-                                <li
-                                    v-for="(row, idx) in equipmentSerialRows"
-                                    :key="idx"
-                                    class="info-subvalue equipment-serial-row"
-                                >
-                                    <template v-if="row.name && row.serial_number">
-                                        {{ row.name }}: {{ row.serial_number }}
-                                    </template>
-                                    <template v-else-if="row.serial_number">{{
-                                        row.serial_number
-                                    }}</template>
-                                    <template v-else>{{ row.name }}</template>
-                                </li>
-                            </ul>
-                            <span
-                                v-else-if="
-                                    order.equipment?.serial_numbers_display
-                                "
-                                class="info-subvalue"
-                            >
-                                С/Н: {{ order.equipment.serial_numbers_display }}
-                            </span>
-                        </div>
-                    </div>
+                    <span
+                        v-for="(tool, idx) in order.tools_summary"
+                        :key="tool.tool_type + '-' + idx"
+                        class="tool-badge"
+                    >
+                        {{ formatPosToolSummaryItem(tool) }}
+                    </span>
                 </div>
-
-                <!-- Инструменты для заточки (если есть) -->
                 <div
-                    v-if="order.tools && order.tools.length > 0"
-                    class="info-block"
+                    v-if="
+                        order.problem_excerpt &&
+                        order.subject_line !== order.problem_excerpt &&
+                        !subjectIncludesProblem
+                    "
+                    class="problem-block"
                 >
-                    <div class="info-item">
-                        <div class="info-content">
-                            <span class="info-label">Инструменты</span>
-                            <div class="tools-list">
-                                <span
-                                    v-for="(tool, idx) in order.tools"
-                                    :key="tool.id || idx"
-                                    class="tool-badge"
-                                >
-                                    {{ tool.tool_type_label || tool.tool_type }}
-                                    ({{ tool.quantity }})
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Описание проблемы -->
-                <div v-if="order.problem_description" class="problem-block">
-                    <span class="problem-label">Описание проблемы:</span>
-                    <p class="problem-text">
-                        {{ truncateText(order.problem_description, 120) }}
-                    </p>
+                    <p class="problem-text">{{ order.problem_excerpt }}</p>
                 </div>
             </div>
         </div>
 
-        <!-- Действия -->
         <div v-if="hasActions" class="order-actions">
             <slot name="actions">
                 <button
@@ -150,8 +107,7 @@
 import { computed } from "vue";
 import {
     formatPosOrderPaymentType,
-    getEquipmentBrandModelLine,
-    getEquipmentSerialRows,
+    formatPosToolSummaryItem,
 } from "../../composables/usePosOrderDisplay.js";
 import { orderService } from "../../services/pos/OrderService.js";
 
@@ -161,6 +117,10 @@ export default {
         order: {
             type: Object,
             required: true,
+        },
+        showClientName: {
+            type: Boolean,
+            default: false,
         },
         primaryAction: {
             type: Boolean,
@@ -183,47 +143,55 @@ export default {
             default: () => ({}),
         },
     },
-    emits: ["view-details", "primary-action"],
+    emits: ["open-card", "primary-action"],
     setup(props) {
         const hasActions = computed(() => {
             return props.primaryAction || !!props.$slots.actions;
         });
 
-        const equipmentSerialRows = computed(() =>
-            getEquipmentSerialRows(props.order?.equipment)
-        );
+        const dateLabel = computed(() => {
+            const raw = props.showClientName
+                ? props.order.ready_at || props.order.created_at
+                : props.order.created_at;
 
-        const equipmentBrandModelLine = computed(() =>
-            getEquipmentBrandModelLine(props.order?.equipment)
-        );
+            return formatDateShort(raw);
+        });
 
-        const formatDate = (dateString) => {
-            if (!dateString) return "—";
-            const date = new Date(dateString);
-            return new Intl.DateTimeFormat("ru-RU", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-            }).format(date);
-        };
+        const worksCountLabel = computed(() => {
+            const count = props.order.works_count ?? 0;
+            const mod10 = count % 10;
+            const mod100 = count % 100;
+
+            if (mod10 === 1 && mod100 !== 11) {
+                return "работа";
+            }
+            if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+                return "работы";
+            }
+
+            return "работ";
+        });
+
+        const subjectIncludesProblem = computed(() => {
+            const subject = props.order.subject_line || "";
+            const problem = props.order.problem_excerpt || "";
+
+            return problem !== "" && subject.includes(problem);
+        });
 
         const formatDateShort = (dateString) => {
-            if (!dateString) return "—";
+            if (!dateString) {
+                return "—";
+            }
+
             const date = new Date(dateString);
+
             return new Intl.DateTimeFormat("ru-RU", {
                 day: "2-digit",
                 month: "2-digit",
                 hour: "2-digit",
                 minute: "2-digit",
             }).format(date);
-        };
-
-        const truncateText = (text, maxLength) => {
-            if (!text) return "";
-            if (text.length <= maxLength) return text;
-            return text.substring(0, maxLength) + "...";
         };
 
         const getStatusClass = (status) => {
@@ -235,17 +203,17 @@ export default {
                 issued: "status-issued",
                 cancelled: "status-cancelled",
             };
+
             return classes[status] || "";
         };
 
         return {
             hasActions,
-            equipmentSerialRows,
-            equipmentBrandModelLine,
+            dateLabel,
+            worksCountLabel,
+            subjectIncludesProblem,
             formatPosOrderPaymentType,
-            formatDate,
-            formatDateShort,
-            truncateText,
+            formatPosToolSummaryItem,
             getStatusLabel: orderService.getStatusLabel,
             getStatusClass,
         };
@@ -264,6 +232,7 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    min-height: 220px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     font-family: "Jost", sans-serif;
 }
@@ -271,6 +240,9 @@ export default {
 .order-card-content {
     cursor: pointer;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .order-card:hover {
@@ -282,9 +254,8 @@ export default {
 .order-header {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
     border-bottom: 2px solid #f3f4f6;
 }
 
@@ -301,7 +272,6 @@ export default {
     font-size: 1.125rem;
     color: #003859;
     flex-shrink: 0;
-    font-family: "Jost", sans-serif;
 }
 
 .order-header-meta {
@@ -313,12 +283,12 @@ export default {
     color: #6b7280;
 }
 
-.order-date {
+.order-date,
+.works-count {
     display: flex;
     align-items: center;
     gap: 0.25rem;
 }
-
 
 .order-header-badges {
     display: flex;
@@ -327,10 +297,12 @@ export default {
     align-items: center;
 }
 
-.order-status {
+.order-status,
+.urgency-badge,
+.delivery-badge {
     padding: 0.25rem 0.75rem;
     border-radius: 0;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -361,49 +333,35 @@ export default {
     color: #991b1b;
 }
 
-.urgency-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 0;
-    font-size: 0.75rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
 .urgency-badge.urgent {
     background: #fee2e2;
     color: #991b1b;
 }
 
-.order-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+.delivery-badge {
+    background: #ede9fe;
+    color: #5b21b6;
 }
 
-.info-block {
+.subject-line {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.45;
+}
+
+.order-info {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.info-item {
+.info-row {
     display: flex;
-    align-items: flex-start;
+    justify-content: space-between;
     gap: 0.75rem;
-}
-
-.info-icon {
-    font-size: 1.125rem;
-    flex-shrink: 0;
-    margin-top: 0.125rem;
-}
-
-.info-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 0;
+    align-items: flex-start;
 }
 
 .info-label {
@@ -412,41 +370,18 @@ export default {
     color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    flex-shrink: 0;
 }
 
 .info-value {
     font-size: 0.875rem;
     font-weight: 500;
     color: #374151;
+    text-align: right;
     word-break: break-word;
 }
 
-.info-value.link {
-    color: #003859;
-    text-decoration: none;
-}
-
-.info-value.link:hover {
-    text-decoration: underline;
-}
-
-.info-subvalue {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    margin-top: 0.125rem;
-}
-
-.equipment-serial-list {
-    margin: 0.25rem 0 0;
-    padding-left: 1.1rem;
-    list-style: disc;
-}
-
-.equipment-serial-row {
-    margin-top: 0.125rem;
-}
-
-.tools-list {
+.tools-row {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
@@ -464,19 +399,9 @@ export default {
 }
 
 .problem-block {
-    margin-top: 0.5rem;
-    padding-top: 1rem;
+    margin-top: 0.25rem;
+    padding-top: 0.75rem;
     border-top: 1px solid #e5e7eb;
-}
-
-.problem-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .problem-text {
@@ -491,6 +416,7 @@ export default {
     gap: 0.5rem;
     padding-top: 1rem;
     border-top: 1px solid #e5e7eb;
+    margin-top: auto;
 }
 
 .btn-primary-action {
@@ -511,7 +437,6 @@ export default {
 .btn-primary-action:hover:not(:disabled) {
     background: #002c4e;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 56, 89, 0.3);
 }
 
 .btn-primary-action:disabled {
@@ -524,88 +449,22 @@ export default {
     background: #003859;
 }
 
-.btn-primary-action.btn-status-in-work:hover:not(:disabled),
-.btn-primary-action.btn-work:hover:not(:disabled) {
-    background: #002c4e;
-}
-
-.btn-primary-action.btn-return-to-work {
-    background: #c20a6c;
-    box-shadow: 0 2px 8px rgba(194, 10, 108, 0.25);
-}
-
-.btn-primary-action.btn-return-to-work:hover:not(:disabled) {
-    background: #a8095a;
-    box-shadow: 0 4px 12px rgba(194, 10, 108, 0.3);
-}
-
-/* Мобильная адаптация */
 @media (max-width: 768px) {
     .order-card {
         padding: 0.75rem;
-        border-radius: 0;
-    }
-
-    .order-header {
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-        padding-bottom: 0.75rem;
-    }
-
-    .order-header-badges {
-        width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        min-height: 200px;
     }
 
     .order-number {
         font-size: 0.9375rem;
     }
 
-    .order-status,
-    .urgency-badge {
-        font-size: 0.75rem;
-        padding: 0.2rem 0.5rem;
+    .subject-line {
+        font-size: 0.875rem;
     }
 
-    .order-info {
-        gap: 0.5rem;
-    }
-
-    .info-row {
-        gap: 0.25rem;
-    }
-
-    .info-row p {
+    .info-value {
         font-size: 0.8125rem;
-        flex-direction: column;
-        gap: 0.125rem;
-        line-height: 1.4;
-    }
-
-    .info-row p strong {
-        display: block;
-        margin-bottom: 0.125rem;
-        font-size: 0.75rem;
-        color: #6b7280;
-    }
-
-    .problem-preview {
-        margin-top: 0.5rem;
-        padding-top: 0.5rem;
-    }
-
-    .problem-preview p {
-        font-size: 0.75rem;
-    }
-
-    .problem-text {
-        font-size: 0.6875rem;
-    }
-
-    .order-actions {
-        padding-top: 0.75rem;
     }
 
     .btn-primary-action {

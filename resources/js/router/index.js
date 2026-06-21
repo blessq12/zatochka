@@ -64,27 +64,46 @@ const routes = [
             {
                 path: "orders/new",
                 name: "pos.orders.new",
-                component: () => import("../pages/Pos/OrdersNewPage.vue"),
+                component: () => import("../pages/Pos/OrdersListPage.vue"),
+                meta: { posOrderTab: "new" },
             },
             {
-                path: "orders/active",
-                name: "pos.orders.active",
-                component: () => import("../pages/Pos/OrdersActivePage.vue"),
+                path: "orders/in-work",
+                name: "pos.orders.in-work",
+                component: () => import("../pages/Pos/OrdersListPage.vue"),
+                meta: { posOrderTab: "in_work" },
             },
             {
                 path: "orders/waiting-parts",
                 name: "pos.orders.waiting-parts",
-                component: () => import("../pages/Pos/OrdersWaitingPartsPage.vue"),
+                component: () => import("../pages/Pos/OrdersListPage.vue"),
+                meta: { posOrderTab: "waiting_parts" },
             },
             {
-                path: "orders/in-work/:id",
-                name: "pos.orders.in-work",
-                component: () => import("../pages/Pos/OrderInWorkPage.vue"),
+                path: "orders/ready",
+                name: "pos.orders.ready",
+                component: () => import("../pages/Pos/OrdersListPage.vue"),
+                meta: { posOrderTab: "ready" },
+            },
+            {
+                path: "orders/active",
+                redirect: { name: "pos.orders.in-work" },
             },
             {
                 path: "orders/completed",
-                name: "pos.orders.completed",
-                component: () => import("../pages/Pos/OrdersCompletedPage.vue"),
+                redirect: { name: "pos.orders.ready" },
+            },
+            {
+                path: "orders/in-work/:id",
+                redirect: (to) => ({
+                    name: "pos.orders.detail",
+                    params: { id: to.params.id },
+                }),
+            },
+            {
+                path: "orders/:id",
+                name: "pos.orders.detail",
+                component: () => import("../pages/Pos/OrderInWorkPage.vue"),
             },
             {
                 path: "warehouse",

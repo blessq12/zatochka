@@ -173,8 +173,13 @@
                                     class="tool-detail-item"
                                 >
                                     <span class="tool-type">{{
-                                        tool.tool_type_label || tool.tool_type
+                                        formatPosToolType(tool)
                                     }}</span>
+                                    <span
+                                        v-if="tool.name"
+                                        class="tool-name"
+                                        >{{ tool.name }}</span
+                                    >
                                     <span class="tool-quantity"
                                         >Количество: {{ tool.quantity }}</span
                                     >
@@ -204,35 +209,23 @@
 
                         <!-- Работы -->
                         <div
-                            v-if="
-                                order.order_works &&
-                                order.order_works.length > 0
-                            "
+                            v-if="orderWorks.length > 0"
                             class="details-section"
                         >
                             <div class="details-section-header">
-                                <span class="details-icon">🔨</span>
                                 <h3 class="details-section-title">
                                     Выполненные работы
                                 </h3>
                             </div>
                             <div class="works-list-details">
                                 <div
-                                    v-for="work in order.order_works"
+                                    v-for="work in orderWorks"
                                     :key="work.id"
                                     class="work-detail-item"
                                 >
-                                    <div class="work-detail-content">
-                                        <p class="work-detail-description">
-                                            {{ work.description }}
-                                        </p>
-                                        <p
-                                            v-if="work.equipment_component_name || work.equipment_component_serial_number"
-                                            class="work-detail-equipment-component"
-                                        >
-                                            Элемент: {{ work.equipment_component_name || 'Не указан' }}{{ work.equipment_component_serial_number ? ` (SN: ${work.equipment_component_serial_number})` : '' }}
-                                        </p>
-                                    </div>
+                                    <p class="work-detail-description">
+                                        {{ work.description }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -260,31 +253,18 @@
                         </div>
 
                         <!-- Ответственные -->
-                        <div
-                            v-if="order.manager || order.master"
-                            class="details-section"
-                        >
+                        <div v-if="order.master" class="details-section">
                             <div class="details-section-header">
                                 <h3 class="details-section-title">
                                     Ответственные
                                 </h3>
                             </div>
                             <div class="details-grid">
-                                <div v-if="order.manager" class="detail-item">
-                                    <span class="detail-label">Менеджер</span>
-                                    <span class="detail-value">{{
-                                        order.manager.name
-                                    }}</span>
-                                </div>
-                                <div v-if="order.master" class="detail-item">
+                                <div class="detail-item">
                                     <span class="detail-label">Мастер</span>
-                                    <span class="detail-value">
-                                        {{
-                                            order.master.surname
-                                                ? `${order.master.surname} ${order.master.name}`
-                                                : order.master.name
-                                        }}
-                                    </span>
+                                    <span class="detail-value">{{
+                                        masterDisplayName
+                                    }}</span>
                                 </div>
                             </div>
                         </div>
@@ -314,6 +294,7 @@
 import { computed, ref, watch } from "vue";
 import {
     formatPosOrderPaymentType,
+    formatPosToolType,
     getEquipmentBrandModelLine,
     getEquipmentSerialRows,
 } from "../../composables/usePosOrderDisplay.js";
@@ -343,6 +324,21 @@ export default {
         const equipmentBrandModelLine = computed(() =>
             getEquipmentBrandModelLine(order.value?.equipment)
         );
+
+        const orderWorks = computed(() => order.value?.works || []);
+
+        const masterDisplayName = computed(() => {
+            const master = order.value?.master;
+            if (!master) {
+                return "";
+            }
+
+            if (master.surname) {
+                return `${master.surname} ${master.name}`;
+            }
+
+            return master.name || "";
+        });
 
         const fetchOrder = async (orderId) => {
             if (!orderId) {
@@ -420,7 +416,10 @@ export default {
             isLoading,
             equipmentSerialRows,
             equipmentBrandModelLine,
+            orderWorks,
+            masterDisplayName,
             formatPosOrderPaymentType,
+            formatPosToolType,
             close,
             formatDate,
             getStatusLabel: orderService.getStatusLabel,
@@ -518,16 +517,6 @@ export default {
 
     .detail-value {
         font-size: 0.875rem;
-    }
-
-
-    .material-detail-item {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-
-    .material-detail-quantity {
-        text-align: left;
     }
 }
 
@@ -776,6 +765,11 @@ export default {
     font-size: 0.875rem;
 }
 
+.tool-name {
+    font-size: 0.8125rem;
+    color: #374151;
+}
+
 .tool-quantity {
     font-size: 0.8125rem;
     color: #6b7280;
@@ -813,64 +807,6 @@ export default {
     font-size: 0.875rem;
     color: #374151;
     line-height: 1.5;
-}
-
-.work-detail-equipment-component {
-    margin: 0.5rem 0 0 0;
-    font-size: 0.75rem;
-    color: #6b7280;
-    font-style: italic;
-}
-
-.work-detail-equipment-component {
-    margin: 0.5rem 0 0 0;
-    font-size: 0.75rem;
-    color: #6b7280;
-    font-style: italic;
-}
-
-
-.materials-list-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.material-detail-item {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 1rem;
-    align-items: center;
-    padding: 0.75rem;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0;
-}
-
-.material-detail-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 0;
-}
-
-.material-detail-name {
-    font-weight: 600;
-    color: #374151;
-    font-size: 0.875rem;
-    word-break: break-word;
-}
-
-.material-detail-article {
-    font-size: 0.75rem;
-    color: #6b7280;
-    font-family: monospace;
-}
-
-.material-detail-quantity {
-    font-size: 0.8125rem;
-    color: #6b7280;
-    text-align: right;
 }
 
 .notes-section {

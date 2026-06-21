@@ -16,7 +16,7 @@
 | Папка | Содержание |
 |-------|------------|
 | `Entity/` | `WarehouseItem` — `create()`, `receive()`, `writeOff()`; `StockMovement` |
-| `Enum/` | `StockMovementType` — received, written_off |
+| `Enum/` | `StockMovementType` — received, written_off; `WarehouseItemType` — consumable, spare_part |
 | `Repository/` | `WarehouseItemRepositoryInterface`, `StockMovementRepositoryInterface` |
 | `Event/` | `StockReceived`, `StockWrittenOff` |
 | `Exception/` | `WarehousePolicyViolation`, `WarehouseItemNotFoundException` |
@@ -30,11 +30,9 @@
 
 `findById`, `save`, `search(query, page, perPage)`
 
-`StockMovement` хранит `userId`, `orderId` как FK (nullable).
-
 ## Infrastructure (`app/Infrastructure/Warehouse/`)
 
-Eloquent×2, Mapper×2, Repository×2. `WarehouseItemModel` → hasMany movements.
+Eloquent×2, Mapper×2, Repository×2.
 
 ## Application (`app/Application/Warehouse/`)
 
@@ -44,23 +42,24 @@ Eloquent×2, Mapper×2, Repository×2. `WarehouseItemModel` → hasMany movement
 | Query | `SearchWarehouseItems` |
 | Presenter | `WarehouseItemPresenter` |
 
-`AddMaterialToOrder` (OrderFulfillment) читает `WarehouseItem`, но **не** списывает автоматически (ES: MVP вручную).
+`AddMaterialToOrder` (OrderFulfillment) читает `WarehouseItem`, но **не** списывает автоматически.
 
 ## Presentation
 
 | Канал | Путь |
 |-------|------|
-| Filament | `WarehouseItems/WarehouseItemResource` — приход/списание по строке |
+| Filament | Кластер «Склад»: `ConsumableWarehouseItems`, `SparePartWarehouseItems` — CRUD + приход/списание |
 | POS | `GET /api/pos/warehouse/items` — read-only поиск |
-| Filament (заказ) | добавление материала в заказ |
+| Filament (заказ) | `OrderManageActions::addMaterial()` |
 
 ## Данные
 
-`DomainSeeder`: `DEMO-001` — демо-запчасть, qty 10.
+`WarehouseSeeder` → `DomainSeeder`: демо расходники и запчасти.
 
 ## Тесты
 
-`tests/Feature/Warehouse/WarehouseStockTest.php`
+- `tests/Feature/Warehouse/WarehouseStockTest.php`
+- `tests/Feature/Warehouse/WarehouseItemTypeTest.php`
 
 ## ES
 

@@ -23,7 +23,7 @@ alwaysApply: false
 
 Контроллеры: `app/Http/Controllers/Api/LeadController`, `ClientAuthController`, `ClientAccountController`.
 
-## Filament `/cp`
+## Filament `/cp` — кластер «Клиенты»
 
 - `Clients/ClientResource` — список клиентов
 - `Reviews/ReviewResource` — модерация (approve/reject)
@@ -44,7 +44,7 @@ Guard `client` → `ClientAuthModel`. Не путать с `User` (мастер/
 **Stores:** `authStore` (`localStorage.auth_token`), `orderStore`  
 **Axios:** `bootstrap.js` — Bearer для `/api/*` кроме public paths (`/api/auth/login`, `/api/auth/register`, `/api/leads`, `/api/bootstrap`)
 
-Публичный контент сайта (контакты, график, FAQ и т.д.) — BC Catalog, store `bootstrapStore` (см. [Catalog/presentation.mdc](../Catalog/presentation.mdc)). Моков API нет.
+Публичный контент сайта (контакты, график, FAQ и т.д.) — фасад [PublicSite](../PublicSite/), store `bootstrapStore`. Моков API нет.
 
 **Не используется во фронте:** `GET /api/client/orders/{id}` (есть в API).
 

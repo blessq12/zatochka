@@ -1,0 +1,19 @@
+---
+description: Company — presentation (текущий код)
+globs: app/Filament/Resources/Branches/**,app/Filament/Resources/SiteContent/**,app/Filament/Clusters/CompanyCluster.php,app/Filament/Company/**
+alwaysApply: false
+---
+
+# Company / Presentation
+
+## Filament `/cp` — кластер «Компания»
+
+- `SiteContentResource` → `ManageSiteContent` — форма по секциям (contacts, schedule, company, delivery_info, faq)
+- `BranchResource` — список/редактирование филиала
+
+Схемы форм: `app/Filament/Company/Schemas/*`.
+
+## Cross-BC
+
+- `CreateOrderHandler` — `findFirstActive` branch
+- `OrderDocumentReadModelBuilder` — адрес филиала и контакты для PDF

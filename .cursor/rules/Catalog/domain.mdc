@@ -1,26 +1,11 @@
 ---
-description: Catalog — domain layer (текущий код)
+description: УСТАРЕЛО — см. Company, Pricing, PublicSite
 globs: app/Domain/Catalog/**
 alwaysApply: false
 ---
 
-# Catalog / Domain
+# ⚠️ Catalog / Domain — устарело
 
-## Классы
+Актуально: [Company/domain.mdc](../Company/domain.mdc), [Pricing/domain.mdc](../Pricing/domain.mdc).
 
-- **Entity:** `Branch`, `PriceBlock`, `PriceItem`, `SiteSetting`
-- **Enum:** `PriceType`
-- **Repository:** 4 interface
-
-## Repository ports
-
-- `BranchRepositoryInterface` — `findById`, `findFirstActive`, `save`
-- `PriceBlockRepositoryInterface` — `findById`, `save`, `findAllOrdered`
-- `PriceItemRepositoryInterface` — `findById`, `save`, `findByPriceBlockId`
-- `SiteSettingRepositoryInterface` — `findByKey`, `save`, `getValuesByKeys`
-
-Настройки — json `value` в БД; в domain — array через mapper.
-
-## Нет в domain
-
-Мутации прайса из Filament — пока только seeder; Application commands для CRUD не добавлены.
+`app/Domain/Catalog/` — legacy, не используется в runtime.

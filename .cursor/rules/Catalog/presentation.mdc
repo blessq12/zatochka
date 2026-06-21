@@ -1,31 +1,9 @@
 ---
-description: Catalog — presentation (текущий код)
-globs: app/Http/**,routes/**,resources/js/stores/bootstrapStore.js,resources/js/App.vue,resources/js/pages/HomePage.vue,resources/js/pages/ContactsPage.vue,resources/js/pages/WorkSchedulePage.vue,resources/js/pages/DeliveryPage.vue,resources/js/pages/PricePage.vue,resources/js/pages/SharpeningPage.vue,resources/js/pages/RepairPage.vue,resources/js/components/Layout/Footer.vue,resources/js/components/Home/**
+description: УСТАРЕЛО — см. PublicSite/presentation.mdc
+globs: app/Http/**,routes/**,resources/js/stores/bootstrapStore.js
 alwaysApply: false
 ---
 
-# Catalog / Presentation
+# ⚠️ Catalog / Presentation — устарело
 
-## Публичный API
-
-`GET /api/bootstrap` — единый ответ для SPA при загрузке.
-
-Контроллер: `app/Http/Controllers/Api/BootstrapController.php`
-
-Поля ответа: `prices`, `contacts`, `schedule`, `delivery_info`, `company`, `faq` — см. [README](./README.md#контракт-get-apibootstrap--data).
-
-## Vue SPA
-
-- Store: `resources/js/stores/bootstrapStore.js` (`fetchBootstrap`, getters по секциям)
-- Старт: `App.vue` mounted → `fetchBootstrap()` (кроме маршрутов `/pos*`)
-- Хардкод контента на страницах **убран** — contacts/schedule/delivery/company/faq/prices из API
-- Моки axios (`resources/js/mocks/`) **удалены**
-
-## Косвенное использование
-
-- `OrderDocumentReadModelBuilder` — company/contacts + branch для PDF
-- `CreateOrderHandler` — `BranchRepositoryInterface::findFirstActive`
-
-## Filament
-
-CRUD прайса и настроек сайта — **не** реализован. Данные — `DomainSeeder`.
+Актуально: [PublicSite/presentation.mdc](../PublicSite/presentation.mdc), [Company/presentation.mdc](../Company/presentation.mdc), [Pricing/presentation.mdc](../Pricing/presentation.mdc).

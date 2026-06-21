@@ -19,7 +19,6 @@ use App\Application\OrderFulfillment\Command\MarkOrderReadyCommand;
 use App\Application\OrderFulfillment\Command\MarkOrderWaitingForPartsCommand;
 use App\Application\OrderFulfillment\Command\SetWorkPricesCommand;
 use App\Application\OrderFulfillment\Command\TakeOrderToWorkCommand;
-use App\Application\OrderFulfillment\Command\UpdateInternalNotesCommand;
 use App\Application\OrderFulfillment\CommandHandler\AddMaterialToOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\AddWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\AssignMasterToOrderHandler;
@@ -31,7 +30,6 @@ use App\Application\OrderFulfillment\CommandHandler\MarkOrderReadyHandler;
 use App\Application\OrderFulfillment\CommandHandler\MarkOrderWaitingForPartsHandler;
 use App\Application\OrderFulfillment\CommandHandler\SetWorkPricesHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
-use App\Application\OrderFulfillment\CommandHandler\UpdateInternalNotesHandler;
 use App\Domain\OrderFulfillment\Entity\Order;
 use App\Domain\OrderFulfillment\Entity\OrderTool;
 use App\Domain\OrderFulfillment\Enum\OrderUrgency;
@@ -535,11 +533,7 @@ final class DemoOrderSeeder extends Seeder
 
     private function markDemo(int $orderId, int $masterId, string $marker): void
     {
-        app(UpdateInternalNotesHandler::class)->handle(new UpdateInternalNotesCommand(
-            orderId: $orderId,
-            masterId: $masterId,
-            notes: $marker,
-        ));
+        OrderModel::query()->whereKey($orderId)->update(['internal_notes' => $marker]);
     }
 
     private function requireMaster(string $email): UserModel

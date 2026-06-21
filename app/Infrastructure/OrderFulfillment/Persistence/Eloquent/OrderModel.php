@@ -29,6 +29,7 @@ class OrderModel extends Model
         'client_id',
         'equipment_id',
         'master_id',
+        'manager_id',
         'branch_id',
         'warranty_parent_order_id',
         'taken_at',

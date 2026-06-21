@@ -40,6 +40,9 @@ final class CreateOrderHandler
             deliveryAddress: $command->deliveryAddress,
             problemDescription: $command->problemDescription,
             equipmentId: $command->equipmentId,
+            warrantyParentOrderId: $command->warrantyParentOrderId,
+            masterId: $command->masterId,
+            managerId: $command->managerId,
             tools: $command->tools,
         );
 
@@ -62,12 +65,10 @@ final class CreateOrderHandler
             }
 
             $this->siteLeads->save($lead->markConverted($orderId));
-            event(new OrderCreated($saved));
-
-            return $saved;
+        } else {
+            $saved = $this->orders->save($order);
         }
 
-        $saved = $this->orders->save($order);
         event(new OrderCreated($saved));
 
         return $saved;

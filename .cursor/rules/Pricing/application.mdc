@@ -1,0 +1,17 @@
+---
+description: Pricing — application layer (текущий код)
+globs: app/Application/Pricing/**
+alwaysApply: false
+---
+
+# Pricing / Application
+
+## Commands
+
+`SavePriceItemCommand` + `SavePriceItemHandler` — создание/обновление позиции прайса.
+
+## Queries
+
+`GetPublicPriceListQuery` + `GetPublicPriceListQueryHandler`
+
+Агрегирует `PriceBlock::findAllOrdered` + items по block id → массив для bootstrap/PDF.

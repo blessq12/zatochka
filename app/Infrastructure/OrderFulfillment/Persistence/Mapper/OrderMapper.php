@@ -36,6 +36,7 @@ final class OrderMapper
             clientId: $model->client_id,
             equipmentId: $model->equipment_id,
             masterId: $model->master_id,
+            managerId: $model->manager_id,
             branchId: $model->branch_id,
             warrantyParentOrderId: $model->warranty_parent_order_id,
             takenAt: $this->toImmutable($model->taken_at),
@@ -55,6 +56,7 @@ final class OrderMapper
                     id: $tool->id,
                     toolType: $tool->tool_type,
                     quantity: $tool->quantity,
+                    name: $tool->name,
                 ))->all()
                 : [],
             materials: $model->relationLoaded('materials')
@@ -88,6 +90,7 @@ final class OrderMapper
             'client_id' => $order->clientId(),
             'equipment_id' => $order->equipmentId(),
             'master_id' => $order->masterId(),
+            'manager_id' => $order->managerId(),
             'branch_id' => $order->branchId(),
             'warranty_parent_order_id' => $order->warrantyParentOrderId(),
             'taken_at' => $order->takenAt(),

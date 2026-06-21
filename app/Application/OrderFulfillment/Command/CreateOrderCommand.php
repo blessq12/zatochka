@@ -24,6 +24,9 @@ final readonly class CreateOrderCommand
         public ?string $problemDescription = null,
         public ?int $equipmentId = null,
         public ?int $branchId = null,
+        public ?int $warrantyParentOrderId = null,
+        public ?int $masterId = null,
+        public ?int $managerId = null,
         public array $tools = [],
     ) {}
 }

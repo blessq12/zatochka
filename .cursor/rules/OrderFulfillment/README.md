@@ -74,10 +74,16 @@
 
 ### Read models / Presenters
 
-- `PosOrderPresenter` — список и базовая карточка
+- `PosOrderPresenter` — список и базовая карточка POS
 - `PosOrderReadModelBuilder` — карточка + equipment, master, материалы с именами
 - `OrderDocumentReadModelBuilder` — проекция для PDF
 - `OrderLoader` — загрузка агрегата
+
+### Filament Support
+
+- `OrderViewPresenter` — labels/colors/icons для карточки заказа (`ViewOrder`, `OrderInfolist`)
+- `OrderManageActions` — действия менеджера
+- `OrderPersistence` — создание заказа из лида
 
 ### Port
 
@@ -87,7 +93,7 @@
 
 | Канал | Путь |
 |-------|------|
-| Filament | `SiteLeads/SiteLeadResource` — лиды (`converted=false`); `Orders/OrderResource` — список, создание, просмотр, действия менеджера |
+| Filament | Кластер «Заказы»: `SiteLeads/SiteLeadResource`, `Orders/OrderResource` — список, создание, `ViewOrder`, `OrderManageActions` |
 | PDF | `GET /cp/orders/{id}/documents/{receipt\|handover_act}` |
 | POS | `/api/pos/orders/*`, `/api/pos/dashboard` |
 

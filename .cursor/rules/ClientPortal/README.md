@@ -88,9 +88,9 @@
 | `GET /api/client/orders/active\|history\|{id}` | заказы клиента |
 | `POST /api/client/orders/{id}/review` | отзыв |
 
-### Filament `/cp`
+### Filament `/cp` — кластер «Клиенты»
 
-- `Clients/ClientResource` — action «Привязать гостевые заказы»
+- `Clients/ClientResource` — список клиентов, action «Привязать гостевые заказы»
 - `Reviews/ReviewResource` — модерация approve/reject (кнопки только для `pending`)
 
 Лиды — `SiteLeads/SiteLeadResource` в кластере **Заказы** (см. [OrderFulfillment/README](../OrderFulfillment/README.md)).
@@ -102,7 +102,7 @@
 | `/client/dashboard` | ЛК: login/register → профиль, активные, история |
 | `/sharpening`, `/repair`, `/delivery` | публичные формы → `POST /api/leads` |
 
-Stores: `authStore` (`auth_token`), `orderStore` (заказы, отзывы). Публичный контент сайта — `bootstrapStore` (BC Catalog, см. [Catalog/README](../Catalog/README.md)).  
+Stores: `authStore` (`auth_token`), `orderStore` (заказы, отзывы). Публичный контент сайта — `bootstrapStore` (фасад [PublicSite](../PublicSite/), см. [Company](../Company/) + [Pricing](../Pricing/)).  
 `GET /api/client/orders/{id}` в API есть, во фронте **не вызывается** (списки + модалки на list data).
 
 Подробнее: [presentation.mdc](./presentation.mdc)

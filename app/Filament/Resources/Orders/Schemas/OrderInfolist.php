@@ -46,6 +46,11 @@ class OrderInfolist
                                     ->placeholder('Не назначен')
                                     ->color(fn (OrderModel $record): ?string => $record->master_id === null ? 'warning' : null)
                                     ->formatStateUsing(fn (OrderModel $record): string => OrderViewPresenter::masterName($record->master_id) ?? 'Не назначен'),
+                                TextEntry::make('manager_id')
+                                    ->label('Менеджер')
+                                    ->icon('heroicon-o-user-circle')
+                                    ->placeholder('Не назначен')
+                                    ->formatStateUsing(fn (OrderModel $record): string => OrderViewPresenter::managerName($record->manager_id) ?? 'Не назначен'),
                                 TextEntry::make('service_types')
                                     ->label('Услуги')
                                     ->badge()
@@ -96,8 +101,21 @@ class OrderInfolist
                                 TextEntry::make('is_warranty')
                                     ->label('Гарантия')
                                     ->badge()
-                                    ->formatStateUsing(fn (OrderModel $record): string => $record->is_warranty ? 'Гарантийный' : 'Обычный')
+                                    ->formatStateUsing(fn (OrderModel $record): string => $record->is_warranty ? 'Гарантийный' : 'Платный')
                                     ->color(fn (OrderModel $record): string => $record->is_warranty ? 'warning' : 'gray'),
+                                TextEntry::make('warranty_parent_order_id')
+                                    ->label('Исходный заказ')
+                                    ->placeholder('—')
+                                    ->formatStateUsing(function (OrderModel $record): string {
+                                        if ($record->warranty_parent_order_id === null) {
+                                            return '—';
+                                        }
+
+                                        $parent = OrderModel::query()->find($record->warranty_parent_order_id);
+
+                                        return $parent?->order_number ?? "#{$record->warranty_parent_order_id}";
+                                    })
+                                    ->visible(fn (OrderModel $record): bool => $record->is_warranty),
                                 TextEntry::make('problem_description')
                                     ->label('Описание / проблема')
                                     ->placeholder('—')
@@ -106,10 +124,14 @@ class OrderInfolist
                                 RepeatableEntry::make('tools')
                                     ->label('Инструменты (заточка)')
                                     ->table([
+                                        TableColumn::make('Наименование'),
                                         TableColumn::make('Тип'),
                                         TableColumn::make('Кол-во'),
                                     ])
                                     ->schema([
+                                        TextEntry::make('name')
+                                            ->hiddenLabel()
+                                            ->placeholder('—'),
                                         TextEntry::make('tool_type')
                                             ->hiddenLabel()
                                             ->formatStateUsing(fn (string $state): string => OrderViewPresenter::toolTypeLabel($state)),

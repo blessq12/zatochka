@@ -1,21 +1,11 @@
 ---
-description: Catalog — application layer (текущий код)
+description: УСТАРЕЛО — см. Company, Pricing, PublicSite
 globs: app/Application/Catalog/**
 alwaysApply: false
 ---
 
-# Catalog / Application
+# ⚠️ Catalog / Application — устарело
 
-## Query
+Актуально: [Company/application.mdc](../Company/application.mdc), [Pricing/application.mdc](../Pricing/application.mdc), [PublicSite/application.mdc](../PublicSite/application.mdc).
 
-`GetPublicBootstrapQuery` + `GetPublicBootstrapQueryHandler`
-
-Агрегирует:
-- `PriceBlock::findAllOrdered` + `PriceItem::findByPriceBlockId` → `prices[]`
-- `SiteSetting::getValuesByKeys` → contacts, schedule, delivery_info, company, faq
-
-Отдельные `/api/prices/*` не дублируются (ADR-004).
-
-## Нет commands
-
-Filament CRUD прайса/филиала — не реализован в Application.
+`app/Application/Catalog/` — legacy, не используется в runtime.

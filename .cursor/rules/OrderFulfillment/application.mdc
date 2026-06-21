@@ -36,4 +36,4 @@ Handler инжектит `OrderRepositoryInterface` и порты других B
 
 ## Cross-BC
 
-`AddMaterialToOrder` → Warehouse; `LinkEquipmentToOrder` → Equipment; `GenerateDocument` → Catalog, Identity, Equipment, Warehouse
+`AddMaterialToOrder` → Warehouse; `LinkEquipmentToOrder` → Equipment; `GenerateDocument` → Company, Identity, Equipment, Warehouse

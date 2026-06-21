@@ -70,9 +70,13 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
             $query->where('status', $tab->orderStatus());
         }
 
-        $query
-            ->orderByRaw("CASE WHEN urgency = 'urgent' THEN 0 ELSE 1 END")
-            ->orderByDesc('created_at');
+        if ($tab === PosOrderListTab::Completed) {
+            $query->orderByDesc('ready_at');
+        } else {
+            $query
+                ->orderByRaw("CASE WHEN urgency = 'urgent' THEN 0 ELSE 1 END")
+                ->orderByDesc('created_at');
+        }
 
         $total = (clone $query)->count();
         $models = $query->forPage($page, $perPage)->get();
@@ -225,6 +229,7 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
 
             $toolModel->fill([
                 'order_id' => $model->id,
+                'name' => $tool->name,
                 'tool_type' => $tool->toolType,
                 'quantity' => $tool->quantity,
             ]);

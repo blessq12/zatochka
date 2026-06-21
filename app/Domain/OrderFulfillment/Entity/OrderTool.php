@@ -8,5 +8,6 @@ final readonly class OrderTool
         public ?int $id,
         public string $toolType,
         public int $quantity,
+        public ?string $name = null,
     ) {}
 }

@@ -9,22 +9,38 @@ DDD + Hexagonal, BC-first. Описание **текущего кода**, не 
 | `app/Shared/ValueObject/` | ✅ EntityId, Phone, Email, Money (VO-заглушки, в домене пока не используются) |
 | `app/Domain/{BC}/` | ✅ Entity, Enum, Repository, Event, Exception; поведение агрегатов |
 | `app/Infrastructure/{BC}/` | ✅ Persistence, Auth, DomPDF (OrderFulfillment) |
-| `app/Application/{BC}/` | ✅ use cases по всем BC, кроме Identity (каркас) |
-| Presentation | ✅ публичный `/api/*`, POS `/api/pos/*` + Vue `/pos`, Filament `/cp` |
+| `app/Application/{BC}/` | ✅ use cases по всем BC (Identity — Register/Update master) |
+| Presentation | ✅ публичный `/api/*`, POS `/api/pos/*` + Vue `/pos`, Filament `/cp` (7 кластеров) |
 
-**Тесты:** 23 (Unit + Feature). `php artisan test`.
+**Тесты:** 25 (Unit + Feature). `php artisan test`.
 
 ## BC
 
 | BC | README | Application | Presentation |
 |----|--------|-------------|--------------|
-| OrderFulfillment | [rules/OrderFulfillment](./rules/OrderFulfillment/) | lifecycle, цены, PDF, POS | Filament заказы, POS, PDF |
-| ClientPortal | [rules/ClientPortal](./rules/ClientPortal/) | ЛК, заявки, отзывы | `/api/leads`, `/api/auth`, `/api/client`, Vue `/client/dashboard`, Filament |
+| OrderFulfillment | [rules/OrderFulfillment](./rules/OrderFulfillment/) | lifecycle, цены, PDF, POS | Filament «Заказы», POS, PDF |
+| ClientPortal | [rules/ClientPortal](./rules/ClientPortal/) | ЛК, заявки, отзывы | `/api/leads`, `/api/auth`, `/api/client`, Vue `/client/dashboard`, Filament «Клиенты» |
 | POS (вертикаль) | [rules/POS](./rules/POS/) | — (OrderFulfillment + Equipment + Warehouse + Identity) | `/api/pos/*`, Vue `/pos` |
-| Catalog | [rules/Catalog](./rules/Catalog/) | `GetPublicBootstrap` | `GET /api/bootstrap`, Vue `bootstrapStore` |
-| Equipment | [rules/Equipment](./rules/Equipment/) | register, search, history | Filament, POS |
-| Warehouse | [rules/Warehouse](./rules/Warehouse/) | приход/списание, search | Filament, POS read-only |
-| Identity | [rules/Identity](./rules/Identity/) | ⬜ каркас | POS login, Filament web auth |
+| Company | [rules/Company](./rules/Company/) | филиал, контент сайта | Filament «Компания» |
+| Pricing | [rules/Pricing](./rules/Pricing/) | прайс-лист | Filament «Прайс-лист» |
+| PublicSite (фасад) | [rules/PublicSite](./rules/PublicSite/) | `GetPublicBootstrap` | `GET /api/bootstrap`, Vue `bootstrapStore` |
+| Equipment | [rules/Equipment](./rules/Equipment/) | register, search, history | Filament «Оборудование», POS |
+| Warehouse | [rules/Warehouse](./rules/Warehouse/) | приход/списание, search | Filament «Склад», POS read-only |
+| Identity | [rules/Identity](./rules/Identity/) | Register/Update master | POS login, Filament «Идентичность» |
+
+> **Legacy:** `app/Domain/Catalog/`, `Infrastructure/Catalog/`, `Application/Catalog/` — мёртвый код после split; в DI и runtime не используются.
+
+## Filament-кластеры `/cp`
+
+| Кластер | Ресурсы |
+|---------|---------|
+| Заказы | SiteLeads, Orders |
+| Клиенты | Clients, Reviews |
+| Оборудование | Equipment |
+| Склад | ConsumableWarehouseItems, SparePartWarehouseItems |
+| Компания | SiteContent, Branches |
+| Прайс-лист | SharpeningPriceItems, RepairPriceItems |
+| Идентичность | Masters, Managers |
 
 ## Общие правила
 
@@ -35,6 +51,6 @@ DDD + Hexagonal, BC-first. Описание **текущего кода**, не 
 - Бизнес-правила (ES): `es/`
 - Use cases: `app/Application/README.md`
 - DI портов: `app/Infrastructure/Shared/Provider/PersistenceServiceProvider.php`
-- Сидер: `database/seeders/DomainSeeder.php`
-- Публичный контент SPA: `GET /api/bootstrap` → `resources/js/stores/bootstrapStore.js` (моков API нет)
+- Сидер: `database/seeders/DomainSeeder.php` (Company → Pricing → Identity → …)
+- Публичный контент SPA: `GET /api/bootstrap` → `resources/js/stores/bootstrapStore.js`
 - Исключения API: `bootstrap/app.php`

@@ -17,6 +17,7 @@ final class OrderViewPresenter
     private const SERVICE_TYPE_LABELS = [
         'sharpening' => 'Заточка',
         'repair' => 'Ремонт',
+        'diagnosis' => 'Диагностика',
     ];
 
     /** @var array<string, string> */
@@ -165,11 +166,21 @@ final class OrderViewPresenter
 
     public static function masterName(?int $masterId): ?string
     {
-        if ($masterId === null) {
+        return self::userName($masterId);
+    }
+
+    public static function managerName(?int $managerId): ?string
+    {
+        return self::userName($managerId);
+    }
+
+    private static function userName(?int $userId): ?string
+    {
+        if ($userId === null) {
             return null;
         }
 
-        $user = UserModel::query()->find($masterId);
+        $user = UserModel::query()->find($userId);
 
         return $user !== null ? trim($user->name.' '.$user->surname) : null;
     }

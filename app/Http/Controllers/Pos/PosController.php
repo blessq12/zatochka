@@ -19,6 +19,7 @@ use App\Application\OrderFulfillment\CommandHandler\ReturnOrderToWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\UpdateInternalNotesHandler;
 use App\Application\OrderFulfillment\Presenter\PosOrderPresenter;
+use App\Application\OrderFulfillment\ReadModel\PosOrderListReadModelBuilder;
 use App\Application\OrderFulfillment\Query\GetPosDashboardQuery;
 use App\Application\OrderFulfillment\Query\GetPosOrderCountsQuery;
 use App\Application\OrderFulfillment\Query\GetPosOrderDetailQuery;
@@ -91,8 +92,11 @@ final class PosController
         return response()->json(['data' => $data]);
     }
 
-    public function index(Request $request, GetPosOrdersQueryHandler $handler): JsonResponse
-    {
+    public function index(
+        Request $request,
+        GetPosOrdersQueryHandler $handler,
+        PosOrderListReadModelBuilder $listReadModel,
+    ): JsonResponse {
         $validated = $request->validate([
             'status' => ['nullable', Rule::enum(PosOrderListTab::class)],
             'page' => ['nullable', 'integer', 'min:1'],
@@ -107,7 +111,7 @@ final class PosController
         ));
 
         return response()->json([
-            'data' => PosOrderPresenter::list($result['items']),
+            'data' => $listReadModel->list($result['items']),
             'meta' => [
                 'total' => $result['total'],
                 'page' => $result['page'],

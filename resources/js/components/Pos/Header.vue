@@ -103,6 +103,11 @@ import { useRouter, useRoute } from "vue-router";
 import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
 import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
 import { usePosStore } from "../../stores/posStore.js";
+import {
+    POS_ORDER_TAB_KEYS,
+    POS_ORDER_TABS,
+    formatPosOrderTabLabel,
+} from "../../composables/usePosOrderTabs.js";
 
 export default {
     name: "PosHeader",
@@ -151,34 +156,20 @@ export default {
 
         // Формируем список статусов заказов для мобильного меню
         const orderStatsItems = computed(() => {
-            if (!customContent.value) return [];
-            
-            return [
-                {
-                    name: 'pos.orders.new',
-                    to: { name: 'pos.orders.new' },
-                    label: `Новые (${ordersCount.value.new || 0})`,
-                    active: route.name === 'pos.orders.new'
-                },
-                {
-                    name: 'pos.orders.active',
-                    to: { name: 'pos.orders.active' },
-                    label: `Активные (${ordersCount.value.in_work || 0})`,
-                    active: route.name === 'pos.orders.active'
-                },
-                {
-                    name: 'pos.orders.waiting-parts',
-                    to: { name: 'pos.orders.waiting-parts' },
-                    label: `Ожидание запчастей (${ordersCount.value.waiting_parts || 0})`,
-                    active: route.name === 'pos.orders.waiting-parts'
-                },
-                {
-                    name: 'pos.orders.completed',
-                    to: { name: 'pos.orders.completed' },
-                    label: `Завершенные (${ordersCount.value.ready || 0})`,
-                    active: route.name === 'pos.orders.completed'
-                }
-            ];
+            if (!customContent.value) {
+                return [];
+            }
+
+            return POS_ORDER_TAB_KEYS.map((key) => {
+                const tab = POS_ORDER_TABS[key];
+
+                return {
+                    name: tab.routeName,
+                    to: { name: tab.routeName },
+                    label: formatPosOrderTabLabel(key, ordersCount.value),
+                    active: route.name === tab.routeName,
+                };
+            });
         });
 
         const toggleMobileMenu = () => {

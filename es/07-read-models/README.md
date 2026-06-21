@@ -22,12 +22,14 @@
 
 | Поле | Источник |
 |------|----------|
-| `prices` | BC Справочники (`PriceBlock` sharpening + repair) |
-| `contacts` | `SiteSetting` — телефон, email, адрес, соцсети |
-| `schedule` | `SiteSetting` — `days[]` по дням недели |
-| `delivery_info` | `SiteSetting` — условия бесплатной доставки, преимущества |
-| `company` | `SiteSetting` — название, ИП, ИНН, ОГРН, адреса |
-| `faq` | `SiteSetting` — вопросы/ответы для главной |
+| `prices` | BC Pricing (`GetPublicPriceList`) |
+| `contacts` | BC Company — `SiteContent` (ключ contacts) |
+| `schedule` | `SiteContent` — `days[]` по дням недели |
+| `delivery_info` | `SiteContent` — условия бесплатной доставки, преимущества |
+| `company` | `SiteContent` — название, ИП, ИНН, ОГРН, адреса |
+| `faq` | `SiteContent` — вопросы/ответы для главной |
+
+Handler: `Application/PublicSite/GetPublicBootstrapQueryHandler` (фасад над Company + Pricing).
 
 **Vue:** `bootstrapStore` — один запрос при старте SPA; хардкод и axios-моки убраны.
 

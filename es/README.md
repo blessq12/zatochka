@@ -49,7 +49,7 @@
 
 ### Технические решения
 
-- Монолит Laravel, 6 BC, `app/Domain/{BcName}/`
+- Монолит Laravel, 7 Domain BC + PublicSite (фасад), `app/Domain/{BcName}/`
 - Domain events синхронно (Laravel events)
 - Чтение: прямой Eloquent, новый REST API
 - PDF: DomPDF/Snappy, без хранения файлов в MVP

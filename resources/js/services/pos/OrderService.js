@@ -18,7 +18,15 @@ export const orderService = {
         }
 
         const response = await axios.get(POS_ORDERS_BASE, { params });
-        return response.data.data || [];
+
+        return {
+            items: response.data.data || [],
+            meta: response.data.meta || {
+                total: 0,
+                page,
+                per_page: perPage,
+            },
+        };
     },
 
     async getNewOrders() {
@@ -85,13 +93,6 @@ export const orderService = {
         return response.data.data;
     },
 
-    async returnToWork(orderId) {
-        const response = await axios.post(
-            `${POS_ORDERS_BASE}/${orderId}/return-to-work`
-        );
-        return response.data.data;
-    },
-
     async updateInternalNotes(orderId, notes) {
         const response = await axios.patch(
             `${POS_ORDERS_BASE}/${orderId}/internal-notes`,
@@ -120,7 +121,7 @@ export const orderService = {
             new: "Новый",
             in_work: "В работе",
             waiting_parts: "Ожидание запчастей",
-            ready: "Готов",
+            ready: "Готов к выдаче",
             issued: "Выдан",
             cancelled: "Отменен",
         };

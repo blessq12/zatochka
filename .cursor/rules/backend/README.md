@@ -15,10 +15,10 @@ Cross-cutting. Отражают **фактическую** структуру р
 - Hexagonal: Domain без Laravel; Infrastructure — Eloquent-адаптеры
 - Repository ports → bindings в `PersistenceServiceProvider` (+ `PdfRendererInterface`)
 - Domain events — Laravel `event()`, синхронно
-- Миграции + `DomainSeeder` (филиал, прайс, настройки, демо-мастер/менеджер, склад)
+- Миграции + `DomainSeeder` (Company → Pricing → Identity → Warehouse → Equipment → ClientPortal → DemoOrder)
 - Auth: `User` (web/sanctum/POS), `ClientAuthModel` (guard `client`)
 - Exception → JSON mapping в `bootstrap/app.php` для `api/*`
-- Filament 4, панель `/cp`
+- Filament 4, панель `/cp`, 7 кластеров
 - DomPDF — PDF on-the-fly, без хранения файлов
 
 ## MVP закрыт (фазы 0–5)

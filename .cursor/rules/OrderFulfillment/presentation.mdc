@@ -6,12 +6,12 @@ alwaysApply: false
 
 # OrderFulfillment / Presentation
 
-## Filament `/cp`
+## Filament `/cp` — кластер «Заказы»
 
 - `SiteLeads/SiteLeadResource` — лиды (`converted=false`), action «Создать заказ» → `OrderPersistence` / `CreateOrderHandler`
 - `Orders/OrderResource` — CRUD заказов
 - `OrderManageActions` — назначение мастера, цены, материалы, выдача, отмена, оборудование, PDF
-- `ViewOrder` — карточка с works/materials
+- `ViewOrder` + `OrderInfolist` — карточка; форматирование через `OrderViewPresenter`
 
 ## POS `/api/pos/*` (Sanctum)
 

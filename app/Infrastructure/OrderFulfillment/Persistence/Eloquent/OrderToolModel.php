@@ -11,6 +11,7 @@ class OrderToolModel extends Model
 
     protected $fillable = [
         'order_id',
+        'name',
         'tool_type',
         'quantity',
     ];

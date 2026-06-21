@@ -13,11 +13,11 @@
 
 ## Хранение данных bootstrap
 
-Контакты, график, доставка, company, FAQ — **в БД** (`site_settings`, JSON по ключам). Сидер: `DomainSeeder`. Filament CRUD настроек — **не** в MVP.
+Контакты, график, доставка, company, FAQ — **в БД** (`site_settings`, JSON по ключам). BC **Company**. Сидер: `CompanySeeder` → `DomainSeeder`. Filament CRUD — кластер «Компания».
 
-Прайс — `PriceBlock` / `PriceItem` в BC Справочники.
+Прайс — `PriceBlock` / `PriceItem` в BC **Pricing**. Filament CRUD — кластер «Прайс-лист».
 
-Фронт: `GET /api/bootstrap` → Pinia `bootstrapStore`; каталог `resources/js/mocks/` удалён.
+Bootstrap — `Application/PublicSite/GetPublicBootstrap` (фасад). Фронт: `GET /api/bootstrap` → Pinia `bootstrapStore`.
 
 ## Будущее (не MVP)
 

@@ -3,8 +3,8 @@
         <div v-if="isLoading" class="loading">Загрузка...</div>
         <div v-else-if="!order" class="error-state">
             <p>Заказ не найден</p>
-            <router-link :to="{ name: 'pos.orders.active' }" class="btn-back">
-                Вернуться к активным заказам
+            <router-link :to="{ name: backRouteName }" class="btn-back">
+                Вернуться к списку
             </router-link>
         </div>
         <div v-else class="order-content">
@@ -31,7 +31,7 @@
                         </div>
                     </div>
                     <router-link
-                        :to="{ name: 'pos.orders.active' }"
+                        :to="{ name: backRouteName }"
                         class="btn-back"
                     >
                         ← Назад
@@ -39,7 +39,7 @@
                 </div>
 
                 <!-- Кнопки изменения статуса -->
-                <div class="status-actions">
+                <div v-if="!isReadOnly" class="status-actions">
                     <button
                         @click="setInWorkStatus"
                         class="btn-status btn-in-work"
@@ -54,13 +54,14 @@
                             "
                             >Сохранение...</span
                         >
-                        <span v-else>В работе</span>
+                        <span v-else>{{ inWorkButtonLabel }}</span>
                     </button>
                     <button
                         @click="setWaitingPartsStatus"
                         class="btn-status btn-waiting-parts"
                         :disabled="
-                            isChangingStatus || order.status === 'waiting_parts'
+                            isChangingStatus ||
+                            order.status !== 'in_work'
                         "
                     >
                         <span
@@ -77,19 +78,25 @@
                         class="btn-status btn-complete"
                         :disabled="
                             isCompletingOrder ||
-                            order.status === 'ready' ||
+                            order.status !== 'in_work' ||
                             works.length === 0
                         "
-                        :title="
-                            works.length === 0
-                                ? 'Нельзя завершить заказ без выполненных работ'
-                                : ''
-                        "
+                        :title="completeButtonTitle"
                     >
                         <span v-if="isCompletingOrder">Сохранение...</span>
                         <span v-else>Завершить заказ</span>
                     </button>
                 </div>
+                <p v-else class="readonly-hint">
+                    Заказ готов к выдаче — только просмотр. Изменения через менеджера.
+                </p>
+                <p
+                    v-if="order.status === 'waiting_parts'"
+                    class="waiting-parts-hint"
+                >
+                    Заказ ожидает запчасти. Переведите в работу, чтобы добавить
+                    работы и комментарии.
+                </p>
             </div>
 
             <!-- Информация о заказе -->
@@ -244,7 +251,11 @@
                             </div>
                         </div>
                     </div>
-                    <form @submit.prevent="saveComment" class="comment-form">
+                    <form
+                        v-if="isWorkspaceEditable"
+                        @submit.prevent="saveComment"
+                        class="comment-form"
+                    >
                         <div class="form-group">
                             <label class="form-label"
                                 >Добавить комментарий</label
@@ -285,6 +296,7 @@
                                 }}</span>
                             </div>
                             <button
+                                v-if="isWorkspaceEditable"
                                 @click="deleteWork(work)"
                                 class="btn-delete btn-delete-inline"
                                 :disabled="isDeletingWork[work.id]"
@@ -296,7 +308,7 @@
                 </div>
 
                 <!-- Форма добавления работы -->
-                <div class="add-work-form">
+                <div v-if="isWorkspaceEditable" class="add-work-form">
                     <form @submit.prevent="addWork" class="work-form">
                         <div class="form-row-inline">
                             <div class="form-group flex-1">
@@ -335,6 +347,10 @@ import {
     getEquipmentBrandModelLine,
     getEquipmentSerialRows,
 } from "../../composables/usePosOrderDisplay.js";
+import {
+    orderListRouteNameForStatus,
+    POS_ORDER_TABS,
+} from "../../composables/usePosOrderTabs.js";
 import { orderService } from "../../services/pos/OrderService.js";
 import { toastService } from "../../services/toastService.js";
 import { usePosStore } from "../../stores/posStore.js";
@@ -426,16 +442,29 @@ export default {
         };
 
         const setInWorkStatus = async () => {
-            if (!confirm("Перевести заказ в статус 'В работе'?")) {
+            const status = order.value?.status;
+            const confirmMessage =
+                status === "new"
+                    ? "Взять заказ в работу?"
+                    : "Перевести заказ в статус «В работе»?";
+
+            if (!confirm(confirmMessage)) {
                 return;
             }
 
             isChangingStatus.value = true;
             changingToStatus.value = "in_work";
             try {
-                const orderData = await orderService.resume(orderId.value);
+                const orderData =
+                    status === "new"
+                        ? await orderService.takeToWork(orderId.value)
+                        : await orderService.resume(orderId.value);
                 syncOrderDetails(orderData);
-                toastService.success("Заказ переведен в работу");
+                toastService.success(
+                    status === "new"
+                        ? "Заказ взят в работу"
+                        : "Заказ переведен в работу"
+                );
 
                 const posStore = usePosStore();
                 await posStore.getOrdersCount();
@@ -508,6 +537,13 @@ export default {
         };
 
         const completeOrder = async () => {
+            if (order.value?.status !== "in_work") {
+                toastService.error(
+                    "Завершить можно только заказ в статусе «В работе»."
+                );
+                return;
+            }
+
             if (works.value.length === 0) {
                 toastService.error(
                     "Нельзя завершить заказ без выполненных работ. Добавьте хотя бы одну работу."
@@ -533,7 +569,7 @@ export default {
                 await posStore.getOrdersCount();
 
                 setTimeout(() => {
-                    router.push({ name: "pos.orders.active" });
+                    router.push({ name: "pos.orders.ready" });
                 }, 1500);
             } catch (error) {
                 console.error("Error completing order:", error);
@@ -554,6 +590,46 @@ export default {
             getEquipmentBrandModelLine(order.value?.equipment)
         );
 
+        const isReadOnly = computed(() => {
+            const status = order.value?.status;
+            return status === "ready" || status === "issued" || status === "cancelled";
+        });
+
+        const isWorkspaceEditable = computed(
+            () => order.value?.status === "in_work"
+        );
+
+        const inWorkButtonLabel = computed(() => {
+            switch (order.value?.status) {
+                case "new":
+                    return "Взять в работу";
+                case "waiting_parts":
+                    return "Вернуть в работу";
+                default:
+                    return "В работе";
+            }
+        });
+
+        const completeButtonTitle = computed(() => {
+            if (order.value?.status === "waiting_parts") {
+                return "Сначала переведите заказ в работу";
+            }
+
+            if (works.value.length === 0) {
+                return "Нельзя завершить заказ без выполненных работ";
+            }
+
+            return "";
+        });
+
+        const backRouteName = computed(() => {
+            if (order.value?.status) {
+                return orderListRouteNameForStatus(order.value.status);
+            }
+
+            return POS_ORDER_TABS.in_work.routeName;
+        });
+
         onMounted(async () => {
             await fetchOrder();
         });
@@ -566,6 +642,11 @@ export default {
             equipmentSerialRowsComputed,
             equipmentBrandModelLineComputed,
             formatPosOrderPaymentType,
+            isReadOnly,
+            isWorkspaceEditable,
+            inWorkButtonLabel,
+            completeButtonTitle,
+            backRouteName,
             isAddingWork,
             isDeletingWork,
             isCompletingOrder,
@@ -697,6 +778,26 @@ export default {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
+}
+
+.readonly-hint {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.waiting-parts-hint {
+    margin: 0.75rem 0 0;
+    padding: 0.75rem 1rem;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .btn-status {
@@ -943,22 +1044,11 @@ export default {
     white-space: pre-wrap;
 }
 
-.works-section,
-.materials-section {
+.works-section {
     background: white;
     border-radius: 0;
     padding: 1.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.materials-hint {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0 0 1rem;
-}
-
-.materials-section-readonly .material-body {
-    justify-content: flex-start;
 }
 
 .equipment-serial-list-work {
@@ -971,16 +1061,14 @@ export default {
     margin-bottom: 0.25rem;
 }
 
-.works-list,
-.materials-list {
+.works-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     margin-bottom: 2rem;
 }
 
-.work-item,
-.material-item {
+.work-item {
     border: 1px solid #e5e7eb;
     border-radius: 0;
     padding: 1rem;
@@ -988,14 +1076,12 @@ export default {
     transition: all 0.2s;
 }
 
-.work-item:hover,
-.material-item:hover {
+.work-item:hover {
     border-color: #003859;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.work-body,
-.material-body {
+.work-body {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1015,12 +1101,6 @@ export default {
     font-size: 0.9375rem;
 }
 
-.work-equipment-component {
-    font-size: 0.75rem;
-    color: #6b7280;
-    font-style: italic;
-}
-
 .btn-delete-inline {
     flex-shrink: 0;
 }
@@ -1036,42 +1116,9 @@ export default {
     margin-bottom: 1.5rem;
 }
 
-.material-info {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.5rem 1rem;
-}
-
-.material-name {
-    font-weight: 600;
-    color: #374151;
-    font-size: 0.9375rem;
-}
-
-.material-article {
-    font-size: 0.8125rem;
-    color: #6b7280;
-    font-family: monospace;
-}
-
-.material-quantity {
-    font-size: 0.8125rem;
-    color: #6b7280;
-}
-
-.add-work-form,
-.add-material-form {
+.add-work-form {
     border-top: 2px solid #e5e7eb;
     padding-top: 1.5rem;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
 }
 
 .form-row-inline {
@@ -1083,372 +1130,6 @@ export default {
 
 .form-group.flex-1 {
     flex: 1;
-}
-
-.form-group-quantity {
-    min-width: 120px;
-    max-width: 150px;
-}
-
-.material-form-row {
-    display: grid;
-    grid-template-columns: 1fr 160px;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    align-items: start;
-}
-
-.material-form-search {
-    display: flex;
-    flex-direction: column;
-}
-
-.material-form-quantity {
-    display: flex;
-    flex-direction: column;
-}
-
-.search-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    font-size: 0.9375rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 0;
-    transition: all 0.2s;
-    background: white;
-}
-
-.search-input:focus {
-    border-color: #003859;
-    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
-}
-
-.search-input::placeholder {
-    color: #9ca3af;
-}
-
-.quantity-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    text-align: center;
-    border: 2px solid #e5e7eb;
-    border-radius: 0;
-    transition: all 0.2s;
-    background: white;
-}
-
-.quantity-input:focus {
-    border-color: #003859;
-    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
-}
-
-.quantity-input::-webkit-inner-spin-button,
-.quantity-input::-webkit-outer-spin-button {
-    opacity: 1;
-    height: 1.5rem;
-    cursor: pointer;
-}
-
-.btn-add-material {
-    width: 100%;
-    padding: 0.875rem 1.5rem;
-    font-size: 0.9375rem;
-    font-weight: 700;
-    border-radius: 0;
-    transition: all 0.2s;
-}
-
-.btn-add-material:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.search-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #d1d5db;
-    border-radius: 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    max-height: 300px;
-    overflow-y: auto;
-    margin-top: 0.25rem;
-}
-
-.search-result-item {
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    border-bottom: 1px solid #f3f4f6;
-    transition: background-color 0.2s;
-}
-
-.search-result-item:last-child {
-    border-bottom: none;
-}
-
-.search-result-item:hover {
-    background-color: #f9fafb;
-}
-
-.search-result-item.no-results {
-    color: #6b7280;
-    cursor: default;
-}
-
-.search-result-item.no-results:hover {
-    background-color: white;
-}
-
-.result-name {
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.25rem;
-}
-
-.result-details {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.75rem;
-    color: #6b7280;
-}
-
-.btn-select-material {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    font-size: 0.9375rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 0;
-    background: white;
-    color: #374151;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.btn-select-material:hover {
-    border-color: #003859;
-    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.1);
-}
-
-.btn-select-material .placeholder-text {
-    color: #9ca3af;
-}
-
-.btn-select-arrow {
-    color: #6b7280;
-    font-size: 0.75rem;
-    margin-left: 0.5rem;
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1100;
-    padding: 2rem;
-    animation: fadeIn 0.2s;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-.material-search-modal {
-    max-width: 700px;
-    width: 100%;
-    max-height: 85vh;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(0, 56, 89, 0.2);
-    border-radius: 0;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
-    font-family: "Jost", sans-serif;
-}
-
-.modal-container {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    animation: slideIn 0.3s;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    background: #c20a6c;
-    border-bottom: none;
-}
-
-.modal-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: white;
-    margin: 0;
-    font-family: "Jost", sans-serif;
-}
-
-.modal-close-btn {
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 0;
-    font-size: 1.125rem;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Jost", sans-serif;
-}
-
-.modal-close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: white;
-}
-
-.modal-body {
-    padding: 1.5rem;
-    overflow-y: auto;
-    flex: 1;
-    background: #f9fafb;
-}
-
-.search-input-wrapper {
-    margin-bottom: 1.5rem;
-}
-
-.search-input-full {
-    width: 100%;
-    padding: 0.875rem 1rem;
-    font-size: 1rem;
-    border: 1px solid rgba(0, 56, 89, 0.25);
-    border-radius: 0;
-    transition: all 0.2s;
-    background: white;
-    font-family: "Jost", sans-serif;
-}
-
-.search-input-full:focus {
-    border-color: #003859;
-    box-shadow: 0 0 0 3px rgba(0, 56, 89, 0.15);
-    outline: none;
-}
-
-.search-loading {
-    margin-top: 0.5rem;
-    color: #6b7280;
-    font-size: 0.875rem;
-}
-
-.search-results-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.search-result-item-modal {
-    padding: 1rem;
-    border: 1px solid rgba(0, 56, 89, 0.2);
-    border-radius: 0;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: rgba(255, 255, 255, 0.9);
-}
-
-.search-result-item-modal:hover {
-    border-color: rgba(0, 56, 89, 0.4);
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 56, 89, 0.1);
-}
-
-.result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-    gap: 1rem;
-}
-
-.result-name {
-    font-weight: 700;
-    color: #003859;
-    font-size: 1rem;
-    flex: 1;
-}
-
-.result-article {
-    font-size: 0.875rem;
-    color: #6b7280;
-    white-space: nowrap;
-}
-
-.result-footer {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    font-size: 0.875rem;
-    color: #6b7280;
-    flex-wrap: wrap;
-}
-
-.result-category {
-    padding: 0.25rem 0.5rem;
-    background: #f3f4f6;
-    border-radius: 0;
-}
-
-.result-available {
-    color: #059669;
-    font-weight: 600;
-}
-
-.no-results-message {
-    text-align: center;
-    padding: 3rem 2rem;
-    color: #6b7280;
-    font-size: 0.9375rem;
 }
 
 .form-group {
@@ -1477,63 +1158,6 @@ export default {
     box-shadow: 0 0 0 3px rgba(4, 100, 144, 0.1);
 }
 
-.select-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.select-wrapper .select-arrow {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    color: #6b7280;
-    font-size: 0.75rem;
-    z-index: 1;
-}
-
-.form-select {
-    padding: 0.5rem 2rem 0.5rem 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0;
-    font-size: 0.875rem;
-    font-family: "Jost", sans-serif;
-    width: 100%;
-    transition: all 0.2s;
-    background: white;
-    color: #374151;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    cursor: pointer;
-}
-
-.form-select:focus {
-    outline: none;
-    border-color: #046490;
-    box-shadow: 0 0 0 3px rgba(4, 100, 144, 0.1);
-}
-
-.form-select:hover {
-    border-color: #9ca3af;
-}
-
-.equipment-component-select {
-    background-image: none;
-}
-
-.equipment-component-select option {
-    padding: 0.5rem;
-    background: white;
-    color: #374151;
-}
-
-.equipment-component-select option:first-child {
-    color: #9ca3af;
-    font-style: italic;
-}
-
 .btn-primary {
     padding: 0.75rem 1.5rem;
     background: #046490;
@@ -1555,8 +1179,7 @@ export default {
     cursor: not-allowed;
 }
 
-.btn-add-work,
-.btn-add-material {
+.btn-add-work {
     width: 100%;
     margin-top: 0.5rem;
 }
@@ -1580,72 +1203,6 @@ export default {
 .btn-delete:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-}
-
-.btn-in-work {
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-in-work:hover:not(:disabled) {
-    background: #2563eb;
-}
-
-.btn-in-work:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: #9ca3af;
-}
-
-.btn-waiting-parts {
-    padding: 0.75rem 1.5rem;
-    background: #f59e0b;
-    color: white;
-    border: none;
-    border-radius: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-waiting-parts:hover:not(:disabled) {
-    background: #d97706;
-}
-
-.btn-waiting-parts:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: #9ca3af;
-}
-
-.btn-complete {
-    padding: 0.75rem 1.5rem;
-    background: #059669;
-    color: white;
-    border: none;
-    border-radius: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-complete:hover:not(:disabled) {
-    background: #047857;
-}
-
-.btn-complete:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: #9ca3af;
 }
 
 .loading,
@@ -1784,21 +1341,10 @@ export default {
         font-size: 0.8125rem;
     }
 
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-    }
-
     .form-row-inline {
         flex-direction: column;
         align-items: stretch;
         gap: 0.5rem;
-    }
-
-    .material-form-row {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
     }
 
     .form-group {
@@ -1811,37 +1357,12 @@ export default {
     }
 
     .form-input,
-    .form-select,
     .form-textarea {
         padding: 0.5rem 0.75rem;
         font-size: 0.8125rem;
     }
 
-    .select-wrapper .select-arrow {
-        right: 0.5rem;
-        font-size: 0.625rem;
-    }
-
-    .form-select {
-        padding-right: 1.75rem;
-    }
-
-    .select-wrapper .select-arrow {
-        right: 0.5rem;
-        font-size: 0.625rem;
-    }
-
-    .form-select {
-        padding-right: 1.75rem;
-    }
-
-    .form-group-quantity {
-        min-width: auto;
-        max-width: none;
-    }
-
-    .works-section,
-    .materials-section {
+    .works-section {
         padding: 0.75rem;
         border-radius: 0;
     }
@@ -1851,33 +1372,9 @@ export default {
         margin-bottom: 0.75rem;
     }
 
-    .work-item,
-    .material-item {
+    .work-item {
         padding: 0.75rem;
         border-radius: 0;
-    }
-
-    .item-header {
-        margin-bottom: 0.5rem;
-    }
-
-    .item-name {
-        font-size: 0.875rem;
-    }
-
-    .item-details {
-        font-size: 0.75rem;
-        gap: 0.25rem;
-    }
-
-    .btn-remove {
-        padding: 0.375rem 0.5rem;
-        font-size: 0.75rem;
-    }
-
-    .btn-add {
-        padding: 0.625rem 0.75rem;
-        font-size: 0.8125rem;
     }
 
     .btn-save-comment {

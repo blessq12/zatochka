@@ -42,7 +42,7 @@ const STAT_LABELS = {
     new: "Новых заказов",
     in_work: "В работе",
     waiting_parts: "Ожидание запчастей",
-    ready: "Готовых заказов",
+    ready: "Готово к выдаче",
 };
 
 export default {

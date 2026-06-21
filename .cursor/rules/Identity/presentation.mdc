@@ -1,6 +1,6 @@
 ---
 description: Identity — presentation (текущий код)
-globs: app/Http/**,routes/**,config/auth.php,app/Providers/Filament/**
+globs: app/Http/**,routes/**,config/auth.php,app/Providers/Filament/**,app/Filament/Resources/Masters/**,app/Filament/Resources/Managers/**,app/Filament/Clusters/IdentityCluster.php
 alwaysApply: false
 ---
 
@@ -16,6 +16,11 @@ alwaysApply: false
 
 - `AdminPanelProvider` — path `/cp`, guard `web`
 - Login: `/cp/login`
+- Кластер «Идентичность»:
+  - `Masters/MasterResource` — CRUD мастеров (`UserRole::Master`)
+  - `Managers/ManagerResource` — CRUD менеджеров (`UserRole::Manager`)
+
+Handlers: `RegisterMasterHandler`, `UpdateMasterHandler`.
 
 ## Guards (`config/auth.php`)
 

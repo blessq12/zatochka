@@ -14,11 +14,14 @@ use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\IssueOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\MarkOrderReadyHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
+use App\Domain\OrderFulfillment\Enum\OrderSource;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
+use App\Domain\OrderFulfillment\Event\OrderCreated;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
 use Database\Seeders\IdentitySeeder;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 final class OrderLifecycleTest extends TestCase
@@ -67,5 +70,27 @@ final class OrderLifecycleTest extends TestCase
 
         $order = app(IssueOrderHandler::class)->handle(new IssueOrderCommand($orderId));
         $this->assertSame(OrderStatus::Issued, $order->status());
+    }
+
+    public function test_создание_оператором_публикует_order_created(): void
+    {
+        Event::fake([OrderCreated::class]);
+
+        $this->seed(\Database\Seeders\DomainSeeder::class);
+
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
+        $manager = UserModel::query()->where('email', IdentitySeeder::MANAGER_EMAIL)->firstOrFail();
+
+        app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+            serviceTypes: ['diagnosis'],
+            clientSnapshot: new ClientSnapshot(['full_name' => 'Клиент', 'phone' => '+79001112233']),
+            masterId: $master->id,
+            managerId: $manager->id,
+        ));
+
+        Event::assertDispatched(OrderCreated::class, function (OrderCreated $event): bool {
+            return $event->order->source() === OrderSource::Manual
+                && $event->order->status() === OrderStatus::New;
+        });
     }
 }
