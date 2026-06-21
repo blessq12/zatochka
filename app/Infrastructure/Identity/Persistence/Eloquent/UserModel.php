@@ -4,12 +4,14 @@ namespace App\Infrastructure\Identity\Persistence\Eloquent;
 
 use App\Domain\Identity\Enum\UserRole;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class UserModel extends Authenticatable
+class UserModel extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens;
@@ -49,6 +51,11 @@ class UserModel extends Authenticatable
     public function isManager(): bool
     {
         return $this->role === UserRole::Manager;
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isManager();
     }
 
     protected static function newFactory(): UserFactory
