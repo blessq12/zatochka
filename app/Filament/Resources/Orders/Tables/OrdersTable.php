@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Tables;
 use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Filament\Support\OrderManageActionSupport;
+use App\Filament\Support\OrderTableSearch;
 use App\Filament\Support\OrderViewPresenter;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
@@ -13,7 +14,9 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class OrdersTable
 {
@@ -21,10 +24,11 @@ class OrdersTable
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->searchable()
+            ->searchUsing(fn (Builder $query, string $search): Builder => OrderTableSearch::apply($query, $search))
             ->columns([
                 TextColumn::make('order_number')
-                    ->label('Номер')
-                    ->searchable(),
+                    ->label('Номер'),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
@@ -51,6 +55,34 @@ class OrdersTable
                 TextColumn::make('created_at')
                     ->label('Создан')
                     ->dateTime('d.m.Y H:i'),
+            ])
+            ->filters([
+                SelectFilter::make('service_type')
+                    ->label('Услуга')
+                    ->options([
+                        'sharpening' => 'Заточка',
+                        'repair' => 'Ремонт',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+
+                        if (blank($value)) {
+                            return $query;
+                        }
+
+                        return $query->whereJsonContains('service_types', $value);
+                    }),
+                SelectFilter::make('master_id')
+                    ->label('Мастер')
+                    ->options(fn (): array => UserModel::query()
+                        ->where('role', UserRole::Master)
+                        ->orderBy('name')
+                        ->get(['id', 'name', 'surname'])
+                        ->mapWithKeys(fn (UserModel $user): array => [
+                            $user->id => trim($user->name.' '.$user->surname),
+                        ])
+                        ->all())
+                    ->searchable(),
             ])
             ->recordActions([
                 ViewAction::make(),
