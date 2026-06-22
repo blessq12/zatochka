@@ -6,14 +6,26 @@ const formatEquipmentItem = (item) => {
         ? `${item.name} (${brandModel})`
         : item.name;
 
-    const serialNumbers = Array.isArray(item.serial_numbers)
-        ? item.serial_numbers
-        : [];
+    const serialNumbers = item.serial_numbers;
+
+    let serialNumbersDisplay = "—";
+
+    if (
+        serialNumbers &&
+        typeof serialNumbers === "object" &&
+        !Array.isArray(serialNumbers)
+    ) {
+        serialNumbersDisplay = Object.entries(serialNumbers)
+            .map(([component, serial]) => `${component}: ${serial}`)
+            .join(", ");
+    } else if (Array.isArray(serialNumbers)) {
+        serialNumbersDisplay = serialNumbers.join(", ");
+    }
 
     return {
         ...item,
         full_name: fullName,
-        serial_numbers_display: serialNumbers.join(", "),
+        serial_numbers_display: serialNumbersDisplay,
     };
 };
 

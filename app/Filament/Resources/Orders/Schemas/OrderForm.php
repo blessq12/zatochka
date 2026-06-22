@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderUrgency;
+use App\Filament\Support\EquipmentSerialNumbersFormField;
 use App\Filament\Support\OrderFormCommandBuilder;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\ClientModel;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
@@ -186,6 +187,10 @@ class OrderForm
                         TextInput::make('equipment_model')
                             ->label('Модель')
                             ->maxLength(255)
+                            ->visible(fn (Get $get): bool => $get('service_type') === 'repair'
+                                && $get('equipment_mode') === 'new'),
+
+                        EquipmentSerialNumbersFormField::repeater('equipment_serial_numbers')
                             ->visible(fn (Get $get): bool => $get('service_type') === 'repair'
                                 && $get('equipment_mode') === 'new'),
 

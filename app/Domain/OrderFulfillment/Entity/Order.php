@@ -201,6 +201,18 @@ final class Order
         return $this->clientId;
     }
 
+    public function linkToClient(int $clientId): self
+    {
+        if ($this->clientId !== null) {
+            throw new OrderPolicyViolation('Заказ уже привязан к клиенту.');
+        }
+
+        $clone = clone $this;
+        $clone->clientId = $clientId;
+
+        return $clone;
+    }
+
     public function equipmentId(): ?int
     {
         return $this->equipmentId;

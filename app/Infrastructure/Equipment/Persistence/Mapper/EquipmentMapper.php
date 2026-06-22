@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Equipment\Persistence\Mapper;
 
 use App\Domain\Equipment\Entity\Equipment;
+use App\Domain\Equipment\ValueObject\ComponentSerialNumbers;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 
 final class EquipmentMapper
@@ -14,7 +15,7 @@ final class EquipmentMapper
             name: $model->name,
             brand: $model->brand,
             model: $model->model,
-            serialNumbers: $model->serial_numbers ?? [],
+            serialNumbers: ComponentSerialNumbers::fromStorage($model->serial_numbers)->toStorage(),
         );
     }
 

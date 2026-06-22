@@ -2,8 +2,8 @@
 
 namespace App\Filament\Support;
 
-use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\OrderFulfillment\Enum\OrderSource;
+use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\OrderFulfillment\Enum\OrderUrgency;
 use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
@@ -71,24 +71,15 @@ final class OrderViewPresenter
     public static function statusHint(OrderModel $order): ?string
     {
         return match (true) {
-            $order->status === OrderStatus::New && $order->master_id === null =>
-                'Назначьте мастера — после этого заказ появится в POS.',
-            $order->status === OrderStatus::New && $order->master_id !== null =>
-                'Мастер назначен. Заказ ждёт начала работы в POS.',
-            $order->status === OrderStatus::InWork && filled($order->rework_feedback) =>
-                'Заказ на доработке у мастера после вашего возврата с приёмки.',
-            $order->status === OrderStatus::InWork && self::hasUnpricedWorks($order) =>
-                'Мастер добавил работы — укажите цены в блоке «Состав и стоимость».',
-            $order->status === OrderStatus::InWork =>
-                'Заказ в работе. Контролируйте состав и итоговую сумму.',
-            $order->status === OrderStatus::WaitingParts =>
-                'Заказ на паузе: ожидание запчастей со склада.',
-            $order->status === OrderStatus::Ready =>
-                'Заказ готов по мнению мастера. Проверьте состав и качество — выдайте клиенту или верните на доработку.',
-            $order->status === OrderStatus::Issued =>
-                'Заказ выдан клиенту. Редактирование состава недоступно.',
-            $order->status === OrderStatus::Cancelled =>
-                'Заказ отменён и не участвует в работе мастерской.',
+            $order->status === OrderStatus::New && $order->master_id === null => 'Назначьте мастера — после этого заказ появится в POS.',
+            $order->status === OrderStatus::New && $order->master_id !== null => 'Мастер назначен. Заказ ждёт начала работы в POS.',
+            $order->status === OrderStatus::InWork && filled($order->rework_feedback) => 'Заказ на доработке у мастера после вашего возврата с приёмки.',
+            $order->status === OrderStatus::InWork && self::hasUnpricedWorks($order) => 'Мастер добавил работы — укажите цены в блоке «Состав и стоимость».',
+            $order->status === OrderStatus::InWork => 'Заказ в работе. Контролируйте состав и итоговую сумму.',
+            $order->status === OrderStatus::WaitingParts => 'Заказ на паузе: ожидание запчастей со склада.',
+            $order->status === OrderStatus::Ready => 'Заказ готов по мнению мастера. Проверьте состав и качество — выдайте клиенту или верните на доработку.',
+            $order->status === OrderStatus::Issued => 'Заказ выдан клиенту. Редактирование состава недоступно.',
+            $order->status === OrderStatus::Cancelled => 'Заказ отменён и не участвует в работе мастерской.',
             default => null,
         };
     }
@@ -249,6 +240,19 @@ final class OrderViewPresenter
         }
 
         return false;
+    }
+
+    public static function financialSummaryLabel(OrderModel $order): string
+    {
+        $label = $order->price !== null
+            ? 'Итого '.self::formatMoney((string) $order->price)
+            : 'Итого не рассчитана';
+
+        if (self::hasUnpricedWorks($order)) {
+            $label .= ' · работы без цены';
+        }
+
+        return $label;
     }
 
     public static function formatMoney(?string $amount): string

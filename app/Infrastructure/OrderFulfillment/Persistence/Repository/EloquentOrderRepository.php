@@ -14,6 +14,7 @@ use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderToolModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderWorkModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Mapper\OrderMapper;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentOrderRepository implements OrderRepositoryInterface
@@ -59,7 +60,7 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
             ->value('order_number');
     }
 
-  /** @return array{items: list<Order>, total: int} */
+    /** @return array{items: list<Order>, total: int} */
     public function findForMaster(int $masterId, ?PosOrderListTab $tab, int $page, int $perPage): array
     {
         $query = OrderModel::query()
@@ -142,6 +143,29 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
             ->update(['client_id' => $clientId]);
     }
 
+    public function searchGuestOrders(string $search, int $limit = 50): array
+    {
+        $query = OrderModel::query()
+            ->whereNull('client_id')
+            ->orderByDesc('created_at')
+            ->limit($limit);
+
+        $search = trim($search);
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search): void {
+                $builder
+                    ->where('order_number', 'like', "%{$search}%")
+                    ->orWhere('client_snapshot->full_name', 'like', "%{$search}%")
+                    ->orWhere('client_snapshot->phone', 'like', "%{$search}%");
+            });
+        }
+
+        return $query
+            ->get()
+            ->map(fn (OrderModel $model) => $this->mapper->toDomain($model))
+            ->all();
+    }
+
     public function findByEquipmentId(int $equipmentId, int $limit = 20): array
     {
         return OrderModel::query()
@@ -178,7 +202,7 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
     /**
      * @return array{items: list<Order>, total: int}
      */
-    private function paginateOrders(\Illuminate\Database\Eloquent\Builder $query, int $page, int $perPage): array
+    private function paginateOrders(Builder $query, int $page, int $perPage): array
     {
         $query->orderByDesc('created_at');
 

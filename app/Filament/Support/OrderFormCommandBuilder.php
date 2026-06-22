@@ -165,6 +165,7 @@ final class OrderFormCommandBuilder
 
         $equipment = app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
             name: $name,
+            serialNumbers: EquipmentFormData::serialNumbersFromOrderForm($data),
             brand: filled($data['equipment_brand'] ?? null) ? (string) $data['equipment_brand'] : null,
             model: filled($data['equipment_model'] ?? null) ? (string) $data['equipment_model'] : null,
         ));

@@ -6,15 +6,16 @@ use App\Application\ClientPortal\Command\SubmitSiteLeadCommand;
 use App\Application\ClientPortal\CommandHandler\SubmitSiteLeadHandler;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Domain\ClientPortal\Exception\SiteLeadPolicyViolation;
-use App\Domain\ClientPortal\Repository\SiteLeadRepositoryInterface;
+use App\Domain\Equipment\Repository\EquipmentRepositoryInterface;
 use App\Domain\OrderFulfillment\Enum\OrderSource;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\OrderFulfillment\Enum\OrderUrgency;
 use App\Filament\Support\LeadToOrderFormData;
 use App\Filament\Support\OrderFormCommandBuilder;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\SiteLeadModel;
-use Database\Seeders\IdentitySeeder;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
+use Database\Seeders\DomainSeeder;
+use Database\Seeders\IdentitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,7 +25,7 @@ final class LeadConversionTest extends TestCase
 
     public function test_конвертация_лида_заточки_предзаполняет_инструменты(): void
     {
-        $this->seed(\Database\Seeders\DomainSeeder::class);
+        $this->seed(DomainSeeder::class);
 
         $manager = UserModel::query()->where('email', IdentitySeeder::MANAGER_EMAIL)->firstOrFail();
 
@@ -64,7 +65,7 @@ final class LeadConversionTest extends TestCase
 
     public function test_конвертация_лида_ремонта_предзаполняет_оборудование(): void
     {
-        $this->seed(\Database\Seeders\DomainSeeder::class);
+        $this->seed(DomainSeeder::class);
 
         $manager = UserModel::query()->where('email', IdentitySeeder::MANAGER_EMAIL)->firstOrFail();
 
@@ -101,7 +102,7 @@ final class LeadConversionTest extends TestCase
 
     public function test_повторная_конвертация_лида_запрещена(): void
     {
-        $this->seed(\Database\Seeders\DomainSeeder::class);
+        $this->seed(DomainSeeder::class);
 
         $manager = UserModel::query()->where('email', IdentitySeeder::MANAGER_EMAIL)->firstOrFail();
 
@@ -161,5 +162,44 @@ final class LeadConversionTest extends TestCase
         $this->assertSame('repair', $data['service_type']);
         $this->assertSame('Device X', $data['equipment_name']);
         $this->assertSame('Сломан', $data['problem_description']);
+    }
+
+    public function test_создание_ремонта_с_новым_оборудованием_и_серийниками(): void
+    {
+        $this->seed(DomainSeeder::class);
+
+        $manager = UserModel::query()->where('email', IdentitySeeder::MANAGER_EMAIL)->firstOrFail();
+
+        $order = app(CreateOrderHandler::class)->handle(
+            OrderFormCommandBuilder::buildCommand([
+                'service_type' => 'repair',
+                'client_mode' => 'guest',
+                'client_full_name' => 'Иван Тест',
+                'client_phone' => '+79005556677',
+                'manager_id' => $manager->id,
+                'equipment_mode' => 'new',
+                'equipment_name' => 'Аппарат Strong 2100',
+                'equipment_brand' => 'Strong',
+                'equipment_model' => '2100',
+                'equipment_serial_numbers' => [
+                    ['component' => 'ручка', 'serial' => 'SN-HND-001'],
+                    ['component' => 'блок питания', 'serial' => 'SN-PSU-001'],
+                ],
+            ]),
+        );
+
+        $equipmentId = $order->equipmentId();
+        $this->assertNotNull($equipmentId);
+
+        $equipment = app(EquipmentRepositoryInterface::class)->findById($equipmentId);
+
+        $this->assertNotNull($equipment);
+        $this->assertSame('Аппарат Strong 2100', $equipment->name());
+        $this->assertSame('Strong', $equipment->brand());
+        $this->assertSame('2100', $equipment->model());
+        $this->assertSame([
+            'ручка' => 'SN-HND-001',
+            'блок питания' => 'SN-PSU-001',
+        ], $equipment->serialNumbers());
     }
 }

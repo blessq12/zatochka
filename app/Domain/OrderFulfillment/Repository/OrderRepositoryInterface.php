@@ -35,6 +35,11 @@ interface OrderRepositoryInterface
 
     public function linkGuestOrdersByPhone(int $clientId, string $phone): int;
 
+    /**
+     * @return list<Order>
+     */
+    public function searchGuestOrders(string $search, int $limit = 50): array;
+
     /** @return list<Order> */
     public function findByEquipmentId(int $equipmentId, int $limit = 20): array;
 

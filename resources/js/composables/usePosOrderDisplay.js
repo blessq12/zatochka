@@ -27,6 +27,23 @@ export function getEquipmentSerialRows(equipment) {
             .map((sn) => ({ name: null, serial_number: String(sn) }));
     }
 
+    if (
+        equipment.serial_numbers &&
+        typeof equipment.serial_numbers === "object"
+    ) {
+        return Object.entries(equipment.serial_numbers)
+            .filter(
+                ([name, serial]) =>
+                    String(name).trim() !== "" &&
+                    serial &&
+                    String(serial).trim() !== ""
+            )
+            .map(([name, serial]) => ({
+                name: String(name),
+                serial_number: String(serial),
+            }));
+    }
+
     if (!equipment.serial_number || !Array.isArray(equipment.serial_number)) {
         return [];
     }

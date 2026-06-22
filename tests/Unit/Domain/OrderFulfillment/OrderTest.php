@@ -171,6 +171,20 @@ final class OrderTest extends TestCase
         $this->assertNull($order->reworkFeedback());
     }
 
+    public function test_гостевой_заказ_привязывается_к_клиенту(): void
+    {
+        $linked = $this->newOrder()->linkToClient(15);
+
+        $this->assertSame(15, $linked->clientId());
+    }
+
+    public function test_нельзя_повторно_привязать_заказ_к_клиенту(): void
+    {
+        $this->expectException(OrderPolicyViolation::class);
+
+        $this->newOrder()->linkToClient(15)->linkToClient(16);
+    }
+
     private function newOrder(): Order
     {
         return Order::create(

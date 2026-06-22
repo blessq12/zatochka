@@ -10,5 +10,10 @@ interface ReviewRepositoryInterface
 
     public function findByOrderId(int $orderId): ?Review;
 
+    /**
+     * @return list<Review>
+     */
+    public function findByClientId(int $clientId): array;
+
     public function save(Review $review): Review;
 }

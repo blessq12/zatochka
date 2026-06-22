@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Reviews;
 
-use App\Filament\Clusters\ClientPortalCluster;
 use App\Filament\Resources\Reviews\Pages\ListReviews;
 use App\Filament\Resources\Reviews\Tables\ReviewsTable;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\ReviewModel;
@@ -13,7 +12,7 @@ use Filament\Tables\Table;
 
 class ReviewResource extends Resource
 {
-    protected static ?string $cluster = ClientPortalCluster::class;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $model = ReviewModel::class;
 

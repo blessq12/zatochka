@@ -18,19 +18,28 @@ final class EquipmentSeeder extends Seeder
                 'name' => self::STRONG_2100_NAME,
                 'brand' => 'Strong',
                 'model' => '2100',
-                'serial_numbers' => ['SN-STR-2100-001'],
+                'serial_numbers' => [
+                    'ручка' => 'SN-STR-2100-HND',
+                    'блок питания' => 'SN-STR-2100-PSU',
+                    'блок управления' => 'SN-STR-2100-CTRL',
+                ],
             ],
             [
                 'name' => 'Marathon Champion 3',
                 'brand' => 'Marathon',
                 'model' => 'Champion 3',
-                'serial_numbers' => ['MC3-2024-7781'],
+                'serial_numbers' => [
+                    'ручка' => 'MC3-2024-7781',
+                ],
             ],
             [
                 'name' => 'Фрезер Micro NX',
                 'brand' => 'Micro',
                 'model' => 'NX',
-                'serial_numbers' => ['NX-4412', 'NX-4412-B'],
+                'serial_numbers' => [
+                    'корпус' => 'NX-4412',
+                    'педаль' => 'NX-4412-B',
+                ],
             ],
         ];
 

@@ -3,7 +3,9 @@
 namespace Tests\Feature\Equipment;
 
 use App\Application\Equipment\Command\RegisterEquipmentCommand;
+use App\Application\Equipment\Command\UpdateEquipmentCommand;
 use App\Application\Equipment\CommandHandler\RegisterEquipmentHandler;
+use App\Application\Equipment\CommandHandler\UpdateEquipmentHandler;
 use App\Application\Equipment\Query\GetEquipmentOrderHistoryQuery;
 use App\Application\Equipment\Query\SearchEquipmentQuery;
 use App\Application\Equipment\QueryHandler\GetEquipmentOrderHistoryQueryHandler;
@@ -13,6 +15,7 @@ use App\Application\OrderFulfillment\Command\LinkEquipmentToOrderCommand;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\LinkEquipmentToOrderHandler;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
+use Database\Seeders\DomainSeeder;
 use Database\Seeders\IdentitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,11 +26,13 @@ final class EquipmentTest extends TestCase
 
     public function test_регистрация_поиск_и_история_заказов(): void
     {
-        $this->seed(\Database\Seeders\DomainSeeder::class);
+        $this->seed(DomainSeeder::class);
 
         $equipment = app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
             name: 'Аппарат Strong 9093',
-            serialNumbers: ['SN-12345'],
+            serialNumbers: [
+                'ручка' => 'SN-12345',
+            ],
             brand: 'Strong',
             model: '9093',
         ));
@@ -62,11 +67,11 @@ final class EquipmentTest extends TestCase
 
     public function test_pos_поиск_оборудования(): void
     {
-        $this->seed(\Database\Seeders\DomainSeeder::class);
+        $this->seed(DomainSeeder::class);
 
         app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
             name: 'Демо аппарат',
-            serialNumbers: ['DEMO-SN'],
+            serialNumbers: ['корпус' => 'DEMO-SN'],
         ));
 
         $login = $this->postJson('/api/pos/login', [
@@ -81,5 +86,43 @@ final class EquipmentTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('data.0.name', 'Демо аппарат');
+    }
+
+    public function test_обновление_оборудования(): void
+    {
+        $this->seed(DomainSeeder::class);
+
+        $equipment = app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
+            name: 'Старое название',
+            serialNumbers: ['ручка' => 'OLD-SN'],
+            brand: 'OldBrand',
+            model: 'OldModel',
+        ));
+
+        $equipmentId = $equipment->id();
+        $this->assertNotNull($equipmentId);
+
+        $updated = app(UpdateEquipmentHandler::class)->handle(new UpdateEquipmentCommand(
+            equipmentId: $equipmentId,
+            name: 'Новое название',
+            serialNumbers: [
+                'ручка' => 'NEW-SN-1',
+                'блок питания' => 'NEW-SN-2',
+            ],
+            brand: 'NewBrand',
+            model: 'NewModel',
+        ));
+
+        $this->assertSame('Новое название', $updated->name());
+        $this->assertSame('NewBrand', $updated->brand());
+        $this->assertSame('NewModel', $updated->model());
+        $this->assertSame([
+            'ручка' => 'NEW-SN-1',
+            'блок питания' => 'NEW-SN-2',
+        ], $updated->serialNumbers());
+
+        $search = app(SearchEquipmentQueryHandler::class)->handle(new SearchEquipmentQuery('NEW-SN-2'));
+        $this->assertCount(1, $search['items']);
+        $this->assertSame($equipmentId, $search['items'][0]->id());
     }
 }

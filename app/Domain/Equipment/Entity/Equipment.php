@@ -5,7 +5,7 @@ namespace App\Domain\Equipment\Entity;
 final class Equipment
 {
     /**
-     * @param  list<string>  $serialNumbers
+     * @param  array<string, string>  $serialNumbers
      */
     public function __construct(
         private ?int $id,
@@ -35,14 +35,14 @@ final class Equipment
         return $this->model;
     }
 
-    /** @return list<string> */
+    /** @return array<string, string> */
     public function serialNumbers(): array
     {
         return $this->serialNumbers;
     }
 
     /**
-     * @param  list<string>  $serialNumbers
+     * @param  array<string, string>  $serialNumbers
      */
     public static function register(
         string $name,
@@ -52,6 +52,24 @@ final class Equipment
     ): self {
         return new self(
             id: null,
+            name: $name,
+            brand: $brand,
+            model: $model,
+            serialNumbers: $serialNumbers,
+        );
+    }
+
+    /**
+     * @param  array<string, string>  $serialNumbers
+     */
+    public function withDetails(
+        string $name,
+        array $serialNumbers,
+        ?string $brand = null,
+        ?string $model = null,
+    ): self {
+        return new self(
+            id: $this->id,
             name: $name,
             brand: $brand,
             model: $model,

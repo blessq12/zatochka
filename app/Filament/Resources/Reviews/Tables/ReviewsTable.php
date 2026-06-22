@@ -2,7 +2,12 @@
 
 namespace App\Filament\Resources\Reviews\Tables;
 
+use App\Application\ClientPortal\Command\ApproveReviewCommand;
+use App\Application\ClientPortal\Command\RejectReviewCommand;
+use App\Application\ClientPortal\CommandHandler\ApproveReviewHandler;
+use App\Application\ClientPortal\CommandHandler\RejectReviewHandler;
 use App\Domain\ClientPortal\Enum\ReviewStatus;
+use App\Filament\Support\ClientReviewPresenter;
 use App\Infrastructure\ClientPortal\Persistence\Eloquent\ReviewModel;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -25,11 +30,8 @@ class ReviewsTable
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
-                    ->formatStateUsing(fn (ReviewStatus $state): string => match ($state) {
-                        ReviewStatus::Pending => 'На модерации',
-                        ReviewStatus::Approved => 'Одобрен',
-                        ReviewStatus::Rejected => 'Отклонён',
-                    }),
+                    ->color(fn (ReviewStatus $state): string => ClientReviewPresenter::statusColor($state))
+                    ->formatStateUsing(fn (ReviewStatus $state): string => ClientReviewPresenter::statusLabel($state)),
                 TextColumn::make('created_at')
                     ->label('Дата')
                     ->dateTime('d.m.Y H:i'),
@@ -41,7 +43,9 @@ class ReviewsTable
                     ->color('success')
                     ->visible(fn (ReviewModel $record): bool => $record->status === ReviewStatus::Pending)
                     ->action(function (ReviewModel $record): void {
-                        $record->update(['status' => ReviewStatus::Approved]);
+                        app(ApproveReviewHandler::class)->handle(new ApproveReviewCommand(
+                            reviewId: (int) $record->getKey(),
+                        ));
 
                         Notification::make()->success()->title('Отзыв одобрен')->send();
                     }),
@@ -52,7 +56,9 @@ class ReviewsTable
                     ->requiresConfirmation()
                     ->visible(fn (ReviewModel $record): bool => $record->status === ReviewStatus::Pending)
                     ->action(function (ReviewModel $record): void {
-                        $record->update(['status' => ReviewStatus::Rejected]);
+                        app(RejectReviewHandler::class)->handle(new RejectReviewCommand(
+                            reviewId: (int) $record->getKey(),
+                        ));
 
                         Notification::make()->success()->title('Отзыв отклонён')->send();
                     }),

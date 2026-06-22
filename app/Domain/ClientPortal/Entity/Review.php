@@ -68,6 +68,10 @@ final class Review
 
     public function approve(): self
     {
+        if ($this->status !== ReviewStatus::Pending) {
+            throw new ReviewPolicyViolation('Опубликовать можно только отзыв на модерации.');
+        }
+
         $clone = clone $this;
         $clone->status = ReviewStatus::Approved;
 
@@ -76,6 +80,10 @@ final class Review
 
     public function reject(): self
     {
+        if ($this->status !== ReviewStatus::Pending) {
+            throw new ReviewPolicyViolation('Отклонить можно только отзыв на модерации.');
+        }
+
         $clone = clone $this;
         $clone->status = ReviewStatus::Rejected;
 

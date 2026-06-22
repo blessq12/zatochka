@@ -16,14 +16,24 @@ class ViewOrder extends ViewRecord
 {
     protected static string $resource = OrderResource::class;
 
-    public function resolveRecord(int | string $key): Model
+    /** @var list<string> */
+    private const ORDER_RELATIONS = ['works', 'materials', 'tools'];
+
+    public function hydrate(): void
+    {
+        parent::hydrate();
+
+        $this->reloadOrderRelations();
+    }
+
+    public function resolveRecord(int|string $key): Model
     {
         return static::getResource()::getEloquentQuery()
-            ->with(['works', 'materials', 'tools'])
+            ->with(self::ORDER_RELATIONS)
             ->findOrFail($key);
     }
 
-    public function getTitle(): string | Htmlable
+    public function getTitle(): string|Htmlable
     {
         /** @var OrderModel $record */
         $record = $this->getRecord();
@@ -31,21 +41,25 @@ class ViewOrder extends ViewRecord
         return $record->order_number;
     }
 
-    public function getSubheading(): string | Htmlable | null
+    public function getSubheading(): string|Htmlable|null
     {
         /** @var OrderModel $record */
         $record = $this->getRecord();
 
         return sprintf(
-            '%s · %s',
+            '%s · %s · %s',
             OrderViewPresenter::clientDisplayName($record),
             $record->status->label(),
+            OrderViewPresenter::financialSummaryLabel($record),
         );
     }
 
     public function refreshOrderRecord(): void
     {
         $this->record = $this->resolveRecord($this->getRecord()->getKey());
+
+        $this->cacheSchema('infolist', null);
+        $this->cacheSchema('content', null);
     }
 
     protected function getHeaderActions(): array
@@ -80,5 +94,19 @@ class ViewOrder extends ViewRecord
                 $documents,
             ],
         };
+    }
+
+    private function reloadOrderRelations(): void
+    {
+        if (! $this->record instanceof OrderModel) {
+            return;
+        }
+
+        foreach (self::ORDER_RELATIONS as $relation) {
+            $this->record->unsetRelation($relation);
+        }
+
+        $this->record->refresh();
+        $this->record->load(self::ORDER_RELATIONS);
     }
 }

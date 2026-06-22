@@ -22,6 +22,10 @@ final class RejectReviewHandler
             throw new ReviewPolicyViolation('Отзыв не найден.');
         }
 
+        if ($command->clientId !== null && $review->clientId() !== $command->clientId) {
+            throw new ReviewPolicyViolation('Отзыв не принадлежит этому клиенту.');
+        }
+
         $saved = $this->reviews->save($review->reject());
 
         event(new ReviewRejected($saved));

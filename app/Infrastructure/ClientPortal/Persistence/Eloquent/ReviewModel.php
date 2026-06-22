@@ -3,7 +3,9 @@
 namespace App\Infrastructure\ClientPortal\Persistence\Eloquent;
 
 use App\Domain\ClientPortal\Enum\ReviewStatus;
+use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ReviewModel extends Model
 {
@@ -22,5 +24,10 @@ class ReviewModel extends Model
         return [
             'status' => ReviewStatus::class,
         ];
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(OrderModel::class);
     }
 }

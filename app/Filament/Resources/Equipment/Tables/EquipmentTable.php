@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources\Equipment\Tables;
 
+use App\Filament\Resources\Equipment\EquipmentResource;
+use App\Filament\Support\EquipmentFormData;
+use App\Infrastructure\Equipment\Persistence\Eloquent\EquipmentModel;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -11,27 +16,28 @@ class EquipmentTable
     {
         return $table
             ->defaultSort('name')
+            ->recordUrl(fn ($record): string => EquipmentResource::getUrl('view', ['record' => $record]))
             ->columns([
-                TextColumn::make('name')->label('Название'),
-                TextColumn::make('brand')->label('Бренд')->placeholder('—'),
-                TextColumn::make('model')->label('Модель')->placeholder('—'),
-                TextColumn::make('serial_numbers')
+                TextColumn::make('name')
+                    ->label('Название')
+                    ->searchable(),
+                TextColumn::make('brand')
+                    ->label('Бренд')
+                    ->placeholder('—')
+                    ->searchable(),
+                TextColumn::make('model')
+                    ->label('Модель')
+                    ->placeholder('—')
+                    ->searchable(),
+                TextColumn::make('serial_numbers_summary')
                     ->label('Серийные номера')
-                    ->formatStateUsing(function (mixed $state): string {
-                        if ($state === null || $state === [] || $state === '') {
-                            return '—';
-                        }
-
-                        if (is_string($state)) {
-                            $decoded = json_decode($state, true);
-
-                            return is_array($decoded) && $decoded !== []
-                                ? implode(', ', $decoded)
-                                : $state;
-                        }
-
-                        return implode(', ', $state);
-                    }),
+                    ->state(fn (EquipmentModel $record): string => EquipmentFormData::formatForListDisplay($record->serial_numbers))
+                    ->placeholder('—')
+                    ->wrap(),
+            ])
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
             ]);
     }
 }

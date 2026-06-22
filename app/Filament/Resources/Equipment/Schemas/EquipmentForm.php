@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Equipment\Schemas;
 
-use Filament\Forms\Components\Repeater;
+use App\Filament\Support\EquipmentSerialNumbersFormField;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -22,16 +22,7 @@ class EquipmentForm
                 TextInput::make('model')
                     ->label('Модель')
                     ->maxLength(255),
-                Repeater::make('serial_numbers')
-                    ->label('Серийные номера')
-                    ->simple(
-                        TextInput::make('value')
-                            ->label('Серийный номер')
-                            ->required()
-                            ->maxLength(100),
-                    )
-                    ->defaultItems(0)
-                    ->collapsible(),
+                EquipmentSerialNumbersFormField::repeater(),
             ]);
     }
 }
