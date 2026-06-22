@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('cp')
             ->login()
             ->brandName('ЗАТОЧКА.ТСК')
+            ->sidebarCollapsibleOnDesktop()
             ->colors([
                 'primary' => Color::Amber,
             ])
