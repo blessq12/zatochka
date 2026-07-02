@@ -27,7 +27,7 @@ class OrderResource extends Resource
 
     protected static ?string $navigationLabel = 'Заказы';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 0;
 
     protected static ?string $modelLabel = 'заказ';
 

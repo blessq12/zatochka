@@ -20,7 +20,7 @@ class SiteLeadResource extends Resource
 
     protected static ?string $navigationLabel = 'Лиды';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $modelLabel = 'лид';
 
