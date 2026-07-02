@@ -66,19 +66,19 @@ final class GenerateDocumentHandler
     {
         $template = $this->templateRepository->findByType($type);
 
-        if ($template !== null && trim($template->body()) !== '') {
-            $bodyHtml = $this->templateRenderer->render($template->body(), $data, $documentTitle);
-
-            return $this->pdfRenderer->render('documents.layouts.custom-body', [
-                'data' => $data,
-                'documentTitle' => $documentTitle,
-                'bodyHtml' => $bodyHtml,
-            ]);
+        if ($template === null || trim($template->body()) === '') {
+            throw new OrderPolicyViolation(sprintf(
+                'Шаблон «%s» не настроен. Заполните его в разделе «Документы».',
+                $type->label(),
+            ));
         }
 
-        return $this->pdfRenderer->render($type->viewName(), [
+        $bodyHtml = $this->templateRenderer->render($template->body(), $data, $documentTitle);
+
+        return $this->pdfRenderer->render('documents.layouts.custom-body', [
             'data' => $data,
             'documentTitle' => $documentTitle,
+            'bodyHtml' => $bodyHtml,
         ]);
     }
 }

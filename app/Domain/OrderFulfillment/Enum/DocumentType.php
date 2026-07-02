@@ -14,12 +14,4 @@ enum DocumentType: string
             self::HandoverAct => 'Акт выдачи',
         };
     }
-
-    public function viewName(): string
-    {
-        return match ($this) {
-            self::Receipt => 'documents.acceptance',
-            self::HandoverAct => 'documents.issuance',
-        };
-    }
 }
