@@ -270,6 +270,40 @@ final class Order
         return $this->tools;
     }
 
+    public function isSharpening(): bool
+    {
+        return in_array('sharpening', $this->serviceTypes, true);
+    }
+
+    public function toolsTotalQuantity(): int
+    {
+        $total = 0;
+
+        foreach ($this->tools as $tool) {
+            $total += $tool->quantity;
+        }
+
+        return max($total, 1);
+    }
+
+    public static function workTotalFromUnitPrice(?string $unitPrice, int $toolsQuantity): ?string
+    {
+        if ($unitPrice === null || $unitPrice === '') {
+            return null;
+        }
+
+        return bcmul($unitPrice, (string) max($toolsQuantity, 1), 2);
+    }
+
+    public static function workUnitPriceFromTotal(?string $totalPrice, int $toolsQuantity): ?string
+    {
+        if ($totalPrice === null || $toolsQuantity < 1) {
+            return null;
+        }
+
+        return bcdiv($totalPrice, (string) $toolsQuantity, 2);
+    }
+
     /** @return list<OrderMaterial> */
     public function materials(): array
     {

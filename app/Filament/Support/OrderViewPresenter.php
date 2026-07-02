@@ -2,6 +2,7 @@
 
 namespace App\Filament\Support;
 
+use App\Domain\OrderFulfillment\Entity\Order;
 use App\Domain\OrderFulfillment\Enum\OrderSource;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\OrderFulfillment\Enum\OrderUrgency;
@@ -240,6 +241,32 @@ final class OrderViewPresenter
         }
 
         return false;
+    }
+
+    public static function isSharpeningOrder(OrderModel $order): bool
+    {
+        return in_array('sharpening', $order->service_types ?? [], true);
+    }
+
+    public static function toolsTotalQuantity(OrderModel $order): int
+    {
+        $total = 0;
+
+        foreach ($order->tools as $tool) {
+            $total += (int) $tool->quantity;
+        }
+
+        return max($total, 1);
+    }
+
+    public static function workUnitPrice(?string $totalPrice, int $toolsQuantity): ?string
+    {
+        return Order::workUnitPriceFromTotal($totalPrice, $toolsQuantity);
+    }
+
+    public static function workTotalFromUnitPrice(?string $unitPrice, int $toolsQuantity): ?string
+    {
+        return Order::workTotalFromUnitPrice($unitPrice, $toolsQuantity);
     }
 
     public static function financialSummaryLabel(OrderModel $order): string

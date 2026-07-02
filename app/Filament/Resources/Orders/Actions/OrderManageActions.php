@@ -54,15 +54,32 @@ final class OrderManageActions
             ->icon('heroicon-o-currency-dollar')
             ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
             ->form(function (OrderModel $record): array {
+                $record->loadMissing('tools');
                 $works = $record->works()->get();
+                $isSharpening = OrderViewPresenter::isSharpeningOrder($record);
+                $toolsQuantity = OrderViewPresenter::toolsTotalQuantity($record);
                 $fields = [];
 
                 foreach ($works as $work) {
-                    $fields[] = TextInput::make("prices.{$work->sort_order}")
-                        ->label($work->description)
+                    $defaultPrice = $work->price;
+
+                    if ($isSharpening && $defaultPrice !== null) {
+                        $defaultPrice = OrderViewPresenter::workUnitPrice((string) $defaultPrice, $toolsQuantity);
+                    }
+
+                    $field = TextInput::make("prices.{$work->sort_order}")
+                        ->label($isSharpening
+                            ? "{$work->description} (цена за ед.)"
+                            : $work->description)
                         ->numeric()
                         ->minValue(0)
-                        ->default($work->price);
+                        ->default($defaultPrice);
+
+                    if ($isSharpening) {
+                        $field->helperText("× {$toolsQuantity} шт. инструмента — итог посчитается автоматически");
+                    }
+
+                    $fields[] = $field;
                 }
 
                 if ($fields === []) {

@@ -10,6 +10,7 @@ use App\Application\OrderFulfillment\CommandHandler\AddWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\AssignMasterToOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
+use App\Domain\OrderFulfillment\Entity\OrderTool;
 use App\Domain\OrderFulfillment\Repository\OrderRepositoryInterface;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
 use App\Filament\Support\OrderManageActionSupport;
@@ -96,5 +97,40 @@ final class OrderPricingTest extends TestCase
         $reloaded = app(OrderRepositoryInterface::class)->findById($orderId);
         $this->assertNotNull($reloaded);
         $this->assertSame('750.00', $reloaded->price());
+    }
+
+    public function test_заточка_цена_за_единицу_умножается_на_количество_инструментов(): void
+    {
+        $this->seed(\Database\Seeders\DomainSeeder::class);
+
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
+
+        $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+            serviceTypes: ['sharpening'],
+            clientSnapshot: new ClientSnapshot(['full_name' => 'Тест', 'phone' => '+79001112233']),
+            tools: [
+                new OrderTool(null, 'manicure', 3, 'Ножницы'),
+            ],
+        ));
+
+        $orderId = $order->id();
+        $this->assertNotNull($orderId);
+
+        app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand($orderId, $master->id));
+        app(TakeOrderToWorkHandler::class)->handle(new TakeOrderToWorkCommand($orderId, $master->id));
+
+        $order = app(AddWorkHandler::class)->handle(new AddWorkCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+            description: 'Заточка',
+        ));
+
+        $sortOrder = $order->works()[0]->sortOrder;
+
+        // Менеджер вводит 200 ₽ за единицу, в заказе 3 инструмента
+        $order = OrderManageActionSupport::setWorkPrices($orderId, [$sortOrder => '200.00']);
+
+        $this->assertSame('600.00', $order->price());
+        $this->assertSame('600.00', $order->works()[0]->price);
     }
 }

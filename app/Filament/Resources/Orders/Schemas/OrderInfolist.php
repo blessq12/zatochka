@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Schemas;
 use App\Filament\Resources\Orders\Actions\OrderManageActions;
 use App\Filament\Support\OrderViewPresenter;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
+use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderWorkModel;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
@@ -209,6 +210,7 @@ class OrderInfolist
                     ->schema([
                         RepeatableEntry::make('works')
                             ->label('Работы')
+                            ->visible(fn (OrderModel $record): bool => ! OrderViewPresenter::isSharpeningOrder($record))
                             ->table([
                                 TableColumn::make('Наименование'),
                                 TableColumn::make('Цена')->alignment('end'),
@@ -220,6 +222,38 @@ class OrderInfolist
                                     ->hiddenLabel()
                                     ->money('RUB')
                                     ->placeholder('—')
+                                    ->color(fn (?string $state): ?string => blank($state) ? 'warning' : null),
+                            ])
+                            ->placeholder('Мастер ещё не добавил работы'),
+                        RepeatableEntry::make('works')
+                            ->label('Работы')
+                            ->visible(fn (OrderModel $record): bool => OrderViewPresenter::isSharpeningOrder($record))
+                            ->table([
+                                TableColumn::make('Наименование'),
+                                TableColumn::make('Кол-во'),
+                                TableColumn::make('Цена/ед.')->alignment('end'),
+                                TableColumn::make('Сумма')->alignment('end'),
+                            ])
+                            ->schema([
+                                TextEntry::make('description')
+                                    ->hiddenLabel(),
+                                TextEntry::make('sharpening_tools_qty')
+                                    ->hiddenLabel()
+                                    ->formatStateUsing(fn ($state, OrderWorkModel $work): string => (string) OrderViewPresenter::toolsTotalQuantity($work->order)),
+                                TextEntry::make('sharpening_unit_price')
+                                    ->hiddenLabel()
+                                    ->formatStateUsing(fn ($state, OrderWorkModel $work): ?string => OrderViewPresenter::workUnitPrice(
+                                        $work->price !== null ? (string) $work->price : null,
+                                        OrderViewPresenter::toolsTotalQuantity($work->order),
+                                    ))
+                                    ->money('RUB')
+                                    ->placeholder('—')
+                                    ->color(fn ($state, OrderWorkModel $work): ?string => $work->price === null ? 'warning' : null),
+                                TextEntry::make('price')
+                                    ->hiddenLabel()
+                                    ->money('RUB')
+                                    ->placeholder('—')
+                                    ->weight(FontWeight::Medium)
                                     ->color(fn (?string $state): ?string => blank($state) ? 'warning' : null),
                             ])
                             ->placeholder('Мастер ещё не добавил работы'),

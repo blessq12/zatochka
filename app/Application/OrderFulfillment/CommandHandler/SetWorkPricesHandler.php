@@ -19,6 +19,13 @@ final class SetWorkPricesHandler
         $order = $this->orderLoader->load($command->orderId);
 
         foreach ($command->pricesBySortOrder as $sortOrder => $price) {
+            if ($order->isSharpening()) {
+                $price = Order::workTotalFromUnitPrice(
+                    $price !== null && $price !== '' ? (string) $price : null,
+                    $order->toolsTotalQuantity(),
+                );
+            }
+
             $order = $order->setWorkPrice((int) $sortOrder, $price);
         }
 
