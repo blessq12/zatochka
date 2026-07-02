@@ -22,6 +22,7 @@ class DomainSeeder extends Seeder
             WarehouseSeeder::class,
             EquipmentSeeder::class,
             ClientPortalSeeder::class,
+            DocumentTemplateSeeder::class,
             DemoOrderSeeder::class,
         ]);
     }

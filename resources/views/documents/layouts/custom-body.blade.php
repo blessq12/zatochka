@@ -15,7 +15,7 @@
         </div>
 
         <div class="document-body">
-            @yield('content')
+            {!! $bodyHtml !!}
         </div>
     </div>
 </body>

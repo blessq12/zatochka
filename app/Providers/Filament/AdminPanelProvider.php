@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Controllers\Cp\DocumentTemplatePreviewController;
 use App\Http\Controllers\Cp\OrderDocumentController;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -63,6 +64,8 @@ class AdminPanelProvider extends PanelProvider
             ->routes(function (): void {
                 Route::get('orders/{orderId}/documents/{type}', OrderDocumentController::class)
                     ->name('orders.document');
+                Route::get('document-templates/preview/{token}', DocumentTemplatePreviewController::class)
+                    ->name('document-templates.preview');
             });
     }
 }

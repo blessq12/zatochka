@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Shared\Provider;
 
+use App\Application\OrderFulfillment\Port\DocumentTemplateRendererInterface;
 use App\Application\OrderFulfillment\Port\PdfRendererInterface;
 use App\Domain\ClientPortal\Repository\ClientRepositoryInterface;
 use App\Domain\ClientPortal\Repository\ReviewRepositoryInterface;
@@ -10,6 +11,7 @@ use App\Domain\Company\Repository\BranchRepositoryInterface;
 use App\Domain\Company\Repository\SiteContentRepositoryInterface;
 use App\Domain\Equipment\Repository\EquipmentRepositoryInterface;
 use App\Domain\Identity\Repository\MasterRepositoryInterface;
+use App\Domain\OrderFulfillment\Repository\DocumentTemplateRepositoryInterface;
 use App\Domain\OrderFulfillment\Repository\OrderRepositoryInterface;
 use App\Domain\Pricing\Repository\PriceBlockRepositoryInterface;
 use App\Domain\Pricing\Repository\PriceItemRepositoryInterface;
@@ -22,7 +24,9 @@ use App\Infrastructure\Company\Persistence\Repository\EloquentBranchRepository;
 use App\Infrastructure\Company\Persistence\Repository\EloquentSiteContentRepository;
 use App\Infrastructure\Equipment\Persistence\Repository\EloquentEquipmentRepository;
 use App\Infrastructure\Identity\Persistence\Repository\EloquentMasterRepository;
+use App\Infrastructure\OrderFulfillment\Document\DocumentTemplateRenderer;
 use App\Infrastructure\OrderFulfillment\Pdf\DomPdfRenderer;
+use App\Infrastructure\OrderFulfillment\Persistence\Repository\EloquentDocumentTemplateRepository;
 use App\Infrastructure\OrderFulfillment\Persistence\Repository\EloquentOrderRepository;
 use App\Infrastructure\Pricing\Persistence\Repository\EloquentPriceBlockRepository;
 use App\Infrastructure\Pricing\Persistence\Repository\EloquentPriceItemRepository;
@@ -35,6 +39,7 @@ final class PersistenceServiceProvider extends ServiceProvider
     /** @var array<class-string, class-string> */
     public array $bindings = [
         OrderRepositoryInterface::class => EloquentOrderRepository::class,
+        DocumentTemplateRepositoryInterface::class => EloquentDocumentTemplateRepository::class,
         ClientRepositoryInterface::class => EloquentClientRepository::class,
         SiteLeadRepositoryInterface::class => EloquentSiteLeadRepository::class,
         ReviewRepositoryInterface::class => EloquentReviewRepository::class,
@@ -47,5 +52,6 @@ final class PersistenceServiceProvider extends ServiceProvider
         StockMovementRepositoryInterface::class => EloquentStockMovementRepository::class,
         MasterRepositoryInterface::class => EloquentMasterRepository::class,
         PdfRendererInterface::class => DomPdfRenderer::class,
+        DocumentTemplateRendererInterface::class => DocumentTemplateRenderer::class,
     ];
 }
