@@ -10,11 +10,18 @@ use App\Application\Equipment\Query\GetEquipmentOrderHistoryQuery;
 use App\Application\Equipment\Query\SearchEquipmentQuery;
 use App\Application\Equipment\QueryHandler\GetEquipmentOrderHistoryQueryHandler;
 use App\Application\Equipment\QueryHandler\SearchEquipmentQueryHandler;
+use App\Application\OrderFulfillment\Command\AddWorkCommand;
+use App\Application\OrderFulfillment\Command\AssignMasterToOrderCommand;
 use App\Application\OrderFulfillment\Command\CreateOrderCommand;
 use App\Application\OrderFulfillment\Command\LinkEquipmentToOrderCommand;
+use App\Application\OrderFulfillment\Command\TakeOrderToWorkCommand;
+use App\Application\OrderFulfillment\CommandHandler\AddWorkHandler;
+use App\Application\OrderFulfillment\CommandHandler\AssignMasterToOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\LinkEquipmentToOrderHandler;
+use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
+use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use Database\Seeders\DomainSeeder;
 use Database\Seeders\IdentitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -86,6 +93,54 @@ final class EquipmentTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('data.0.name', 'Демо аппарат');
+    }
+
+    public function test_pos_история_оборудования_содержит_работы(): void
+    {
+        $this->seed(DomainSeeder::class);
+
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
+
+        $equipment = app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
+            name: 'Аппарат Wahl',
+            serialNumbers: ['корпус' => 'POS-HIST-SN'],
+            brand: 'Wahl',
+        ));
+
+        $equipmentId = $equipment->id();
+        $this->assertNotNull($equipmentId);
+
+        $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+            serviceTypes: ['repair'],
+            clientSnapshot: new ClientSnapshot(['full_name' => 'Иван', 'phone' => '+79001112233']),
+            problemDescription: 'Не включается',
+        ));
+
+        $orderId = $order->id();
+        $this->assertNotNull($orderId);
+
+        app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand($orderId, $master->id));
+        app(LinkEquipmentToOrderHandler::class)->handle(new LinkEquipmentToOrderCommand($orderId, $equipmentId));
+        app(TakeOrderToWorkHandler::class)->handle(new TakeOrderToWorkCommand($orderId, $master->id));
+        app(AddWorkHandler::class)->handle(new AddWorkCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+            description: 'Замена кнопки питания',
+        ));
+
+        $login = $this->postJson('/api/pos/login', [
+            'email' => IdentitySeeder::MASTER_EMAIL,
+            'password' => IdentitySeeder::DEMO_PASSWORD,
+        ]);
+
+        $this->getJson("/api/pos/equipment/{$equipmentId}/orders", [
+            'Authorization' => 'Bearer '.$login->json('token'),
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.0.problem_description', 'Не включается')
+            ->assertJsonPath('data.0.works.0.description', 'Замена кнопки питания')
+            ->assertJsonPath('data.0.works_count', 1)
+            ->assertJsonPath('data.0.master_name', 'Демо Мастер');
     }
 
     public function test_обновление_оборудования(): void

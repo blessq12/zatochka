@@ -29,6 +29,7 @@ use App\Application\OrderFulfillment\QueryHandler\GetPosOrdersQueryHandler;
 use App\Application\Equipment\Presenter\EquipmentPresenter;
 use App\Application\Equipment\Query\GetEquipmentOrderHistoryQuery;
 use App\Application\Equipment\Query\SearchEquipmentQuery;
+use App\Application\Equipment\ReadModel\PosEquipmentOrderHistoryReadModelBuilder;
 use App\Application\Equipment\QueryHandler\GetEquipmentOrderHistoryQueryHandler;
 use App\Application\Equipment\QueryHandler\SearchEquipmentQueryHandler;
 use App\Domain\Warehouse\Enum\WarehouseItemType;
@@ -267,12 +268,15 @@ final class PosController
         ]);
     }
 
-    public function equipmentOrderHistory(int $equipmentId, GetEquipmentOrderHistoryQueryHandler $handler): JsonResponse
-    {
+    public function equipmentOrderHistory(
+        int $equipmentId,
+        GetEquipmentOrderHistoryQueryHandler $handler,
+        PosEquipmentOrderHistoryReadModelBuilder $historyReadModel,
+    ): JsonResponse {
         $orders = $handler->handle(new GetEquipmentOrderHistoryQuery($equipmentId));
 
         return response()->json([
-            'data' => array_map(PosOrderPresenter::listItem(...), $orders),
+            'data' => $historyReadModel->list($orders),
         ]);
     }
 

@@ -58,29 +58,73 @@
                 <div v-else-if="historyOrders.length === 0" class="empty-state">
                     Заказов по этой единице пока нет
                 </div>
-                <div v-else class="history-table-wrap">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>№</th>
-                                <th>Дата</th>
-                                <th>Статус</th>
-                                <th>Клиент</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                v-for="ord in historyOrders"
-                                :key="ord.id"
-                                class="history-row"
+                <div v-else class="history-list">
+                    <article
+                        v-for="ord in historyOrders"
+                        :key="ord.id"
+                        class="history-order-card"
+                    >
+                        <header class="history-order-header">
+                            <div class="history-order-title">
+                                <span class="history-order-number"
+                                    >№{{ ord.order_number }}</span
+                                >
+                                <span class="history-order-date">{{
+                                    formatDate(ord.created_at)
+                                }}</span>
+                            </div>
+                            <span
+                                class="history-order-status"
+                                :class="statusClass(ord.status)"
                             >
-                                <td>№{{ ord.order_number }}</td>
-                                <td>{{ formatDate(ord.created_at) }}</td>
-                                <td>{{ ord.status_label || statusLabel(ord.status) }}</td>
-                                <td>{{ ord.client_name || "—" }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                {{ ord.status_label || statusLabel(ord.status) }}
+                            </span>
+                        </header>
+
+                        <dl class="history-order-meta">
+                            <div v-if="ord.client_name" class="meta-row">
+                                <dt>Клиент</dt>
+                                <dd>{{ ord.client_name }}</dd>
+                            </div>
+                            <div v-if="ord.master_name" class="meta-row">
+                                <dt>Мастер</dt>
+                                <dd>{{ ord.master_name }}</dd>
+                            </div>
+                        </dl>
+
+                        <p
+                            v-if="ord.problem_description"
+                            class="history-problem"
+                        >
+                            {{ ord.problem_description }}
+                        </p>
+
+                        <div
+                            v-if="ord.works && ord.works.length > 0"
+                            class="history-works"
+                        >
+                            <h3 class="history-works-title">Работы</h3>
+                            <ul class="history-works-list">
+                                <li
+                                    v-for="work in ord.works"
+                                    :key="work.id || work.description"
+                                    class="history-work-item"
+                                >
+                                    <span class="history-work-description">{{
+                                        work.description
+                                    }}</span>
+                                    <span
+                                        v-if="work.price"
+                                        class="history-work-price"
+                                        >{{ formatPrice(work.price) }}</span
+                                    >
+                                </li>
+                            </ul>
+                        </div>
+                        <p v-else class="history-no-works">
+                            Работы не зафиксированы
+                        </p>
+                    </article>
                 </div>
             </div>
         </div>
@@ -118,6 +162,33 @@ export default {
         };
 
         const statusLabel = (s) => orderService.getStatusLabel(s);
+
+        const statusClass = (status) => {
+            const classes = {
+                new: "status-new",
+                in_work: "status-in-work",
+                waiting_parts: "status-waiting-parts",
+                ready: "status-ready",
+                issued: "status-issued",
+                cancelled: "status-cancelled",
+            };
+
+            return classes[status] || "";
+        };
+
+        const formatPrice = (price) => {
+            const value = Number(price);
+
+            if (Number.isNaN(value)) {
+                return price;
+            }
+
+            return new Intl.NumberFormat("ru-RU", {
+                style: "currency",
+                currency: "RUB",
+                maximumFractionDigits: 0,
+            }).format(value);
+        };
 
         const runSearch = async () => {
             const q = searchQuery.value.trim();
@@ -187,7 +258,8 @@ export default {
             selectEquipment,
             formatDate,
             statusLabel,
-            selectEquipment,
+            statusClass,
+            formatPrice,
         };
     },
 };
@@ -306,34 +378,146 @@ export default {
     margin-top: 0.25rem;
 }
 
-.history-table-wrap {
-    overflow-x: auto;
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.history-order-card {
     border: 1px solid #e5e7eb;
     background: #fff;
+    padding: 1rem;
 }
 
-.history-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
+.history-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
-.history-table th,
-.history-table td {
-    padding: 0.6rem 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #f3f4f6;
+.history-order-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
 }
 
-.history-table th {
-    background: #f9fafb;
+.history-order-number {
+    font-weight: 700;
+    color: #003859;
+}
+
+.history-order-date {
+    font-size: 0.8125rem;
+    color: #6b7280;
+}
+
+.history-order-status {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
     font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-new,
+.status-issued {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-in-work,
+.status-waiting-parts {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-ready {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.history-order-meta {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 0.75rem;
+}
+
+.meta-row {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+}
+
+.meta-row dt {
+    color: #6b7280;
+    font-weight: 600;
+    min-width: 4.5rem;
+}
+
+.meta-row dd {
+    margin: 0;
     color: #374151;
 }
 
-.problem-cell {
-    max-width: 14rem;
-    color: #4b5563;
+.history-problem {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.history-works-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.history-works-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-work-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.65rem;
+    background: rgba(0, 56, 89, 0.05);
+    border: 1px solid rgba(0, 56, 89, 0.12);
+    font-size: 0.875rem;
+}
+
+.history-work-description {
+    color: #111827;
+    line-height: 1.45;
+}
+
+.history-work-price {
+    color: #003859;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.history-no-works {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #9ca3af;
+    font-style: italic;
 }
 
 .loading {
