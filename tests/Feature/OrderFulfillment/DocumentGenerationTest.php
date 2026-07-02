@@ -72,6 +72,39 @@ final class DocumentGenerationTest extends TestCase
         ));
     }
 
+    public function test_акт_выдачи_генерирует_pdf_с_работами(): void
+    {
+        $this->seed(\Database\Seeders\DomainSeeder::class);
+
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
+
+        $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+            serviceTypes: ['repair'],
+            clientSnapshot: new ClientSnapshot(['full_name' => 'Тест', 'phone' => '+79001112233']),
+            problemDescription: 'Не включается',
+        ));
+
+        $orderId = $order->id();
+
+        app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand($orderId, $master->id));
+        app(TakeOrderToWorkHandler::class)->handle(new TakeOrderToWorkCommand($orderId, $master->id));
+        app(AddWorkHandler::class)->handle(new AddWorkCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+            description: 'Замена кнопки питания',
+        ));
+        app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand($orderId, $master->id));
+
+        $document = app(GenerateDocumentHandler::class)->handle(new GenerateDocumentCommand(
+            orderId: $orderId,
+            type: DocumentType::HandoverAct,
+            managerName: 'Менеджер',
+        ));
+
+        $this->assertStringStartsWith('%PDF', $document->content);
+        $this->assertStringContainsString('handover_act_', $document->filename);
+    }
+
     public function test_pos_dashboard_содержит_счётчики_и_среднее_время(): void
     {
         $this->seed(\Database\Seeders\DomainSeeder::class);

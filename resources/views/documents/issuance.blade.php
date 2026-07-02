@@ -157,7 +157,7 @@
                     <tbody>
                         @foreach ($data->works as $work)
                             <tr>
-                                <td style="font-size: 8px; padding: 2px 3px; border: 0.5px solid #000;">{{ $work['name'] }}
+                                <td style="font-size: 8px; padding: 2px 3px; border: 0.5px solid #000;">{{ $work['description'] }}
                                 </td>
                                 @if (collect($data->works)->contains(fn($w) => !empty($w['equipment_component_serial_number'])))
                                     <td style="font-size: 8px; padding: 2px 3px; border: 0.5px solid #000;">
@@ -377,7 +377,7 @@
                         @foreach ($data->works as $work)
                             <tr>
                                 <td style="font-size: 8px; padding: 2px 3px; border: 0.5px solid #000;">
-                                    {{ $work['name'] }}</td>
+                                    {{ $work['description'] }}</td>
                                 @if (collect($data->works)->contains(fn($w) => !empty($w['equipment_component_serial_number'])))
                                     <td style="font-size: 8px; padding: 2px 3px; border: 0.5px solid #000;">
                                         {{ $work['equipment_component_serial_number'] ?? '-' }}</td>
