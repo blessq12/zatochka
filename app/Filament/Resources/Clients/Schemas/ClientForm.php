@@ -9,7 +9,7 @@ use Filament\Schemas\Schema;
 
 class ClientForm
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(Schema $schema, bool $isCreate = false): Schema
     {
         return $schema
             ->components([
@@ -19,8 +19,10 @@ class ClientForm
                     ->maxLength(255),
                 TextInput::make('phone')
                     ->label('Телефон')
-                    ->disabled()
-                    ->dehydrated(false),
+                    ->required($isCreate)
+                    ->disabled(! $isCreate)
+                    ->dehydrated($isCreate)
+                    ->maxLength(32),
                 TextInput::make('email')
                     ->label('Email')
                     ->email()

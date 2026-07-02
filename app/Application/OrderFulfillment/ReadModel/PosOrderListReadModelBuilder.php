@@ -34,7 +34,7 @@ final class PosOrderListReadModelBuilder
             ...PosOrderPresenter::listItem($order),
             'is_warranty' => $order->isWarranty(),
             'service_type_label' => $this->serviceTypeLabel($order->serviceTypes()),
-            'subject_line' => $this->subjectLine($order, $equipmentSummary, $toolsSummary, $problemExcerpt),
+            'subject_line' => $this->subjectLine($order, $equipmentSummary, $toolsSummary),
             'equipment_summary' => $equipmentSummary,
             'equipment_serial_numbers' => $equipmentSerialNumbers,
             'tools_summary' => $toolsSummary,
@@ -122,12 +122,9 @@ final class PosOrderListReadModelBuilder
         Order $order,
         ?string $equipmentSummary,
         array $toolsSummary,
-        ?string $problemExcerpt,
     ): string {
         if ($equipmentSummary !== null) {
-            return $problemExcerpt !== null
-                ? $equipmentSummary.' — '.$problemExcerpt
-                : $equipmentSummary;
+            return $equipmentSummary;
         }
 
         if ($toolsSummary !== []) {
@@ -138,10 +135,6 @@ final class PosOrderListReadModelBuilder
             }, $toolsSummary);
 
             return implode(', ', $parts);
-        }
-
-        if ($problemExcerpt !== null) {
-            return $problemExcerpt;
         }
 
         return $this->serviceTypeLabel($order->serviceTypes());

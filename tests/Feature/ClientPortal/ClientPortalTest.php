@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ClientPortal;
 
+use App\Application\ClientPortal\Command\CreateClientCommand;
 use App\Application\ClientPortal\Command\ApproveReviewCommand;
 use App\Application\ClientPortal\Command\LinkGuestOrdersToClientCommand;
 use App\Application\ClientPortal\Command\LinkGuestOrderToClientCommand;
@@ -9,6 +10,7 @@ use App\Application\ClientPortal\Command\RegisterClientCommand;
 use App\Application\ClientPortal\Command\RejectReviewCommand;
 use App\Application\ClientPortal\Command\SubmitReviewCommand;
 use App\Application\ClientPortal\Command\SubmitSiteLeadCommand;
+use App\Application\ClientPortal\CommandHandler\CreateClientHandler;
 use App\Application\ClientPortal\CommandHandler\ApproveReviewHandler;
 use App\Application\ClientPortal\CommandHandler\LinkGuestOrdersToClientHandler;
 use App\Application\ClientPortal\CommandHandler\LinkGuestOrderToClientHandler;
@@ -22,6 +24,7 @@ use App\Application\ClientPortal\QueryHandler\GetClientOrdersQueryHandler;
 use App\Application\ClientPortal\QueryHandler\GetClientReviewsQueryHandler;
 use App\Application\OrderFulfillment\Command\CreateOrderCommand;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
+use App\Domain\ClientPortal\Exception\ClientAlreadyRegisteredException;
 use App\Domain\ClientPortal\Enum\ReviewStatus;
 use App\Domain\ClientPortal\Exception\ReviewPolicyViolation;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
@@ -85,6 +88,44 @@ final class ClientPortalTest extends TestCase
 
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['intake_data.tool_type']);
+    }
+
+    public function test_менеджер_создаёт_клиента_вручную(): void
+    {
+        $this->seed(DomainSeeder::class);
+
+        $client = app(CreateClientHandler::class)->handle(new CreateClientCommand(
+            phone: '+79008887766',
+            fullName: 'Пётр Сидоров',
+            email: 'petr@example.com',
+            birthDate: '1990-05-15',
+            deliveryAddress: 'ул. Ленина, 1',
+        ));
+
+        $this->assertNotNull($client->id());
+        $this->assertSame('+79008887766', $client->phone());
+        $this->assertSame('Пётр Сидоров', $client->fullName());
+        $this->assertSame('petr@example.com', $client->email());
+        $this->assertSame('1990-05-15', $client->birthDate());
+        $this->assertSame('ул. Ленина, 1', $client->deliveryAddress());
+        $this->assertTrue($client->requiresPasswordSet());
+    }
+
+    public function test_нельзя_создать_клиента_с_занятым_телефоном(): void
+    {
+        $this->seed(DomainSeeder::class);
+
+        app(CreateClientHandler::class)->handle(new CreateClientCommand(
+            phone: '+79007654321',
+            fullName: 'Первый клиент',
+        ));
+
+        $this->expectException(ClientAlreadyRegisteredException::class);
+
+        app(CreateClientHandler::class)->handle(new CreateClientCommand(
+            phone: '+79007654321',
+            fullName: 'Второй клиент',
+        ));
     }
 
     public function test_регистрация_лк_и_привязка_гостевых_заказов(): void

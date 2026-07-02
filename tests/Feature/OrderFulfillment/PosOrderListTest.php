@@ -97,7 +97,8 @@ final class PosOrderListTest extends TestCase
         $this->assertArrayHasKey('ready_at', $item);
         $this->assertArrayHasKey('tools_summary', $item);
         $this->assertStringContainsString('Wahl', $item['equipment_summary']);
-        $this->assertStringContainsString('Не включается', $item['subject_line']);
+        $this->assertStringContainsString('Wahl', $item['subject_line']);
+        $this->assertStringContainsString('Не включается', $item['problem_excerpt']);
         $this->assertNotNull($item['ready_at']);
 
         $response->assertJsonStructure([

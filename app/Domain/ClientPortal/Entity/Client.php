@@ -67,6 +67,24 @@ final class Client
         );
     }
 
+    public static function createByManager(
+        string $phone,
+        string $fullName,
+        ?string $email = null,
+        ?string $birthDate = null,
+        ?string $deliveryAddress = null,
+    ): self {
+        return new self(
+            id: null,
+            phone: $phone,
+            fullName: $fullName,
+            email: $email,
+            birthDate: $birthDate,
+            deliveryAddress: $deliveryAddress,
+            requiresPasswordSet: true,
+        );
+    }
+
     public function updateProfile(
         string $fullName,
         ?string $email,

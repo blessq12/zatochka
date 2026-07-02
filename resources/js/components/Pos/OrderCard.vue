@@ -37,6 +37,9 @@
             <p v-if="order.subject_line" class="subject-line">
                 {{ order.subject_line }}
             </p>
+            <p v-if="order.problem_excerpt" class="subject-subline">
+                {{ order.problem_excerpt }}
+            </p>
 
             <div class="order-info">
                 <div class="info-row">
@@ -91,16 +94,6 @@
                     >
                         {{ formatPosToolSummaryItem(tool) }}
                     </span>
-                </div>
-                <div
-                    v-if="
-                        order.problem_excerpt &&
-                        order.subject_line !== order.problem_excerpt &&
-                        !subjectIncludesProblem
-                    "
-                    class="problem-block"
-                >
-                    <p class="problem-text">{{ order.problem_excerpt }}</p>
                 </div>
             </div>
         </div>
@@ -194,13 +187,6 @@ export default {
             return "работ";
         });
 
-        const subjectIncludesProblem = computed(() => {
-            const subject = props.order.subject_line || "";
-            const problem = props.order.problem_excerpt || "";
-
-            return problem !== "" && subject.includes(problem);
-        });
-
         const equipmentSerialRows = computed(() =>
             getEquipmentSerialRows({
                 serial_numbers: props.order.equipment_serial_numbers,
@@ -239,7 +225,6 @@ export default {
             hasActions,
             dateLabel,
             worksCountLabel,
-            subjectIncludesProblem,
             equipmentSerialRows,
             formatPosOrderPaymentType,
             formatPosToolSummaryItem,
@@ -380,6 +365,14 @@ export default {
     line-height: 1.45;
 }
 
+.subject-subline {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: #6b7280;
+    line-height: 1.45;
+}
+
 .order-info {
     display: flex;
     flex-direction: column;
@@ -450,19 +443,6 @@ export default {
     font-size: 0.75rem;
     font-weight: 500;
     color: #003859;
-}
-
-.problem-block {
-    margin-top: 0.25rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.problem-text {
-    color: #374151;
-    font-size: 0.8125rem;
-    line-height: 1.5;
-    margin: 0;
 }
 
 .order-actions {
