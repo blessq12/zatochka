@@ -91,6 +91,8 @@ final class PosOrderListTest extends TestCase
         $this->assertTrue($item['needs_delivery']);
         $this->assertArrayHasKey('subject_line', $item);
         $this->assertArrayHasKey('equipment_summary', $item);
+        $this->assertArrayHasKey('equipment_serial_numbers', $item);
+        $this->assertSame(['SN-1'], array_values($item['equipment_serial_numbers']));
         $this->assertArrayHasKey('problem_excerpt', $item);
         $this->assertArrayHasKey('ready_at', $item);
         $this->assertArrayHasKey('tools_summary', $item);

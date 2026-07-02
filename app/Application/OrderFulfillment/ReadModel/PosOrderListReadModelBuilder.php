@@ -3,6 +3,7 @@
 namespace App\Application\OrderFulfillment\ReadModel;
 
 use App\Application\OrderFulfillment\Presenter\PosOrderPresenter;
+use App\Domain\Equipment\Entity\Equipment;
 use App\Domain\Equipment\Repository\EquipmentRepositoryInterface;
 use App\Domain\OrderFulfillment\Entity\Order;
 use App\Domain\OrderFulfillment\Entity\OrderTool;
@@ -23,7 +24,9 @@ final class PosOrderListReadModelBuilder
     /** @return array<string, mixed> */
     public function build(Order $order): array
     {
-        $equipmentSummary = $this->equipmentSummary($order);
+        $equipment = $this->resolveEquipment($order);
+        $equipmentSummary = $this->equipmentSummary($equipment);
+        $equipmentSerialNumbers = $this->equipmentSerialNumbers($equipment);
         $toolsSummary = $this->toolsSummary($order);
         $problemExcerpt = $this->excerpt($order->problemDescription(), 120);
 
@@ -33,6 +36,7 @@ final class PosOrderListReadModelBuilder
             'service_type_label' => $this->serviceTypeLabel($order->serviceTypes()),
             'subject_line' => $this->subjectLine($order, $equipmentSummary, $toolsSummary, $problemExcerpt),
             'equipment_summary' => $equipmentSummary,
+            'equipment_serial_numbers' => $equipmentSerialNumbers,
             'tools_summary' => $toolsSummary,
             'problem_excerpt' => $problemExcerpt,
             'works_count' => count($order->works()),
@@ -56,14 +60,17 @@ final class PosOrderListReadModelBuilder
         return $labels !== [] ? implode(', ', $labels) : '—';
     }
 
-    private function equipmentSummary(Order $order): ?string
+    private function resolveEquipment(Order $order): ?Equipment
     {
         if ($order->equipmentId() === null) {
             return null;
         }
 
-        $equipment = $this->equipment->findById($order->equipmentId());
+        return $this->equipment->findById($order->equipmentId());
+    }
 
+    private function equipmentSummary(?Equipment $equipment): ?string
+    {
         if ($equipment === null) {
             return null;
         }
@@ -80,6 +87,18 @@ final class PosOrderListReadModelBuilder
         }
 
         return $brandModel !== '' ? $brandModel : ($name !== '' ? $name : null);
+    }
+
+    /** @return array<string, string>|null */
+    private function equipmentSerialNumbers(?Equipment $equipment): ?array
+    {
+        if ($equipment === null) {
+            return null;
+        }
+
+        $serialNumbers = $equipment->serialNumbers();
+
+        return $serialNumbers !== [] ? $serialNumbers : null;
     }
 
     /** @return list<array{tool_type: string, tool_type_label: string, name: string|null, quantity: int}> */

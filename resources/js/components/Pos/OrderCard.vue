@@ -56,6 +56,27 @@
                     <span class="info-value">{{ order.client_name }}</span>
                 </div>
                 <div
+                    v-if="equipmentSerialRows.length > 0"
+                    class="equipment-serials-row"
+                >
+                    <span class="info-label">С/Н</span>
+                    <ul class="equipment-serial-list">
+                        <li
+                            v-for="(row, idx) in equipmentSerialRows"
+                            :key="idx"
+                            class="equipment-serial-row"
+                        >
+                            <template v-if="row.name && row.serial_number">
+                                {{ row.name }}: {{ row.serial_number }}
+                            </template>
+                            <template v-else-if="row.serial_number">{{
+                                row.serial_number
+                            }}</template>
+                            <template v-else>{{ row.name }}</template>
+                        </li>
+                    </ul>
+                </div>
+                <div
                     v-if="
                         order.tools_summary &&
                         order.tools_summary.length > 0 &&
@@ -108,6 +129,7 @@ import { computed } from "vue";
 import {
     formatPosOrderPaymentType,
     formatPosToolSummaryItem,
+    getEquipmentSerialRows,
 } from "../../composables/usePosOrderDisplay.js";
 import { orderService } from "../../services/pos/OrderService.js";
 
@@ -179,6 +201,12 @@ export default {
             return problem !== "" && subject.includes(problem);
         });
 
+        const equipmentSerialRows = computed(() =>
+            getEquipmentSerialRows({
+                serial_numbers: props.order.equipment_serial_numbers,
+            })
+        );
+
         const formatDateShort = (dateString) => {
             if (!dateString) {
                 return "—";
@@ -212,6 +240,7 @@ export default {
             dateLabel,
             worksCountLabel,
             subjectIncludesProblem,
+            equipmentSerialRows,
             formatPosOrderPaymentType,
             formatPosToolSummaryItem,
             getStatusLabel: orderService.getStatusLabel,
@@ -379,6 +408,31 @@ export default {
     color: #374151;
     text-align: right;
     word-break: break-word;
+}
+
+.equipment-serials-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.equipment-serial-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: right;
+}
+
+.equipment-serial-row {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    word-break: break-word;
+}
+
+.equipment-serial-row + .equipment-serial-row {
+    margin-top: 0.25rem;
 }
 
 .tools-row {
