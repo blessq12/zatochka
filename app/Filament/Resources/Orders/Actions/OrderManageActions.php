@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\Actions;
 
 use App\Domain\Identity\Enum\UserRole;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
+use App\Domain\OrderFulfillment\Exception\OrderPolicyViolation;
 use App\Domain\Warehouse\Enum\WarehouseItemType;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Support\OrderManageActionSupport;
@@ -54,72 +55,107 @@ final class OrderManageActions
             ->icon('heroicon-o-currency-dollar')
             ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [OrderStatus::Issued, OrderStatus::Cancelled], true))
             ->form(function (OrderModel $record): array {
-                $record->loadMissing('tools');
-                $works = $record->works()->get();
-                $fields = [];
+                $record->loadMissing(['tools', 'works']);
 
-                foreach ($works as $work) {
-                    $usesUnitPricing = OrderViewPresenter::sharpeningWorkUsesUnitPricing($record, $work->tool_type);
-                    $toolsQuantity = $usesUnitPricing
-                        ? OrderViewPresenter::workToolsQuantity($record, $work->tool_type)
-                        : 0;
-                    $defaultPrice = $work->price;
-
-                    if ($usesUnitPricing && $defaultPrice !== null) {
-                        $defaultPrice = OrderViewPresenter::workUnitPrice((string) $defaultPrice, $toolsQuantity);
-                    }
-
-                    $label = $usesUnitPricing
-                        ? "{$work->description} (цена за ед.)"
-                        : $work->description;
-
-                    if ($usesUnitPricing && $work->tool_type !== null) {
-                        $label = sprintf(
-                            '%s — %s',
-                            $label,
-                            OrderViewPresenter::toolTypeLabel($work->tool_type),
-                        );
-                    }
-
-                    $field = TextInput::make("prices.{$work->sort_order}")
-                        ->label($label)
-                        ->numeric()
-                        ->minValue(0)
-                        ->default($defaultPrice);
-
-                    if ($usesUnitPricing) {
-                        $field->helperText("× {$toolsQuantity} шт. — итог посчитается автоматически");
-                    }
-
-                    $fields[] = $field;
+                if (OrderViewPresenter::isSharpeningOrder($record) && $record->tools->isNotEmpty()) {
+                    return self::sharpeningWorkPriceFields($record);
                 }
 
-                if ($fields === []) {
-                    $fields[] = TextInput::make('empty')
-                        ->label('Нет работ')
-                        ->disabled()
-                        ->default('Мастер ещё не добавил работы в POS');
-                }
-
-                return $fields;
+                return self::repairWorkPriceFields($record);
             })
             ->action(function (OrderModel $record, array $data, ViewOrder $livewire): void {
-                if (! isset($data['prices']) || $data['prices'] === []) {
-                    return;
+                try {
+                    if (isset($data['prices_by_tool_type']) && is_array($data['prices_by_tool_type'])) {
+                        $pricesByToolType = [];
+
+                        foreach ($data['prices_by_tool_type'] as $toolType => $price) {
+                            if ($price !== null && $price !== '') {
+                                $pricesByToolType[(string) $toolType] = (string) $price;
+                            }
+                        }
+
+                        if ($pricesByToolType === []) {
+                            return;
+                        }
+
+                        $order = OrderManageActionSupport::setWorkPrices(
+                            orderId: $record->id,
+                            pricesByToolType: $pricesByToolType,
+                        );
+                    } elseif (isset($data['prices']) && is_array($data['prices']) && $data['prices'] !== []) {
+                        $prices = [];
+
+                        foreach ($data['prices'] as $sortOrder => $price) {
+                            $prices[(int) $sortOrder] = $price;
+                        }
+
+                        $order = OrderManageActionSupport::setWorkPrices(
+                            orderId: $record->id,
+                            pricesBySortOrder: $prices,
+                        );
+                    } else {
+                        return;
+                    }
+
+                    self::complete(
+                        'Цены сохранены. Итог: '.OrderManageActionSupport::formatPrice($order->price()),
+                        $livewire
+                    );
+                } catch (OrderPolicyViolation $exception) {
+                    Notification::make()
+                        ->danger()
+                        ->title($exception->getMessage())
+                        ->send();
                 }
-
-                $prices = [];
-                foreach ($data['prices'] as $sortOrder => $price) {
-                    $prices[(int) $sortOrder] = $price;
-                }
-
-                $order = OrderManageActionSupport::setWorkPrices($record->id, $prices);
-
-                self::complete(
-                    'Цены сохранены. Итог: '.OrderManageActionSupport::formatPrice($order->price()),
-                    $livewire
-                );
             });
+    }
+
+    /** @return list<TextInput> */
+    private static function sharpeningWorkPriceFields(OrderModel $record): array
+    {
+        $fields = [];
+
+        foreach (OrderViewPresenter::groupedToolQuantities($record) as $toolType => $quantity) {
+            $fields[] = TextInput::make("prices_by_tool_type.{$toolType}")
+                ->label(sprintf('%s (цена за ед.)', OrderViewPresenter::toolTypeLabel($toolType)))
+                ->numeric()
+                ->minValue(0)
+                ->default(OrderViewPresenter::toolTypeUnitPrice($record, $toolType))
+                ->helperText("× {$quantity} шт. — итог посчитается автоматически");
+        }
+
+        if ($fields === []) {
+            $fields[] = TextInput::make('empty')
+                ->label('Нет инструментов')
+                ->disabled()
+                ->default('Добавьте инструменты в заказ');
+        }
+
+        return $fields;
+    }
+
+    /** @return list<TextInput> */
+    private static function repairWorkPriceFields(OrderModel $record): array
+    {
+        $works = $record->works()->get();
+        $fields = [];
+
+        foreach ($works as $work) {
+            $fields[] = TextInput::make("prices.{$work->sort_order}")
+                ->label($work->description)
+                ->numeric()
+                ->minValue(0)
+                ->default($work->price);
+        }
+
+        if ($fields === []) {
+            $fields[] = TextInput::make('empty')
+                ->label('Нет работ')
+                ->disabled()
+                ->default('Мастер ещё не добавил работы в POS');
+        }
+
+        return $fields;
     }
 
     public static function linkEquipment(): Action

@@ -33,12 +33,20 @@ final class OrderManageActionSupport
 
     /**
      * @param  array<int, string|null>  $pricesBySortOrder
+     * @param  array<string, string|null>  $pricesByToolType
      */
-    public static function setWorkPrices(int $orderId, array $pricesBySortOrder): Order
-    {
-        if ($pricesBySortOrder !== []) {
+    public static function setWorkPrices(
+        int $orderId,
+        array $pricesBySortOrder = [],
+        array $pricesByToolType = [],
+    ): Order {
+        if ($pricesBySortOrder !== [] || $pricesByToolType !== []) {
             app(SetWorkPricesHandler::class)->handle(
-                new SetWorkPricesCommand($orderId, $pricesBySortOrder)
+                new SetWorkPricesCommand(
+                    orderId: $orderId,
+                    pricesBySortOrder: $pricesBySortOrder,
+                    pricesByToolType: $pricesByToolType,
+                )
             );
         }
 

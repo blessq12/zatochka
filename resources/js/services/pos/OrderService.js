@@ -101,10 +101,9 @@ export const orderService = {
         return response.data.data;
     },
 
-    async addWork(orderId, description, toolType = null) {
+    async addWork(orderId, description) {
         const response = await axios.post(`${POS_ORDERS_BASE}/${orderId}/works`, {
             description,
-            tool_type: toolType,
         });
         return response.data.data;
     },

@@ -332,7 +332,38 @@ final class Order
             return true;
         }
 
-        return $this->isSharpeningOnly();
+        $types = array_values(array_unique(array_map(
+            static fn (OrderTool $tool): string => $tool->toolType,
+            $this->tools,
+        )));
+
+        return count($types) === 1;
+    }
+
+    public function setWorkToolType(int $sortOrder, string $toolType): self
+    {
+        $this->assertNotFinal();
+
+        $found = false;
+        $works = [];
+
+        foreach ($this->works as $work) {
+            if ($work->sortOrder === $sortOrder) {
+                $found = true;
+                $works[] = new OrderWork($work->id, $work->description, $work->price, $work->sortOrder, $toolType);
+            } else {
+                $works[] = $work;
+            }
+        }
+
+        if (! $found) {
+            throw new OrderPolicyViolation('Работа не найдена в заказе.');
+        }
+
+        $clone = clone $this;
+        $clone->works = $works;
+
+        return $clone;
     }
 
     public static function workTotalFromUnitPrice(?string $unitPrice, int $toolsQuantity): ?string
@@ -621,12 +652,58 @@ final class Order
         return $clone;
     }
 
+    public function setToolUnitPriceForType(string $toolType, ?string $unitPrice): self
+    {
+        $this->assertNotFinal();
+
+        if (! $this->isSharpening()) {
+            throw new OrderPolicyViolation('Цена инструмента задаётся только для заточки.');
+        }
+
+        $found = false;
+        $tools = [];
+
+        foreach ($this->tools as $tool) {
+            if ($tool->toolType === $toolType) {
+                $found = true;
+                $tools[] = new OrderTool(
+                    id: $tool->id,
+                    toolType: $tool->toolType,
+                    quantity: $tool->quantity,
+                    name: $tool->name,
+                    unitPrice: $unitPrice !== null && $unitPrice !== '' ? $unitPrice : null,
+                );
+            } else {
+                $tools[] = $tool;
+            }
+        }
+
+        if (! $found) {
+            throw new OrderPolicyViolation('Тип инструмента не найден в заказе.');
+        }
+
+        $clone = clone $this;
+        $clone->tools = $tools;
+
+        return $clone;
+    }
+
     /** POL-05: вызывается только явно из Application. */
     public function recalculatePrice(): self
     {
         $this->assertNotFinal();
 
         $total = '0.00';
+
+        if ($this->isSharpening()) {
+            foreach ($this->tools as $tool) {
+                $lineTotal = $tool->lineTotal();
+
+                if ($lineTotal !== null) {
+                    $total = bcadd($total, $lineTotal, 2);
+                }
+            }
+        }
 
         foreach ($this->works as $work) {
             if ($work->price !== null) {

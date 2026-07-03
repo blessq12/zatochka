@@ -61,6 +61,7 @@ final class OrderMapper
                     toolType: $tool->tool_type,
                     quantity: $tool->quantity,
                     name: $tool->name,
+                    unitPrice: $tool->unit_price !== null ? (string) $tool->unit_price : null,
                 ))->all()
                 : [],
             materials: $model->relationLoaded('materials')

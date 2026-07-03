@@ -119,20 +119,20 @@ final class OrderPricingTest extends TestCase
         app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand($orderId, $master->id));
         app(TakeOrderToWorkHandler::class)->handle(new TakeOrderToWorkCommand($orderId, $master->id));
 
-        $order = app(AddWorkHandler::class)->handle(new AddWorkCommand(
+        app(AddWorkHandler::class)->handle(new AddWorkCommand(
             orderId: $orderId,
             masterId: $master->id,
             description: 'Заточка',
-            toolType: 'manicure',
         ));
 
-        $sortOrder = $order->works()[0]->sortOrder;
-
-        // Менеджер вводит 200 ₽ за единицу, в заказе 3 инструмента
-        $order = OrderManageActionSupport::setWorkPrices($orderId, [$sortOrder => '200.00']);
+        $order = OrderManageActionSupport::setWorkPrices(
+            orderId: $orderId,
+            pricesByToolType: ['manicure' => '200.00'],
+        );
 
         $this->assertSame('600.00', $order->price());
-        $this->assertSame('600.00', $order->works()[0]->price);
+        $this->assertNull($order->works()[0]->price);
+        $this->assertSame('200.00', $order->tools()[0]->unitPrice);
     }
 
     public function test_заточка_цена_за_единицу_умножается_на_количество_своего_типа(): void
@@ -156,30 +156,68 @@ final class OrderPricingTest extends TestCase
         app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand($orderId, $master->id));
         app(TakeOrderToWorkHandler::class)->handle(new TakeOrderToWorkCommand($orderId, $master->id));
 
-        $order = app(AddWorkHandler::class)->handle(new AddWorkCommand(
+        app(AddWorkHandler::class)->handle(new AddWorkCommand(
             orderId: $orderId,
             masterId: $master->id,
-            description: 'Заточка маникюрных',
-            toolType: 'manicure',
+            description: 'Заточка инструментов',
         ));
 
-        $order = app(AddWorkHandler::class)->handle(new AddWorkCommand(
+        $order = OrderManageActionSupport::setWorkPrices(
             orderId: $orderId,
-            masterId: $master->id,
-            description: 'Заточка парикмахерских',
-            toolType: 'hair',
-        ));
-
-        $manicureSortOrder = $order->works()[0]->sortOrder;
-        $hairSortOrder = $order->works()[1]->sortOrder;
-
-        $order = OrderManageActionSupport::setWorkPrices($orderId, [
-            $manicureSortOrder => '200.00',
-            $hairSortOrder => '300.00',
-        ]);
+            pricesByToolType: [
+                'manicure' => '200.00',
+                'hair' => '300.00',
+            ],
+        );
 
         $this->assertSame('1800.00', $order->price());
-        $this->assertSame('600.00', $order->works()[0]->price);
-        $this->assertSame('1200.00', $order->works()[1]->price);
+        $this->assertNull($order->works()[0]->price);
+
+        $manicureTool = collect($order->tools())->firstWhere('toolType', 'manicure');
+        $hairTool = collect($order->tools())->firstWhere('toolType', 'hair');
+
+        $this->assertNotNull($manicureTool);
+        $this->assertNotNull($hairTool);
+        $this->assertSame('200.00', $manicureTool->unitPrice);
+        $this->assertSame('300.00', $hairTool->unitPrice);
+    }
+
+    public function test_заточка_цена_по_типу_не_требует_работу_на_каждый_тип(): void
+    {
+        $this->seed(\Database\Seeders\DomainSeeder::class);
+
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
+
+        $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+            serviceTypes: ['sharpening'],
+            clientSnapshot: new ClientSnapshot(['full_name' => 'Тест', 'phone' => '+79001112233']),
+            tools: [
+                new OrderTool(null, 'manicure', 3, 'Кусачки'),
+                new OrderTool(null, 'hair', 4, 'Ножницы'),
+            ],
+        ));
+
+        $orderId = $order->id();
+        $this->assertNotNull($orderId);
+
+        app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand($orderId, $master->id));
+        app(TakeOrderToWorkHandler::class)->handle(new TakeOrderToWorkCommand($orderId, $master->id));
+
+        app(AddWorkHandler::class)->handle(new AddWorkCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+            description: 'Заточка и полировка',
+        ));
+
+        $order = OrderManageActionSupport::setWorkPrices(
+            orderId: $orderId,
+            pricesByToolType: [
+                'manicure' => '200.00',
+                'hair' => '300.00',
+            ],
+        );
+
+        $this->assertSame('1800.00', $order->price());
+        $this->assertCount(1, $order->works());
     }
 }

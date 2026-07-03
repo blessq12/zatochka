@@ -75,7 +75,7 @@ final class OrderViewPresenter
             $order->status === OrderStatus::New && $order->master_id === null => 'Назначьте мастера — после этого заказ появится в POS.',
             $order->status === OrderStatus::New && $order->master_id !== null => 'Мастер назначен. Заказ ждёт начала работы в POS.',
             $order->status === OrderStatus::InWork && filled($order->rework_feedback) => 'Заказ на доработке у мастера после вашего возврата с приёмки.',
-            $order->status === OrderStatus::InWork && self::hasUnpricedWorks($order) => 'Мастер добавил работы — укажите цены в блоке «Состав и стоимость».',
+            $order->status === OrderStatus::InWork && self::hasUnpricedWorks($order) => 'Укажите цены по типам инструментов в блоке «Состав и стоимость».',
             $order->status === OrderStatus::InWork => 'Заказ в работе. Контролируйте состав и итоговую сумму.',
             $order->status === OrderStatus::WaitingParts => 'Заказ на паузе: ожидание запчастей со склада.',
             $order->status === OrderStatus::Ready => 'Заказ готов по мнению мастера. Проверьте состав и качество — выдайте клиенту или верните на доработку.',
@@ -221,6 +221,19 @@ final class OrderViewPresenter
         return $total;
     }
 
+    public static function toolsTotal(OrderModel $order): string
+    {
+        $total = '0.00';
+
+        foreach ($order->tools as $tool) {
+            if ($tool->unit_price !== null) {
+                $total = bcadd($total, bcmul((string) $tool->unit_price, (string) $tool->quantity, 2), 2);
+            }
+        }
+
+        return $total;
+    }
+
     public static function materialsTotal(OrderModel $order): string
     {
         $total = '0.00';
@@ -234,6 +247,10 @@ final class OrderViewPresenter
 
     public static function hasUnpricedWorks(OrderModel $order): bool
     {
+        if (self::isSharpeningOrder($order) && $order->tools->isNotEmpty()) {
+            return self::hasUnpricedToolTypes($order);
+        }
+
         foreach ($order->works as $work) {
             if ($work->price === null) {
                 return true;
@@ -241,6 +258,49 @@ final class OrderViewPresenter
         }
 
         return false;
+    }
+
+    public static function hasUnpricedToolTypes(OrderModel $order): bool
+    {
+        foreach (array_keys(self::groupedToolQuantities($order)) as $toolType) {
+            $hasPrice = $order->tools->contains(
+                fn ($tool): bool => $tool->tool_type === $toolType && $tool->unit_price !== null,
+            );
+
+            if (! $hasPrice) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function toolTypeUnitPrice(OrderModel $order, string $toolType): ?string
+    {
+        $tool = $order->tools->firstWhere('tool_type', $toolType);
+
+        if ($tool?->unit_price === null) {
+            return null;
+        }
+
+        return (string) $tool->unit_price;
+    }
+
+    public static function toolTypeLineTotal(OrderModel $order, string $toolType): ?string
+    {
+        $total = '0.00';
+        $found = false;
+
+        foreach ($order->tools as $tool) {
+            if ($tool->tool_type !== $toolType || $tool->unit_price === null) {
+                continue;
+            }
+
+            $found = true;
+            $total = bcadd($total, bcmul((string) $tool->unit_price, (string) $tool->quantity, 2), 2);
+        }
+
+        return $found ? $total : null;
     }
 
     public static function isSharpeningOrder(OrderModel $order): bool
@@ -287,6 +347,18 @@ final class OrderViewPresenter
         return self::toolsTotalQuantity($order);
     }
 
+    public static function groupedToolQuantities(OrderModel $order): array
+    {
+        $grouped = [];
+
+        foreach ($order->tools as $tool) {
+            $type = (string) $tool->tool_type;
+            $grouped[$type] = ($grouped[$type] ?? 0) + (int) $tool->quantity;
+        }
+
+        return $grouped;
+    }
+
     public static function sharpeningWorkUsesUnitPricing(OrderModel $order, ?string $toolType): bool
     {
         if (! self::isSharpeningOrder($order)) {
@@ -297,7 +369,7 @@ final class OrderViewPresenter
             return true;
         }
 
-        return ! in_array('repair', $order->service_types ?? [], true);
+        return count(self::groupedToolQuantities($order)) === 1;
     }
 
     public static function workUnitPrice(?string $totalPrice, int $toolsQuantity): ?string

@@ -63,7 +63,6 @@ final class OrderLifecycleTest extends TestCase
             orderId: $orderId,
             masterId: $master->id,
             description: 'Заточка ножниц',
-            toolType: 'manicure',
         ));
         $this->assertCount(1, $order->works());
 
@@ -121,7 +120,6 @@ final class OrderLifecycleTest extends TestCase
             orderId: $orderId,
             masterId: $master->id,
             description: 'Заточка',
-            toolType: 'manicure',
         ));
         app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand($orderId, $master->id));
 

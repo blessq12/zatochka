@@ -257,6 +257,7 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
                 'name' => $tool->name,
                 'tool_type' => $tool->toolType,
                 'quantity' => $tool->quantity,
+                'unit_price' => $tool->unitPrice,
             ]);
             $toolModel->save();
             $ids[] = $toolModel->id;

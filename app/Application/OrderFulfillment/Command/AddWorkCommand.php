@@ -8,6 +8,5 @@ final readonly class AddWorkCommand
         public int $orderId,
         public int $masterId,
         public string $description,
-        public ?string $toolType = null,
     ) {}
 }

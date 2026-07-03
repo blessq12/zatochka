@@ -163,14 +163,12 @@ final class PosController
     {
         $validated = $request->validate([
             'description' => ['required', 'string', 'max:255'],
-            'tool_type' => ['nullable', 'string', 'max:50'],
         ]);
 
         $order = $handler->handle(new AddWorkCommand(
             orderId: $orderId,
             masterId: $this->masterId($request),
             description: $validated['description'],
-            toolType: $validated['tool_type'] ?? null,
         ));
 
         return $this->orderResponse($order);

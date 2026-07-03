@@ -144,8 +144,8 @@ final class DemoOrderSeeder extends Seeder
         ));
 
         $this->takeToWork($orderId, $master->id);
-        $this->addWork($orderId, $master->id, 'Заточка кусачек', 'manicure');
-        $this->addWork($orderId, $master->id, 'Полировка рабочих поверхностей', 'manicure');
+        $this->addWork($orderId, $master->id, 'Заточка кусачек');
+        $this->addWork($orderId, $master->id, 'Полировка рабочих поверхностей');
     }
 
     private function seedDemoClientActiveOrder(UserModel $master, ClientModel $client): void
@@ -165,7 +165,7 @@ final class DemoOrderSeeder extends Seeder
         ));
 
         $this->takeToWork($orderId, $master->id);
-        $this->addWork($orderId, $master->id, 'Заточка маникюрного набора', 'manicure');
+        $this->addWork($orderId, $master->id, 'Заточка маникюрного набора');
     }
 
     private function seedWaitingPartsOrder(UserModel $master, WarehouseItemModel $warehouseItem): void
@@ -202,7 +202,7 @@ final class DemoOrderSeeder extends Seeder
         ));
 
         $this->takeToWork($orderId, $master->id);
-        $this->addWork($orderId, $master->id, 'Заточка грумерских ножниц', 'groomer');
+        $this->addWork($orderId, $master->id, 'Заточка грумерских ножниц');
         app(SetWorkPricesHandler::class)->handle(new SetWorkPricesCommand(
             orderId: $orderId,
             pricesBySortOrder: [0 => '450.00'],
@@ -238,7 +238,7 @@ final class DemoOrderSeeder extends Seeder
         ));
 
         $this->takeToWork($orderId, $master->id);
-        $this->addWork($orderId, $master->id, 'Заточка ножниц', 'barber');
+        $this->addWork($orderId, $master->id, 'Заточка ножниц');
         $this->addWork($orderId, $master->id, 'Диагностика аппарата');
     }
 
@@ -422,7 +422,7 @@ final class DemoOrderSeeder extends Seeder
         ));
 
         $this->takeToWork($readyId, $master->id);
-        $this->addWork($readyId, $master->id, 'Заточка филировочных ножниц', 'barber');
+        $this->addWork($readyId, $master->id, 'Заточка филировочных ножниц');
         app(SetWorkPricesHandler::class)->handle(new SetWorkPricesCommand(
             orderId: $readyId,
             pricesBySortOrder: [0 => '400.00'],
@@ -459,7 +459,7 @@ final class DemoOrderSeeder extends Seeder
         ));
         $this->markDemo($orderId, $master->id, $marker);
         $this->takeToWork($orderId, $master->id);
-        $this->addWork($orderId, $master->id, $workDescription, 'manicure');
+        $this->addWork($orderId, $master->id, $workDescription);
         app(SetWorkPricesHandler::class)->handle(new SetWorkPricesCommand(
             orderId: $orderId,
             pricesBySortOrder: [0 => $price],
@@ -529,13 +529,12 @@ final class DemoOrderSeeder extends Seeder
         ));
     }
 
-    private function addWork(int $orderId, int $masterId, string $description, ?string $toolType = null): void
+    private function addWork(int $orderId, int $masterId, string $description): void
     {
         app(AddWorkHandler::class)->handle(new AddWorkCommand(
             orderId: $orderId,
             masterId: $masterId,
             description: $description,
-            toolType: $toolType,
         ));
     }
 

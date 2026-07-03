@@ -14,7 +14,15 @@ class OrderToolModel extends Model
         'name',
         'tool_type',
         'quantity',
+        'unit_price',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'unit_price' => 'decimal:2',
+        ];
+    }
 
     public function order(): BelongsTo
     {
