@@ -1,0 +1,70 @@
+---
+description: Потоки акторов и cross-BC сценарии
+alwaysApply: false
+---
+
+# Потоки
+
+## Клиент (`/api/*`, guard `client`)
+
+| # | Действие | BC | POL / ADR |
+|---|----------|-----|-----------|
+| 1 | Bootstrap (контент, прайс) | PublicSite → Company + Pricing | ADR-004 |
+| 2 | SubmitSiteLead + intake_data | ClientPortal | ≠ Order |
+| 3 | Register / profile / password | ClientPortal | — |
+| 4 | Заказы active / history | ClientPortal → Order (read) | ADR-005: без статусов цеха |
+| 5 | SubmitReview | ClientPortal → Order | POL-04: только issued |
+
+## Мастер (`/api/pos/*`, Sanctum, master_id = self)
+
+| # | Действие | BC | POL |
+|---|----------|-----|-----|
+| 1 | Login | Identity | — |
+| 2 | TakeOrderToWork | OrderFulfillment | POL-06; после AssignMaster (ADR-006) |
+| 3 | waiting_parts / resume / works / notes | OrderFulfillment | — |
+| 4 | MarkOrderReady | OrderFulfillment | POL-01 |
+| 5 | Search equipment / warehouse | Equipment, Warehouse | read-only |
+| — | completed tab | — | = ready, не issued |
+| — | rework_feedback | OrderFulfillment (read) | после ReturnOrderForRework |
+
+**Не в POS:** CreateOrder, AssignMaster, цены, материалы, Issue, Cancel, rework, PDF.
+
+## Менеджер (Filament `/cp`)
+
+| # | Действие | BC | POL |
+|---|----------|-----|-----|
+| 1 | Lead → CreateOrder | ClientPortal → OrderFulfillment + Company | POL-09; LeadToOrderFormData |
+| 2 | AssignMasterToOrder | OrderFulfillment | POL-08 |
+| 3 | SetWorkPrices + RecalculateOrderPrice | OrderFulfillment | POL-05 |
+| 4 | AddMaterial / LinkEquipment | OrderFulfillment → Warehouse, Equipment | read warehouse |
+| 5 | ReturnOrderForRework | OrderFulfillment | POL-11/12; Filament only (ADR-008) |
+| 6 | IssueOrder + PDF | OrderFulfillment → read models | POL-02; ADR-003 |
+| 7 | CancelOrder | OrderFulfillment | POL-03: только new |
+| 8 | LinkGuestOrders, модерация Review | ClientPortal → Order | — |
+| — | CRUD справочников | Company, Pricing, Warehouse, Equipment, Identity | вне основного потока |
+
+## Сквозной happy path
+
+```
+SubmitSiteLead → [менеджер] CreateOrder + AssignMaster
+→ [мастер] TakeOrderToWork → works → MarkOrderReady
+→ [менеджер] SetWorkPrices + Recalculate → IssueOrder
+→ [клиент] SubmitReview
+```
+
+## Cross-BC orchestration
+
+| Сценарий | Handler / Builder | Порты |
+|----------|-------------------|-------|
+| Lead → Order | CreateOrderHandler | SiteLead, Branch |
+| Bootstrap | GetPublicBootstrapQueryHandler | Company, Pricing |
+| ЛК заказы | GetClientOrders*, GetClientOrderDetail* | Order |
+| Отзыв | SubmitReviewHandler | Order |
+| Гость → Client | LinkGuestOrdersToClientHandler | Order |
+| Материал | AddMaterialToOrderHandler | WarehouseItem |
+| Оборудование | LinkEquipmentToOrderHandler | Equipment |
+| PDF | GenerateDocumentHandler + OrderDocumentReadModelBuilder | Company, Identity, Equipment, Warehouse |
+| POS карточка | PosOrderReadModelBuilder | Equipment, Master, WarehouseItem |
+| История ремонта | GetEquipmentOrderHistoryQueryHandler | Order |
+
+Правило: cross-BC только в Application Handler или ReadModel Builder; Domain — только `*_id`.

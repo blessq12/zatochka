@@ -128,7 +128,7 @@ export default {
                     abortEarly: false,
                 });
 
-                const result = await this.orderStore.createOrder(
+                const result = await this.orderStore.submitLead(
                     this.form,
                     "sharpening"
                 );
@@ -438,10 +438,10 @@ export default {
                     <div class="pt-6">
                         <button
                             type="submit"
-                            :disabled="orderStore.createOrderLoading"
+                            :disabled="orderStore.submitLeadLoading"
                             class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
-                            <span v-if="orderStore.createOrderLoading"
+                            <span v-if="orderStore.submitLeadLoading"
                                 >Отправка...</span
                             >
                             <span v-else>ЗАКАЗАТЬ ЗАТОЧКУ</span>

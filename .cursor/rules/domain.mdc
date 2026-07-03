@@ -1,0 +1,41 @@
+---
+description: Order lifecycle, POL, глоссарий
+alwaysApply: false
+---
+
+# Домен
+
+Мастерская Томск: заточка + ремонт, B2C, один филиал. Доставка — флаг на Order.
+
+## Order — статусы
+
+`new` → `in_work` ⇄ `waiting_parts` → `ready` → `issued` | `cancelled` (только из `new`)
+
+Rework: `ready` → `in_work` через ReturnOrderForRework (менеджер, feedback); сброс rework при MarkOrderReady.
+
+## POL
+
+| ID | Суть |
+|----|------|
+| 01 | MarkOrderReady — ≥1 Work |
+| 02 | IssueOrder — из ready |
+| 03 | CancelOrder — из new |
+| 04 | SubmitReview — issued |
+| 05 | RecalculateOrderPrice — явно менеджером |
+| 06–07 | POS: master_id = self |
+| 08 | AssignMaster — new, менеджер |
+| 09 | Lead → Order — один раз |
+| 11–12 | ReturnOrderForRework — ready, feedback, Filament only |
+
+## Глоссарий
+
+| Термин | Код |
+|--------|-----|
+| Lead | SiteLead, intake_data обязательна |
+| manager_id | автор заказа (Filament) |
+| master_id | исполнитель (POS) |
+| client_snapshot | гость без Client (ADR-002) |
+| Tool / Equipment | позиция заточки / аппарат в реестре |
+| POS completed | ready, не issued |
+
+Потоки: [flows.mdc](./flows.mdc). ADR: [decisions.mdc](./decisions.mdc).

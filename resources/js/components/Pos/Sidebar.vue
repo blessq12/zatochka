@@ -117,13 +117,6 @@ export default {
             >
                 Оборудование
             </router-link>
-            <router-link
-                :to="{ name: 'pos.settings.profile' }"
-                class="nav-link"
-                :class="{ active: isActiveSection('settings') }"
-            >
-                Настройки
-            </router-link>
         </nav>
     </aside>
 </template>

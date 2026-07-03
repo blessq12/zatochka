@@ -1,64 +1,12 @@
 <script>
 import { mapStores } from "pinia";
-import { useAuthStore } from "../../stores/authStore.js";
 import { useOrderStore } from "../../stores/orderStore.js";
+import { formatServiceTypes } from "../../utils/serviceTypes.js";
 
 export default {
     name: "ActiveOrdersSection",
-    computed: {
-        ...mapStores(useAuthStore, useOrderStore),
-        activeOrders() {
-            if (
-                !this.orderStore.orders ||
-                this.orderStore.orders.length === 0
-            ) {
-                return [];
-            }
-            return this.orderStore.orders.filter(
-                (order) =>
-                    order.status !== "issued" && order.status !== "cancelled"
-            );
-        },
-        isLoading() {
-            return this.orderStore.isLoading;
-        },
-    },
     methods: {
-        getStatusLabel(status) {
-            const statusMap = {
-                new: "Новый",
-                in_work: "В работе",
-                waiting_parts: "Ожидание запчастей",
-                ready: "Готов",
-                issued: "Выдан",
-                cancelled: "Отменен",
-            };
-            return statusMap[status] || status;
-        },
-        getStatusColor(status) {
-            const colorMap = {
-                new: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-                in_work:
-                    "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-                waiting_parts:
-                    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-                ready: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-            };
-            return (
-                colorMap[status] ||
-                "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
-            );
-        },
-        getTypeLabel(type) {
-            const typeMap = {
-                repair: "Ремонт",
-                sharpening: "Заточка",
-                replacement: "Замена",
-                maintenance: "Обслуживание",
-                warranty: "Гарантийный",
-            };
-            return typeMap[type] || type;
-        },
+        formatServiceTypes,
         formatDate(dateString) {
             if (!dateString) return "";
             const date = new Date(dateString);
@@ -76,6 +24,15 @@ export default {
                 style: "currency",
                 currency: "RUB",
             }).format(price);
+        },
+    },
+    computed: {
+        ...mapStores(useOrderStore),
+        activeOrders() {
+            return this.orderStore.activeOrders || [];
+        },
+        isLoading() {
+            return this.orderStore.isLoadingActive;
         },
     },
 };
@@ -103,12 +60,18 @@ export default {
 
             <div
                 v-else-if="activeOrders.length === 0"
-                class="mt-4 text-center py-12"
+                class="mt-4 text-center py-12 space-y-3"
             >
                 <p
                     class="text-dark-gray-500 dark:text-gray-200 font-jost-regular text-base sm:text-lg"
                 >
                     У вас пока нет активных заказов
+                </p>
+                <p
+                    class="text-sm font-jost-regular text-dark-gray-400 dark:text-gray-400 max-w-md mx-auto"
+                >
+                    Если вы оформляли заявку без регистрации, заказы появятся
+                    после привязки менеджером по номеру телефона.
                 </p>
             </div>
 
@@ -122,21 +85,11 @@ export default {
                         class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                     >
                         <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-3">
-                                <h3
-                                    class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
-                                >
-                                    Заказ №{{ order.order_number }}
-                                </h3>
-                                <span
-                                    :class="[
-                                        'px-3 py-1 rounded-full text-xs sm:text-sm font-jost-medium',
-                                        getStatusColor(order.status),
-                                    ]"
-                                >
-                                    {{ getStatusLabel(order.status) }}
-                                </span>
-                            </div>
+                            <h3
+                                class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-3"
+                            >
+                                Заказ №{{ order.order_number }}
+                            </h3>
                             <div
                                 class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm sm:text-base"
                             >
@@ -149,7 +102,7 @@ export default {
                                     <span
                                         class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
                                     >
-                                        {{ getTypeLabel(order.service_type || order.type) }}
+                                        {{ formatServiceTypes(order.service_types) }}
                                     </span>
                                 </div>
                                 <div>
@@ -178,7 +131,7 @@ export default {
                                 </div>
                             </div>
                             <div
-                                v-if="order.problem_description"
+                                v-if="order.description"
                                 class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
                             >
                                 <p
@@ -187,9 +140,9 @@ export default {
                                     <span
                                         class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
                                     >
-                                        Описание проблемы:
+                                        Описание:
                                     </span>
-                                    {{ order.problem_description }}
+                                    {{ order.description }}
                                 </p>
                             </div>
                         </div>

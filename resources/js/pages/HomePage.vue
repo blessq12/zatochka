@@ -1,8 +1,9 @@
 <script>
-import { RouterLink } from "vue-router";
+import { mapState } from "pinia";
 import FaqSection from "../components/Home/FaqSection.vue";
 import HeroSection from "../components/Home/HeroSection.vue";
 import WorkScheduleSection from "../components/Home/WorkScheduleSection.vue";
+import { useBootstrapStore } from "../stores/bootstrapStore.js";
 
 export default {
     name: "HomePage",
@@ -11,115 +12,11 @@ export default {
         FaqSection,
         WorkScheduleSection,
     },
-    data() {
-        return {
-            faqItems: [
-                {
-                    id: 1,
-                    question: "Как долго делается заточка?",
-                    answerLines: [
-                        "Стандартный срок заточки зависит от загруженности мастерской и количества инструмента.",
-                        "Обычно работы выполняются в срок от 1 до 3 рабочих дней.",
-                    ],
-                },
-                {
-                    id: 2,
-                    question: "Как долго ремонтируется аппарат?",
-                    answerLines: [
-                        "Стандартный срок ремонта аппарата — 2 рабочих дня мастерской + время на доставку.",
-                        "В случае сложного ремонта и отсутствия запчастей сроки дополнительно согласовываются.",
-                    ],
-                },
-                {
-                    id: 3,
-                    question: "Есть гарантия на заточку?",
-                    answerLines: [
-                        "Да, мы предоставляем гарантию при соблюдении рекомендаций по использованию инструмента.",
-                    ],
-                },
-                {
-                    id: 4,
-                    question: "Есть гарантия на ремонт?",
-                    answerLines: [
-                        "На все виды ремонта действует гарантия 14 дней с момента выдачи инструмента.",
-                    ],
-                },
-                {
-                    id: 5,
-                    question: "Как происходит доставка?",
-                    answerLines: [
-                        "Курьер забирает и привозит инструменты по согласованному адресу и времени.",
-                        "Доставка доступна по условиям.",
-                    ],
-                },
-                {
-                    id: 6,
-                    question: "Какие способы оплаты?",
-                    answerLines: [
-                        "Вы можете оплатить услуги наличными или по безналичному расчету (перевод, счет).",
-                    ],
-                },
-            ],
-            workSchedule: [
-                {
-                    id: 1,
-                    name: "ПОНЕДЕЛЬНИК",
-                    isWeekend: false,
-                    lines: [
-                        "11:00 — 17:00 МАСТЕРСКАЯ",
-                        "13:00 — 17:00 ДОСТАВКА",
-                    ],
-                },
-                {
-                    id: 2,
-                    name: "ВТОРНИК",
-                    isWeekend: false,
-                    lines: [
-                        "11:00 — 17:00 МАСТЕРСКАЯ",
-                        "13:00 — 17:00 ДОСТАВКА",
-                    ],
-                },
-                {
-                    id: 3,
-                    name: "СРЕДА",
-                    isWeekend: false,
-                    lines: [
-                        "11:00 — 17:00 МАСТЕРСКАЯ",
-                        "13:00 — 17:00 ДОСТАВКА",
-                    ],
-                },
-                {
-                    id: 4,
-                    name: "ЧЕТВЕРГ",
-                    isWeekend: true,
-                    lines: [],
-                },
-                {
-                    id: 5,
-                    name: "ПЯТНИЦА",
-                    isWeekend: false,
-                    lines: [
-                        "11:00 — 17:00 МАСТЕРСКАЯ",
-                        "13:00 — 17:00 ДОСТАВКА",
-                    ],
-                },
-                {
-                    id: 6,
-                    name: "СУББОТА",
-                    isWeekend: false,
-                    lines: [
-                        "11:00 — 17:00 МАСТЕРСКАЯ",
-                        "13:00 — 17:00 ДОСТАВКА",
-                    ],
-                },
-                {
-                    id: 7,
-                    name: "ВОСКРЕСЕНЬЕ",
-                    isWeekend: true,
-                    lines: [],
-                },
-            ],
-        };
+    computed: {
+        ...mapState(useBootstrapStore, ["faqItems", "scheduleDays"]),
+    },
+    async mounted() {
+        await useBootstrapStore().fetchBootstrap();
     },
 };
 </script>
@@ -778,11 +675,11 @@ export default {
             </div>
         </section>
 
-        <!-- FAQ (динамический компонент с мок-данными) -->
+        <!-- FAQ -->
         <FaqSection :items="faqItems" />
 
         <!-- График работы (динамический компонент с мок-данными) -->
-        <WorkScheduleSection :days="workSchedule" />
+        <WorkScheduleSection :days="scheduleDays" />
     </div>
 </template>
 

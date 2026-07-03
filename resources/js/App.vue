@@ -1,5 +1,6 @@
 <script>
 import MainLayout from "./components/Layout/MainLayout.vue";
+import { useBootstrapStore } from "./stores/bootstrapStore.js";
 import { useRoute } from "vue-router";
 
 export default {
@@ -17,6 +18,12 @@ export default {
         isPosRoute() {
             return this.route.path.startsWith("/pos");
         },
+    },
+    async mounted() {
+        if (!this.isPosRoute) {
+            const bootstrapStore = useBootstrapStore();
+            await bootstrapStore.fetchBootstrap();
+        }
     },
 };
 </script>

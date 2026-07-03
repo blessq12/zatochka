@@ -1,0 +1,22 @@
+---
+description: ADR — архитектурные решения проекта
+alwaysApply: false
+---
+
+# ADR
+
+**001** — 7 BC монолит + PublicSite фасад; связь по ID; cross-BC в Application.
+
+**002** — Гостевой заказ: client_id nullable + client_snapshot; LinkGuestOrdersToClient.
+
+**003** — PDF on-the-fly, без агрегата Document.
+
+**004** — GetPublicBootstrap = Company + Pricing; bootstrapStore.
+
+**005** — ЛК: active/history без статусов цеха.
+
+**006** — AssignMasterToOrder на new; POS по master_id.
+
+**007** — Company и Pricing отдельно (ex-Catalog).
+
+**008** — ReturnOrderForRework Filament only; feedback обязателен; POS endpoint нет.

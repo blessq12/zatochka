@@ -1,12 +1,9 @@
 export default function createUpdateClientRequestDto(input) {
-    const payload = {
-        id: input.id,
-    };
+    const payload = {};
 
     const fields = [
         "full_name",
         "email",
-        "telegram",
         "birth_date",
         "delivery_address",
     ];

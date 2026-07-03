@@ -2,41 +2,31 @@
 
 namespace App\Providers;
 
-use App\Contracts\MessengerServiceInterface;
-use App\Services\Messenger\MaxMessengerService;
-use App\Services\Messenger\TelegramMessengerService;
+use Filament\Actions\Action;
+use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        $this->app->bind('messenger.telegram', TelegramMessengerService::class);
-        $this->app->bind('messenger.max', MaxMessengerService::class);
-
-        $this->app->bind(MessengerServiceInterface::class, function ($app) {
-            $default = config('services.messenger.default', 'telegram');
-
-            return $app->make($default === 'max' ? 'messenger.max' : 'messenger.telegram');
-        });
-
-        $this->app->when(\App\Http\Controllers\Api\PosController::class)
-            ->needs(MessengerServiceInterface::class)
-            ->give(TelegramMessengerService::class);
-
-        $this->app->when(\App\Http\Controllers\Api\OrderController::class)
-            ->needs(MessengerServiceInterface::class)
-            ->give(TelegramMessengerService::class);
+        //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        Table::configureUsing(static function (Table $table): void {
+            $table
+                ->recordActionsPosition(RecordActionsPosition::BeforeColumns)
+                ->recordActionsAlignment('start')
+                ->recordActionsColumnLabel('')
+                ->modifyUngroupedRecordActionsUsing(static function (Action $action): void {
+                    $action
+                        ->iconButton()
+                        ->tooltip(static fn (Action $action): string|Htmlable|null => $action->getLabel());
+                });
+        });
     }
 }

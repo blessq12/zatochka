@@ -5,7 +5,6 @@ import { useOrderStore } from "../stores/orderStore.js";
 import ActiveOrdersSection from "./Dashboard/ActiveOrdersSection.vue";
 import OrdersHistorySection from "./Dashboard/OrdersHistorySection.vue";
 import ProfileSection from "./Dashboard/ProfileSection.vue";
-import TelegramSection from "./Dashboard/TelegramSection.vue";
 import SetPasswordModal from "./ClientApp/SetPasswordModal.vue";
 
 export default {
@@ -14,7 +13,6 @@ export default {
         ProfileSection,
         ActiveOrdersSection,
         OrdersHistorySection,
-        TelegramSection,
         SetPasswordModal,
     },
     data() {
@@ -29,12 +27,13 @@ export default {
     async mounted() {
         this.isInitialized = true;
         if (this.authStore.isAuthenticated) {
-            // Проверяем и загружаем данные профиля, если их еще нет
             if (!this.authStore.user) {
                 await this.authStore.checkAuth();
             }
-            // Загружаем больше заказов (50 - максимум API), чтобы показать активные и историю
-            await this.orderStore.getClientOrders(this.authStore.token, 1, 50);
+            await Promise.all([
+                this.orderStore.fetchActiveOrders(),
+                this.orderStore.fetchHistoryOrders(),
+            ]);
         }
     },
     methods: {
@@ -70,7 +69,6 @@ export default {
                 </div>
             </div>
 
-            <!-- Показываем ошибку если пользователь не авторизован -->
             <div v-else-if="!authStore.isAuthenticated" class="text-center">
                 <div
                     class="bg-red-50/80 backdrop-blur-lg border border-red-300/50 text-red-700 px-8 py-6 dark:bg-red-900/30 dark:border-red-600/50 dark:text-red-400"
@@ -80,11 +78,9 @@ export default {
                 </div>
             </div>
 
-            <!-- Личный кабинет -->
             <div v-else>
-                <!-- Блокирующая модалка: установка постоянного пароля после входа по временному -->
                 <SetPasswordModal v-if="authStore.requiresPasswordSet" />
-                <!-- Заголовок -->
+
                 <div class="mb-8 sm:mb-12">
                     <div class="flex items-center justify-between mb-4">
                         <h1
@@ -104,7 +100,6 @@ export default {
                     ></div>
                 </div>
 
-                <!-- Табы -->
                 <div
                     class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-8 sm:mb-12 bg-white/60 backdrop-blur-md p-2 border border-white/20 dark:bg-gray-800/60 dark:border-gray-700/20"
                 >
@@ -141,25 +136,12 @@ export default {
                     >
                         История заказов
                     </button>
-                    <button
-                        @click="setActiveTab('telegram')"
-                        :class="[
-                            'w-full sm:flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
-                            activeTab === 'telegram'
-                                ? 'bg-[#C3006B] text-white shadow-lg'
-                                : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
-                        ]"
-                    >
-                        Telegram
-                    </button>
                 </div>
 
-                <!-- Контент табов -->
                 <div>
                     <ProfileSection v-if="activeTab === 'profile'" />
                     <ActiveOrdersSection v-if="activeTab === 'active'" />
                     <OrdersHistorySection v-if="activeTab === 'history'" />
-                    <TelegramSection v-if="activeTab === 'telegram'" />
                 </div>
             </div>
         </div>

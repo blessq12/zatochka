@@ -1,101 +1,55 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ClientController;
-use App\Http\Controllers\Api\DocumentController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\PosController;
-use App\Http\Controllers\Api\PriceController;
+use App\Http\Controllers\Api\BootstrapController;
+use App\Http\Controllers\Api\ClientAccountController;
+use App\Http\Controllers\Api\ClientAuthController;
+use App\Http\Controllers\Api\LeadController;
+use App\Http\Controllers\Pos\PosController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::controller(AuthController::class)->group(function () {
-    Route::post('/login', 'login');
-    Route::post('/register', 'register');
-    Route::post('/logout', 'logout');
+Route::get('bootstrap', [BootstrapController::class, 'show']);
+
+Route::post('leads', [LeadController::class, 'store']);
+
+Route::prefix('auth')->group(function (): void {
+    Route::post('register', [ClientAuthController::class, 'register']);
+    Route::post('login', [ClientAuthController::class, 'login']);
 });
 
-Route::controller(OrderController::class)->group(function () {
-    Route::post('/order/create', 'createOrder');
+Route::prefix('client')->middleware('auth:sanctum')->group(function (): void {
+    Route::get('profile', [ClientAccountController::class, 'profile']);
+    Route::patch('profile', [ClientAccountController::class, 'updateProfile']);
+    Route::post('password', [ClientAuthController::class, 'setPassword']);
+
+    Route::get('orders/active', [ClientAccountController::class, 'activeOrders']);
+    Route::get('orders/history', [ClientAccountController::class, 'orderHistory']);
+    Route::get('orders/{orderId}', [ClientAccountController::class, 'orderDetail']);
+    Route::post('orders/{orderId}/review', [ClientAccountController::class, 'submitReview']);
 });
 
-Route::controller(PriceController::class)->group(function () {
-    Route::get('/prices/sharpening', 'sharpening');
-    Route::get('/prices/repair', 'repair');
-    Route::get('/prices/all', 'all');
-});
+Route::prefix('pos')->group(function (): void {
+    Route::post('login', [PosController::class, 'login']);
 
-Route::controller(\App\Http\Controllers\Api\TelegramController::class)->group(function () {
-    Route::post('/telegram/webhook', 'webhook');
-});
+    Route::middleware('auth:sanctum')->group(function (): void {
+        Route::get('dashboard', [PosController::class, 'dashboard']);
+        Route::get('orders/counts', [PosController::class, 'counts']);
+        Route::get('orders', [PosController::class, 'index']);
+        Route::get('orders/{orderId}', [PosController::class, 'show']);
+        Route::post('orders/{orderId}/take-to-work', [PosController::class, 'takeToWork']);
+        Route::post('orders/{orderId}/waiting-parts', [PosController::class, 'markWaitingForParts']);
+        Route::post('orders/{orderId}/resume', [PosController::class, 'resume']);
+        Route::post('orders/{orderId}/works', [PosController::class, 'addWork']);
+        Route::delete('orders/{orderId}/works', [PosController::class, 'removeWork']);
+        Route::patch('orders/{orderId}/internal-notes', [PosController::class, 'updateInternalNotes']);
+        Route::post('orders/{orderId}/mark-ready', [PosController::class, 'markReady']);
 
-Route::controller(\App\Http\Controllers\Api\MaxController::class)->group(function () {
-    Route::post('/max/webhook', 'webhook');
-});
-
-Route::middleware('auth:client')->group(function () {
-    Route::controller(\App\Http\Controllers\Api\TelegramController::class)->group(function () {
-        Route::post('/telegram/send-verification-code', 'sendVerificationCode');
-        Route::post('/telegram/verify-code', 'verifyCode');
-        Route::post('/telegram/check-chat-is-exists', 'checkChatExists');
+        Route::get('warehouse/items', [PosController::class, 'searchWarehouseItems']);
+        Route::get('equipment', [PosController::class, 'searchEquipment']);
+        Route::get('equipment/{equipmentId}/orders', [PosController::class, 'equipmentOrderHistory']);
     });
 });
 
-
-
-Route::middleware('auth:client')->group(function () {
-    Route::controller(ClientController::class)->group(function () {
-        Route::get('/client/self', 'clientSelf');
-        Route::get('/client/orders-get', 'clientOrdersGet');
-        Route::post('/client/update', 'clientUpdate');
-        Route::post('/client/set-password', 'setPassword');
-    });
-    Route::controller(\App\Http\Controllers\Api\ReviewController::class)->group(function () {
-        Route::post('/review/create', 'create');
-        Route::get('/review/order/{orderId}', 'getByOrder');
-    });
-});
-
-// POS API для мастеров
-Route::prefix('pos')->controller(PosController::class)->group(function () {
-    Route::post('/login', 'login');
-});
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix('pos')->controller(PosController::class)->group(function () {
-        Route::post('/logout', 'logout');
-        Route::get('/me', 'me');
-        Route::post('/profile/update', 'updateProfile');
-        Route::get('/dashboard', 'dashboard');
-        Route::get('/orders', 'orders');
-        Route::get('/orders/count', 'ordersCount'); // Должен быть ПЕРЕД /orders/{id}
-        Route::get('/equipment/search', 'searchEquipment');
-        Route::get('/equipment/{id}/orders', 'equipmentOrderHistory');
-        Route::get('/orders/{id}', 'order');
-        Route::patch('/orders/{id}/update', 'updateOrder');
-        Route::patch('/orders/{id}/status', 'updateOrderStatus');
-
-        // Работы заказа
-        Route::get('/orders/{id}/works', 'getOrderWorks');
-        Route::post('/orders/{id}/works', 'createOrderWork');
-        Route::patch('/orders/{orderId}/works/{workId}', 'updateOrderWork');
-        Route::delete('/orders/{orderId}/works/{workId}', 'deleteOrderWork');
-
-        // Материалы заказа (привязка к заказу, не к работам)
-        Route::get('/orders/{id}/materials', 'getOrderMaterials');
-        Route::post('/orders/{orderId}/materials', 'addOrderMaterial');
-        Route::delete('/orders/{orderId}/materials/{materialId}', 'removeOrderMaterial');
-
-        Route::get('/warehouse/items', 'warehouseItems');
-
-        // Документы заказов
-        Route::prefix('orders/{order}')->controller(DocumentController::class)->group(function () {
-            Route::get('/documents/download', 'download');
-            Route::get('/documents/view', 'view');
-            Route::post('/documents/generate', 'generate');
-        });
-
-        // Telegram для мастеров
-        Route::post('/telegram/send-verification-code', 'sendTelegramVerificationCode');
-        Route::post('/telegram/verify-code', 'verifyTelegramCode');
-    });
-});
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
