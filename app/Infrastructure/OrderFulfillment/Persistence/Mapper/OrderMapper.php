@@ -52,6 +52,7 @@ final class OrderMapper
                     description: $work->description,
                     price: $work->price !== null ? (string) $work->price : null,
                     sortOrder: $work->sort_order,
+                    toolType: $work->tool_type,
                 ))->all()
                 : [],
             tools: $model->relationLoaded('tools')

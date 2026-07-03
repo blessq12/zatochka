@@ -123,6 +123,7 @@ final class OrderPricingTest extends TestCase
             orderId: $orderId,
             masterId: $master->id,
             description: 'Заточка',
+            toolType: 'manicure',
         ));
 
         $sortOrder = $order->works()[0]->sortOrder;
@@ -132,5 +133,53 @@ final class OrderPricingTest extends TestCase
 
         $this->assertSame('600.00', $order->price());
         $this->assertSame('600.00', $order->works()[0]->price);
+    }
+
+    public function test_заточка_цена_за_единицу_умножается_на_количество_своего_типа(): void
+    {
+        $this->seed(\Database\Seeders\DomainSeeder::class);
+
+        $master = UserModel::query()->where('email', IdentitySeeder::MASTER_EMAIL)->firstOrFail();
+
+        $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
+            serviceTypes: ['sharpening'],
+            clientSnapshot: new ClientSnapshot(['full_name' => 'Тест', 'phone' => '+79001112233']),
+            tools: [
+                new OrderTool(null, 'manicure', 3, 'Кусачки'),
+                new OrderTool(null, 'hair', 4, 'Ножницы'),
+            ],
+        ));
+
+        $orderId = $order->id();
+        $this->assertNotNull($orderId);
+
+        app(AssignMasterToOrderHandler::class)->handle(new AssignMasterToOrderCommand($orderId, $master->id));
+        app(TakeOrderToWorkHandler::class)->handle(new TakeOrderToWorkCommand($orderId, $master->id));
+
+        $order = app(AddWorkHandler::class)->handle(new AddWorkCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+            description: 'Заточка маникюрных',
+            toolType: 'manicure',
+        ));
+
+        $order = app(AddWorkHandler::class)->handle(new AddWorkCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+            description: 'Заточка парикмахерских',
+            toolType: 'hair',
+        ));
+
+        $manicureSortOrder = $order->works()[0]->sortOrder;
+        $hairSortOrder = $order->works()[1]->sortOrder;
+
+        $order = OrderManageActionSupport::setWorkPrices($orderId, [
+            $manicureSortOrder => '200.00',
+            $hairSortOrder => '300.00',
+        ]);
+
+        $this->assertSame('1800.00', $order->price());
+        $this->assertSame('600.00', $order->works()[0]->price);
+        $this->assertSame('1200.00', $order->works()[1]->price);
     }
 }

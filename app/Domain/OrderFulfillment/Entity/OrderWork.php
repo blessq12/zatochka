@@ -9,5 +9,6 @@ final readonly class OrderWork
         public string $description,
         public ?string $price,
         public int $sortOrder,
+        public ?string $toolType = null,
     ) {}
 }

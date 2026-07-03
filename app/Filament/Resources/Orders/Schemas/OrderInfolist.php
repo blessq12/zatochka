@@ -239,13 +239,23 @@ class OrderInfolist
                                     ->hiddenLabel(),
                                 TextEntry::make('sharpening_tools_qty')
                                     ->hiddenLabel()
-                                    ->formatStateUsing(fn ($state, OrderWorkModel $work): string => (string) OrderViewPresenter::toolsTotalQuantity($work->order)),
+                                    ->formatStateUsing(fn ($state, OrderWorkModel $work): string => (string) (
+                                        OrderViewPresenter::sharpeningWorkUsesUnitPricing($work->order, $work->tool_type)
+                                            ? OrderViewPresenter::workToolsQuantity($work->order, $work->tool_type)
+                                            : 1
+                                    )),
                                 TextEntry::make('sharpening_unit_price')
                                     ->hiddenLabel()
-                                    ->formatStateUsing(fn ($state, OrderWorkModel $work): ?string => OrderViewPresenter::workUnitPrice(
-                                        $work->price !== null ? (string) $work->price : null,
-                                        OrderViewPresenter::toolsTotalQuantity($work->order),
-                                    ))
+                                    ->formatStateUsing(function ($state, OrderWorkModel $work): ?string {
+                                        if (! OrderViewPresenter::sharpeningWorkUsesUnitPricing($work->order, $work->tool_type)) {
+                                            return null;
+                                        }
+
+                                        return OrderViewPresenter::workUnitPrice(
+                                            $work->price !== null ? (string) $work->price : null,
+                                            OrderViewPresenter::workToolsQuantity($work->order, $work->tool_type),
+                                        );
+                                    })
                                     ->money('RUB')
                                     ->placeholder('—')
                                     ->color(fn ($state, OrderWorkModel $work): ?string => $work->price === null ? 'warning' : null),

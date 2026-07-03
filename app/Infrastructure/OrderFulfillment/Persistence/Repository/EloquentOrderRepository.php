@@ -228,6 +228,7 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
             $workModel->fill([
                 'order_id' => $model->id,
                 'description' => $work->description,
+                'tool_type' => $work->toolType,
                 'price' => $work->price,
                 'sort_order' => $work->sortOrder,
             ]);

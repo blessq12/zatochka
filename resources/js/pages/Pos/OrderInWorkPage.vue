@@ -318,6 +318,35 @@
                 <div v-if="isWorkspaceEditable" class="add-work-form">
                     <form @submit.prevent="addWork" class="work-form">
                         <div class="form-row-inline">
+                            <div
+                                v-if="isSharpeningOrder && workToolTypeOptions.length"
+                                class="form-group flex-1"
+                            >
+                                <label class="form-label">
+                                    Тип инструмента<span v-if="!isComboOrder">
+                                        *</span
+                                    >
+                                </label>
+                                <select
+                                    v-model="workForm.tool_type"
+                                    class="form-input"
+                                    :required="!isComboOrder"
+                                >
+                                    <option
+                                        v-if="isComboOrder"
+                                        value=""
+                                    >
+                                        Ремонт / без типа
+                                    </option>
+                                    <option
+                                        v-for="option in workToolTypeOptions"
+                                        :key="option.value"
+                                        :value="option.value"
+                                    >
+                                        {{ option.label }}
+                                    </option>
+                                </select>
+                            </div>
                             <div class="form-group flex-1">
                                 <label class="form-label"
                                     >Описание работы *</label
@@ -347,7 +376,7 @@
 </template>
 
 <script>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
     formatPosOrderPaymentType,
@@ -375,6 +404,7 @@ export default {
 
         const workForm = reactive({
             description: "",
+            tool_type: "",
         });
 
         const isAddingWork = ref(false);
@@ -387,6 +417,48 @@ export default {
         const commentForm = reactive({
             internal_notes: "",
         });
+
+        const isSharpeningOrder = computed(() =>
+            (order.value?.service_types ?? []).includes("sharpening")
+        );
+
+        const isComboOrder = computed(() => {
+            const types = order.value?.service_types ?? [];
+
+            return types.includes("sharpening") && types.includes("repair");
+        });
+
+        const workToolTypeOptions = computed(() => {
+            const tools = order.value?.tools ?? [];
+            const byType = new Map();
+
+            for (const tool of tools) {
+                const current = byType.get(tool.tool_type) ?? {
+                    label: tool.tool_type_label || tool.tool_type,
+                    quantity: 0,
+                };
+
+                byType.set(tool.tool_type, {
+                    label: current.label,
+                    quantity: current.quantity + (tool.quantity ?? 0),
+                });
+            }
+
+            return Array.from(byType.entries()).map(([value, item]) => ({
+                value,
+                label: `${item.label} (×${item.quantity})`,
+            }));
+        });
+
+        watch(
+            workToolTypeOptions,
+            (options) => {
+                if (options.length === 1) {
+                    workForm.tool_type = options[0].value;
+                }
+            },
+            { immediate: true }
+        );
 
         const syncOrderDetails = (orderData) => {
             order.value = orderData;
@@ -411,13 +483,19 @@ export default {
         const addWork = async () => {
             isAddingWork.value = true;
             try {
+                const toolType = workForm.tool_type || null;
                 const orderData = await orderService.addWork(
                     orderId.value,
-                    workForm.description
+                    workForm.description,
+                    toolType
                 );
                 syncOrderDetails(orderData);
                 toastService.success("Работа добавлена");
                 workForm.description = "";
+                workForm.tool_type =
+                    workToolTypeOptions.value.length === 1
+                        ? workToolTypeOptions.value[0].value
+                        : "";
             } catch (error) {
                 console.error("Error adding work:", error);
                 toastService.error(
@@ -646,6 +724,9 @@ export default {
             isLoading,
             works,
             workForm,
+            isSharpeningOrder,
+            isComboOrder,
+            workToolTypeOptions,
             equipmentSerialRowsComputed,
             equipmentBrandModelLineComputed,
             formatPosOrderPaymentType,

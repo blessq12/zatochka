@@ -286,6 +286,55 @@ final class Order
         return max($total, 1);
     }
 
+    public function toolsQuantityForType(string $toolType): int
+    {
+        $total = 0;
+
+        foreach ($this->tools as $tool) {
+            if ($tool->toolType === $toolType) {
+                $total += $tool->quantity;
+            }
+        }
+
+        return max($total, 1);
+    }
+
+    public function toolsQuantityForWork(?string $toolType): int
+    {
+        if ($toolType !== null) {
+            return $this->toolsQuantityForType($toolType);
+        }
+
+        $types = array_values(array_unique(array_map(
+            static fn (OrderTool $tool): string => $tool->toolType,
+            $this->tools,
+        )));
+
+        if (count($types) === 1) {
+            return $this->toolsQuantityForType($types[0]);
+        }
+
+        return $this->toolsTotalQuantity();
+    }
+
+    public function isSharpeningOnly(): bool
+    {
+        return $this->isSharpening() && ! in_array('repair', $this->serviceTypes, true);
+    }
+
+    public function workUsesUnitPricing(OrderWork $work): bool
+    {
+        if (! $this->isSharpening()) {
+            return false;
+        }
+
+        if ($work->toolType !== null) {
+            return true;
+        }
+
+        return $this->isSharpeningOnly();
+    }
+
     public static function workTotalFromUnitPrice(?string $unitPrice, int $toolsQuantity): ?string
     {
         if ($unitPrice === null || $unitPrice === '') {
@@ -496,7 +545,7 @@ final class Order
         foreach ($this->works as $work) {
             if ($work->sortOrder === $sortOrder) {
                 $found = true;
-                $works[] = new OrderWork($work->id, $work->description, $price, $work->sortOrder);
+                $works[] = new OrderWork($work->id, $work->description, $price, $work->sortOrder, $work->toolType);
             } else {
                 $works[] = $work;
             }

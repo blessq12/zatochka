@@ -259,6 +259,47 @@ final class OrderViewPresenter
         return max($total, 1);
     }
 
+    public static function toolsQuantityForType(OrderModel $order, string $toolType): int
+    {
+        $total = 0;
+
+        foreach ($order->tools as $tool) {
+            if ($tool->tool_type === $toolType) {
+                $total += (int) $tool->quantity;
+            }
+        }
+
+        return max($total, 1);
+    }
+
+    public static function workToolsQuantity(OrderModel $order, ?string $toolType): int
+    {
+        if ($toolType !== null) {
+            return self::toolsQuantityForType($order, $toolType);
+        }
+
+        $types = $order->tools->pluck('tool_type')->unique()->values();
+
+        if ($types->count() === 1) {
+            return self::toolsQuantityForType($order, (string) $types->first());
+        }
+
+        return self::toolsTotalQuantity($order);
+    }
+
+    public static function sharpeningWorkUsesUnitPricing(OrderModel $order, ?string $toolType): bool
+    {
+        if (! self::isSharpeningOrder($order)) {
+            return false;
+        }
+
+        if ($toolType !== null) {
+            return true;
+        }
+
+        return ! in_array('repair', $order->service_types ?? [], true);
+    }
+
     public static function workUnitPrice(?string $totalPrice, int $toolsQuantity): ?string
     {
         return Order::workUnitPriceFromTotal($totalPrice, $toolsQuantity);

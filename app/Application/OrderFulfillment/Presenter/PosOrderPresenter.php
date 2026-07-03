@@ -60,6 +60,7 @@ final class PosOrderPresenter
                 static fn (OrderWork $work): array => [
                     'id' => $work->id,
                     'description' => $work->description,
+                    'tool_type' => $work->toolType,
                     'price' => $work->price,
                     'sort_order' => $work->sortOrder,
                 ],

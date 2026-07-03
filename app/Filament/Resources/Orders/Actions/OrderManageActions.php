@@ -56,27 +56,39 @@ final class OrderManageActions
             ->form(function (OrderModel $record): array {
                 $record->loadMissing('tools');
                 $works = $record->works()->get();
-                $isSharpening = OrderViewPresenter::isSharpeningOrder($record);
-                $toolsQuantity = OrderViewPresenter::toolsTotalQuantity($record);
                 $fields = [];
 
                 foreach ($works as $work) {
+                    $usesUnitPricing = OrderViewPresenter::sharpeningWorkUsesUnitPricing($record, $work->tool_type);
+                    $toolsQuantity = $usesUnitPricing
+                        ? OrderViewPresenter::workToolsQuantity($record, $work->tool_type)
+                        : 0;
                     $defaultPrice = $work->price;
 
-                    if ($isSharpening && $defaultPrice !== null) {
+                    if ($usesUnitPricing && $defaultPrice !== null) {
                         $defaultPrice = OrderViewPresenter::workUnitPrice((string) $defaultPrice, $toolsQuantity);
                     }
 
+                    $label = $usesUnitPricing
+                        ? "{$work->description} (цена за ед.)"
+                        : $work->description;
+
+                    if ($usesUnitPricing && $work->tool_type !== null) {
+                        $label = sprintf(
+                            '%s — %s',
+                            $label,
+                            OrderViewPresenter::toolTypeLabel($work->tool_type),
+                        );
+                    }
+
                     $field = TextInput::make("prices.{$work->sort_order}")
-                        ->label($isSharpening
-                            ? "{$work->description} (цена за ед.)"
-                            : $work->description)
+                        ->label($label)
                         ->numeric()
                         ->minValue(0)
                         ->default($defaultPrice);
 
-                    if ($isSharpening) {
-                        $field->helperText("× {$toolsQuantity} шт. инструмента — итог посчитается автоматически");
+                    if ($usesUnitPricing) {
+                        $field->helperText("× {$toolsQuantity} шт. — итог посчитается автоматически");
                     }
 
                     $fields[] = $field;

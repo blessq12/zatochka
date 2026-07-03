@@ -12,6 +12,7 @@ class OrderWorkModel extends Model
     protected $fillable = [
         'order_id',
         'description',
+        'tool_type',
         'price',
         'sort_order',
     ];

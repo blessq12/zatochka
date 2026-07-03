@@ -16,6 +16,7 @@ use App\Application\OrderFulfillment\CommandHandler\IssueOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\MarkOrderReadyHandler;
 use App\Application\OrderFulfillment\CommandHandler\ReturnOrderForReworkHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
+use App\Domain\OrderFulfillment\Entity\OrderTool;
 use App\Domain\OrderFulfillment\Enum\OrderSource;
 use App\Domain\OrderFulfillment\Enum\OrderStatus;
 use App\Domain\OrderFulfillment\Event\OrderCreated;
@@ -39,6 +40,7 @@ final class OrderLifecycleTest extends TestCase
         $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
             serviceTypes: ['sharpening'],
             clientSnapshot: new ClientSnapshot(['full_name' => 'Тест', 'phone' => '+79001112233']),
+            tools: [new OrderTool(null, 'manicure', 1, 'Ножницы')],
         ));
 
         $orderId = $order->id();
@@ -61,6 +63,7 @@ final class OrderLifecycleTest extends TestCase
             orderId: $orderId,
             masterId: $master->id,
             description: 'Заточка ножниц',
+            toolType: 'manicure',
         ));
         $this->assertCount(1, $order->works());
 
@@ -106,6 +109,7 @@ final class OrderLifecycleTest extends TestCase
         $order = app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
             serviceTypes: ['sharpening'],
             clientSnapshot: new ClientSnapshot(['full_name' => 'Тест', 'phone' => '+79001112233']),
+            tools: [new OrderTool(null, 'manicure', 1, 'Ножницы')],
         ));
 
         $orderId = $order->id();
@@ -117,6 +121,7 @@ final class OrderLifecycleTest extends TestCase
             orderId: $orderId,
             masterId: $master->id,
             description: 'Заточка',
+            toolType: 'manicure',
         ));
         app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand($orderId, $master->id));
 
