@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\OrderFulfillment\Persistence\Eloquent;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -22,6 +23,17 @@ class OrderToolModel extends Model
         return [
             'unit_price' => 'decimal:2',
         ];
+    }
+
+    protected function lineTotal(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            if ($this->unit_price === null) {
+                return null;
+            }
+
+            return bcmul((string) $this->unit_price, (string) $this->quantity, 2);
+        });
     }
 
     public function order(): BelongsTo

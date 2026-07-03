@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Orders\Schemas;
 use App\Filament\Resources\Orders\Actions\OrderManageActions;
 use App\Filament\Support\OrderViewPresenter;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
-use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderToolModel;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
@@ -256,14 +255,12 @@ class OrderInfolist
                                     ->money('RUB')
                                     ->placeholder('—')
                                     ->color(fn (?string $state): ?string => blank($state) ? 'warning' : null),
-                                TextEntry::make('tool_line_total')
+                                TextEntry::make('line_total')
                                     ->hiddenLabel()
-                                    ->formatStateUsing(fn ($state, OrderToolModel $tool): ?string => $tool->unit_price !== null
-                                        ? bcmul((string) $tool->unit_price, (string) $tool->quantity, 2)
-                                        : null)
                                     ->money('RUB')
                                     ->placeholder('—')
-                                    ->weight(FontWeight::Medium),
+                                    ->weight(FontWeight::Medium)
+                                    ->color(fn (?string $state): ?string => blank($state) ? 'warning' : null),
                             ])
                             ->placeholder('Не указаны'),
                         RepeatableEntry::make('materials')
