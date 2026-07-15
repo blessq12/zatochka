@@ -15,11 +15,13 @@ use App\Application\OrderFulfillment\Command\AssignMasterToOrderCommand;
 use App\Application\OrderFulfillment\Command\CreateOrderCommand;
 use App\Application\OrderFulfillment\Command\LinkEquipmentToOrderCommand;
 use App\Application\OrderFulfillment\Command\TakeOrderToWorkCommand;
+use App\Application\OrderFulfillment\Command\UpdateInternalNotesCommand;
 use App\Application\OrderFulfillment\CommandHandler\AddWorkHandler;
 use App\Application\OrderFulfillment\CommandHandler\AssignMasterToOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\LinkEquipmentToOrderHandler;
 use App\Application\OrderFulfillment\CommandHandler\TakeOrderToWorkHandler;
+use App\Application\OrderFulfillment\CommandHandler\UpdateInternalNotesHandler;
 use App\Domain\OrderFulfillment\ValueObject\ClientSnapshot;
 use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
 use Database\Seeders\DomainSeeder;
@@ -127,6 +129,11 @@ final class EquipmentTest extends TestCase
             masterId: $master->id,
             description: 'Замена кнопки питания',
         ));
+        app(UpdateInternalNotesHandler::class)->handle(new UpdateInternalNotesCommand(
+            orderId: $orderId,
+            masterId: $master->id,
+            notes: 'Клиент просил проверить шнур',
+        ));
 
         $login = $this->postJson('/api/pos/login', [
             'email' => IdentitySeeder::MASTER_EMAIL,
@@ -140,6 +147,7 @@ final class EquipmentTest extends TestCase
             ->assertJsonPath('data.0.problem_description', 'Не включается')
             ->assertJsonPath('data.0.works.0.description', 'Замена кнопки питания')
             ->assertJsonPath('data.0.works_count', 1)
+            ->assertJsonPath('data.0.internal_notes', 'Клиент просил проверить шнур')
             ->assertJsonPath('data.0.master_name', 'Демо Мастер');
     }
 

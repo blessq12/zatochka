@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Pages;
 
 use App\Application\OrderFulfillment\CommandHandler\CreateOrderHandler;
+use App\Domain\ClientPortal\Exception\ClientAlreadyRegisteredException;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Support\LeadToOrderFormData;
 use App\Filament\Support\OrderFormCommandBuilder;
@@ -10,6 +11,7 @@ use App\Infrastructure\ClientPortal\Persistence\Eloquent\SiteLeadModel;
 use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\OrderModel;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 class CreateOrder extends CreateRecord
 {
@@ -54,7 +56,13 @@ class CreateOrder extends CreateRecord
 
     protected function handleRecordCreation(array $data): Model
     {
-        $command = OrderFormCommandBuilder::buildCommand($data);
+        try {
+            $command = OrderFormCommandBuilder::buildCommand($data);
+        } catch (ClientAlreadyRegisteredException $exception) {
+            throw ValidationException::withMessages([
+                'client_phone' => $exception->getMessage(),
+            ]);
+        }
 
         $order = app(CreateOrderHandler::class)->handle($command);
 

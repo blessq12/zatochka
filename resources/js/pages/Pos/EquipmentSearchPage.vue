@@ -124,6 +124,16 @@
                         <p v-else class="history-no-works">
                             Работы не зафиксированы
                         </p>
+
+                        <div
+                            v-if="ord.internal_notes"
+                            class="history-notes"
+                        >
+                            <h3 class="history-works-title">Комментарии</h3>
+                            <p class="history-notes-text">
+                                {{ ord.internal_notes }}
+                            </p>
+                        </div>
                     </article>
                 </div>
             </div>
@@ -518,6 +528,21 @@ export default {
     font-size: 0.8125rem;
     color: #9ca3af;
     font-style: italic;
+}
+
+.history-notes {
+    margin-top: 0.75rem;
+}
+
+.history-notes-text {
+    margin: 0;
+    padding: 0.5rem 0.65rem;
+    background: rgba(194, 10, 108, 0.05);
+    border: 1px solid rgba(194, 10, 108, 0.12);
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.45;
+    white-space: pre-wrap;
 }
 
 .loading {

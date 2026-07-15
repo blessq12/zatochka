@@ -79,16 +79,16 @@ class OrderForm
 
                 Section::make('Клиент')
                     ->icon('heroicon-o-user-circle')
-                    ->description('Существующий аккаунт ЛК или новый гость')
+                    ->description('Выбор существующего клиента ЛК или создание нового с привязкой к заказу')
                     ->columns(2)
                     ->schema([
                         Select::make('client_mode')
                             ->label('Способ указания')
                             ->options([
-                                'existing' => 'Существующий (ЛК)',
-                                'guest' => 'Новый (гость)',
+                                'existing' => 'Существующий клиент',
+                                'new' => 'Создать нового',
                             ])
-                            ->default('guest')
+                            ->default('existing')
                             ->required()
                             ->live()
                             ->columnSpanFull(),
@@ -105,17 +105,17 @@ class OrderForm
                             ->columnSpanFull(),
 
                         TextInput::make('client_full_name')
-                            ->label('Имя клиента')
+                            ->label('ФИО')
                             ->maxLength(255)
-                            ->required(fn (Get $get): bool => $get('client_mode') === 'guest')
-                            ->visible(fn (Get $get): bool => $get('client_mode') === 'guest'),
+                            ->required(fn (Get $get): bool => $get('client_mode') === 'new')
+                            ->visible(fn (Get $get): bool => $get('client_mode') === 'new'),
 
                         TextInput::make('client_phone')
-                            ->label('Телефон клиента')
+                            ->label('Телефон')
                             ->tel()
                             ->maxLength(32)
-                            ->required(fn (Get $get): bool => $get('client_mode') === 'guest')
-                            ->visible(fn (Get $get): bool => $get('client_mode') === 'guest'),
+                            ->required(fn (Get $get): bool => $get('client_mode') === 'new')
+                            ->visible(fn (Get $get): bool => $get('client_mode') === 'new'),
                     ]),
 
                 Section::make('Ответственные')

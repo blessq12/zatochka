@@ -52,12 +52,15 @@ final class LeadConversionTest extends TestCase
         $this->assertSame(2, $formData['tools'][0]['quantity']);
         $this->assertSame('Ножницы плохо режут', $formData['problem_description']);
 
+        $this->assertSame('new', $formData['client_mode']);
+
         $order = app(CreateOrderHandler::class)->handle(
             OrderFormCommandBuilder::buildCommand($formData)
         );
 
         $this->assertSame(OrderStatus::New, $order->status());
         $this->assertSame(OrderSource::SiteLead, $order->source());
+        $this->assertNotNull($order->clientId());
         $this->assertCount(1, $order->tools());
         $this->assertSame('manicure', $order->tools()[0]->toolType);
         $this->assertSame(2, $order->tools()[0]->quantity);
@@ -96,6 +99,7 @@ final class LeadConversionTest extends TestCase
             OrderFormCommandBuilder::buildCommand($formData)
         );
 
+        $this->assertNotNull($order->clientId());
         $this->assertNotNull($order->equipmentId());
         $this->assertSame(OrderUrgency::Urgent, $order->urgency());
     }
@@ -119,11 +123,18 @@ final class LeadConversionTest extends TestCase
         $lead = SiteLeadModel::query()->where('phone', '+79002223344')->firstOrFail();
         $formData = LeadToOrderFormData::fromLead($lead, $manager->id);
 
-        app(CreateOrderHandler::class)->handle(OrderFormCommandBuilder::buildCommand($formData));
+        $order = app(CreateOrderHandler::class)->handle(OrderFormCommandBuilder::buildCommand($formData));
+
+        $clientId = $order->clientId();
+        $this->assertNotNull($clientId);
 
         $this->expectException(SiteLeadPolicyViolation::class);
 
-        app(CreateOrderHandler::class)->handle(OrderFormCommandBuilder::buildCommand($formData));
+        app(CreateOrderHandler::class)->handle(OrderFormCommandBuilder::buildCommand([
+            ...$formData,
+            'client_mode' => 'existing',
+            'client_id' => $clientId,
+        ]));
     }
 
     public function test_лид_без_intake_data_сохраняет_legacy_поведение(): void
@@ -173,7 +184,7 @@ final class LeadConversionTest extends TestCase
         $order = app(CreateOrderHandler::class)->handle(
             OrderFormCommandBuilder::buildCommand([
                 'service_type' => 'repair',
-                'client_mode' => 'guest',
+                'client_mode' => 'new',
                 'client_full_name' => 'Иван Тест',
                 'client_phone' => '+79005556677',
                 'manager_id' => $manager->id,
@@ -187,6 +198,8 @@ final class LeadConversionTest extends TestCase
                 ],
             ]),
         );
+
+        $this->assertNotNull($order->clientId());
 
         $equipmentId = $order->equipmentId();
         $this->assertNotNull($equipmentId);
