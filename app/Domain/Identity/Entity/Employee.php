@@ -30,6 +30,26 @@ final class Employee extends AggregateRoot
         return new self($id, $name, $email);
     }
 
+    /**
+     * @param list<Role> $roles
+     */
+    public static function reconstitute(
+        EntityId $id,
+        string $name,
+        Email $email,
+        bool $active = true,
+        array $roles = [],
+    ): self {
+        $employee = new self($id, $name, $email);
+        $employee->active = $active;
+
+        foreach ($roles as $role) {
+            $employee->roles[$role->id()->value] = $role;
+        }
+
+        return $employee;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

@@ -32,6 +32,20 @@ final class Estimate extends AggregateRoot
         return $estimate;
     }
 
+    public static function reconstitute(
+        EntityId $id,
+        EntityId $orderItemId,
+        Money $estimatedAmount,
+        ?ItemPrice $itemPrice = null,
+        bool $calculated = false,
+    ): self {
+        $estimate = new self($id, $orderItemId, $estimatedAmount);
+        $estimate->itemPrice = $itemPrice;
+        $estimate->calculated = $calculated;
+
+        return $estimate;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

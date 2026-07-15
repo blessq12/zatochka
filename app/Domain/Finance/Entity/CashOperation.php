@@ -37,6 +37,16 @@ final class CashOperation extends AggregateRoot
         return $operation;
     }
 
+    public static function reconstitute(
+        EntityId $id,
+        CashOperationType $type,
+        Money $amount,
+        DateTimeImmutable $registeredAt,
+        ?string $comment = null,
+    ): self {
+        return new self($id, $type, $amount, $registeredAt, $comment);
+    }
+
     public function id(): EntityId
     {
         return $this->id;

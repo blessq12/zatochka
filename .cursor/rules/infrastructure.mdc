@@ -1,0 +1,63 @@
+---
+description: Rules for Infrastructure — Eloquent adapters, mappers, sync event listeners
+globs: app/Infrastructure/**/*
+alwaysApply: false
+---
+
+# Infrastructure layer
+
+Path: `app/Infrastructure/{BC}/{Model|Repository|ReadModel|Mapper|Listener|Service}`.
+
+Shared tech adapters: `app/Infrastructure/Shared/...` (event publisher, etc.).
+
+Naming: English only. No Russian. No transliteration.
+
+## Allowed
+
+- Eloquent `Model` — persistence only, no domain invariants
+- `Repository` — implements `App\Domain\{same BC}\Repository\*`
+- `ReadModel` — implements `App\Application\{same BC}\ReadPort\*`
+- `Mapper` — Model ↔ Aggregate (via Domain `reconstitute`) and Model → Application DTO
+- `Listener` — reacts to **other BC** domain events, runs **own** BC command handlers
+- `Service` — technical adapters only (files, external APIs, queues wiring)
+- Depend on Domain / Application ports of the **same** BC + `App\Shared\...` + Laravel
+
+## Forbidden
+
+- Business invariants in Models / Repositories / Mappers
+- Calling another BC’s Application handlers / repositories / ReadModels from Repository or Mapper
+- Hydrating aggregates via reflection — only Domain `reconstitute` (or equivalent explicit factory)
+- Cross-BC Eloquent relations as domain coupling (IDs only)
+- HTTP / controllers here (Interface layer)
+
+## Cross-BC mutations
+
+Only via domain events.
+
+Flow: own handler saves aggregate → `DomainEventPublisher` → **sync** listener in target BC → target BC command handler.
+
+```php
+// ❌ BAD — Order infra opens Workshop handler directly inside repository
+$this->openProductionTaskHandler->handle(...);
+
+// ✅ GOOD — publish events; Workshop Listener reacts sync
+$this->events->publish($order->pullDomainEvents());
+// Infrastructure/Workshop/Listener/... → OpenProductionTaskHandler
+```
+
+Pilot: listeners are **synchronous** (no `ShouldQueue` unless explicitly requested later).
+
+## Structure
+
+| Folder | Role |
+|--------|------|
+| `Model` | Eloquent models, casts, persistence relations |
+| `Mapper` | toDomain / toPersistence / toDTO; uses Aggregate `reconstitute` |
+| `Repository` | Write side adapters for Domain repositories |
+| `ReadModel` | Read side adapters for Application ReadPorts |
+| `Listener` | Sync event → own BC command |
+| `Service` | Non-domain technical services |
+
+## DI
+
+Bind ports in a dedicated provider (e.g. `PersistenceServiceProvider`): Domain Repository, Application ReadPort, `DomainEventPublisher`, event→listener map.

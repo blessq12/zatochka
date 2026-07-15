@@ -35,6 +35,7 @@ final class Order extends AggregateRoot
         Money $estimatedCost,
         DateTimeImmutable $createdAt,
         array $items,
+        OrderStatus $status = OrderStatus::Created,
     ) {
         if ($items === []) {
             throw new DomainException('Order must contain at least one item.');
@@ -43,7 +44,7 @@ final class Order extends AggregateRoot
         $this->clientId = $clientId;
         $this->estimatedCost = $estimatedCost;
         $this->createdAt = $createdAt;
-        $this->status = OrderStatus::Created;
+        $this->status = $status;
 
         foreach ($items as $item) {
             $this->items[$item->id()->value] = $item;
@@ -73,6 +74,20 @@ final class Order extends AggregateRoot
         }
 
         return $order;
+    }
+
+    /**
+     * @param list<OrderItem> $items
+     */
+    public static function reconstitute(
+        EntityId $id,
+        EntityId $clientId,
+        Money $estimatedCost,
+        DateTimeImmutable $createdAt,
+        OrderStatus $status,
+        array $items,
+    ): self {
+        return new self($id, $clientId, $estimatedCost, $createdAt, $items, $status);
     }
 
     public function id(): EntityId

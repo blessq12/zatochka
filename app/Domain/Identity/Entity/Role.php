@@ -20,6 +20,23 @@ final class Role
         }
     }
 
+    /**
+     * @param list<Permission> $permissions
+     */
+    public static function reconstitute(
+        EntityId $id,
+        string $name,
+        array $permissions = [],
+    ): self {
+        $role = new self($id, $name);
+
+        foreach ($permissions as $permission) {
+            $role->permissions[$permission->code->value] = $permission;
+        }
+
+        return $role;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

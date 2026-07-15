@@ -22,6 +22,24 @@ final class OrderItem
         $this->status = $status;
     }
 
+    public static function reconstitute(
+        EntityId $id,
+        EntityId $clientEquipmentId,
+        OrderItemStatus $status,
+        ?ReceptionData $receptionData = null,
+        ?EntityId $productionTaskId = null,
+        ?EntityId $itemPriceId = null,
+        ?EntityId $warrantyId = null,
+    ): self {
+        $item = new self($id, $clientEquipmentId, $status);
+        $item->receptionData = $receptionData;
+        $item->productionTaskId = $productionTaskId;
+        $item->itemPriceId = $itemPriceId;
+        $item->warrantyId = $warrantyId;
+
+        return $item;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

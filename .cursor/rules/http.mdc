@@ -1,0 +1,31 @@
+---
+description: Rules for HTTP/API transport — controllers, routes, no domain leakage
+globs: app/Http/**/*,routes/api.php,routes/api/**/*.php
+alwaysApply: false
+---
+
+# HTTP / API layer
+
+Path: `app/Http/Controllers/{BC}/`.
+
+Routes: `routes/api.php` loads BC files `routes/api/{bc}/api.php` under `/api/v1`.
+
+## Allowed
+
+- Thin controllers: validate input → Application Command/Query handler → JSON
+- Allocate ids via `SequentialEntityIdGenerator` when client does not provide them
+- Map `DomainException` to HTTP 422
+
+## Forbidden
+
+- Business invariants in controllers
+- Calling Infrastructure repositories/ReadModels from controllers (use Application handlers/ports only)
+- Calling another BC’s handlers from a controller (cross-BC only via domain events)
+
+## Response shape
+
+```json
+{ "data": { ... } }
+```
+
+Errors: `{ "message": "..." }` with 404/422.

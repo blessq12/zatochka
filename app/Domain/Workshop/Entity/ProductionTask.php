@@ -35,6 +35,28 @@ final class ProductionTask extends AggregateRoot
         return new self($id, $orderItemId);
     }
 
+    /**
+     * @param list<MasterComment> $comments
+     */
+    public static function reconstitute(
+        EntityId $id,
+        EntityId $orderItemId,
+        ProductionStatus $status,
+        ?EntityId $masterId = null,
+        ?Diagnosis $diagnosis = null,
+        ?WorkExecution $workExecution = null,
+        array $comments = [],
+    ): self {
+        $task = new self($id, $orderItemId);
+        $task->status = $status;
+        $task->masterId = $masterId;
+        $task->diagnosis = $diagnosis;
+        $task->workExecution = $workExecution;
+        $task->comments = $comments;
+
+        return $task;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

@@ -41,6 +41,23 @@ final class Payment extends AggregateRoot
         return $payment;
     }
 
+    /**
+     * @param list<Refund> $refunds
+     */
+    public static function reconstitute(
+        EntityId $id,
+        EntityId $orderId,
+        Money $amount,
+        PaymentMethod $method,
+        DateTimeImmutable $acceptedAt,
+        array $refunds = [],
+    ): self {
+        $payment = new self($id, $orderId, $amount, $method, $acceptedAt);
+        $payment->refunds = $refunds;
+
+        return $payment;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

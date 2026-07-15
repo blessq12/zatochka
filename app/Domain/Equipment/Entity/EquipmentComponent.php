@@ -19,6 +19,17 @@ final class EquipmentComponent
         }
     }
 
+    public static function reconstitute(
+        EntityId $id,
+        string $name,
+        ?SerialNumber $serialNumber = null,
+    ): self {
+        $component = new self($id, $name);
+        $component->serialNumber = $serialNumber;
+
+        return $component;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

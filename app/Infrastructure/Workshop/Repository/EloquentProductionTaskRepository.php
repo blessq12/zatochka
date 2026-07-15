@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Infrastructure\Workshop\Repository;
+
+use App\Domain\Workshop\Entity\ProductionTask;
+use App\Domain\Workshop\Repository\ProductionTaskRepository;
+use App\Domain\Workshop\VO\ProductionStatus;
+use App\Infrastructure\Workshop\Mapper\ProductionTaskMapper;
+use App\Infrastructure\Workshop\Model\DiagnosisModel;
+use App\Infrastructure\Workshop\Model\MasterCommentModel;
+use App\Infrastructure\Workshop\Model\ProductionTaskModel;
+use App\Infrastructure\Workshop\Model\WorkExecutionModel;
+use App\Shared\Domain\DomainException;
+use App\Shared\ValueObject\EntityId;
+use Illuminate\Support\Facades\DB;
+
+final readonly class EloquentProductionTaskRepository implements ProductionTaskRepository
+{
+    public function __construct(
+        private ProductionTaskMapper $mapper,
+    ) {}
+
+    public function save(ProductionTask $task): void
+    {
+        DB::transaction(function () use ($task): void {
+            $model = ProductionTaskModel::query()->find($task->id()->value);
+            $model = $this->mapper->toPersistence($task, $model);
+            $model->save();
+
+            DiagnosisModel::query()->where('production_task_id', $task->id()->value)->delete();
+            WorkExecutionModel::query()->where('production_task_id', $task->id()->value)->delete();
+            MasterCommentModel::query()->where('production_task_id', $task->id()->value)->delete();
+
+            $this->mapper->diagnosisToPersistence($task)?->save();
+            $this->mapper->workToPersistence($task)?->save();
+
+            foreach ($this->mapper->commentsToPersistence($task) as $row) {
+                $row->save();
+            }
+        });
+    }
+
+    public function findById(EntityId $id): ?ProductionTask
+    {
+        $model = ProductionTaskModel::query()
+            ->with(['diagnosis', 'workExecution', 'comments'])
+            ->find($id->value);
+
+        return $model === null ? null : $this->mapper->toDomain($model);
+    }
+
+    public function getById(EntityId $id): ProductionTask
+    {
+        return $this->findById($id)
+            ?? throw new DomainException(sprintf('Production task %d not found.', $id->value));
+    }
+
+    public function findByOrderItemId(EntityId $orderItemId): ?ProductionTask
+    {
+        $model = ProductionTaskModel::query()
+            ->with(['diagnosis', 'workExecution', 'comments'])
+            ->where('order_item_id', $orderItemId->value)
+            ->first();
+
+        return $model === null ? null : $this->mapper->toDomain($model);
+    }
+
+    public function listQueued(): array
+    {
+        return ProductionTaskModel::query()
+            ->with(['diagnosis', 'workExecution', 'comments'])
+            ->where('status', ProductionStatus::Queued->value)
+            ->get()
+            ->map(fn ($model) => $this->mapper->toDomain($model))
+            ->all();
+    }
+}

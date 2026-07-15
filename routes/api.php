@@ -2,11 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Маршруты будут добавлены по новым bounded contexts.
-|
-*/
+Route::prefix('v1')->group(function (): void {
+    foreach (glob(__DIR__.'/api/*/api.php') ?: [] as $routeFile) {
+        require $routeFile;
+    }
+});

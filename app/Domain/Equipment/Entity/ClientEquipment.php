@@ -41,6 +41,29 @@ final class ClientEquipment extends AggregateRoot
         return $equipment;
     }
 
+    /**
+     * @param list<EquipmentComponent> $components
+     * @param list<RepairHistoryEntry> $repairHistory
+     */
+    public static function reconstitute(
+        EntityId $id,
+        EntityId $clientId,
+        string $title,
+        ?string $notes,
+        array $components = [],
+        array $repairHistory = [],
+    ): self {
+        $equipment = new self($id, $clientId, $title, $notes);
+
+        foreach ($components as $component) {
+            $equipment->components[$component->id()->value] = $component;
+        }
+
+        $equipment->repairHistory = $repairHistory;
+
+        return $equipment;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

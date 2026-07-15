@@ -20,6 +20,18 @@ final class WorkExecution
         }
     }
 
+    public static function reconstitute(
+        EntityId $id,
+        string $description,
+        DateTimeImmutable $startedAt,
+        ?DateTimeImmutable $completedAt = null,
+    ): self {
+        $execution = new self($id, $description, $startedAt);
+        $execution->completedAt = $completedAt;
+
+        return $execution;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

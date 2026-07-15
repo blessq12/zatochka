@@ -31,6 +31,21 @@ final class StockItem extends AggregateRoot
         return new self($id, $material, $initialQuantity ?? new Quantity('0'));
     }
 
+    /**
+     * @param list<WarehouseMovement> $movements
+     */
+    public static function reconstitute(
+        EntityId $id,
+        Material $material,
+        Quantity $quantityOnHand,
+        array $movements = [],
+    ): self {
+        $item = new self($id, $material, $quantityOnHand);
+        $item->movements = $movements;
+
+        return $item;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

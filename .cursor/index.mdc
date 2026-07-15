@@ -14,8 +14,10 @@ alwaysApply: true
 | Naming | [rules/naming.mdc](./rules/naming.mdc) | alwaysApply |
 | Domain layer | [rules/domain.mdc](./rules/domain.mdc) | `app/Domain/**/*` |
 | Application layer | [rules/application.mdc](./rules/application.mdc) | `app/Application/**/*` |
+| Infrastructure layer | [rules/infrastructure.mdc](./rules/infrastructure.mdc) | `app/Infrastructure/**/*` |
+| HTTP / API layer | [rules/http.mdc](./rules/http.mdc) | `app/Http/**/*`, `routes/api.php` |
 
-Код: `app/Application` · `app/Domain` · `app/Infrastructure` · `app/Shared`.
+Код: `app/Application` · `app/Domain` · `app/Infrastructure` · `app/Http` · `app/Shared`.
 
 ---
 

@@ -47,6 +47,23 @@ final class Client extends AggregateRoot
         return $client;
     }
 
+    /**
+     * @param list<ClientHistoryEntry> $history
+     */
+    public static function reconstitute(
+        EntityId $id,
+        Phone $phone,
+        BonusAccount $bonusAccount,
+        ?string $name,
+        ?Email $email,
+        array $history = [],
+    ): self {
+        $client = new self($id, $phone, $bonusAccount, $name, $email);
+        $client->history = $history;
+
+        return $client;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

@@ -38,6 +38,21 @@ final class DeliveryRequest extends AggregateRoot
         return $request;
     }
 
+    public static function reconstitute(
+        EntityId $id,
+        EntityId $orderId,
+        DeliveryAddress $address,
+        bool $pickup,
+        DeliveryStatus $status,
+        ?CourierAssignment $courierAssignment = null,
+    ): self {
+        $request = new self($id, $orderId, $address, $pickup);
+        $request->status = $status;
+        $request->courierAssignment = $courierAssignment;
+
+        return $request;
+    }
+
     public function id(): EntityId
     {
         return $this->id;

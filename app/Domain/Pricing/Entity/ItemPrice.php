@@ -17,6 +17,20 @@ final class ItemPrice
         private readonly Money $baseAmount,
     ) {}
 
+    public static function reconstitute(
+        EntityId $id,
+        EntityId $orderItemId,
+        Money $baseAmount,
+        ?Discount $discount = null,
+        ?Money $finalAmount = null,
+    ): self {
+        $price = new self($id, $orderItemId, $baseAmount);
+        $price->discount = $discount;
+        $price->finalAmount = $finalAmount;
+
+        return $price;
+    }
+
     public function id(): EntityId
     {
         return $this->id;
