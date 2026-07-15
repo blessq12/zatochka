@@ -35,6 +35,7 @@ final class PosEquipmentOrderHistoryReadModelBuilder
         return [
             ...PosOrderPresenter::listItem($order),
             'problem_description' => $order->problemDescription(),
+            'internal_notes' => $order->internalNotes(),
             'master_name' => $masterId !== null
                 ? ($masterNames[$masterId] ?? $this->masterName($masterId))
                 : null,

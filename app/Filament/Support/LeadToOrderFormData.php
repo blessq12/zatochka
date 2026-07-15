@@ -19,7 +19,7 @@ final class LeadToOrderFormData
 
         $data = [
             'lead_id' => $lead->id,
-            'client_mode' => 'guest',
+            'client_mode' => 'new',
             'client_full_name' => $lead->full_name,
             'client_phone' => $lead->phone,
             'service_type' => $serviceType,

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Support;
 
+use App\Application\ClientPortal\Command\CreateClientCommand;
+use App\Application\ClientPortal\CommandHandler\CreateClientHandler;
 use App\Application\Equipment\Command\RegisterEquipmentCommand;
 use App\Application\Equipment\CommandHandler\RegisterEquipmentHandler;
 use App\Application\OrderFulfillment\Command\CreateOrderCommand;
@@ -104,11 +106,11 @@ final class OrderFormCommandBuilder
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array{0: ?int, 1: ?ClientSnapshot}
+     * @return array{0: int, 1: ClientSnapshot}
      */
     private static function resolveClient(array $data): array
     {
-        $mode = (string) ($data['client_mode'] ?? 'guest');
+        $mode = (string) ($data['client_mode'] ?? 'existing');
 
         if ($mode === 'existing') {
             $clientId = (int) ($data['client_id'] ?? 0);
@@ -128,18 +130,33 @@ final class OrderFormCommandBuilder
             ];
         }
 
+        if ($mode !== 'new') {
+            throw new RuntimeException('Укажите способ указания клиента.');
+        }
+
         $fullName = trim((string) ($data['client_full_name'] ?? ''));
         $phone = trim((string) ($data['client_phone'] ?? ''));
 
         if ($fullName === '' || $phone === '') {
-            throw new RuntimeException('Укажите имя и телефон клиента.');
+            throw new RuntimeException('Укажите ФИО и телефон нового клиента.');
+        }
+
+        $client = app(CreateClientHandler::class)->handle(new CreateClientCommand(
+            phone: $phone,
+            fullName: $fullName,
+        ));
+
+        $clientId = $client->id();
+
+        if ($clientId === null) {
+            throw new RuntimeException('Не удалось создать клиента.');
         }
 
         return [
-            null,
+            $clientId,
             new ClientSnapshot([
-                'full_name' => $fullName,
-                'phone' => $phone,
+                'full_name' => $client->fullName(),
+                'phone' => $client->phone(),
             ]),
         ];
     }
