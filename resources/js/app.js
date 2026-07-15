@@ -58,30 +58,8 @@ app.use(Toast, {
 });
 
 /**
- * The following block of code may be used to automatically register your
- * Vue components. It will recursively scan this directory for the Vue
- * components and automatically register them with their "basename".
- */
-
-Object.entries(import.meta.glob("./**/*.vue", { eager: true })).forEach(
-    ([path, definition]) => {
-        // Пропускаем App.vue, так как он уже импортирован
-        if (path.includes("App.vue")) return;
-
-        app.component(
-            path
-                .split("/")
-                .pop()
-                .replace(/\.\w+$/, ""),
-            definition.default
-        );
-    }
-);
-
-/**
- * Finally, we will attach the application instance to a HTML element with
- * an "id" attribute of "app". This element is included with the "auth"
- * scaffolding. Otherwise, you will need to add an element yourself.
+ * Страницы грузятся dynamic import'ом в router.
+ * Остальные компоненты — локальные import у родителя.
  */
 
 app.mount("#app");
