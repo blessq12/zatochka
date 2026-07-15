@@ -1,0 +1,39 @@
+---
+description: English-only naming — no Russian, no transliteration
+alwaysApply: true
+---
+
+# Naming
+
+All project identifiers must be **English**.
+
+## Forbidden
+
+- Russian letters in names
+- Transliteration of Russian words (`Zakaz`, `Klient`, `Masterskaya`, `Priemka`, …)
+
+Applies to:
+
+- file and directory names
+- namespaces, classes, interfaces, traits, enums
+- methods, functions, properties, constants, parameters
+- DB tables/columns when introducing new schema in this refactor
+- test names and factory/seeder identifiers
+
+## Allowed
+
+- English domain terms: `Order`, `OrderItem`, `Reception`, `Workshop`, `Estimate`
+- User-facing copy / comments / docs may be Russian
+- String literals for UI/API messages may be Russian when that is product copy
+
+```php
+// ❌ BAD
+class Zakaz {}
+public function sozdatPriemku(): void {}
+private string $orientirovochnayaStoimost;
+
+// ✅ GOOD
+class Order {}
+public function completeReception(): void {}
+private string $estimatedCost;
+```

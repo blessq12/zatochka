@@ -1,0 +1,51 @@
+---
+description: Правила слоя Application — CQRS, порты, изоляция BC через события
+globs: app/Application/**/*
+alwaysApply: false
+---
+
+# Application layer
+
+Путь: `app/Application/{BC}/{Command|Query|DTO|Presenter|ReadPort}`.
+
+Naming: English only. No Russian. No transliteration.
+
+## Allowed
+
+- Command / Query + handlers for **this** BC only
+- DTO, Presenter interfaces, ReadPort interfaces
+- Use `App\Domain\{same BC}\...` and `App\Shared\...` / `App\Application\Shared\...`
+- Publish pulled domain events via `DomainEventPublisher`
+
+## Forbidden
+
+- Import another BC’s `Command\*Handler`, `Query\*Handler`, Application services
+- Call another BC’s use case / handler / ReadPort / repository from a handler
+- Put SQL, Eloquent, HTTP, controllers here
+- Bypass domain invariants (no anemic “setters” around aggregates)
+
+## Cross-BC mutations
+
+Handlers of BC A must **not** invoke handlers of BC B.  
+Integration is **event-driven only**: after save, publish domain events; other BC’s policies/listeners react and run **their own** commands.
+
+```php
+// ❌ BAD — Order handler opens Workshop use case directly
+$this->openProductionTaskHandler->handle(new OpenProductionTaskCommand(...));
+
+// ✅ GOOD — Order publishes events; Workshop listener reacts
+$this->orders->save($order);
+$this->events->publish($order->pullDomainEvents());
+```
+
+Read-side: a Query may use only **own** `ReadPort`. No cross-BC read ports inside a handler (compose at Interface/Infrastructure if needed).
+
+## Structure
+
+| Folder | Role |
+|--------|------|
+| `Command` | Write use cases + handlers |
+| `Query` | Read use cases + handlers |
+| `DTO` | Transport shapes |
+| `ReadPort` | Read model ports (interfaces) |
+| `Presenter` | Output shaping ports (interfaces) |

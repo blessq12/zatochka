@@ -1,0 +1,49 @@
+---
+description: Правила слоя Domain — агрегаты, VO, события, изоляция BC
+globs: app/Domain/**/*
+alwaysApply: false
+---
+
+# Domain layer
+
+Путь: `app/Domain/{BC}/{Entity|VO|Event|Service|Repository}`.
+
+Naming: English only. No Russian. No transliteration.
+
+## Allowed
+
+- Aggregates / entities with invariants and domain methods
+- Value objects, domain events, domain services, repository **interfaces**
+- Depend only on `App\Domain\{same BC}\...` and `App\Shared\...`
+
+## Forbidden
+
+- Import `App\Application\...`, `App\Infrastructure\...`, Eloquent, HTTP, frameworks
+- Call handlers / use cases / repositories of **another** BC
+- Import entities/services/repositories of another BC
+- Mutate another BC’s state synchronously
+
+Cross-BC identity only via `EntityId` (or own VO id), never via foreign aggregates.
+
+## Cross-BC mutations
+
+Only through **domain events** published by the owning aggregate. Another BC reacts later (application event listener / policy) — never via direct method/handler call.
+
+```php
+// ❌ BAD — Workshop calls Order domain/application
+$order->markReady();
+$completeReceptionHandler->handle(...);
+
+// ✅ GOOD — Workshop records own event; Order reacts via event flow
+$this->record(new ProductionCompleted($this->id, $this->orderItemId));
+```
+
+## Structure
+
+| Folder | Role |
+|--------|------|
+| `Entity` | Aggregates and entities |
+| `VO` | Value objects / enums |
+| `Event` | Domain events (`DomainEvent`) |
+| `Service` | Domain logic that does not belong to one entity |
+| `Repository` | Persistence ports (interfaces only) |

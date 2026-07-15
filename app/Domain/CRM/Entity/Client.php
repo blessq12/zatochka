@@ -1,0 +1,112 @@
+<?php
+
+namespace App\Domain\CRM\Entity;
+
+use App\Domain\CRM\Event\BonusAccrued;
+use App\Domain\CRM\Event\ClientRegistered;
+use App\Domain\CRM\Event\ClientUpdated;
+use App\Shared\Domain\AggregateRoot;
+use App\Shared\Domain\DomainException;
+use App\Shared\ValueObject\Email;
+use App\Shared\ValueObject\EntityId;
+use App\Shared\ValueObject\Phone;
+
+final class Client extends AggregateRoot
+{
+    private Phone $phone;
+    private ?string $name;
+    private ?Email $email;
+    private BonusAccount $bonusAccount;
+
+    /** @var list<ClientHistoryEntry> */
+    private array $history = [];
+
+    private function __construct(
+        private readonly EntityId $id,
+        Phone $phone,
+        BonusAccount $bonusAccount,
+        ?string $name = null,
+        ?Email $email = null,
+    ) {
+        $this->phone = $phone;
+        $this->bonusAccount = $bonusAccount;
+        $this->name = $name;
+        $this->email = $email;
+    }
+
+    public static function register(
+        EntityId $id,
+        Phone $phone,
+        EntityId $bonusAccountId,
+        ?string $name = null,
+        ?Email $email = null,
+    ): self {
+        $client = new self($id, $phone, new BonusAccount($bonusAccountId), $name, $email);
+        $client->record(new ClientRegistered($id, $phone->value));
+
+        return $client;
+    }
+
+    public function id(): EntityId
+    {
+        return $this->id;
+    }
+
+    public function phone(): Phone
+    {
+        return $this->phone;
+    }
+
+    public function name(): ?string
+    {
+        return $this->name;
+    }
+
+    public function email(): ?Email
+    {
+        return $this->email;
+    }
+
+    public function bonusAccount(): BonusAccount
+    {
+        return $this->bonusAccount;
+    }
+
+    /** @return list<ClientHistoryEntry> */
+    public function history(): array
+    {
+        return $this->history;
+    }
+
+    public function updateProfile(?string $name, ?Phone $phone, ?Email $email): void
+    {
+        if ($name !== null) {
+            if (trim($name) === '') {
+                throw new DomainException('Client name cannot be empty.');
+            }
+
+            $this->name = $name;
+        }
+
+        if ($phone !== null) {
+            $this->phone = $phone;
+        }
+
+        if ($email !== null) {
+            $this->email = $email;
+        }
+
+        $this->record(new ClientUpdated($this->id));
+    }
+
+    public function accrueBonus(string $amount): void
+    {
+        $this->bonusAccount->accrue($amount);
+        $this->record(new BonusAccrued($this->id, $this->bonusAccount->id(), $amount));
+    }
+
+    public function appendHistory(ClientHistoryEntry $entry): void
+    {
+        $this->history[] = $entry;
+    }
+}

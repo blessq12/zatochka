@@ -1,23 +1,39 @@
 ---
-description: Рефактор домена — запрет на старые реализации и git-историю
+description: Global project rules and index of layer rules
 alwaysApply: true
 ---
 
 # Index
 
-Идёт **полный рефактор домена** приложения. Старый бэкенд снесён до скелета. Ориентир — только новый код и новые договорённости в текущей ветке.
+Единый индекс правил проекта. Специализированные правила: `.cursor/rules/*.mdc`.
 
-## Запрещено
+## Rules
+
+| Rule | Path | Scope |
+|------|------|-------|
+| Naming | [rules/naming.mdc](./rules/naming.mdc) | alwaysApply |
+| Domain layer | [rules/domain.mdc](./rules/domain.mdc) | `app/Domain/**/*` |
+| Application layer | [rules/application.mdc](./rules/application.mdc) | `app/Application/**/*` |
+
+Код: `app/Application` · `app/Domain` · `app/Infrastructure` · `app/Shared`.
+
+---
+
+## Global
+
+Идёт **полный рефактор домена**. Старый бэкенд снесён до скелета. Ориентир — только новый код и новые договорённости в текущей ветке.
+
+### Forbidden
 
 1. **Читать историю git** ради восстановления логики: `git log`, `git show`, `git blame`, `git checkout`/`restore` старых путей из `main`/прошлых коммитов, просмотр удалённых файлов через git.
 2. **Восстанавливать и копировать старые реализации**: бывшие BC (`OrderFulfillment`, `ClientPortal`, …), Filament-админку as-was, старые API/handlers/models/migrations/тесты «как было».
 3. **Тащить старые подходы**: god-aggregate заказа, гостевой заказ без Client, статусы/поля «потому что так было», старые ADR/flows/contexts как источник истины.
 4. **Додумывать домен из памяти старого кода** — проектируем заново по текущему ТЗ пользователя.
+5. **Naming** — см. [rules/naming.mdc](./rules/naming.mdc): English only, без русского и транслита в идентификаторах.
+6. **Прямые вызовы между BC** — контекст не вызывает use case другого контекста; межконтекстные мутации — **только через domain events**.
 
-## Разрешено
+### Allowed
 
 - Работать с **текущим** деревом ветки рефактора.
 - Смотреть фронт (публичный сайт, POS) только как контракт UI, не как оправдание старого домена.
 - Спрашивать уточнения, если граница нового контекста неясна.
-
-Каркас слоёв: `app/Application`, `app/Domain`, `app/Infrastructure`, `app/Shared`.
