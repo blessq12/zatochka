@@ -31,9 +31,9 @@ final class StockItemController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'sku' => ['required', 'string'],
             'name' => ['required', 'string'],
             'unit' => ['required', 'string'],
+            'category' => ['required', 'string'],
             'initialQuantity' => ['nullable', 'numeric', 'min:0'],
         ]);
 
@@ -43,9 +43,9 @@ final class StockItemController extends Controller
         $this->openStockItem->handle(new OpenStockItemCommand(
             $stockItemId,
             $materialId,
-            $data['sku'],
             $data['name'],
             $data['unit'],
+            $data['category'],
             isset($data['initialQuantity']) ? (string) $data['initialQuantity'] : '0',
         ));
 

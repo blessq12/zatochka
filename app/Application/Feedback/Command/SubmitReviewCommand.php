@@ -1,0 +1,14 @@
+<?php
+
+namespace App\Application\Feedback\Command;
+
+final readonly class SubmitReviewCommand
+{
+    public function __construct(
+        public int $reviewId,
+        public int $orderId,
+        public int $clientId,
+        public int $rating,
+        public ?string $comment = null,
+    ) {}
+}

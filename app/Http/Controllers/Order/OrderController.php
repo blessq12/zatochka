@@ -20,6 +20,7 @@ use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 final class OrderController extends Controller
 {
@@ -36,11 +37,27 @@ final class OrderController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'clientId' => ['required', 'integer'],
+            'clientId' => ['nullable', 'integer'],
+            'newClientName' => ['nullable', 'string'],
+            'newClientPhone' => ['nullable', 'string'],
+            'newClientEmail' => ['nullable', 'email'],
             'estimatedAmount' => ['required', 'numeric'],
-            'estimatedCurrency' => ['nullable', 'string', 'size:3'],
+            'serviceType' => ['required', Rule::in(['sharpening', 'repair'])],
+            'billingType' => ['required', Rule::in(['paid', 'warranty'])],
+            'urgency' => ['required', Rule::in(['normal', 'urgent'])],
+            'warrantySourceOrderId' => ['nullable', 'integer'],
+            'deliveryRequired' => ['nullable', 'boolean'],
+            'defects' => ['nullable', 'string'],
+            'internalNotes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.clientEquipmentId' => ['required', 'integer'],
+            'items.*.clientEquipmentId' => ['nullable', 'integer'],
+            'items.*.toolName' => ['nullable', 'string'],
+            'items.*.toolType' => ['nullable', 'string'],
+            'items.*.quantity' => ['nullable', 'integer', 'min:1'],
+            'items.*.equipmentTitle' => ['nullable', 'string'],
+            'items.*.equipmentBrand' => ['nullable', 'string'],
+            'items.*.equipmentModelName' => ['nullable', 'string'],
+            'items.*.equipmentNotes' => ['nullable', 'string'],
         ]);
 
         $orderId = $this->ids->next('order')->value;
@@ -49,16 +66,33 @@ final class OrderController extends Controller
         foreach ($data['items'] as $item) {
             $items[] = new CreateOrderItemDTO(
                 $this->ids->next('order_item')->value,
-                (int) $item['clientEquipmentId'],
+                isset($item['clientEquipmentId']) ? (int) $item['clientEquipmentId'] : null,
+                $item['toolName'] ?? null,
+                $item['toolType'] ?? null,
+                isset($item['quantity']) ? (int) $item['quantity'] : null,
+                $item['equipmentTitle'] ?? null,
+                $item['equipmentBrand'] ?? null,
+                $item['equipmentModelName'] ?? null,
+                $item['equipmentNotes'] ?? null,
             );
         }
 
         $this->createOrder->handle(new CreateOrderCommand(
             $orderId,
-            (int) $data['clientId'],
+            (int) ($data['clientId'] ?? 0),
             (string) $data['estimatedAmount'],
             $items,
-            $data['estimatedCurrency'] ?? 'RUB',
+            $data['serviceType'],
+            $data['billingType'],
+            $data['urgency'],
+            (bool) ($data['deliveryRequired'] ?? false),
+            $data['defects'] ?? null,
+            $data['internalNotes'] ?? null,
+            'RUB',
+            $data['newClientName'] ?? null,
+            $data['newClientPhone'] ?? null,
+            $data['newClientEmail'] ?? null,
+            isset($data['warrantySourceOrderId']) ? (int) $data['warrantySourceOrderId'] : null,
         ));
 
         return $this->created($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));

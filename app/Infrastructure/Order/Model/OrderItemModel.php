@@ -2,7 +2,9 @@
 
 namespace App\Infrastructure\Order\Model;
 
+use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class OrderItemModel extends Model
@@ -19,11 +21,19 @@ final class OrderItemModel extends Model
         'id',
         'order_id',
         'client_equipment_id',
+        'tool_name',
+        'tool_type',
+        'quantity',
         'status',
         'production_task_id',
         'item_price_id',
         'warranty_id',
     ];
+
+    public function equipment(): BelongsTo
+    {
+        return $this->belongsTo(ClientEquipmentModel::class, 'client_equipment_id');
+    }
 
     public function reception(): HasOne
     {

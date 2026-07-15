@@ -20,23 +20,27 @@ final class ClientEquipment extends AggregateRoot
 
     private function __construct(
         private readonly EntityId $id,
-        private readonly EntityId $clientId,
-        private readonly string $title,
-        private readonly ?string $notes = null,
+        private ?EntityId $clientId,
+        private string $title,
+        private string $brand,
+        private string $modelName,
+        private ?string $notes = null,
     ) {
-        if (trim($this->title) === '') {
-            throw new DomainException('Equipment title cannot be empty.');
-        }
+        $this->assertNonEmptyLabel($this->title, 'Equipment title cannot be empty.');
+        $this->assertNonEmptyLabel($this->brand, 'Equipment brand cannot be empty.');
+        $this->assertNonEmptyLabel($this->modelName, 'Equipment model cannot be empty.');
     }
 
     public static function register(
         EntityId $id,
-        EntityId $clientId,
         string $title,
+        string $brand,
+        string $modelName,
+        ?EntityId $clientId = null,
         ?string $notes = null,
     ): self {
-        $equipment = new self($id, $clientId, $title, $notes);
-        $equipment->record(new EquipmentRegistered($id, $clientId, $title));
+        $equipment = new self($id, $clientId, $title, $brand, $modelName, $notes);
+        $equipment->record(new EquipmentRegistered($id, $title, $clientId));
 
         return $equipment;
     }
@@ -47,13 +51,15 @@ final class ClientEquipment extends AggregateRoot
      */
     public static function reconstitute(
         EntityId $id,
-        EntityId $clientId,
         string $title,
-        ?string $notes,
+        string $brand,
+        string $modelName,
+        ?EntityId $clientId = null,
+        ?string $notes = null,
         array $components = [],
         array $repairHistory = [],
     ): self {
-        $equipment = new self($id, $clientId, $title, $notes);
+        $equipment = new self($id, $clientId, $title, $brand, $modelName, $notes);
 
         foreach ($components as $component) {
             $equipment->components[$component->id()->value] = $component;
@@ -69,7 +75,7 @@ final class ClientEquipment extends AggregateRoot
         return $this->id;
     }
 
-    public function clientId(): EntityId
+    public function clientId(): ?EntityId
     {
         return $this->clientId;
     }
@@ -77,6 +83,16 @@ final class ClientEquipment extends AggregateRoot
     public function title(): string
     {
         return $this->title;
+    }
+
+    public function brand(): string
+    {
+        return $this->brand;
+    }
+
+    public function modelName(): string
+    {
+        return $this->modelName;
     }
 
     public function notes(): ?string
@@ -96,14 +112,22 @@ final class ClientEquipment extends AggregateRoot
         return $this->repairHistory;
     }
 
-    public function addComponent(EquipmentComponent $component): void
+    public function addComponent(EquipmentComponent $component, ?SerialNumber $serialNumber = null): void
     {
         if (isset($this->components[$component->id()->value])) {
             throw new DomainException('Component already exists on this equipment.');
         }
 
+        if ($serialNumber !== null) {
+            $component->registerSerialNumber($serialNumber);
+        }
+
         $this->components[$component->id()->value] = $component;
         $this->record(new ComponentAdded($this->id, $component->id(), $component->name()));
+
+        if ($serialNumber !== null) {
+            $this->record(new SerialNumberRegistered($this->id, $component->id(), $serialNumber->value));
+        }
     }
 
     public function registerComponentSerial(EntityId $componentId, SerialNumber $serialNumber): void
@@ -121,5 +145,30 @@ final class ClientEquipment extends AggregateRoot
     public function appendRepairHistory(RepairHistoryEntry $entry): void
     {
         $this->repairHistory[] = $entry;
+    }
+
+    public function updateProfile(
+        string $title,
+        string $brand,
+        string $modelName,
+        ?string $notes = null,
+        ?EntityId $clientId = null,
+    ): void {
+        $this->assertNonEmptyLabel($title, 'Equipment title cannot be empty.');
+        $this->assertNonEmptyLabel($brand, 'Equipment brand cannot be empty.');
+        $this->assertNonEmptyLabel($modelName, 'Equipment model cannot be empty.');
+
+        $this->title = $title;
+        $this->brand = $brand;
+        $this->modelName = $modelName;
+        $this->notes = $notes;
+        $this->clientId = $clientId;
+    }
+
+    private function assertNonEmptyLabel(string $value, string $message): void
+    {
+        if (trim($value) === '') {
+            throw new DomainException($message);
+        }
     }
 }

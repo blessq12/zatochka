@@ -8,5 +8,6 @@ final readonly class AddComponentCommand
         public int $equipmentId,
         public int $componentId,
         public string $name,
+        public ?string $serialNumber = null,
     ) {}
 }

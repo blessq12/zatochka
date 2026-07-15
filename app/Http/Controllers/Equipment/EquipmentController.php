@@ -8,6 +8,7 @@ use App\Application\Equipment\Command\RegisterEquipmentCommand;
 use App\Application\Equipment\Command\RegisterEquipmentHandler;
 use App\Application\Equipment\Command\RegisterSerialNumberCommand;
 use App\Application\Equipment\Command\RegisterSerialNumberHandler;
+use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Equipment\Query\GetEquipmentByIdHandler;
 use App\Application\Equipment\Query\GetEquipmentByIdQuery;
 use App\Http\Controllers\Controller;
@@ -28,18 +29,36 @@ final class EquipmentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'clientId' => ['required', 'integer'],
+            'clientId' => ['nullable', 'integer'],
             'title' => ['required', 'string'],
+            'brand' => ['required', 'string'],
+            'modelName' => ['required', 'string'],
             'notes' => ['nullable', 'string'],
+            'parts' => ['nullable', 'array'],
+            'parts.*.name' => ['required', 'string'],
+            'parts.*.serialNumber' => ['nullable', 'string'],
         ]);
 
         $equipmentId = $this->ids->next('equipment')->value;
 
+        $parts = [];
+
+        foreach ($data['parts'] ?? [] as $part) {
+            $parts[] = new EquipmentPartDTO(
+                $this->ids->next('equipment_component')->value,
+                $part['name'],
+                $part['serialNumber'] ?? null,
+            );
+        }
+
         $this->registerEquipment->handle(new RegisterEquipmentCommand(
             $equipmentId,
-            (int) $data['clientId'],
             $data['title'],
+            $data['brand'],
+            $data['modelName'],
+            isset($data['clientId']) ? (int) $data['clientId'] : null,
             $data['notes'] ?? null,
+            $parts,
         ));
 
         return $this->created($this->getEquipmentById->handle(new GetEquipmentByIdQuery($equipmentId)));
@@ -60,6 +79,7 @@ final class EquipmentController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string'],
+            'serialNumber' => ['nullable', 'string'],
         ]);
 
         $componentId = $this->ids->next('equipment_component')->value;
@@ -68,6 +88,7 @@ final class EquipmentController extends Controller
             $equipmentId,
             $componentId,
             $data['name'],
+            $data['serialNumber'] ?? null,
         ));
 
         return $this->ok($this->getEquipmentById->handle(new GetEquipmentByIdQuery($equipmentId)));

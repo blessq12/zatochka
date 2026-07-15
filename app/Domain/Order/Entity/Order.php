@@ -9,7 +9,10 @@ use App\Domain\Order\Event\OrderCreated;
 use App\Domain\Order\Event\OrderIssued;
 use App\Domain\Order\Event\OrderItemAdded;
 use App\Domain\Order\Event\ReceptionCompleted;
+use App\Domain\Order\VO\OrderBillingType;
+use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderStatus;
+use App\Domain\Order\VO\OrderUrgency;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
@@ -35,11 +38,20 @@ final class Order extends AggregateRoot
         Money $estimatedCost,
         DateTimeImmutable $createdAt,
         array $items,
+        private readonly OrderServiceType $serviceType,
+        private readonly OrderBillingType $billingType,
+        private readonly OrderUrgency $urgency,
+        private readonly bool $deliveryRequired,
+        private readonly ?string $defects,
+        private readonly ?string $internalNotes,
+        private readonly ?EntityId $warrantySourceOrderId = null,
         OrderStatus $status = OrderStatus::Created,
     ) {
         if ($items === []) {
             throw new DomainException('Order must contain at least one item.');
         }
+
+        $this->assertItemsMatchServiceType($items, $serviceType);
 
         $this->clientId = $clientId;
         $this->estimatedCost = $estimatedCost;
@@ -52,8 +64,6 @@ final class Order extends AggregateRoot
     }
 
     /**
-     * Composition of client, items and estimated cost is fixed at creation.
-     *
      * @param list<OrderItem> $items
      */
     public static function create(
@@ -61,16 +71,43 @@ final class Order extends AggregateRoot
         EntityId $clientId,
         Money $estimatedCost,
         array $items,
+        OrderServiceType $serviceType,
+        OrderBillingType $billingType,
+        OrderUrgency $urgency,
+        bool $deliveryRequired = false,
+        ?string $defects = null,
+        ?string $internalNotes = null,
+        ?EntityId $warrantySourceOrderId = null,
         ?DateTimeImmutable $createdAt = null,
     ): self {
+        self::assertWarrantySource($billingType, $warrantySourceOrderId, $id);
+
         $createdAt ??= new DateTimeImmutable();
-        $order = new self($id, $clientId, $estimatedCost, $createdAt, $items);
+        $order = new self(
+            $id,
+            $clientId,
+            $estimatedCost,
+            $createdAt,
+            $items,
+            $serviceType,
+            $billingType,
+            $urgency,
+            $deliveryRequired,
+            self::normalizeText($defects),
+            self::normalizeText($internalNotes),
+            $warrantySourceOrderId,
+        );
 
         $order->record(new OrderCreated($id, $clientId, $estimatedCost, $createdAt));
         $order->record(new ClientAssigned($id, $clientId));
 
         foreach ($items as $item) {
-            $order->record(new OrderItemAdded($id, $item->id(), $item->clientEquipmentId()));
+            $order->record(new OrderItemAdded(
+                $id,
+                $item->id(),
+                $item->clientEquipmentId(),
+                $item->toolName(),
+            ));
         }
 
         return $order;
@@ -86,8 +123,29 @@ final class Order extends AggregateRoot
         DateTimeImmutable $createdAt,
         OrderStatus $status,
         array $items,
+        OrderServiceType $serviceType,
+        OrderBillingType $billingType,
+        OrderUrgency $urgency,
+        bool $deliveryRequired = false,
+        ?string $defects = null,
+        ?string $internalNotes = null,
+        ?EntityId $warrantySourceOrderId = null,
     ): self {
-        return new self($id, $clientId, $estimatedCost, $createdAt, $items, $status);
+        return new self(
+            $id,
+            $clientId,
+            $estimatedCost,
+            $createdAt,
+            $items,
+            $serviceType,
+            $billingType,
+            $urgency,
+            $deliveryRequired,
+            $defects,
+            $internalNotes,
+            $warrantySourceOrderId,
+            $status,
+        );
     }
 
     public function id(): EntityId
@@ -108,6 +166,41 @@ final class Order extends AggregateRoot
     public function status(): OrderStatus
     {
         return $this->status;
+    }
+
+    public function serviceType(): OrderServiceType
+    {
+        return $this->serviceType;
+    }
+
+    public function billingType(): OrderBillingType
+    {
+        return $this->billingType;
+    }
+
+    public function urgency(): OrderUrgency
+    {
+        return $this->urgency;
+    }
+
+    public function deliveryRequired(): bool
+    {
+        return $this->deliveryRequired;
+    }
+
+    public function defects(): ?string
+    {
+        return $this->defects;
+    }
+
+    public function internalNotes(): ?string
+    {
+        return $this->internalNotes;
+    }
+
+    public function warrantySourceOrderId(): ?EntityId
+    {
+        return $this->warrantySourceOrderId;
     }
 
     public function createdAt(): DateTimeImmutable
@@ -212,6 +305,46 @@ final class Order extends AggregateRoot
         $this->record(new OrderIssued($this->id));
     }
 
+    /**
+     * @param list<OrderItem> $items
+     */
+    private function assertItemsMatchServiceType(array $items, OrderServiceType $serviceType): void
+    {
+        foreach ($items as $item) {
+            if ($serviceType === OrderServiceType::Sharpening) {
+                if ($item->toolName() === null || $item->toolType() === null || $item->quantity() === null) {
+                    throw new DomainException('Sharpening order items must include tool name, type and quantity.');
+                }
+            }
+
+            if ($serviceType === OrderServiceType::Repair && $item->clientEquipmentId() === null) {
+                throw new DomainException('Repair order items must reference client equipment.');
+            }
+        }
+    }
+
+    private static function assertWarrantySource(
+        OrderBillingType $billingType,
+        ?EntityId $warrantySourceOrderId,
+        EntityId $orderId,
+    ): void {
+        if ($billingType === OrderBillingType::Warranty) {
+            if ($warrantySourceOrderId === null) {
+                throw new DomainException('Warranty order requires a source order.');
+            }
+
+            if ($warrantySourceOrderId->equals($orderId)) {
+                throw new DomainException('Warranty source order cannot be the same order.');
+            }
+
+            return;
+        }
+
+        if ($warrantySourceOrderId !== null) {
+            throw new DomainException('Paid order cannot reference a warranty source order.');
+        }
+    }
+
     private function transitionTo(OrderStatus $next): void
     {
         if (! $this->status->canTransitionTo($next)) {
@@ -230,5 +363,16 @@ final class Order extends AggregateRoot
         if ($this->status->isTerminal()) {
             throw new DomainException('Terminal order cannot be modified.');
         }
+    }
+
+    private static function normalizeText(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 }

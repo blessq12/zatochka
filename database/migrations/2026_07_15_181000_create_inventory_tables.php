@@ -13,7 +13,9 @@ return new class extends Migration
             $table->string('sku')->unique();
             $table->string('name');
             $table->string('unit');
+            $table->string('category');
             $table->timestamps();
+            $table->index('category');
         });
 
         Schema::create('stock_items', function (Blueprint $table) {

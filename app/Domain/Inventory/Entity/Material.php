@@ -2,6 +2,9 @@
 
 namespace App\Domain\Inventory\Entity;
 
+use App\Domain\Inventory\VO\StockCategory;
+use App\Domain\Inventory\VO\StockSku;
+use App\Domain\Inventory\VO\UnitOfMeasure;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
 
@@ -9,12 +12,13 @@ final class Material
 {
     public function __construct(
         private readonly EntityId $id,
-        private readonly string $sku,
+        private readonly StockSku $sku,
         private readonly string $name,
-        private readonly string $unit,
+        private readonly UnitOfMeasure $unit,
+        private readonly StockCategory $category,
     ) {
-        if (trim($this->sku) === '' || trim($this->name) === '' || trim($this->unit) === '') {
-            throw new DomainException('Material sku, name and unit are required.');
+        if (trim($this->name) === '') {
+            throw new DomainException('Material name is required.');
         }
     }
 
@@ -23,7 +27,7 @@ final class Material
         return $this->id;
     }
 
-    public function sku(): string
+    public function sku(): StockSku
     {
         return $this->sku;
     }
@@ -33,8 +37,13 @@ final class Material
         return $this->name;
     }
 
-    public function unit(): string
+    public function unit(): UnitOfMeasure
     {
         return $this->unit;
+    }
+
+    public function category(): StockCategory
+    {
+        return $this->category;
     }
 }

@@ -7,6 +7,10 @@ use App\Domain\Inventory\Entity\Material;
 use App\Domain\Inventory\Entity\StockItem;
 use App\Domain\Inventory\Repository\StockItemRepository;
 use App\Domain\Inventory\VO\Quantity;
+use App\Domain\Inventory\VO\StockCategory;
+use App\Domain\Inventory\VO\StockSku;
+use App\Domain\Inventory\VO\UnitOfMeasure;
+use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
 
 final readonly class OpenStockItemHandler
@@ -18,13 +22,19 @@ final readonly class OpenStockItemHandler
 
     public function handle(OpenStockItemCommand $command): void
     {
+        $unit = UnitOfMeasure::tryFrom($command->unit)
+            ?? throw new DomainException('Unknown unit of measure.');
+        $category = StockCategory::tryFrom($command->category)
+            ?? throw new DomainException('Unknown stock category.');
+
         $item = StockItem::open(
             new EntityId($command->stockItemId),
             new Material(
                 new EntityId($command->materialId),
-                $command->sku,
+                StockSku::generate($category, $command->materialId),
                 $command->name,
-                $command->unit,
+                $unit,
+                $category,
             ),
             new Quantity($command->initialQuantity),
         );

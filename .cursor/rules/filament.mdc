@@ -1,0 +1,109 @@
+---
+description: Filament by BC — Eloquent rules, Russian UI only, phone mask +7
+globs: app/Filament/**/*
+alwaysApply: false
+---
+
+# Filament layer
+
+Path: `app/Filament/{BC}/Resources/...` — code folders follow **bounded context**.
+
+Navigation (`$navigationGroup`) is grouped by **manager UX semantics**, not by BC folder names.
+Code stays in its BC; only the sidebar group label may cluster related resources.
+
+Canonical sidebar groups (order in `AdminPanelProvider`):
+
+| Group | Resources |
+|-------|-----------|
+| Клиенты | Clients (CRM), Reviews moderation (Feedback) |
+| Заказы | Orders, Delivery |
+| Оборудование | Equipment |
+| Склад | Stock |
+| Финансы | Payments, Cash operations |
+| Сотрудники | Staff users (Identity) |
+
+## Architecture
+
+### Allowed
+
+- Read/list/view via Eloquent Infrastructure models
+- Direct Eloquent create/update/delete **only** for catalogs without domain logic (e.g. staff `User`)
+- Domain mutations via Application Command handlers (actions / custom create flows)
+- `DomainResource` for aggregates; `CatalogResource` for catalogs
+
+### Forbidden
+
+- Direct Eloquent writes for aggregates with domain invariants (`Order`, `ProductionTask`, `Client`, stock, payments, …)
+- Calling another BC’s Application handlers from a Filament resource
+- Restoring old Filament/admin as-was from the previous codebase
+- Instructional / meta hints (`helperText`, hints, placeholders) that explain **how the UI works** instead of the field meaning — e.g. «Список частей только для просмотра. Добавление — кнопками сверху.»
+
+```php
+// ❌ BAD — подсказка про механику интерфейса
+Repeater::make('components_display')
+    ->helperText('Список частей только для просмотра. Добавление — кнопками сверху.');
+
+// ✅ GOOD — без такой подсказки; при необходимости короткий domain-смысл поля
+TextInput::make('notes')->label('Заметки');
+```
+
+## UI language — Russian only
+
+All **user-facing** Filament copy is Russian: navigation groups/labels, `$modelLabel` / `$pluralModelLabel` / `$navigationLabel`, column labels, form labels, placeholders, hints, helper text, action labels, notifications, empty states, section headings.
+
+```php
+// ❌ BAD
+protected static ?string $navigationGroup = 'CRM';
+protected static ?string $modelLabel = 'Client';
+Action::make('registerClient')->label('Register client');
+
+// ✅ GOOD
+protected static ?string $navigationGroup = 'Клиенты';
+protected static ?string $modelLabel = 'Клиент';
+Action::make('registerClient')->label('Зарегистрировать клиента');
+```
+
+Code identifiers stay English (see naming rule). Only UI strings are Russian.
+
+## Phone input mask
+
+Every phone `TextInput` / form field in Filament **must** use:
+
+```text
++7 (999) 999-99-99
+```
+
+Visual target matches the public site (`+7 (___) ___-__-__`), but the **mask engine is different**.
+
+| Layer | Library | Digit wildcard | Phone mask |
+|-------|---------|----------------|------------|
+| Public Vue (`resources/js`) | maska (`data-maska`) | `#` | `+7 (###) ###-##-##` |
+| Filament (`app/Filament`) | Alpine Mask (`->mask()`) | `9` | `+7 (999) 999-99-99` |
+
+Filament `TextInput::mask()` is Alpine.js Mask. Alpine wildcards:
+
+- `9` — digit only
+- `a` — letter only
+- `*` — any character
+- `#` — **not** a digit wildcard; treated as a literal `#`
+
+**Never** copy-paste the Vue/maska pattern into Filament.
+
+```php
+// ❌ BAD — maska / public-site syntax; Alpine treats # as literal character
+TextInput::make('phone')
+    ->mask('+7 (###) ###-##-##');
+
+// ❌ BAD — no mask / wrong digit token
+TextInput::make('phone')->tel()->required();
+
+// ✅ GOOD — Alpine digit wildcard is 9; telRegex must match the mask
+// (default Filament tel regex rejects parentheses/spaces in +7 (999) 999-99-99)
+TextInput::make('phone')
+    ->label('Телефон')
+    ->tel()
+    ->telRegex('/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/')
+    ->mask('+7 (999) 999-99-99')
+    ->placeholder('+7 (___) ___-__-__')
+    ->required();
+```

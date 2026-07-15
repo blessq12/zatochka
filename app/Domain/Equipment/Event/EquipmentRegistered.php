@@ -10,8 +10,8 @@ final readonly class EquipmentRegistered implements DomainEvent
 {
     public function __construct(
         public EntityId $equipmentId,
-        public EntityId $clientId,
         public string $title,
+        public ?EntityId $clientId = null,
         private DateTimeImmutable $occurredAt = new DateTimeImmutable(),
     ) {}
 

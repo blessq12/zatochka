@@ -7,9 +7,13 @@ use App\Application\Order\DTO\OrderItemDTO;
 use App\Domain\Order\Entity\Order;
 use App\Domain\Order\Entity\OrderItem;
 use App\Domain\Order\Entity\ReceptionData;
+use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderItemStatus;
+use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderStatus;
+use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\ReceptionCondition;
+use App\Domain\Order\VO\SharpeningToolType;
 use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Infrastructure\Order\Model\ReceptionDataModel;
@@ -42,7 +46,10 @@ final class OrderMapper
 
             $items[] = OrderItem::reconstitute(
                 new EntityId((int) $itemModel->id),
-                new EntityId((int) $itemModel->client_equipment_id),
+                $itemModel->client_equipment_id !== null
+                    ? new EntityId((int) $itemModel->client_equipment_id)
+                    : null,
+                $itemModel->tool_name !== null ? (string) $itemModel->tool_name : null,
                 OrderItemStatus::from((string) $itemModel->status),
                 $reception,
                 $itemModel->production_task_id !== null
@@ -54,6 +61,10 @@ final class OrderMapper
                 $itemModel->warranty_id !== null
                     ? new EntityId((int) $itemModel->warranty_id)
                     : null,
+                $itemModel->tool_type !== null
+                    ? SharpeningToolType::from((string) $itemModel->tool_type)
+                    : null,
+                $itemModel->quantity !== null ? (int) $itemModel->quantity : null,
             );
         }
 
@@ -64,6 +75,15 @@ final class OrderMapper
             DateTimeImmutable::createFromInterface($model->created_at),
             OrderStatus::from((string) $model->status),
             $items,
+            OrderServiceType::from((string) $model->service_type),
+            OrderBillingType::from((string) $model->billing_type),
+            OrderUrgency::from((string) $model->urgency),
+            (bool) $model->delivery_required,
+            $model->defects !== null ? (string) $model->defects : null,
+            $model->internal_notes !== null ? (string) $model->internal_notes : null,
+            $model->warranty_source_order_id !== null
+                ? new EntityId((int) $model->warranty_source_order_id)
+                : null,
         );
     }
 
@@ -73,6 +93,13 @@ final class OrderMapper
         $model->id = $order->id()->value;
         $model->client_id = $order->clientId()->value;
         $model->status = $order->status()->value;
+        $model->service_type = $order->serviceType()->value;
+        $model->billing_type = $order->billingType()->value;
+        $model->urgency = $order->urgency()->value;
+        $model->delivery_required = $order->deliveryRequired();
+        $model->defects = $order->defects();
+        $model->internal_notes = $order->internalNotes();
+        $model->warranty_source_order_id = $order->warrantySourceOrderId()?->value;
         $model->estimated_amount = $order->estimatedCost()->amount;
         $model->estimated_currency = $order->estimatedCost()->currency;
         $model->created_at = $order->createdAt();
@@ -90,7 +117,10 @@ final class OrderMapper
             $row = new OrderItemModel();
             $row->id = $item->id()->value;
             $row->order_id = $order->id()->value;
-            $row->client_equipment_id = $item->clientEquipmentId()->value;
+            $row->client_equipment_id = $item->clientEquipmentId()?->value;
+            $row->tool_name = $item->toolName();
+            $row->tool_type = $item->toolType()?->value;
+            $row->quantity = $item->quantity();
             $row->status = $item->status()->value;
             $row->production_task_id = $item->productionTaskId()?->value;
             $row->item_price_id = $item->itemPriceId()?->value;
@@ -133,7 +163,10 @@ final class OrderMapper
         foreach ($model->items as $item) {
             $items[] = new OrderItemDTO(
                 (int) $item->id,
-                (int) $item->client_equipment_id,
+                $item->client_equipment_id !== null ? (int) $item->client_equipment_id : null,
+                $item->tool_name !== null ? (string) $item->tool_name : null,
+                $item->tool_type !== null ? (string) $item->tool_type : null,
+                $item->quantity !== null ? (int) $item->quantity : null,
                 (string) $item->status,
                 $item->reception !== null,
                 $item->production_task_id !== null ? (int) $item->production_task_id : null,
@@ -146,6 +179,13 @@ final class OrderMapper
             (int) $model->id,
             (int) $model->client_id,
             (string) $model->status,
+            (string) $model->service_type,
+            (string) $model->billing_type,
+            (string) $model->urgency,
+            (bool) $model->delivery_required,
+            $model->defects !== null ? (string) $model->defects : null,
+            $model->internal_notes !== null ? (string) $model->internal_notes : null,
+            $model->warranty_source_order_id !== null ? (int) $model->warranty_source_order_id : null,
             (string) $model->estimated_amount,
             (string) $model->estimated_currency,
             $model->created_at->toIso8601String(),

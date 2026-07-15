@@ -8,6 +8,9 @@ use App\Domain\Inventory\Entity\StockItem;
 use App\Domain\Inventory\Entity\WarehouseMovement;
 use App\Domain\Inventory\VO\MovementType;
 use App\Domain\Inventory\VO\Quantity;
+use App\Domain\Inventory\VO\StockCategory;
+use App\Domain\Inventory\VO\StockSku;
+use App\Domain\Inventory\VO\UnitOfMeasure;
 use App\Infrastructure\Inventory\Model\MaterialModel;
 use App\Infrastructure\Inventory\Model\StockItemModel;
 use App\Infrastructure\Inventory\Model\WarehouseMovementModel;
@@ -20,9 +23,10 @@ final class StockItemMapper
     {
         $material = new Material(
             new EntityId((int) $model->material->id),
-            (string) $model->material->sku,
+            new StockSku((string) $model->material->sku),
             (string) $model->material->name,
-            (string) $model->material->unit,
+            UnitOfMeasure::from((string) $model->material->unit),
+            StockCategory::from((string) $model->material->category),
         );
 
         $movements = [];
@@ -60,9 +64,10 @@ final class StockItemMapper
         $material = $item->material();
         $row = new MaterialModel();
         $row->id = $material->id()->value;
-        $row->sku = $material->sku();
+        $row->sku = $material->sku()->value;
         $row->name = $material->name();
-        $row->unit = $material->unit();
+        $row->unit = $material->unit()->value;
+        $row->category = $material->category()->value;
 
         return $row;
     }
@@ -94,6 +99,7 @@ final class StockItemMapper
             (string) $model->material->sku,
             (string) $model->material->name,
             (string) $model->material->unit,
+            (string) $model->material->category,
             (string) $model->quantity_on_hand,
         );
     }

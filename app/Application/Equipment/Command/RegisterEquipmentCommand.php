@@ -2,12 +2,20 @@
 
 namespace App\Application\Equipment\Command;
 
+use App\Application\Equipment\DTO\EquipmentPartDTO;
+
 final readonly class RegisterEquipmentCommand
 {
+    /**
+     * @param list<EquipmentPartDTO> $parts
+     */
     public function __construct(
         public int $equipmentId,
-        public int $clientId,
         public string $title,
+        public string $brand,
+        public string $modelName,
+        public ?int $clientId = null,
         public ?string $notes = null,
+        public array $parts = [],
     ) {}
 }

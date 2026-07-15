@@ -40,8 +40,10 @@ final class ClientEquipmentMapper
 
         return ClientEquipment::reconstitute(
             new EntityId((int) $model->id),
-            new EntityId((int) $model->client_id),
             (string) $model->title,
+            (string) $model->brand,
+            (string) $model->model_name,
+            $model->client_id !== null ? new EntityId((int) $model->client_id) : null,
             $model->notes !== null ? (string) $model->notes : null,
             $components,
             $history,
@@ -52,8 +54,10 @@ final class ClientEquipmentMapper
     {
         $model ??= new ClientEquipmentModel();
         $model->id = $equipment->id()->value;
-        $model->client_id = $equipment->clientId()->value;
+        $model->client_id = $equipment->clientId()?->value;
         $model->title = $equipment->title();
+        $model->brand = $equipment->brand();
+        $model->model_name = $equipment->modelName();
         $model->notes = $equipment->notes();
 
         return $model;
@@ -119,8 +123,10 @@ final class ClientEquipmentMapper
 
         return new ClientEquipmentDTO(
             (int) $model->id,
-            (int) $model->client_id,
+            $model->client_id !== null ? (int) $model->client_id : null,
             (string) $model->title,
+            (string) $model->brand,
+            (string) $model->model_name,
             $model->notes !== null ? (string) $model->notes : null,
             $components,
             $history,

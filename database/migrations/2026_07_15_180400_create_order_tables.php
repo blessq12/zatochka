@@ -12,6 +12,13 @@ return new class extends Migration
             $table->unsignedBigInteger('id')->primary();
             $table->unsignedBigInteger('client_id');
             $table->string('status');
+            $table->string('service_type');
+            $table->string('billing_type');
+            $table->string('urgency');
+            $table->boolean('delivery_required')->default(false);
+            $table->text('defects')->nullable();
+            $table->text('internal_notes')->nullable();
+            $table->unsignedBigInteger('warranty_source_order_id')->nullable();
             $table->decimal('estimated_amount', 12, 2);
             $table->string('estimated_currency', 3)->default('RUB');
             $table->timestamp('created_at');
@@ -22,7 +29,10 @@ return new class extends Migration
         Schema::create('order_items', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
             $table->unsignedBigInteger('order_id');
-            $table->unsignedBigInteger('client_equipment_id');
+            $table->unsignedBigInteger('client_equipment_id')->nullable();
+            $table->string('tool_name')->nullable();
+            $table->string('tool_type')->nullable();
+            $table->unsignedInteger('quantity')->nullable();
             $table->string('status');
             $table->unsignedBigInteger('production_task_id')->nullable();
             $table->unsignedBigInteger('item_price_id')->nullable();

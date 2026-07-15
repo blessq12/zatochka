@@ -16,8 +16,9 @@ alwaysApply: true
 | Application layer | [rules/application.mdc](./rules/application.mdc) | `app/Application/**/*` |
 | Infrastructure layer | [rules/infrastructure.mdc](./rules/infrastructure.mdc) | `app/Infrastructure/**/*` |
 | HTTP / API layer | [rules/http.mdc](./rules/http.mdc) | `app/Http/**/*`, `routes/api.php` |
+| Filament admin | [rules/filament.mdc](./rules/filament.mdc) | `app/Filament/**/*` |
 
-Код: `app/Application` · `app/Domain` · `app/Infrastructure` · `app/Http` · `app/Shared`.
+Код: `app/Application` · `app/Domain` · `app/Infrastructure` · `app/Http` · `app/Filament` · `app/Shared`.
 
 ---
 

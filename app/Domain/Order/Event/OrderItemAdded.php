@@ -11,7 +11,8 @@ final readonly class OrderItemAdded implements DomainEvent
     public function __construct(
         public EntityId $orderId,
         public EntityId $orderItemId,
-        public EntityId $clientEquipmentId,
+        public ?EntityId $clientEquipmentId = null,
+        public ?string $toolName = null,
         private DateTimeImmutable $occurredAt = new DateTimeImmutable(),
     ) {}
 

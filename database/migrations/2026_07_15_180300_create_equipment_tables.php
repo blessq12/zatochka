@@ -10,8 +10,10 @@ return new class extends Migration
     {
         Schema::create('client_equipment', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
-            $table->unsignedBigInteger('client_id');
+            $table->unsignedBigInteger('client_id')->nullable();
             $table->string('title');
+            $table->string('brand');
+            $table->string('model_name');
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->index('client_id');

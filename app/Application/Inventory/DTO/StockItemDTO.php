@@ -10,6 +10,7 @@ final readonly class StockItemDTO
         public string $materialSku,
         public string $materialName,
         public string $unit,
+        public string $category,
         public string $quantityOnHand,
     ) {}
 }

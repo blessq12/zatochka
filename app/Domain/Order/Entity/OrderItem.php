@@ -3,6 +3,7 @@
 namespace App\Domain\Order\Entity;
 
 use App\Domain\Order\VO\OrderItemStatus;
+use App\Domain\Order\VO\SharpeningToolType;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
 
@@ -13,25 +14,71 @@ final class OrderItem
     private ?EntityId $productionTaskId = null;
     private ?EntityId $itemPriceId = null;
     private ?EntityId $warrantyId = null;
+    private ?string $toolName;
+    private ?SharpeningToolType $toolType;
+    private ?int $quantity;
 
     public function __construct(
         private readonly EntityId $id,
-        private readonly EntityId $clientEquipmentId,
+        private readonly ?EntityId $clientEquipmentId = null,
+        ?string $toolName = null,
+        ?SharpeningToolType $toolType = null,
+        ?int $quantity = null,
         OrderItemStatus $status = OrderItemStatus::Accepted,
     ) {
+        $normalizedTool = $toolName !== null ? trim($toolName) : null;
+        $hasTool = $normalizedTool !== null && $normalizedTool !== '';
+        $hasEquipment = $clientEquipmentId !== null;
+
+        if ($hasEquipment === $hasTool) {
+            throw new DomainException('Order item must reference either equipment or a tool name.');
+        }
+
+        if ($hasTool) {
+            if ($toolType === null) {
+                throw new DomainException('Sharpening tool type is required.');
+            }
+
+            if ($quantity === null || $quantity < 1) {
+                throw new DomainException('Sharpening tool quantity must be at least 1.');
+            }
+        } elseif ($toolType !== null || $quantity !== null) {
+            throw new DomainException('Tool type and quantity are only allowed for sharpening items.');
+        }
+
+        $this->toolName = $hasTool ? $normalizedTool : null;
+        $this->toolType = $hasTool ? $toolType : null;
+        $this->quantity = $hasTool ? $quantity : null;
         $this->status = $status;
+    }
+
+    public static function forEquipment(EntityId $id, EntityId $clientEquipmentId): self
+    {
+        return new self($id, $clientEquipmentId);
+    }
+
+    public static function forTool(
+        EntityId $id,
+        string $toolName,
+        SharpeningToolType $toolType,
+        int $quantity,
+    ): self {
+        return new self($id, null, $toolName, $toolType, $quantity);
     }
 
     public static function reconstitute(
         EntityId $id,
-        EntityId $clientEquipmentId,
+        ?EntityId $clientEquipmentId,
+        ?string $toolName,
         OrderItemStatus $status,
         ?ReceptionData $receptionData = null,
         ?EntityId $productionTaskId = null,
         ?EntityId $itemPriceId = null,
         ?EntityId $warrantyId = null,
+        ?SharpeningToolType $toolType = null,
+        ?int $quantity = null,
     ): self {
-        $item = new self($id, $clientEquipmentId, $status);
+        $item = new self($id, $clientEquipmentId, $toolName, $toolType, $quantity, $status);
         $item->receptionData = $receptionData;
         $item->productionTaskId = $productionTaskId;
         $item->itemPriceId = $itemPriceId;
@@ -45,9 +92,24 @@ final class OrderItem
         return $this->id;
     }
 
-    public function clientEquipmentId(): EntityId
+    public function clientEquipmentId(): ?EntityId
     {
         return $this->clientEquipmentId;
+    }
+
+    public function toolName(): ?string
+    {
+        return $this->toolName;
+    }
+
+    public function toolType(): ?SharpeningToolType
+    {
+        return $this->toolType;
+    }
+
+    public function quantity(): ?int
+    {
+        return $this->quantity;
     }
 
     public function status(): OrderItemStatus
