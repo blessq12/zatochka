@@ -6,7 +6,7 @@ use App\Application\Pricing\ReadPort\WorkPriceReadPort;
 use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\VO\OrderId;
-use App\Infrastructure\Workshop\Model\MasterCommentModel;
+use App\Infrastructure\Workshop\Model\PerformedWorkModel;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
 use App\Shared\Domain\DomainException;
 
@@ -29,9 +29,8 @@ final readonly class MarkOrderReadyHandler
             throw new DomainException('Production task not found for order.');
         }
 
-        $workComments = MasterCommentModel::query()
+        $works = PerformedWorkModel::query()
             ->where('production_task_id', $taskId)
-            ->whereNotNull('order_item_id')
             ->get();
 
         foreach ($order->items() as $item) {
@@ -39,8 +38,8 @@ final readonly class MarkOrderReadyHandler
                 continue;
             }
 
-            $itemWorks = $workComments->filter(
-                static fn ($comment) => (int) $comment->order_item_id === $item->id()->value,
+            $itemWorks = $works->filter(
+                static fn ($work) => (int) $work->order_item_id === $item->id()->value,
             );
 
             if ($itemWorks->isEmpty()) {
@@ -50,13 +49,13 @@ final readonly class MarkOrderReadyHandler
                 ));
             }
 
-            foreach ($itemWorks as $workComment) {
-                $workPrice = $this->workPrices->findByMasterCommentId((int) $workComment->id);
+            foreach ($itemWorks as $work) {
+                $workPrice = $this->workPrices->findByPerformedWorkId((int) $work->id);
 
                 if ($workPrice === null || ! $workPrice->calculated) {
                     throw new DomainException(sprintf(
                         'Work #%d does not have a calculated price yet.',
-                        $workComment->id,
+                        $work->id,
                     ));
                 }
             }

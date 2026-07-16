@@ -9,7 +9,12 @@ interface WorkPriceRepository
 {
     public function getById(EntityId $id): WorkPrice;
 
-    public function findByMasterCommentId(EntityId $masterCommentId): ?WorkPrice;
+    public function findByPerformedWorkId(EntityId $performedWorkId): ?WorkPrice;
 
     public function save(WorkPrice $workPrice): void;
+
+    /**
+     * @param list<int> $performedWorkIds
+     */
+    public function deleteByPerformedWorkIds(array $performedWorkIds): void;
 }

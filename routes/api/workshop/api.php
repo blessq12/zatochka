@@ -22,6 +22,7 @@ Route::prefix('workshop/production-tasks')->group(function (): void {
         Route::post('{productionTaskId}/comments', [ProductionTaskController::class, 'addComment']);
         Route::post('{productionTaskId}/works', [ProductionTaskController::class, 'addWork']);
         Route::delete('{productionTaskId}/comments/{commentId}', [ProductionTaskController::class, 'removeComment']);
+        Route::delete('{productionTaskId}/works/{workId}', [ProductionTaskController::class, 'removeWork']);
     });
 
     Route::post('{productionTaskId}/assign-master', [ProductionTaskController::class, 'assignMaster']);

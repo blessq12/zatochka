@@ -14,7 +14,7 @@ final class WorkPriceMapper
     {
         return WorkPrice::reconstitute(
             new EntityId((int) $model->id),
-            new EntityId((int) $model->master_comment_id),
+            new EntityId((int) $model->performed_work_id),
             new EntityId((int) $model->order_item_id),
             new Money((string) $model->base_amount, (string) $model->currency),
             (bool) $model->calculated,
@@ -28,7 +28,7 @@ final class WorkPriceMapper
     {
         return new WorkPriceDTO(
             (int) $model->id,
-            (int) $model->master_comment_id,
+            (int) $model->performed_work_id,
             (int) $model->order_item_id,
             (string) $model->base_amount,
             (string) $model->currency,
@@ -41,7 +41,7 @@ final class WorkPriceMapper
     {
         $model = new WorkPriceModel();
         $model->id = $workPrice->id()->value;
-        $model->master_comment_id = $workPrice->masterCommentId()->value;
+        $model->performed_work_id = $workPrice->performedWorkId()->value;
         $model->order_item_id = $workPrice->orderItemId()->value;
         $model->base_amount = $workPrice->baseAmount()->amount;
         $model->currency = $workPrice->baseAmount()->currency;

@@ -5,6 +5,7 @@ namespace App\Domain\Workshop\Entity;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Event\DiagnosisCompleted;
 use App\Domain\Workshop\Event\MasterAssigned;
+use App\Domain\Workshop\Event\ProductionCancelled;
 use App\Domain\Workshop\Event\ProductionCompleted;
 use App\Domain\Workshop\Event\WorkCompleted;
 use App\Domain\Workshop\Event\WorkStarted;
@@ -23,6 +24,9 @@ final class ProductionTask extends AggregateRoot
     /** @var list<MasterComment> */
     private array $comments = [];
 
+    /** @var list<PerformedWork> */
+    private array $works = [];
+
     private function __construct(
         private readonly EntityId $id,
         private readonly OrderId $orderId,
@@ -37,6 +41,7 @@ final class ProductionTask extends AggregateRoot
 
     /**
      * @param list<MasterComment> $comments
+     * @param list<PerformedWork> $works
      */
     public static function reconstitute(
         EntityId $id,
@@ -46,6 +51,7 @@ final class ProductionTask extends AggregateRoot
         ?Diagnosis $diagnosis = null,
         ?WorkExecution $workExecution = null,
         array $comments = [],
+        array $works = [],
     ): self {
         $task = new self($id, $orderId);
         $task->status = $status;
@@ -53,6 +59,7 @@ final class ProductionTask extends AggregateRoot
         $task->diagnosis = $diagnosis;
         $task->workExecution = $workExecution;
         $task->comments = $comments;
+        $task->works = $works;
 
         return $task;
     }
@@ -91,6 +98,12 @@ final class ProductionTask extends AggregateRoot
     public function comments(): array
     {
         return $this->comments;
+    }
+
+    /** @return list<PerformedWork> */
+    public function works(): array
+    {
+        return $this->works;
     }
 
     public function assignMaster(EntityId $masterId): void
@@ -187,6 +200,30 @@ final class ProductionTask extends AggregateRoot
         $this->record(new ProductionCompleted($this->id, $this->orderId));
     }
 
+    public function cancel(): void
+    {
+        if ($this->status === ProductionStatus::Rejected) {
+            return;
+        }
+
+        $this->transitionTo(ProductionStatus::Rejected);
+        $this->record(new ProductionCancelled($this->id, $this->orderId));
+    }
+
+    public function reopenForRework(): void
+    {
+        if ($this->status === ProductionStatus::InWork) {
+            return;
+        }
+
+        if (! in_array($this->status, [ProductionStatus::Completed, ProductionStatus::WorkCompleted], true)) {
+            throw new DomainException('Production task can be reopened only after completion.');
+        }
+
+        $this->workExecution?->reopen();
+        $this->transitionTo(ProductionStatus::InWork);
+    }
+
     public function addComment(MasterComment $comment): void
     {
         $this->assertNotTerminal();
@@ -214,6 +251,36 @@ final class ProductionTask extends AggregateRoot
 
         if (count($this->comments) === $before) {
             throw new DomainException('Master comment not found.');
+        }
+    }
+
+    public function addWork(PerformedWork $work): void
+    {
+        $this->assertNotTerminal();
+
+        if ($this->masterId === null || ! $this->masterId->equals($work->masterId)) {
+            throw new DomainException('Only the assigned master can add performed works.');
+        }
+
+        $this->works[] = $work;
+    }
+
+    public function removeWork(EntityId $workId, EntityId $masterId): void
+    {
+        $this->assertNotTerminal();
+
+        if ($this->masterId === null || ! $this->masterId->equals($masterId)) {
+            throw new DomainException('Only the assigned master can remove performed works.');
+        }
+
+        $before = count($this->works);
+        $this->works = array_values(array_filter(
+            $this->works,
+            static fn (PerformedWork $work): bool => ! $work->id->equals($workId),
+        ));
+
+        if (count($this->works) === $before) {
+            throw new DomainException('Performed work not found.');
         }
     }
 

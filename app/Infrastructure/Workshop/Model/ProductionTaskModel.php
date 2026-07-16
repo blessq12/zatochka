@@ -16,7 +16,14 @@ final class ProductionTaskModel extends Model
 
     protected $keyType = 'int';
 
-    protected $fillable = ['id', 'order_id', 'status', 'master_id'];
+    protected $fillable = ['id', 'order_id', 'status', 'master_id', 'master_comments'];
+
+    protected function casts(): array
+    {
+        return [
+            'master_comments' => 'array',
+        ];
+    }
 
     public function order(): BelongsTo
     {
@@ -33,8 +40,8 @@ final class ProductionTaskModel extends Model
         return $this->hasOne(WorkExecutionModel::class, 'production_task_id');
     }
 
-    public function comments(): HasMany
+    public function performedWorks(): HasMany
     {
-        return $this->hasMany(MasterCommentModel::class, 'production_task_id');
+        return $this->hasMany(PerformedWorkModel::class, 'production_task_id');
     }
 }

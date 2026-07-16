@@ -22,6 +22,8 @@ use App\Application\Workshop\Command\PauseForPartsCommand;
 use App\Application\Workshop\Command\PauseForPartsHandler;
 use App\Application\Workshop\Command\RemoveMasterCommentCommand;
 use App\Application\Workshop\Command\RemoveMasterCommentHandler;
+use App\Application\Workshop\Command\RemoveMasterWorkCommand;
+use App\Application\Workshop\Command\RemoveMasterWorkHandler;
 use App\Application\Workshop\Command\ResumeFromPartsCommand;
 use App\Application\Workshop\Command\ResumeFromPartsHandler;
 use App\Application\Workshop\Command\StartWorkCommand;
@@ -48,6 +50,7 @@ final class ProductionTaskController extends Controller
         private AddMasterCommentHandler $addMasterComment,
         private AddMasterWorkHandler $addMasterWork,
         private RemoveMasterCommentHandler $removeMasterComment,
+        private RemoveMasterWorkHandler $removeMasterWork,
         private ProductionTaskReadPort $readPort,
         private SequentialEntityIdGenerator $ids,
     ) {}
@@ -244,15 +247,25 @@ final class ProductionTaskController extends Controller
 
         $data = $request->validate([
             'text' => ['required', 'string'],
-            'orderItemId' => ['required', 'integer'],
+            'orderItemId' => ['nullable', 'integer'],
+            'equipmentComponentId' => ['nullable', 'integer'],
         ]);
+
+        if (! isset($data['orderItemId']) && ! isset($data['equipmentComponentId'])) {
+            throw new DomainException('Work target is required: orderItemId or equipmentComponentId.');
+        }
+
+        if (isset($data['orderItemId'], $data['equipmentComponentId'])) {
+            throw new DomainException('Provide either orderItemId or equipmentComponentId, not both.');
+        }
 
         $this->addMasterWork->handle(new AddMasterWorkCommand(
             $productionTaskId,
-            $this->ids->next('master_comment')->value,
+            $this->ids->next('performed_work')->value,
             (int) $request->user()->id,
             $data['text'],
-            (int) $data['orderItemId'],
+            isset($data['orderItemId']) ? (int) $data['orderItemId'] : null,
+            isset($data['equipmentComponentId']) ? (int) $data['equipmentComponentId'] : null,
         ));
 
         return $this->ok($this->cardOrFail($productionTaskId));
@@ -265,6 +278,19 @@ final class ProductionTaskController extends Controller
         $this->removeMasterComment->handle(new RemoveMasterCommentCommand(
             $productionTaskId,
             $commentId,
+            (int) request()->user()->id,
+        ));
+
+        return $this->ok($this->cardOrFail($productionTaskId));
+    }
+
+    public function removeWork(int $productionTaskId, int $workId): JsonResponse
+    {
+        $this->assertTaskOwned($productionTaskId);
+
+        $this->removeMasterWork->handle(new RemoveMasterWorkCommand(
+            $productionTaskId,
+            $workId,
             (int) request()->user()->id,
         ));
 

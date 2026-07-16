@@ -18,7 +18,7 @@ final readonly class SetOrderPricesHandler
     {
         $order = $this->orders->getById(new OrderId($command->orderId));
 
-        if ($order->status() !== OrderStatus::AwaitingPricing) {
+        if ($order->status() !== OrderStatus::WorksCompleted) {
             throw new DomainException('Prices can only be changed while order is awaiting pricing.');
         }
 

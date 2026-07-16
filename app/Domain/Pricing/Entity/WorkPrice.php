@@ -10,7 +10,7 @@ final class WorkPrice
 {
     public function __construct(
         private readonly EntityId $id,
-        private readonly EntityId $masterCommentId,
+        private readonly EntityId $performedWorkId,
         private readonly EntityId $orderItemId,
         private Money $baseAmount,
         private bool $calculated = false,
@@ -19,13 +19,13 @@ final class WorkPrice
 
     public static function reconstitute(
         EntityId $id,
-        EntityId $masterCommentId,
+        EntityId $performedWorkId,
         EntityId $orderItemId,
         Money $baseAmount,
         bool $calculated = false,
         ?Money $finalAmount = null,
     ): self {
-        return new self($id, $masterCommentId, $orderItemId, $baseAmount, $calculated, $finalAmount);
+        return new self($id, $performedWorkId, $orderItemId, $baseAmount, $calculated, $finalAmount);
     }
 
     public function id(): EntityId
@@ -33,9 +33,9 @@ final class WorkPrice
         return $this->id;
     }
 
-    public function masterCommentId(): EntityId
+    public function performedWorkId(): EntityId
     {
-        return $this->masterCommentId;
+        return $this->performedWorkId;
     }
 
     public function orderItemId(): EntityId

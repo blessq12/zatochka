@@ -6,11 +6,12 @@ use App\Application\Workshop\DTO\ProductionTaskDTO;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Entity\Diagnosis;
 use App\Domain\Workshop\Entity\MasterComment;
+use App\Domain\Workshop\Entity\PerformedWork;
 use App\Domain\Workshop\Entity\ProductionTask;
 use App\Domain\Workshop\Entity\WorkExecution;
 use App\Domain\Workshop\VO\ProductionStatus;
 use App\Infrastructure\Workshop\Model\DiagnosisModel;
-use App\Infrastructure\Workshop\Model\MasterCommentModel;
+use App\Infrastructure\Workshop\Model\PerformedWorkModel;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
 use App\Infrastructure\Workshop\Model\WorkExecutionModel;
 use App\Shared\ValueObject\EntityId;
@@ -48,15 +49,33 @@ final class ProductionTaskMapper
 
         $comments = [];
 
-        foreach ($model->comments as $comment) {
+        foreach ($model->master_comments ?? [] as $comment) {
+            if (! is_array($comment)) {
+                continue;
+            }
+
             $comments[] = new MasterComment(
-                new EntityId((int) $comment->id),
-                new EntityId((int) $comment->master_id),
-                (string) $comment->text,
-                DateTimeImmutable::createFromInterface($comment->created_at),
-                $comment->order_item_id !== null
-                    ? new EntityId((int) $comment->order_item_id)
+                new EntityId((int) $comment['id']),
+                new EntityId((int) $comment['master_id']),
+                (string) $comment['text'],
+                isset($comment['created_at'])
+                    ? new DateTimeImmutable((string) $comment['created_at'])
+                    : new DateTimeImmutable(),
+            );
+        }
+
+        $works = [];
+
+        foreach ($model->performedWorks as $row) {
+            $works[] = new PerformedWork(
+                new EntityId((int) $row->id),
+                new EntityId((int) $row->order_item_id),
+                new EntityId((int) $row->master_id),
+                (string) $row->description,
+                $row->equipment_component_id !== null
+                    ? new EntityId((int) $row->equipment_component_id)
                     : null,
+                DateTimeImmutable::createFromInterface($row->created_at),
             );
         }
 
@@ -68,6 +87,7 @@ final class ProductionTaskMapper
             $diagnosis,
             $work,
             $comments,
+            $works,
         );
     }
 
@@ -78,6 +98,15 @@ final class ProductionTaskMapper
         $model->order_id = $task->orderId()->value;
         $model->status = $task->status()->value;
         $model->master_id = $task->masterId()?->value;
+        $model->master_comments = array_map(
+            static fn (MasterComment $comment): array => [
+                'id' => $comment->id->value,
+                'master_id' => $comment->masterId->value,
+                'text' => $comment->text,
+                'created_at' => $comment->createdAt->format(DATE_ATOM),
+            ],
+            $task->comments(),
+        );
 
         return $model;
     }
@@ -118,19 +147,20 @@ final class ProductionTaskMapper
         return $row;
     }
 
-    /** @return list<MasterCommentModel> */
-    public function commentsToPersistence(ProductionTask $task): array
+    /** @return list<PerformedWorkModel> */
+    public function worksToPersistence(ProductionTask $task): array
     {
         $rows = [];
 
-        foreach ($task->comments() as $comment) {
-            $row = new MasterCommentModel();
-            $row->id = $comment->id->value;
+        foreach ($task->works() as $work) {
+            $row = new PerformedWorkModel();
+            $row->id = $work->id->value;
             $row->production_task_id = $task->id()->value;
-            $row->master_id = $comment->masterId->value;
-            $row->text = $comment->text;
-            $row->created_at = $comment->createdAt;
-            $row->order_item_id = $comment->orderItemId?->value;
+            $row->order_item_id = $work->orderItemId->value;
+            $row->equipment_component_id = $work->equipmentComponentId?->value;
+            $row->master_id = $work->masterId->value;
+            $row->description = $work->description;
+            $row->created_at = $work->createdAt;
             $rows[] = $row;
         }
 

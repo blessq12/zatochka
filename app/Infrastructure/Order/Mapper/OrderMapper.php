@@ -98,6 +98,9 @@ final class OrderMapper
             $model->assigned_master_id !== null
                 ? new EntityId((int) $model->assigned_master_id)
                 : null,
+            $model->manager_rework_comment !== null
+                ? (string) $model->manager_rework_comment
+                : null,
         );
     }
 
@@ -114,6 +117,7 @@ final class OrderMapper
         $model->delivery_required = $order->deliveryRequired();
         $model->defects = $order->defects();
         $model->internal_notes = $order->internalNotes();
+        $model->manager_rework_comment = $order->managerReworkComment();
         $model->warranty_source_order_id = $order->warrantySourceOrderId()?->value;
         $model->assigned_master_id = $order->assignedMasterId()?->value;
         $model->estimated_amount = $order->estimatedCost()->amount;

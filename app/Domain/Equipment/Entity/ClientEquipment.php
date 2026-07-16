@@ -106,6 +106,11 @@ final class ClientEquipment extends AggregateRoot
         return array_values($this->components);
     }
 
+    public function findComponent(EntityId $componentId): ?EquipmentComponent
+    {
+        return $this->components[$componentId->value] ?? null;
+    }
+
     /** @return list<RepairHistoryEntry> */
     public function repairHistory(): array
     {

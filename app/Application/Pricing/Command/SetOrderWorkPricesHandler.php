@@ -18,7 +18,7 @@ final readonly class SetOrderWorkPricesHandler
     {
         $order = $this->orders->getById(new OrderId($command->orderId));
 
-        if ($order->status() !== OrderStatus::AwaitingPricing) {
+        if ($order->status() !== OrderStatus::WorksCompleted) {
             throw new DomainException('Prices can only be changed while order is awaiting pricing.');
         }
 
@@ -28,7 +28,7 @@ final readonly class SetOrderWorkPricesHandler
 
         foreach ($command->works as $work) {
             $this->setWorkPrice->handle(new SetWorkPriceCommand(
-                (int) $work['master_comment_id'],
+                (int) $work['performed_work_id'],
                 (string) $work['base_amount'],
                 $command->currency,
             ));

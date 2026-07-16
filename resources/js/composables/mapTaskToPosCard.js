@@ -12,6 +12,8 @@ export function mapTaskToPosCard(task) {
         sort_order: work.sort_order ?? index + 1,
         created_at: work.created_at,
         order_item_id: work.order_item_id ?? work.orderItemId ?? null,
+        equipment_component_id:
+            work.equipment_component_id ?? work.equipmentComponentId ?? null,
     }));
 
     const items = (task.items || []).map((item) => ({
@@ -25,6 +27,12 @@ export function mapTaskToPosCard(task) {
         status: item.status,
         client_equipment_id:
             item.client_equipment_id ?? item.clientEquipmentId ?? null,
+        components: (item.components || []).map((component) => ({
+            id: component.id,
+            name: component.name,
+            serial_number:
+                component.serial_number ?? component.serialNumber ?? null,
+        })),
     }));
 
     const toolsSummary = (task.toolsSummary || task.tools_summary || []).map(
@@ -70,6 +78,8 @@ export function mapTaskToPosCard(task) {
         defects: task.defects,
         problem_description: task.defects,
         internal_notes: task.internalNotes,
+        manager_rework_comment:
+            task.managerReworkComment ?? task.manager_rework_comment ?? null,
         master_internal_comments: (task.masterInternalComments || []).map((comment) => ({
             id: comment.id,
             text: comment.text,

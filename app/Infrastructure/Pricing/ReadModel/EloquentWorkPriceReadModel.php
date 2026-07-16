@@ -6,7 +6,7 @@ use App\Application\Pricing\DTO\WorkPriceDTO;
 use App\Application\Pricing\ReadPort\WorkPriceReadPort;
 use App\Infrastructure\Pricing\Mapper\WorkPriceMapper;
 use App\Infrastructure\Pricing\Model\WorkPriceModel;
-use App\Infrastructure\Workshop\Model\MasterCommentModel;
+use App\Infrastructure\Workshop\Model\PerformedWorkModel;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
 
 final readonly class EloquentWorkPriceReadModel implements WorkPriceReadPort
@@ -15,16 +15,16 @@ final readonly class EloquentWorkPriceReadModel implements WorkPriceReadPort
         private WorkPriceMapper $mapper,
     ) {}
 
-    public function findByMasterCommentId(int $masterCommentId): ?WorkPriceDTO
+    public function findByPerformedWorkId(int $performedWorkId): ?WorkPriceDTO
     {
         $model = WorkPriceModel::query()
-            ->where('master_comment_id', $masterCommentId)
+            ->where('performed_work_id', $performedWorkId)
             ->first();
 
         return $model === null ? null : $this->mapper->toDTO($model);
     }
 
-    public function findByOrderId(int $orderId): array
+    public function findByOrderId(string $orderId): array
     {
         $taskId = ProductionTaskModel::query()
             ->where('order_id', $orderId)
@@ -34,17 +34,16 @@ final readonly class EloquentWorkPriceReadModel implements WorkPriceReadPort
             return [];
         }
 
-        $masterCommentIds = MasterCommentModel::query()
+        $performedWorkIds = PerformedWorkModel::query()
             ->where('production_task_id', $taskId)
-            ->whereNotNull('order_item_id')
             ->pluck('id');
 
-        if ($masterCommentIds->isEmpty()) {
+        if ($performedWorkIds->isEmpty()) {
             return [];
         }
 
         return WorkPriceModel::query()
-            ->whereIn('master_comment_id', $masterCommentIds)
+            ->whereIn('performed_work_id', $performedWorkIds)
             ->get()
             ->map(fn (WorkPriceModel $model): WorkPriceDTO => $this->mapper->toDTO($model))
             ->all();

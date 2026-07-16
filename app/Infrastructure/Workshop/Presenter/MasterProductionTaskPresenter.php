@@ -19,23 +19,28 @@ final class MasterProductionTaskPresenter
         $works = [];
         $masterInternalComments = [];
 
-        foreach ($model->comments as $index => $comment) {
-            if ($comment->order_item_id !== null) {
-                $works[] = [
-                    'id' => (int) $comment->id,
-                    'description' => (string) $comment->text,
-                    'sort_order' => count($works) + 1,
-                    'created_at' => $comment->created_at?->toIso8601String() ?? '',
-                    'order_item_id' => (int) $comment->order_item_id,
-                ];
+        foreach ($model->performedWorks as $index => $work) {
+            $works[] = [
+                'id' => (int) $work->id,
+                'description' => (string) $work->description,
+                'sort_order' => $index + 1,
+                'created_at' => $work->created_at?->toIso8601String() ?? '',
+                'order_item_id' => (int) $work->order_item_id,
+                'equipment_component_id' => $work->equipment_component_id !== null
+                    ? (int) $work->equipment_component_id
+                    : null,
+            ];
+        }
 
+        foreach ($model->master_comments ?? [] as $comment) {
+            if (! is_array($comment)) {
                 continue;
             }
 
             $masterInternalComments[] = [
-                'id' => (int) $comment->id,
-                'text' => (string) $comment->text,
-                'created_at' => $comment->created_at?->toIso8601String() ?? '',
+                'id' => (int) $comment['id'],
+                'text' => (string) $comment['text'],
+                'created_at' => (string) ($comment['created_at'] ?? ''),
             ];
         }
 
@@ -56,6 +61,43 @@ final class MasterProductionTaskPresenter
                 ? max(0, $quantity - $rejectedQuantity)
                 : ($status === 'rejected' ? 0 : 1);
 
+            $components = [];
+            $serialNumbers = [];
+
+            $equipmentModel = $item->equipment;
+            if ($equipmentModel !== null) {
+                foreach ($equipmentModel->components ?? [] as $component) {
+                    $componentName = (string) $component->name;
+                    $serial = $component->serial_number !== null && trim((string) $component->serial_number) !== ''
+                        ? (string) $component->serial_number
+                        : null;
+
+                    $components[] = [
+                        'id' => (int) $component->id,
+                        'name' => $componentName,
+                        'serial_number' => $serial,
+                    ];
+
+                    if ($serial !== null) {
+                        $serialNumbers[$componentName] = $serial;
+                    }
+                }
+
+                $equipmentList[] = [
+                    'id' => (int) $equipmentModel->id,
+                    'name' => (string) $equipmentModel->title,
+                    'brand' => (string) $equipmentModel->brand,
+                    'model' => (string) $equipmentModel->model_name,
+                    'serial_numbers' => $serialNumbers,
+                    'components' => $components,
+                ];
+
+                $label = trim(($equipmentModel->brand ?? '').' '.($equipmentModel->model_name ?? ''));
+                if ($label !== '') {
+                    $subjectParts[] = $label;
+                }
+            }
+
             $items[] = [
                 'id' => (int) $item->id,
                 'tool_name' => $item->tool_name !== null ? (string) $item->tool_name : null,
@@ -67,6 +109,7 @@ final class MasterProductionTaskPresenter
                 'client_equipment_id' => $item->client_equipment_id !== null
                     ? (int) $item->client_equipment_id
                     : null,
+                'components' => $components,
             ];
 
             if ($item->tool_name !== null) {
@@ -78,29 +121,6 @@ final class MasterProductionTaskPresenter
                     'repairable_quantity' => $repairableQuantity,
                 ];
                 $subjectParts[] = (string) $item->tool_name.($quantity !== null ? ' ×'.$quantity : '');
-            }
-
-            $equipmentModel = $item->equipment;
-            if ($equipmentModel !== null) {
-                $serialNumbers = [];
-                foreach ($equipmentModel->components ?? [] as $component) {
-                    if ($component->serial_number !== null && trim((string) $component->serial_number) !== '') {
-                        $serialNumbers[(string) $component->name] = (string) $component->serial_number;
-                    }
-                }
-
-                $equipmentList[] = [
-                    'id' => (int) $equipmentModel->id,
-                    'name' => (string) $equipmentModel->title,
-                    'brand' => (string) $equipmentModel->brand,
-                    'model' => (string) $equipmentModel->model_name,
-                    'serial_numbers' => $serialNumbers,
-                ];
-
-                $label = trim(($equipmentModel->brand ?? '').' '.($equipmentModel->model_name ?? ''));
-                if ($label !== '') {
-                    $subjectParts[] = $label;
-                }
             }
         }
 
@@ -120,6 +140,7 @@ final class MasterProductionTaskPresenter
             (bool) ($order?->delivery_required ?? false),
             $order?->defects !== null ? (string) $order->defects : null,
             $internalNotes,
+            $order?->manager_rework_comment !== null ? (string) $order->manager_rework_comment : null,
             $order?->created_at?->toIso8601String() ?? ($model->created_at?->toIso8601String() ?? ''),
             $client?->name !== null ? (string) $client->name : null,
             $client?->phone !== null ? (string) $client->phone : null,
@@ -140,6 +161,7 @@ final class MasterProductionTaskPresenter
             ProductionStatus::Diagnosed->value, ProductionStatus::InWork->value => 'in_work',
             ProductionStatus::WaitingParts->value => 'waiting_parts',
             ProductionStatus::WorkCompleted->value, ProductionStatus::Completed->value => 'ready',
+            ProductionStatus::Rejected->value => 'cancelled',
             default => $productionStatus,
         };
     }

@@ -5,11 +5,11 @@ namespace App\Application\Workshop\DTO;
 /**
  * Enriched production task card for master POS (one task per order).
  *
- * @param list<array{id:int,description:string,sort_order:int,created_at:string,order_item_id:int}> $works
+ * @param list<array{id:int,description:string,sort_order:int,created_at:string,order_item_id:int,equipment_component_id:?int}> $works
  * @param list<array{id:int,text:string,created_at:string}> $masterInternalComments
- * @param list<array{id:int,tool_name:?string,tool_type:?string,quantity:?int,rejected_quantity:int,repairable_quantity:int,status:string,client_equipment_id:?int}> $items
+ * @param list<array{id:int,tool_name:?string,tool_type:?string,quantity:?int,rejected_quantity:int,repairable_quantity:int,status:string,client_equipment_id:?int,components:list<array{id:int,name:string,serial_number:?string}>}> $items
  * @param list<array{tool_type:?string,name:?string,quantity:?int,rejected_quantity:int,repairable_quantity:int}> $toolsSummary
- * @param list<array{id:int,name:?string,brand:?string,model:?string,serial_numbers:array<string,string>}> $equipmentList
+ * @param list<array{id:int,name:?string,brand:?string,model:?string,serial_numbers:array<string,string>,components:list<array{id:int,name:string,serial_number:?string}>}> $equipmentList
  */
 final readonly class MasterProductionTaskCardDTO
 {
@@ -26,6 +26,7 @@ final readonly class MasterProductionTaskCardDTO
         public bool $deliveryRequired,
         public ?string $defects,
         public ?string $internalNotes,
+        public ?string $managerReworkComment,
         public string $createdAt,
         public ?string $clientName,
         public ?string $clientPhone,

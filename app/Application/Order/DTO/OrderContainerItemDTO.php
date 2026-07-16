@@ -8,6 +8,8 @@ namespace App\Application\Order\DTO;
  *     description:string,
  *     created_at:string,
  *     order_item_id:int,
+ *     equipment_component_id:?int,
+ *     component_name:?string,
  *     price:array{unit_amount:string,line_amount:string,currency:string,calculated:bool}|null
  * }> $works
  * @param list<array{id:int,stock_item_id:int,quantity:string,comment:?string,created_at:?string}> $materials

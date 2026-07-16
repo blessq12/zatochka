@@ -9,7 +9,7 @@ use App\Application\Pricing\ReadPort\WorkPriceReadPort;
 use App\Infrastructure\Inventory\Model\WarehouseMovementModel;
 use App\Infrastructure\Order\Mapper\OrderMapper;
 use App\Infrastructure\Order\Model\OrderModel;
-use App\Infrastructure\Workshop\Model\MasterCommentModel;
+use App\Infrastructure\Workshop\Model\PerformedWorkModel;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
 
 final readonly class EloquentOrderContainerReadModel implements OrderContainerReadPort
@@ -22,7 +22,7 @@ final readonly class EloquentOrderContainerReadModel implements OrderContainerRe
     public function findById(string $orderId): ?OrderContainerDTO
     {
         $model = OrderModel::query()
-            ->with(['items.equipment', 'items.reception', 'client'])
+            ->with(['items.equipment.components', 'items.reception', 'client'])
             ->find($orderId);
 
         if ($model === null) {
@@ -41,9 +41,9 @@ final readonly class EloquentOrderContainerReadModel implements OrderContainerRe
             'master_id' => $task->master_id !== null ? (int) $task->master_id : null,
         ];
 
-        $comments = $task === null
+        $works = $task === null
             ? collect()
-            : MasterCommentModel::query()
+            : PerformedWorkModel::query()
                 ->where('production_task_id', $task->id)
                 ->orderBy('id')
                 ->get();
@@ -53,15 +53,19 @@ final readonly class EloquentOrderContainerReadModel implements OrderContainerRe
             ->orderBy('id')
             ->get();
 
-        $masterInternalComments = $comments
-            ->filter(static fn ($comment) => $comment->order_item_id === null)
-            ->map(static fn ($comment) => [
-                'id' => (int) $comment->id,
-                'text' => (string) $comment->text,
-                'created_at' => $comment->created_at?->toIso8601String() ?? '',
-            ])
-            ->values()
-            ->all();
+        $masterInternalComments = [];
+
+        foreach ($task?->master_comments ?? [] as $comment) {
+            if (! is_array($comment)) {
+                continue;
+            }
+
+            $masterInternalComments[] = [
+                'id' => (int) $comment['id'],
+                'text' => (string) $comment['text'],
+                'created_at' => (string) ($comment['created_at'] ?? ''),
+            ];
+        }
 
         $items = [];
 
@@ -80,13 +84,19 @@ final readonly class EloquentOrderContainerReadModel implements OrderContainerRe
             $allWorksPriced = true;
             $hasWorks = false;
 
-            foreach ($comments as $comment) {
-                if ($comment->order_item_id === null || (int) $comment->order_item_id !== $itemId) {
+            $componentNames = [];
+
+            foreach ($item->equipment?->components ?? [] as $component) {
+                $componentNames[(int) $component->id] = (string) $component->name;
+            }
+
+            foreach ($works as $work) {
+                if ((int) $work->order_item_id !== $itemId) {
                     continue;
                 }
 
                 $hasWorks = true;
-                $workPrice = $this->workPrices->findByMasterCommentId((int) $comment->id);
+                $workPrice = $this->workPrices->findByPerformedWorkId((int) $work->id);
                 $price = null;
 
                 if ($workPrice !== null && $workPrice->calculated) {
@@ -103,11 +113,19 @@ final readonly class EloquentOrderContainerReadModel implements OrderContainerRe
                     $allWorksPriced = false;
                 }
 
+                $componentId = $work->equipment_component_id !== null
+                    ? (int) $work->equipment_component_id
+                    : null;
+
                 $itemWorks[] = [
-                    'id' => (int) $comment->id,
-                    'description' => (string) $comment->text,
-                    'created_at' => $comment->created_at?->toIso8601String() ?? '',
-                    'order_item_id' => (int) $comment->order_item_id,
+                    'id' => (int) $work->id,
+                    'description' => (string) $work->description,
+                    'created_at' => $work->created_at?->toIso8601String() ?? '',
+                    'order_item_id' => (int) $work->order_item_id,
+                    'equipment_component_id' => $componentId,
+                    'component_name' => $componentId !== null
+                        ? ($componentNames[$componentId] ?? null)
+                        : null,
                     'price' => $price,
                 ];
             }

@@ -65,4 +65,9 @@ final class WorkExecution
     {
         return $this->completedAt !== null;
     }
+
+    public function reopen(): void
+    {
+        $this->completedAt = null;
+    }
 }

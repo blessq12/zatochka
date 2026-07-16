@@ -51,8 +51,8 @@ export const POS_ORDER_TABS = {
     ready: {
         routeName: "pos.orders.ready",
         apiStatus: "completed",
-        label: "Готово к выдаче",
-        emptyMessage: "Заказов, готовых к выдаче, нет",
+        label: "Выполнено",
+        emptyMessage: "Выполненных заказов нет",
         countKey: "ready",
         primaryAction: {
             text: "Просмотр",

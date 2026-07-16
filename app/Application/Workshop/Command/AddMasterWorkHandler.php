@@ -2,10 +2,11 @@
 
 namespace App\Application\Workshop\Command;
 
+use App\Application\Shared\DomainEventPublisher;
+use App\Application\Workshop\WorkAttachment\WorkAttachmentStrategyResolver;
 use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Order\VO\OrderId;
+use App\Domain\Workshop\Entity\PerformedWork;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
-use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
 
 final readonly class AddMasterWorkHandler
@@ -13,34 +14,26 @@ final readonly class AddMasterWorkHandler
     public function __construct(
         private ProductionTaskRepository $tasks,
         private OrderRepository $orders,
-        private AddMasterCommentHandler $addComment,
+        private WorkAttachmentStrategyResolver $workAttachment,
+        private DomainEventPublisher $events,
     ) {}
 
     public function handle(AddMasterWorkCommand $command): void
     {
         $task = $this->tasks->getById(new EntityId($command->productionTaskId));
         $order = $this->orders->getById($task->orderId());
+        $target = $this->workAttachment
+            ->for($order)
+            ->resolveTarget($order, $command->orderItemId, $command->equipmentComponentId);
 
-        $orderItem = null;
-
-        foreach ($order->items() as $item) {
-            if ($item->id()->value === $command->orderItemId) {
-                $orderItem = $item;
-
-                break;
-            }
-        }
-
-        if ($orderItem === null) {
-            throw new DomainException('Work must be linked to an order item.');
-        }
-
-        $this->addComment->handle(new AddMasterCommentCommand(
-            $command->productionTaskId,
-            $command->workId,
-            $command->masterId,
+        $task->addWork(new PerformedWork(
+            new EntityId($command->workId),
+            $target->orderItemId,
+            new EntityId($command->masterId),
             $command->text,
-            $command->orderItemId,
+            $target->equipmentComponentId,
         ));
+        $this->tasks->save($task);
+        $this->events->publish($task->pullDomainEvents());
     }
 }

@@ -26,10 +26,10 @@ final readonly class EloquentWorkPriceRepository implements WorkPriceRepository
         return $this->mapper->toDomain($model);
     }
 
-    public function findByMasterCommentId(EntityId $masterCommentId): ?WorkPrice
+    public function findByPerformedWorkId(EntityId $performedWorkId): ?WorkPrice
     {
         $model = WorkPriceModel::query()
-            ->where('master_comment_id', $masterCommentId->value)
+            ->where('performed_work_id', $performedWorkId->value)
             ->first();
 
         return $model === null ? null : $this->mapper->toDomain($model);
@@ -37,6 +37,29 @@ final readonly class EloquentWorkPriceRepository implements WorkPriceRepository
 
     public function save(WorkPrice $workPrice): void
     {
-        $this->mapper->toPersistence($workPrice)->save();
+        $payload = $this->mapper->toPersistence($workPrice);
+
+        WorkPriceModel::query()->updateOrCreate(
+            ['id' => $payload->id],
+            [
+                'performed_work_id' => $payload->performed_work_id,
+                'order_item_id' => $payload->order_item_id,
+                'base_amount' => $payload->base_amount,
+                'currency' => $payload->currency,
+                'final_amount' => $payload->final_amount,
+                'calculated' => $payload->calculated,
+            ],
+        );
+    }
+
+    public function deleteByPerformedWorkIds(array $performedWorkIds): void
+    {
+        if ($performedWorkIds === []) {
+            return;
+        }
+
+        WorkPriceModel::query()
+            ->whereIn('performed_work_id', $performedWorkIds)
+            ->delete();
     }
 }

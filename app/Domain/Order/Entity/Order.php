@@ -3,6 +3,7 @@
 namespace App\Domain\Order\Entity;
 
 use App\Domain\Order\Event\ClientAssigned;
+use App\Domain\Order\Event\OrderReturnedToMaster;
 use App\Domain\Order\Event\OrderCancelled;
 use App\Domain\Order\Event\OrderClosed;
 use App\Domain\Order\Event\OrderCreated;
@@ -51,6 +52,7 @@ final class Order extends AggregateRoot
         private readonly ?string $internalNotes,
         private readonly ?OrderId $warrantySourceOrderId = null,
         private ?EntityId $assignedMasterId = null,
+        private ?string $managerReworkComment = null,
         OrderStatus $status = OrderStatus::Created,
     ) {
         if ($items === []) {
@@ -143,6 +145,7 @@ final class Order extends AggregateRoot
         ?string $internalNotes = null,
         ?OrderId $warrantySourceOrderId = null,
         ?EntityId $assignedMasterId = null,
+        ?string $managerReworkComment = null,
     ): self {
         return new self(
             $id,
@@ -159,6 +162,7 @@ final class Order extends AggregateRoot
             $internalNotes,
             $warrantySourceOrderId,
             $assignedMasterId,
+            $managerReworkComment,
             $status,
         );
     }
@@ -226,6 +230,11 @@ final class Order extends AggregateRoot
     public function assignedMasterId(): ?EntityId
     {
         return $this->assignedMasterId;
+    }
+
+    public function managerReworkComment(): ?string
+    {
+        return $this->managerReworkComment;
     }
 
     public function assignMaster(EntityId $masterId): void
@@ -367,24 +376,37 @@ final class Order extends AggregateRoot
             return;
         }
 
-        if ($this->status->isTerminal() || ! $this->status->canTransitionTo(OrderStatus::InProgress)) {
-            return;
-        }
-
-        $this->status = OrderStatus::InProgress;
+        $this->assertNotTerminal();
+        $this->transitionTo(OrderStatus::InProgress);
     }
 
-    public function markAwaitingPricing(): void
+    public function markWorksCompleted(): void
     {
-        if ($this->status === OrderStatus::AwaitingPricing) {
+        if ($this->status === OrderStatus::WorksCompleted) {
             return;
         }
 
-        if ($this->status->isTerminal() || ! $this->status->canTransitionTo(OrderStatus::AwaitingPricing)) {
-            return;
+        $this->assertNotTerminal();
+        $this->transitionTo(OrderStatus::WorksCompleted);
+    }
+
+    public function returnToMasterWork(string $reason): void
+    {
+        $this->assertNotTerminal();
+
+        if ($this->status !== OrderStatus::WorksCompleted) {
+            throw new DomainException('Order can be returned to master only from WorksCompleted status.');
         }
 
-        $this->status = OrderStatus::AwaitingPricing;
+        $normalized = trim($reason);
+
+        if ($normalized === '') {
+            throw new DomainException('Rework comment is required.');
+        }
+
+        $this->managerReworkComment = $normalized;
+        $this->transitionTo(OrderStatus::InProgress);
+        $this->record(new OrderReturnedToMaster($this->id, $normalized));
     }
 
     public function markReady(): void

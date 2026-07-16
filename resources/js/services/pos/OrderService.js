@@ -94,11 +94,16 @@ export const orderService = {
         return mapTaskToPosCard(response.data.data);
     },
 
-    async addWork(taskId, description, orderItemId) {
-        const response = await axios.post(`${TASKS_BASE}/${taskId}/works`, {
-            text: description,
-            orderItemId,
-        });
+    async addWork(taskId, description, { orderItemId = null, equipmentComponentId = null } = {}) {
+        const payload = { text: description };
+
+        if (equipmentComponentId != null) {
+            payload.equipmentComponentId = equipmentComponentId;
+        } else if (orderItemId != null) {
+            payload.orderItemId = orderItemId;
+        }
+
+        const response = await axios.post(`${TASKS_BASE}/${taskId}/works`, payload);
         return mapTaskToPosCard(response.data.data);
     },
 
@@ -122,7 +127,7 @@ export const orderService = {
         }
 
         const response = await axios.delete(
-            `${TASKS_BASE}/${taskId}/comments/${work.id}`
+            `${TASKS_BASE}/${taskId}/works/${work.id}`
         );
         return mapTaskToPosCard(response.data.data);
     },
@@ -132,7 +137,7 @@ export const orderService = {
             new: "Новый",
             in_work: "В работе",
             waiting_parts: "Ожидание запчастей",
-            ready: "Готов к выдаче",
+            ready: "Выполнено",
             issued: "Выдан",
             cancelled: "Отменен",
         };

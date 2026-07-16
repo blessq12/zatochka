@@ -21,9 +21,6 @@ final readonly class AddMasterCommentHandler
             new EntityId($command->commentId),
             new EntityId($command->masterId),
             $command->text,
-            orderItemId: $command->orderItemId !== null
-                ? new EntityId($command->orderItemId)
-                : null,
         ));
         $this->tasks->save($task);
         $this->events->publish($task->pullDomainEvents());

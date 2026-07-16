@@ -21,8 +21,9 @@ enum ProductionStatus: string
             self::Diagnosed => in_array($next, [self::InWork, self::Rejected], true),
             self::InWork => in_array($next, [self::WaitingParts, self::WorkCompleted, self::Rejected], true),
             self::WaitingParts => in_array($next, [self::InWork, self::Rejected], true),
-            self::WorkCompleted => $next === self::Completed,
-            self::Rejected, self::Completed => false,
+            self::WorkCompleted => in_array($next, [self::Completed, self::Rejected, self::InWork], true),
+            self::Completed => in_array($next, [self::Rejected, self::InWork], true),
+            self::Rejected => false,
         };
     }
 

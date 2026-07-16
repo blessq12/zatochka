@@ -16,7 +16,7 @@ final class WorkPriceModel extends Model
 
     protected $fillable = [
         'id',
-        'master_comment_id',
+        'performed_work_id',
         'order_item_id',
         'base_amount',
         'currency',

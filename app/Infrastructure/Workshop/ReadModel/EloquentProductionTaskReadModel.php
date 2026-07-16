@@ -106,7 +106,7 @@ final readonly class EloquentProductionTaskReadModel implements ProductionTaskRe
     private function cardQuery()
     {
         return ProductionTaskModel::query()->with([
-            'comments',
+            'performedWorks',
             'order.client',
             'order.items.equipment.components',
         ]);

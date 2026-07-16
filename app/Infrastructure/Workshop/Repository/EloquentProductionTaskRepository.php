@@ -8,7 +8,7 @@ use App\Domain\Workshop\Repository\ProductionTaskRepository;
 use App\Domain\Workshop\VO\ProductionStatus;
 use App\Infrastructure\Workshop\Mapper\ProductionTaskMapper;
 use App\Infrastructure\Workshop\Model\DiagnosisModel;
-use App\Infrastructure\Workshop\Model\MasterCommentModel;
+use App\Infrastructure\Workshop\Model\PerformedWorkModel;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
 use App\Infrastructure\Workshop\Model\WorkExecutionModel;
 use App\Shared\Domain\DomainException;
@@ -30,21 +30,43 @@ final readonly class EloquentProductionTaskRepository implements ProductionTaskR
 
             DiagnosisModel::query()->where('production_task_id', $task->id()->value)->delete();
             WorkExecutionModel::query()->where('production_task_id', $task->id()->value)->delete();
-            MasterCommentModel::query()->where('production_task_id', $task->id()->value)->delete();
 
             $this->mapper->diagnosisToPersistence($task)?->save();
             $this->mapper->workToPersistence($task)?->save();
 
-            foreach ($this->mapper->commentsToPersistence($task) as $row) {
-                $row->save();
+            $keepIds = [];
+
+            foreach ($this->mapper->worksToPersistence($task) as $row) {
+                $keepIds[] = (int) $row->id;
+
+                PerformedWorkModel::query()->updateOrCreate(
+                    ['id' => $row->id],
+                    [
+                        'production_task_id' => $row->production_task_id,
+                        'order_item_id' => $row->order_item_id,
+                        'equipment_component_id' => $row->equipment_component_id,
+                        'master_id' => $row->master_id,
+                        'description' => $row->description,
+                        'created_at' => $row->created_at,
+                    ],
+                );
             }
+
+            $deleteQuery = PerformedWorkModel::query()
+                ->where('production_task_id', $task->id()->value);
+
+            if ($keepIds !== []) {
+                $deleteQuery->whereNotIn('id', $keepIds);
+            }
+
+            $deleteQuery->delete();
         });
     }
 
     public function findById(EntityId $id): ?ProductionTask
     {
         $model = ProductionTaskModel::query()
-            ->with(['diagnosis', 'workExecution', 'comments'])
+            ->with(['diagnosis', 'workExecution', 'performedWorks'])
             ->find($id->value);
 
         return $model === null ? null : $this->mapper->toDomain($model);
@@ -59,7 +81,7 @@ final readonly class EloquentProductionTaskRepository implements ProductionTaskR
     public function findByOrderId(OrderId $orderId): ?ProductionTask
     {
         $model = ProductionTaskModel::query()
-            ->with(['diagnosis', 'workExecution', 'comments'])
+            ->with(['diagnosis', 'workExecution', 'performedWorks'])
             ->where('order_id', $orderId->value)
             ->first();
 
@@ -69,7 +91,7 @@ final readonly class EloquentProductionTaskRepository implements ProductionTaskR
     public function listQueued(): array
     {
         return ProductionTaskModel::query()
-            ->with(['diagnosis', 'workExecution', 'comments'])
+            ->with(['diagnosis', 'workExecution', 'performedWorks'])
             ->where('status', ProductionStatus::Queued->value)
             ->get()
             ->map(fn ($model) => $this->mapper->toDomain($model))

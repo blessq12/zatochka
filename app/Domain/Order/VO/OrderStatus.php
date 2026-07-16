@@ -8,7 +8,7 @@ enum OrderStatus: string
     case MasterAssigned = 'master_assigned';
     case ReceptionCompleted = 'reception_completed';
     case InProgress = 'in_progress';
-    case AwaitingPricing = 'awaiting_pricing';
+    case WorksCompleted = 'works_completed';
     case Ready = 'ready';
     case Cancelled = 'cancelled';
     case Closed = 'closed';
@@ -20,8 +20,8 @@ enum OrderStatus: string
             self::Created => in_array($next, [self::MasterAssigned, self::ReceptionCompleted, self::Cancelled], true),
             self::MasterAssigned => in_array($next, [self::InProgress, self::Cancelled], true),
             self::ReceptionCompleted => in_array($next, [self::InProgress, self::Cancelled], true),
-            self::InProgress => in_array($next, [self::AwaitingPricing, self::Cancelled], true),
-            self::AwaitingPricing => in_array($next, [self::Ready, self::Cancelled], true),
+            self::InProgress => in_array($next, [self::WorksCompleted, self::Cancelled], true),
+            self::WorksCompleted => in_array($next, [self::Ready, self::InProgress, self::Cancelled], true),
             self::Ready => in_array($next, [self::Issued, self::Closed, self::Cancelled], true),
             self::Cancelled, self::Closed, self::Issued => false,
         };

@@ -10,13 +10,13 @@ return new class extends Migration
     {
         Schema::create('work_prices', function (Blueprint $table): void {
             $table->unsignedBigInteger('id')->primary();
-            $table->unsignedBigInteger('master_comment_id')->unique();
+            $table->unsignedBigInteger('performed_work_id')->unique();
             $table->unsignedBigInteger('order_item_id');
             $table->decimal('base_amount', 12, 2);
             $table->string('currency', 3)->default('RUB');
             $table->decimal('final_amount', 12, 2)->nullable();
             $table->boolean('calculated')->default(false);
-            $table->foreign('master_comment_id')->references('id')->on('master_comments')->cascadeOnDelete();
+            $table->foreign('performed_work_id')->references('id')->on('performed_works')->cascadeOnDelete();
             $table->index('order_item_id');
         });
     }

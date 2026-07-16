@@ -6,7 +6,7 @@ final readonly class WorkPriceDTO
 {
     public function __construct(
         public int $id,
-        public int $masterCommentId,
+        public int $performedWorkId,
         public int $orderItemId,
         public string $baseAmount,
         public string $currency,

@@ -10,11 +10,13 @@ return new class extends Migration
     {
         Schema::create('production_tasks', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
-            $table->unsignedBigInteger('order_item_id')->unique();
+            $table->string('order_id', 32)->unique();
             $table->string('status');
             $table->unsignedBigInteger('master_id')->nullable();
+            $table->json('master_comments')->nullable();
             $table->timestamps();
             $table->index('status');
+            $table->foreign('order_id')->references('id')->on('orders')->cascadeOnDelete();
         });
 
         Schema::create('diagnoses', function (Blueprint $table) {
@@ -35,19 +37,26 @@ return new class extends Migration
             $table->foreign('production_task_id')->references('id')->on('production_tasks')->cascadeOnDelete();
         });
 
-        Schema::create('master_comments', function (Blueprint $table) {
+        Schema::create('performed_works', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
             $table->unsignedBigInteger('production_task_id');
+            $table->unsignedBigInteger('order_item_id');
+            $table->unsignedBigInteger('equipment_component_id')->nullable();
             $table->unsignedBigInteger('master_id');
-            $table->text('text');
+            $table->text('description');
             $table->timestamp('created_at');
             $table->foreign('production_task_id')->references('id')->on('production_tasks')->cascadeOnDelete();
+            $table->foreign('order_item_id')->references('id')->on('order_items')->cascadeOnDelete();
+            $table->foreign('equipment_component_id')->references('id')->on('equipment_components')->nullOnDelete();
+            $table->index('order_item_id');
+            $table->index('equipment_component_id');
+            $table->index('production_task_id');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('master_comments');
+        Schema::dropIfExists('performed_works');
         Schema::dropIfExists('work_executions');
         Schema::dropIfExists('diagnoses');
         Schema::dropIfExists('production_tasks');

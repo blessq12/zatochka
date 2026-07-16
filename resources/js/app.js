@@ -16,6 +16,7 @@ import "./bootstrap";
 import App from "./App.vue";
 import router from "./router";
 import themeTogglerService from "./services/themeTogglerService";
+import { usePosStore } from "./stores/posStore.js";
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -25,19 +26,38 @@ import themeTogglerService from "./services/themeTogglerService";
 
 themeTogglerService.init();
 
-// Настройка axios interceptor для обработки 403 ошибок
+const app = createApp(App);
+const pinia = createPinia();
+const posStore = usePosStore(pinia);
+let isHandlingPosUnauthorized = false;
+
+// Глобальная обработка ошибок API для клиентской и POS частей.
 axios.interceptors.response.use(
     (response) => response,
-    (error) => {
-        if (error.response?.status === 403) {
+    async (error) => {
+        const status = error.response?.status;
+        const url = error.config?.url || "";
+        const isPosApiRequest =
+            url.startsWith("/api/v1/") && !url.startsWith("/api/v1/auth/login");
+
+        if (status === 401 && isPosApiRequest && !isHandlingPosUnauthorized) {
+            isHandlingPosUnauthorized = true;
+            posStore.logout();
+
+            try {
+                await router.push({ name: "pos" });
+            } finally {
+                isHandlingPosUnauthorized = false;
+            }
+        }
+
+        if (status === 403) {
             router.push({ name: "Forbidden" });
         }
+
         return Promise.reject(error);
     }
 );
-
-const app = createApp(App);
-const pinia = createPinia();
 
 app.directive("maska", vMaska);
 app.use(pinia);

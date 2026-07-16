@@ -9,6 +9,7 @@ final readonly class AddMasterWorkCommand
         public int $workId,
         public int $masterId,
         public string $text,
-        public int $orderItemId,
+        public ?int $orderItemId = null,
+        public ?int $equipmentComponentId = null,
     ) {}
 }

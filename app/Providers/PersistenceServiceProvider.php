@@ -24,6 +24,7 @@ use App\Domain\Feedback\Repository\ReviewRepository;
 use App\Domain\Finance\Repository\CashOperationRepository;
 use App\Domain\Finance\Repository\PaymentRepository;
 use App\Domain\Inventory\Repository\StockItemRepository;
+use App\Domain\Order\Event\OrderCancelled;
 use App\Domain\Order\Event\OrderMasterAssigned;
 use App\Domain\Order\Event\ReceptionCompleted;
 use App\Domain\Order\Repository\OrderRepository;
@@ -46,8 +47,7 @@ use App\Infrastructure\Finance\Repository\EloquentCashOperationRepository;
 use App\Infrastructure\Finance\Repository\EloquentPaymentRepository;
 use App\Infrastructure\Inventory\ReadModel\EloquentStockReadModel;
 use App\Infrastructure\Inventory\Repository\EloquentStockItemRepository;
-use App\Infrastructure\Order\Listener\FinalizeOrderItemsOnProductionCompleted;
-use App\Infrastructure\Order\Listener\MarkOrderAwaitingPricingWhenAllProductionCompleted;
+use App\Infrastructure\Order\Listener\MarkOrderWorksCompletedOnProductionCompleted;
 use App\Infrastructure\Order\Listener\MarkOrderInProgressOnWorkStarted;
 use App\Infrastructure\Order\Port\RegisterClientProvisioningAdapter;
 use App\Infrastructure\Order\Port\RegisterEquipmentProvisioningAdapter;
@@ -60,6 +60,7 @@ use App\Infrastructure\Pricing\ReadModel\EloquentWorkPriceReadModel;
 use App\Infrastructure\Pricing\Repository\EloquentEstimateRepository;
 use App\Infrastructure\Pricing\Repository\EloquentWorkPriceRepository;
 use App\Infrastructure\Shared\Event\LaravelDomainEventPublisher;
+use App\Infrastructure\Workshop\Listener\CancelProductionTaskOnOrderCancelled;
 use App\Infrastructure\Workshop\Listener\OpenAndAssignTasksOnOrderMasterAssigned;
 use App\Infrastructure\Workshop\Listener\OpenProductionTasksOnReceptionCompleted;
 use App\Infrastructure\Workshop\ReadModel\EloquentProductionTaskReadModel;
@@ -112,8 +113,8 @@ final class PersistenceServiceProvider extends ServiceProvider
     {
         Event::listen(ReceptionCompleted::class, OpenProductionTasksOnReceptionCompleted::class);
         Event::listen(OrderMasterAssigned::class, OpenAndAssignTasksOnOrderMasterAssigned::class);
+        Event::listen(OrderCancelled::class, CancelProductionTaskOnOrderCancelled::class);
         Event::listen(WorkStarted::class, MarkOrderInProgressOnWorkStarted::class);
-        Event::listen(ProductionCompleted::class, FinalizeOrderItemsOnProductionCompleted::class);
-        Event::listen(ProductionCompleted::class, MarkOrderAwaitingPricingWhenAllProductionCompleted::class);
+        Event::listen(ProductionCompleted::class, MarkOrderWorksCompletedOnProductionCompleted::class);
     }
 }

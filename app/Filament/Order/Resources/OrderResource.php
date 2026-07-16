@@ -12,6 +12,8 @@ use App\Application\Order\Command\IssueOrderCommand;
 use App\Application\Order\Command\IssueOrderHandler;
 use App\Application\Order\Command\MarkOrderReadyCommand;
 use App\Application\Order\Command\MarkOrderReadyHandler;
+use App\Application\Order\Command\ReturnOrderToMasterCommand;
+use App\Application\Order\Command\ReturnOrderToMasterHandler;
 use App\Application\Order\DTO\OrderContainerItemDTO;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Application\Inventory\Command\WriteOffMaterialCommand;
@@ -124,8 +126,8 @@ class OrderResource extends DomainResource
             OrderStatus::MasterAssigned->value => 'Мастер назначен',
             OrderStatus::ReceptionCompleted->value => 'Приёмка завершена',
             OrderStatus::InProgress->value => 'В работе',
-            OrderStatus::AwaitingPricing->value => 'Ожидает оценки',
-            OrderStatus::Ready->value => 'Готов',
+            OrderStatus::WorksCompleted->value => 'Работы завершены',
+            OrderStatus::Ready->value => 'Готов к выдаче',
             OrderStatus::Cancelled->value => 'Отменён',
             OrderStatus::Closed->value => 'Закрыт',
             OrderStatus::Issued->value => 'Выдан',
@@ -404,7 +406,7 @@ class OrderResource extends DomainResource
 
     /**
      * @return list<array{
-     *     master_comment_id: int,
+     *     performed_work_id: int,
      *     order_item_id: int,
      *     position_label: string,
      *     work_description: string,
@@ -428,10 +430,19 @@ class OrderResource extends DomainResource
             }
 
             foreach ($item->works as $work) {
+                $positionLabel = static::orderContainerItemLabel($item);
+                $componentName = isset($work['component_name']) && is_string($work['component_name'])
+                    ? trim($work['component_name'])
+                    : '';
+
+                if ($componentName !== '') {
+                    $positionLabel .= ' · '.$componentName;
+                }
+
                 $rows[] = [
-                    'master_comment_id' => (int) $work['id'],
+                    'performed_work_id' => (int) $work['id'],
                     'order_item_id' => (int) $item->id,
-                    'position_label' => static::orderContainerItemLabel($item),
+                    'position_label' => $positionLabel,
                     'work_description' => (string) $work['description'],
                     'repairable_quantity' => $item->repairableQuantity,
                     'base_amount' => $work['price']['unit_amount'] ?? null,
@@ -470,14 +481,6 @@ class OrderResource extends DomainResource
             $repairableQuantity = (string) $item->repairableQuantity;
 
             if ($item->works === []) {
-                $rows[] = [
-                    'position' => $position,
-                    'description' => '—',
-                    'repairable_quantity' => $repairableQuantity,
-                    'unit_price' => 'не указана',
-                    'line_total' => 'не указана',
-                ];
-
                 continue;
             }
 
@@ -494,8 +497,17 @@ class OrderResource extends DomainResource
                     $lineTotal = static::formatMoney((string) $lineAmount, $currency);
                 }
 
+                $workPosition = $position;
+                $componentName = isset($work['component_name']) && is_string($work['component_name'])
+                    ? trim($work['component_name'])
+                    : '';
+
+                if ($componentName !== '') {
+                    $workPosition .= ' · '.$componentName;
+                }
+
                 $rows[] = [
-                    'position' => $position,
+                    'position' => $workPosition,
                     'description' => (string) $work['description'],
                     'repairable_quantity' => $index === 0 ? $repairableQuantity : '—',
                     'unit_price' => $unitPrice,
@@ -613,7 +625,7 @@ class OrderResource extends DomainResource
                                     OrderStatus::Cancelled->value => 'danger',
                                     OrderStatus::Issued->value, OrderStatus::Closed->value => 'success',
                                     OrderStatus::Ready->value => 'info',
-                                    OrderStatus::AwaitingPricing->value => 'warning',
+                                    OrderStatus::WorksCompleted->value => 'warning',
                                     OrderStatus::InProgress->value,
                                     OrderStatus::MasterAssigned->value,
                                     OrderStatus::ReceptionCompleted->value => 'warning',
@@ -624,7 +636,7 @@ class OrderResource extends DomainResource
                                     OrderStatus::Issued->value => Heroicon::OutlinedHandRaised,
                                     OrderStatus::Closed->value => Heroicon::OutlinedCheckCircle,
                                     OrderStatus::Ready->value => Heroicon::OutlinedCheckBadge,
-                                    OrderStatus::AwaitingPricing->value => Heroicon::OutlinedBanknotes,
+                                    OrderStatus::WorksCompleted->value => Heroicon::OutlinedBanknotes,
                                     OrderStatus::InProgress->value => Heroicon::OutlinedCog6Tooth,
                                     OrderStatus::MasterAssigned->value => Heroicon::OutlinedUserPlus,
                                     OrderStatus::ReceptionCompleted->value => Heroicon::OutlinedInboxArrowDown,
@@ -868,14 +880,21 @@ class OrderResource extends DomainResource
                     ->icon(Heroicon::OutlinedChatBubbleLeftRight)
                     ->columnSpanFull()
                     ->schema([
-                        TextEntry::make('id')
+                        TextEntry::make('master_internal_comments')
                             ->label('Комментарий')
-                            ->formatStateUsing(
-                                fn (string $state, OrderModel $record): string => static::formatMasterInternalComments($record)
+                            ->state(
+                                fn (OrderModel $record): string => static::formatMasterInternalComments($record)
                                     ?? 'Мастер не оставил комментарий'
                             )
                             ->placeholder('Мастер не оставил комментарий')
                             ->prose()
+                            ->columnSpanFull(),
+                        TextEntry::make('manager_rework_comment')
+                            ->label('Возврат на доработку')
+                            ->visible(fn (OrderModel $record): bool => filled($record->manager_rework_comment))
+                            ->prose()
+                            ->color('warning')
+                            ->icon(Heroicon::OutlinedArrowUturnLeft)
                             ->columnSpanFull(),
                     ]),
                 Section::make('Работы')
@@ -1042,7 +1061,7 @@ class OrderResource extends DomainResource
                         OrderStatus::Issued->value, OrderStatus::Closed->value => 'success',
                         OrderStatus::Ready->value => 'info',
                         OrderStatus::InProgress->value,
-                        OrderStatus::AwaitingPricing->value,
+                        OrderStatus::WorksCompleted->value,
                         OrderStatus::MasterAssigned->value,
                         OrderStatus::ReceptionCompleted->value => 'warning',
                         default => 'gray',
@@ -1097,13 +1116,14 @@ class OrderResource extends DomainResource
                     }
                 }),
             Action::make('setOrderPrices')
-                ->label('Оценить работы')
+                ->label('Назначить цены')
                 ->icon(Heroicon::OutlinedBanknotes)
                 ->color('warning')
-                ->visible(fn(OrderModel $record): bool => $record->status === OrderStatus::AwaitingPricing->value
-                    && static::buildWorkPricesFormDefaults($record) !== [])
+                ->visible(fn(OrderModel $record): bool => $record->status === OrderStatus::WorksCompleted->value)
                 ->modalHeading('Стоимость выполненных работ')
-                ->modalDescription('Укажите цену за каждую работу по позиции. Итог по работе = цена × количество к выдаче по позиции.')
+                ->modalDescription(fn (OrderModel $record): string => $record->service_type === 'repair'
+                    ? 'Укажите цену за каждую работу по элементу оборудования.'
+                    : 'Укажите цену за каждую работу по позиции. Итог по работе = цена × количество к выдаче по позиции.')
                 ->fillForm(fn(OrderModel $record): array => [
                     'work_prices' => static::buildWorkPricesFormDefaults($record),
                 ])
@@ -1111,10 +1131,10 @@ class OrderResource extends DomainResource
                     Repeater::make('work_prices')
                         ->label('')
                         ->schema([
-                            Hidden::make('master_comment_id'),
+                            Hidden::make('performed_work_id'),
                             Hidden::make('order_item_id'),
                             TextInput::make('position_label')
-                                ->label('Позиция')
+                                ->label($record->service_type === 'repair' ? 'Элемент' : 'Позиция')
                                 ->disabled()
                                 ->dehydrated(false)
                                 ->columnSpan(2),
@@ -1129,9 +1149,10 @@ class OrderResource extends DomainResource
                                 ->dehydrated(false)
                                 ->numeric()
                                 ->suffix('шт.')
+                                ->visible(fn (): bool => $record->service_type !== 'repair')
                                 ->columnSpan(1),
                             TextInput::make('base_amount')
-                                ->label('Цена работы за ед.')
+                                ->label($record->service_type === 'repair' ? 'Цена работы' : 'Цена работы за ед.')
                                 ->numeric()
                                 ->required()
                                 ->minValue(0)
@@ -1140,8 +1161,10 @@ class OrderResource extends DomainResource
                                 ->columnSpan(1),
                             Placeholder::make('work_line_total')
                                 ->label('Итого по работе')
-                                ->content(function (Get $get): string {
-                                    $quantity = max(1, (int) $get('repairable_quantity'));
+                                ->content(function (Get $get) use ($record): string {
+                                    $quantity = $record->service_type === 'repair'
+                                        ? 1
+                                        : max(1, (int) $get('repairable_quantity'));
                                     $unitAmount = (float) ($get('base_amount') ?? 0);
 
                                     if ($unitAmount <= 0) {
@@ -1159,11 +1182,20 @@ class OrderResource extends DomainResource
                 ])
                 ->action(function (OrderModel $record, array $data): void {
                     try {
+                        if (static::buildWorkPricesFormDefaults($record) === []) {
+                            Notification::make()
+                                ->title('Нет выполненных работ для оценки')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
                         app(SetOrderWorkPricesHandler::class)->handle(new SetOrderWorkPricesCommand(
                             (string) $record->id,
                             array_map(
                                 static fn(array $row): array => [
-                                    'master_comment_id' => (int) $row['master_comment_id'],
+                                    'performed_work_id' => (int) $row['performed_work_id'],
                                     'base_amount' => (string) $row['base_amount'],
                                 ],
                                 $data['work_prices'] ?? [],
@@ -1179,7 +1211,7 @@ class OrderResource extends DomainResource
                 ->icon(Heroicon::OutlinedArchiveBox)
                 ->color('gray')
                 ->visible(fn(OrderModel $record): bool => in_array($record->status, [
-                    OrderStatus::AwaitingPricing->value,
+                    OrderStatus::WorksCompleted->value,
                     OrderStatus::InProgress->value,
                 ], true))
                 ->form(fn(OrderModel $record): array => [
@@ -1237,12 +1269,35 @@ class OrderResource extends DomainResource
                 ->label('Готов к выдаче')
                 ->icon(Heroicon::OutlinedCheckBadge)
                 ->color('success')
-                ->visible(fn(OrderModel $record): bool => $record->status === OrderStatus::AwaitingPricing->value)
+                ->visible(fn(OrderModel $record): bool => $record->status === OrderStatus::WorksCompleted->value)
                 ->requiresConfirmation()
                 ->action(function (OrderModel $record): void {
                     try {
                         app(MarkOrderReadyHandler::class)->handle(new MarkOrderReadyCommand((string) $record->id));
                         Notification::make()->title('Заказ готов к выдаче')->success()->send();
+                    } catch (DomainException $exception) {
+                        Notification::make()->title($exception->getMessage())->danger()->send();
+                    }
+                }),
+            Action::make('returnToMaster')
+                ->label('Вернуть мастеру')
+                ->icon(Heroicon::OutlinedArrowUturnLeft)
+                ->color('danger')
+                ->visible(fn(OrderModel $record): bool => $record->status === OrderStatus::WorksCompleted->value)
+                ->modalHeading('Вернуть заказ мастеру на доработку')
+                ->form([
+                    TextInput::make('reason')
+                        ->label('Комментарий для мастера')
+                        ->required()
+                        ->maxLength(2000),
+                ])
+                ->action(function (OrderModel $record, array $data): void {
+                    try {
+                        app(ReturnOrderToMasterHandler::class)->handle(new ReturnOrderToMasterCommand(
+                            (string) $record->id,
+                            (string) $data['reason'],
+                        ));
+                        Notification::make()->title('Заказ возвращён мастеру')->success()->send();
                     } catch (DomainException $exception) {
                         Notification::make()->title($exception->getMessage())->danger()->send();
                     }
