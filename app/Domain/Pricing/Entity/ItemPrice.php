@@ -14,7 +14,7 @@ final class ItemPrice
     public function __construct(
         private readonly EntityId $id,
         private readonly EntityId $orderItemId,
-        private readonly Money $baseAmount,
+        private Money $baseAmount,
     ) {}
 
     public static function reconstitute(
@@ -75,5 +75,17 @@ final class ItemPrice
         }
 
         return $this->finalAmount;
+    }
+
+    public function changeBaseAmount(Money $baseAmount): void
+    {
+        if ($baseAmount->currency !== $this->baseAmount->currency) {
+            throw new DomainException('Item price currency cannot be changed.');
+        }
+
+        $this->baseAmount = $baseAmount;
+        $this->finalAmount = $this->discount !== null
+            ? $this->discount->applyTo($baseAmount)
+            : null;
     }
 }

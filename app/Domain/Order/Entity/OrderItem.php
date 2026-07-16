@@ -11,12 +11,13 @@ final class OrderItem
 {
     private OrderItemStatus $status;
     private ?ReceptionData $receptionData = null;
-    private ?EntityId $productionTaskId = null;
     private ?EntityId $itemPriceId = null;
     private ?EntityId $warrantyId = null;
     private ?string $toolName;
     private ?SharpeningToolType $toolType;
     private ?int $quantity;
+    private int $rejectedQuantity = 0;
+    private ?string $rejectionReason = null;
 
     public function __construct(
         private readonly EntityId $id,
@@ -72,17 +73,19 @@ final class OrderItem
         ?string $toolName,
         OrderItemStatus $status,
         ?ReceptionData $receptionData = null,
-        ?EntityId $productionTaskId = null,
         ?EntityId $itemPriceId = null,
         ?EntityId $warrantyId = null,
         ?SharpeningToolType $toolType = null,
         ?int $quantity = null,
+        int $rejectedQuantity = 0,
+        ?string $rejectionReason = null,
     ): self {
         $item = new self($id, $clientEquipmentId, $toolName, $toolType, $quantity, $status);
         $item->receptionData = $receptionData;
-        $item->productionTaskId = $productionTaskId;
         $item->itemPriceId = $itemPriceId;
         $item->warrantyId = $warrantyId;
+        $item->rejectedQuantity = max(0, $rejectedQuantity);
+        $item->rejectionReason = $rejectionReason;
 
         return $item;
     }
@@ -112,6 +115,16 @@ final class OrderItem
         return $this->quantity;
     }
 
+    public function rejectedQuantity(): int
+    {
+        return $this->rejectedQuantity;
+    }
+
+    public function rejectionReason(): ?string
+    {
+        return $this->rejectionReason;
+    }
+
     public function status(): OrderItemStatus
     {
         return $this->status;
@@ -120,11 +133,6 @@ final class OrderItem
     public function receptionData(): ?ReceptionData
     {
         return $this->receptionData;
-    }
-
-    public function productionTaskId(): ?EntityId
-    {
-        return $this->productionTaskId;
     }
 
     public function itemPriceId(): ?EntityId
@@ -146,16 +154,6 @@ final class OrderItem
         $this->receptionData = $receptionData;
     }
 
-    public function bindProductionTask(EntityId $productionTaskId): void
-    {
-        if ($this->productionTaskId !== null) {
-            throw new DomainException('Production task is already bound to this order item.');
-        }
-
-        $this->productionTaskId = $productionTaskId;
-        $this->status = OrderItemStatus::InProduction;
-    }
-
     public function bindItemPrice(EntityId $itemPriceId): void
     {
         $this->itemPriceId = $itemPriceId;
@@ -166,8 +164,33 @@ final class OrderItem
         $this->warrantyId = $warrantyId;
     }
 
+    public function markInProduction(): void
+    {
+        if ($this->isFullyRejected()) {
+            return;
+        }
+
+        if ($this->status === OrderItemStatus::Issued) {
+            throw new DomainException('Issued item cannot enter production.');
+        }
+
+        if (in_array($this->status, [OrderItemStatus::Completed, OrderItemStatus::Rejected], true)) {
+            return;
+        }
+
+        $this->status = OrderItemStatus::InProduction;
+    }
+
     public function markCompleted(): void
     {
+        if ($this->isFullyRejected()) {
+            return;
+        }
+
+        if ($this->status === OrderItemStatus::Completed) {
+            return;
+        }
+
         if ($this->status !== OrderItemStatus::InProduction) {
             throw new DomainException('Only items in production can be completed.');
         }
@@ -175,17 +198,83 @@ final class OrderItem
         $this->status = OrderItemStatus::Completed;
     }
 
-    public function markRejected(): void
+    /**
+     * Partial reject for sharpening items (quantity > 0).
+     *
+     * @return int Newly rejected count
+     */
+    public function rejectUnits(int $count, string $reason): int
     {
+        if ($this->quantity === null) {
+            throw new DomainException('Partial reject is only allowed for sharpening items. Use markRejected() for equipment.');
+        }
+
         if ($this->status === OrderItemStatus::Issued) {
             throw new DomainException('Issued item cannot be rejected.');
         }
 
+        if ($count < 1) {
+            throw new DomainException('Rejected quantity must be at least 1.');
+        }
+
+        $reason = trim($reason);
+        if ($reason === '') {
+            throw new DomainException('Rejection reason is required.');
+        }
+
+        if ($this->rejectedQuantity + $count > $this->quantity) {
+            throw new DomainException(sprintf(
+                'Cannot reject %d units: only %d repairable left.',
+                $count,
+                $this->repairableQuantity(),
+            ));
+        }
+
+        $this->rejectedQuantity += $count;
+        $this->rejectionReason = $this->rejectionReason === null
+            ? $reason
+            : $this->rejectionReason."\n".$reason;
+
+        if ($this->rejectedQuantity === $this->quantity) {
+            $this->status = OrderItemStatus::Rejected;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Binary reject for equipment items (single unit).
+     */
+    public function markRejected(string $reason): void
+    {
+        if ($this->quantity !== null) {
+            throw new DomainException('Use rejectUnits() for sharpening items.');
+        }
+
+        if ($this->status === OrderItemStatus::Issued) {
+            throw new DomainException('Issued item cannot be rejected.');
+        }
+
+        if ($this->status === OrderItemStatus::Rejected) {
+            return;
+        }
+
+        $reason = trim($reason);
+        if ($reason === '') {
+            throw new DomainException('Rejection reason is required.');
+        }
+
+        $this->rejectedQuantity = 1;
+        $this->rejectionReason = $reason;
         $this->status = OrderItemStatus::Rejected;
     }
 
     public function markIssued(): void
     {
+        if ($this->isFullyRejected()) {
+            return;
+        }
+
         if (! in_array($this->status, [OrderItemStatus::Completed, OrderItemStatus::Accepted], true)) {
             throw new DomainException('Item cannot be issued in current status.');
         }
@@ -196,5 +285,28 @@ final class OrderItem
     public function hasReception(): bool
     {
         return $this->receptionData !== null;
+    }
+
+    public function repairableQuantity(): int
+    {
+        if ($this->quantity !== null) {
+            return max(0, $this->quantity - $this->rejectedQuantity);
+        }
+
+        return $this->status === OrderItemStatus::Rejected ? 0 : 1;
+    }
+
+    public function isFullyRejected(): bool
+    {
+        return $this->status === OrderItemStatus::Rejected || $this->repairableQuantity() === 0;
+    }
+
+    public function isFinalized(): bool
+    {
+        return in_array($this->status, [
+            OrderItemStatus::Completed,
+            OrderItemStatus::Rejected,
+            OrderItemStatus::Issued,
+        ], true);
     }
 }

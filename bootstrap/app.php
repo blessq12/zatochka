@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             \App\Http\Middleware\ConvertDomainException::class,
         ]);
+        $middleware->alias([
+            'master' => \App\Http\Middleware\EnsureUserIsMaster::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\App\Shared\Domain\DomainException $exception) {

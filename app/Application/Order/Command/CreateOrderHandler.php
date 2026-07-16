@@ -2,6 +2,7 @@
 
 namespace App\Application\Order\Command;
 
+use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Order\Port\ClientProvisioningPort;
 use App\Application\Order\Port\EquipmentProvisioningPort;
 use App\Application\Shared\DomainEventPublisher;
@@ -107,6 +108,20 @@ final readonly class CreateOrderHandler
 
             if ($itemDto->isNewEquipment()) {
                 $equipmentId = $this->ids->next('equipment')->value;
+                $parts = [];
+
+                foreach ($itemDto->equipmentParts as $part) {
+                    if (! filled($part['name'] ?? null)) {
+                        continue;
+                    }
+
+                    $parts[] = new EquipmentPartDTO(
+                        $this->ids->next('equipment_component')->value,
+                        (string) $part['name'],
+                        filled($part['serialNumber'] ?? null) ? (string) $part['serialNumber'] : null,
+                    );
+                }
+
                 $this->equipment->register(
                     $equipmentId,
                     $clientId,
@@ -114,6 +129,7 @@ final readonly class CreateOrderHandler
                     (string) $itemDto->equipmentBrand,
                     (string) $itemDto->equipmentModelName,
                     $itemDto->equipmentNotes,
+                    $parts,
                 );
             }
 

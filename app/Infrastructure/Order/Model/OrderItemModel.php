@@ -24,11 +24,17 @@ final class OrderItemModel extends Model
         'tool_name',
         'tool_type',
         'quantity',
+        'rejected_quantity',
+        'rejection_reason',
         'status',
-        'production_task_id',
         'item_price_id',
         'warranty_id',
     ];
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(OrderModel::class, 'order_id');
+    }
 
     public function equipment(): BelongsTo
     {

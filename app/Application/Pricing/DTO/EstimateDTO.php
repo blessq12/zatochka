@@ -10,6 +10,7 @@ final readonly class EstimateDTO
         public string $estimatedAmount,
         public string $currency,
         public ?int $itemPriceId,
+        public ?string $unitPrice,
         public ?string $finalAmount,
         public bool $calculated,
     ) {}

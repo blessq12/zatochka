@@ -51,7 +51,7 @@ export const usePosStore = defineStore("pos", {
             this.error = null;
 
             try {
-                const response = await axios.post("/api/pos/login", credentials);
+                const response = await axios.post("/api/v1/auth/login", credentials);
                 const { token, master } = response.data;
 
                 if (!token || !master) {

@@ -6,6 +6,6 @@ final readonly class OpenProductionTaskCommand
 {
     public function __construct(
         public int $productionTaskId,
-        public int $orderItemId,
+        public string $orderId,
     ) {}
 }

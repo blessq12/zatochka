@@ -9,5 +9,6 @@ final readonly class AddMasterCommentCommand
         public int $commentId,
         public int $masterId,
         public string $text,
+        public ?int $orderItemId = null,
     ) {}
 }

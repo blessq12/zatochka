@@ -20,6 +20,8 @@ final class WarehouseMovementModel extends Model
         'type',
         'quantity',
         'comment',
+        'order_id',
+        'order_item_id',
         'occurred_at',
     ];
 

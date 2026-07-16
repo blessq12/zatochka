@@ -29,6 +29,7 @@ final class OrderModel extends Model
         'defects',
         'internal_notes',
         'warranty_source_order_id',
+        'assigned_master_id',
         'estimated_amount',
         'estimated_currency',
         'created_at',

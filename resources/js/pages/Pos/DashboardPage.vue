@@ -60,7 +60,7 @@ export default {
                 error.value = null;
             }
             try {
-                const res = await axios.get("/api/pos/dashboard");
+                const res = await axios.get("/api/v1/workshop/production-tasks/stats");
                 const payload = res.data.data || {};
                 const counts = payload.counts || {};
 

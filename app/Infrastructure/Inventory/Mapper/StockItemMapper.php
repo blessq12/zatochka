@@ -38,6 +38,8 @@ final class StockItemMapper
                 new Quantity((string) $row->quantity),
                 DateTimeImmutable::createFromInterface($row->occurred_at),
                 $row->comment !== null ? (string) $row->comment : null,
+                $row->order_id !== null ? (string) $row->order_id : null,
+                $row->order_item_id !== null ? (int) $row->order_item_id : null,
             );
         }
 
@@ -84,6 +86,8 @@ final class StockItemMapper
             $row->type = $movement->type->value;
             $row->quantity = $movement->quantity->value;
             $row->comment = $movement->comment;
+            $row->order_id = $movement->orderId;
+            $row->order_item_id = $movement->orderItemId;
             $row->occurred_at = $movement->occurredAt;
             $rows[] = $row;
         }

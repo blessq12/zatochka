@@ -4,6 +4,7 @@ namespace App\Infrastructure\Order\Port;
 
 use App\Application\Equipment\Command\RegisterEquipmentCommand;
 use App\Application\Equipment\Command\RegisterEquipmentHandler;
+use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Order\Port\EquipmentProvisioningPort;
 
 final readonly class RegisterEquipmentProvisioningAdapter implements EquipmentProvisioningPort
@@ -12,6 +13,9 @@ final readonly class RegisterEquipmentProvisioningAdapter implements EquipmentPr
         private RegisterEquipmentHandler $registerEquipment,
     ) {}
 
+    /**
+     * @param list<EquipmentPartDTO> $parts
+     */
     public function register(
         int $equipmentId,
         int $clientId,
@@ -19,6 +23,7 @@ final readonly class RegisterEquipmentProvisioningAdapter implements EquipmentPr
         string $brand,
         string $modelName,
         ?string $notes = null,
+        array $parts = [],
     ): void {
         $this->registerEquipment->handle(new RegisterEquipmentCommand(
             $equipmentId,
@@ -27,6 +32,7 @@ final readonly class RegisterEquipmentProvisioningAdapter implements EquipmentPr
             $modelName,
             $clientId,
             $notes,
+            $parts,
         ));
     }
 }

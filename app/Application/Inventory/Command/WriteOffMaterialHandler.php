@@ -24,6 +24,8 @@ final readonly class WriteOffMaterialHandler
             new EntityId($command->movementId),
             new Quantity($command->quantity),
             $command->comment,
+            $command->orderId,
+            $command->orderItemId,
         );
         $this->stock->save($item);
         $this->events->publish($item->pullDomainEvents());

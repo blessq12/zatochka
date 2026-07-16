@@ -3,6 +3,7 @@
 namespace App\Application\Workshop\Command;
 
 use App\Application\Shared\DomainEventPublisher;
+use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
 use App\Domain\Workshop\Service\MasterQueueService;
 use App\Shared\ValueObject\EntityId;
@@ -19,7 +20,7 @@ final readonly class OpenProductionTaskHandler
     {
         $task = $this->queue->openTask(
             new EntityId($command->productionTaskId),
-            new EntityId($command->orderItemId),
+            new OrderId($command->orderId),
         );
 
         $this->tasks->save($task);

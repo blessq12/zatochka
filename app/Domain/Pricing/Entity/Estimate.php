@@ -107,6 +107,25 @@ final class Estimate extends AggregateRoot
         return $final;
     }
 
+    public function updatePrice(Money $baseAmount): Money
+    {
+        if ($this->itemPrice === null) {
+            throw new DomainException('Item price is required before update.');
+        }
+
+        $this->itemPrice->changeBaseAmount($baseAmount);
+        $final = $this->itemPrice->calculateFinal();
+        $this->calculated = true;
+        $this->record(new PriceCalculated(
+            $this->id,
+            $this->orderItemId,
+            $this->itemPrice->id(),
+            $final,
+        ));
+
+        return $final;
+    }
+
     public function isCalculated(): bool
     {
         return $this->calculated;

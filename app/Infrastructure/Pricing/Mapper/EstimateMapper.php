@@ -111,6 +111,7 @@ final class EstimateMapper
             (string) $model->estimated_amount,
             (string) $model->currency,
             $model->itemPrice !== null ? (int) $model->itemPrice->id : null,
+            $model->itemPrice !== null ? (string) $model->itemPrice->base_amount : null,
             $model->itemPrice?->final_amount !== null ? (string) $model->itemPrice->final_amount : null,
             (bool) $model->calculated,
         );

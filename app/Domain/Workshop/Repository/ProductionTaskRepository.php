@@ -2,6 +2,7 @@
 
 namespace App\Domain\Workshop\Repository;
 
+use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Entity\ProductionTask;
 use App\Shared\ValueObject\EntityId;
 
@@ -13,7 +14,7 @@ interface ProductionTaskRepository
 
     public function getById(EntityId $id): ProductionTask;
 
-    public function findByOrderItemId(EntityId $orderItemId): ?ProductionTask;
+    public function findByOrderId(OrderId $orderId): ?ProductionTask;
 
     /** @return list<ProductionTask> */
     public function listQueued(): array;

@@ -6,7 +6,7 @@ final readonly class ProductionTaskDTO
 {
     public function __construct(
         public int $id,
-        public int $orderItemId,
+        public string $orderId,
         public string $status,
         public ?int $masterId,
         public ?int $diagnosisId,

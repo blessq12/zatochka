@@ -15,5 +15,7 @@ final readonly class WarehouseMovement
         public Quantity $quantity,
         public DateTimeImmutable $occurredAt = new DateTimeImmutable(),
         public ?string $comment = null,
+        public ?string $orderId = null,
+        public ?int $orderItemId = null,
     ) {}
 }

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Workshop\Service;
 
+use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Entity\ProductionTask;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
 use App\Shared\Domain\DomainException;
@@ -13,12 +14,12 @@ final class MasterQueueService
         private ProductionTaskRepository $tasks,
     ) {}
 
-    public function openTask(EntityId $taskId, EntityId $orderItemId): ProductionTask
+    public function openTask(EntityId $taskId, OrderId $orderId): ProductionTask
     {
-        if ($this->tasks->findByOrderItemId($orderItemId) !== null) {
-            throw new DomainException('Production task already exists for this order item.');
+        if ($this->tasks->findByOrderId($orderId) !== null) {
+            throw new DomainException('Production task already exists for this order.');
         }
 
-        return ProductionTask::open($taskId, $orderItemId);
+        return ProductionTask::open($taskId, $orderId);
     }
 }

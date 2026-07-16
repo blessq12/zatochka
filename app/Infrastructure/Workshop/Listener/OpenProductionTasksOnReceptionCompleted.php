@@ -2,33 +2,31 @@
 
 namespace App\Infrastructure\Workshop\Listener;
 
-use App\Application\Order\ReadPort\OrderReadPort;
 use App\Application\Workshop\Command\OpenProductionTaskCommand;
 use App\Application\Workshop\Command\OpenProductionTaskHandler;
 use App\Domain\Order\Event\ReceptionCompleted;
+use App\Domain\Workshop\Repository\ProductionTaskRepository;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 
 final readonly class OpenProductionTasksOnReceptionCompleted
 {
     public function __construct(
-        private OrderReadPort $orders,
         private OpenProductionTaskHandler $openProductionTask,
+        private ProductionTaskRepository $tasks,
         private SequentialEntityIdGenerator $ids,
     ) {}
 
     public function handle(ReceptionCompleted $event): void
     {
-        $order = $this->orders->findById($event->orderId->value);
+        $orderId = $event->orderId;
 
-        if ($order === null) {
+        if ($this->tasks->findByOrderId($orderId) !== null) {
             return;
         }
 
-        foreach ($order->items as $item) {
-            $this->openProductionTask->handle(new OpenProductionTaskCommand(
-                $this->ids->next('production_task')->value,
-                $item->id,
-            ));
-        }
+        $this->openProductionTask->handle(new OpenProductionTaskCommand(
+            $this->ids->next('production_task')->value,
+            $orderId->value,
+        ));
     }
 }

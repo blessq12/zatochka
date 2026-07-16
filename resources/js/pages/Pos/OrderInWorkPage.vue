@@ -205,32 +205,61 @@
                         </div>
                     </div>
 
-                    <!-- Инструменты для заточки (если есть) -->
+                    <!-- Позиции заказа -->
                     <div
-                        v-if="order.tools && order.tools.length > 0"
-                        class="info-card"
+                        v-if="order.items && order.items.length > 0"
+                        class="info-card info-card-full"
                     >
                         <div class="info-card-header">
-                            <span class="info-card-title">Инструменты</span>
+                            <span class="info-card-title">Позиции</span>
                         </div>
                         <div class="info-card-content">
                             <div
-                                v-for="(tool, idx) in order.tools"
-                                :key="tool.id || idx"
-                                class="info-card-item"
+                                v-for="item in order.items"
+                                :key="item.id"
+                                class="order-item-row"
                             >
-                                <span class="info-card-label">{{
-                                    tool.tool_type_label || tool.tool_type
-                                }}</span>
-                                <span class="info-card-value">
-                                    Количество: {{ tool.quantity }}
-                                    <span
-                                        v-if="tool.description"
-                                        class="info-card-subvalue"
-                                    >
-                                        ({{ tool.description }})
+                                <div class="order-item-main">
+                                    <span class="info-card-value">
+                                        {{ itemLabel(item) }}
                                     </span>
-                                </span>
+                                    <span class="info-card-subvalue">
+                                        <template v-if="item.quantity != null">
+                                            {{ item.repairable_quantity }}/{{
+                                                item.quantity
+                                            }}
+                                            к работе
+                                            <template
+                                                v-if="item.rejected_quantity > 0"
+                                            >
+                                                · отклонено
+                                                {{ item.rejected_quantity }}
+                                            </template>
+                                        </template>
+                                        <template v-else>
+                                            {{
+                                                item.status === "rejected"
+                                                    ? "Неремонтопригодно"
+                                                    : "1 шт."
+                                            }}
+                                        </template>
+                                    </span>
+                                </div>
+                                <button
+                                    v-if="
+                                        isWorkspaceEditable &&
+                                        item.repairable_quantity > 0
+                                    "
+                                    type="button"
+                                    class="btn-reject-item"
+                                    :disabled="isRejectingItem[item.id]"
+                                    @click="rejectItem(item)"
+                                >
+                                    <span v-if="isRejectingItem[item.id]"
+                                        >...</span
+                                    >
+                                    <span v-else>Неремонтопригодно</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -250,13 +279,26 @@
 
                 <!-- Комментарии мастера -->
                 <div class="comments-section">
-                    <h3 class="section-title">Комментарии мастера</h3>
-                    <div class="comments-list" v-if="order.internal_notes">
-                        <div class="comment-item">
+                    <h3 class="section-title">Комментарий мастера</h3>
+                    <p class="section-hint">
+                        Виден только внутри системы, клиент не увидит
+                    </p>
+                    <div
+                        v-if="masterInternalComments.length > 0"
+                        class="comments-list"
+                    >
+                        <div
+                            v-for="comment in masterInternalComments"
+                            :key="comment.id"
+                            class="comment-item"
+                        >
                             <div class="comment-content">
-                                {{ order.internal_notes }}
+                                {{ comment.text }}
                             </div>
                         </div>
+                    </div>
+                    <div v-else class="empty-state-inline">
+                        Комментарий ещё не добавлен
                     </div>
                     <form
                         v-if="isWorkspaceEditable"
@@ -271,7 +313,7 @@
                                 v-model="commentForm.internal_notes"
                                 class="form-textarea"
                                 rows="3"
-                                placeholder="Введите комментарий к заказу..."
+                                placeholder="Внутренний комментарий к задаче..."
                             ></textarea>
                         </div>
                         <button
@@ -290,26 +332,52 @@
             <div class="works-section">
                 <h2 class="section-title">Выполненные работы</h2>
 
-                <!-- Список работ -->
-                <div v-if="works.length === 0" class="empty-state-inline">
-                    Пока нет выполненных работ
+                <div
+                    v-if="repairableItems.length === 0"
+                    class="empty-state-inline"
+                >
+                    Нет позиций для фиксации работ
                 </div>
-                <div v-else class="works-list">
-                    <div v-for="work in works" :key="work.id" class="work-item">
-                        <div class="work-body">
-                            <div class="work-content">
-                                <span class="work-description">{{
-                                    work.description
-                                }}</span>
+
+                <div
+                    v-for="group in worksByItem"
+                    :key="group.item.id"
+                    class="position-works-group"
+                >
+                    <h3 class="position-works-title">
+                        {{ itemLabel(group.item) }}
+                        <span class="position-works-qty"
+                            >к выдаче: {{ group.item.repairable_quantity }}</span
+                        >
+                    </h3>
+
+                    <div
+                        v-if="group.works.length === 0"
+                        class="empty-state-inline"
+                    >
+                        Работы по позиции ещё не добавлены
+                    </div>
+                    <div v-else class="works-list">
+                        <div
+                            v-for="work in group.works"
+                            :key="work.id"
+                            class="work-item"
+                        >
+                            <div class="work-body">
+                                <div class="work-content">
+                                    <span class="work-description">{{
+                                        work.description
+                                    }}</span>
+                                </div>
+                                <button
+                                    v-if="isWorkspaceEditable"
+                                    @click="deleteWork(work)"
+                                    class="btn-delete btn-delete-inline"
+                                    :disabled="isDeletingWork[work.id]"
+                                >
+                                    Удалить
+                                </button>
                             </div>
-                            <button
-                                v-if="isWorkspaceEditable"
-                                @click="deleteWork(work)"
-                                class="btn-delete btn-delete-inline"
-                                :disabled="isDeletingWork[work.id]"
-                            >
-                                Удалить
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -329,6 +397,22 @@
                                     placeholder="Опишите выполненную работу"
                                     required
                                 />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Позиция *</label>
+                                <select
+                                    v-model="workForm.order_item_id"
+                                    class="form-input"
+                                    required
+                                >
+                                    <option
+                                        v-for="item in repairableItems"
+                                        :key="item.id"
+                                        :value="item.id"
+                                    >
+                                        {{ itemLabel(item) }}
+                                    </option>
+                                </select>
                             </div>
                         </div>
                         <button
@@ -375,10 +459,12 @@ export default {
 
         const workForm = reactive({
             description: "",
+            order_item_id: null,
         });
 
         const isAddingWork = ref(false);
         const isDeletingWork = reactive({});
+        const isRejectingItem = reactive({});
         const isCompletingOrder = ref(false);
         const isChangingStatus = ref(false);
         const changingToStatus = ref(null);
@@ -391,6 +477,45 @@ export default {
         const syncOrderDetails = (orderData) => {
             order.value = orderData;
             works.value = orderData?.works || [];
+            ensureDefaultWorkItem();
+        };
+
+        const repairableItems = computed(() =>
+            (order.value?.items || []).filter(
+                (item) =>
+                    (item.repairable_quantity ?? 1) > 0 &&
+                    item.status !== "rejected"
+            )
+        );
+
+        const masterInternalComments = computed(
+            () => order.value?.master_internal_comments || []
+        );
+
+        const worksByItem = computed(() =>
+            repairableItems.value.map((item) => ({
+                item,
+                works: works.value.filter(
+                    (work) => work.order_item_id === item.id
+                ),
+            }))
+        );
+
+        const ensureDefaultWorkItem = () => {
+            const items = repairableItems.value;
+
+            if (items.length === 0) {
+                workForm.order_item_id = null;
+
+                return;
+            }
+
+            if (
+                workForm.order_item_id == null ||
+                !items.some((item) => item.id === workForm.order_item_id)
+            ) {
+                workForm.order_item_id = items[0].id;
+            }
         };
 
         const fetchOrder = async () => {
@@ -408,16 +533,33 @@ export default {
             }
         };
 
+        const itemLabel = (item) => {
+            if (item.tool_name) {
+                return item.tool_name;
+            }
+            if (item.client_equipment_id) {
+                return `Оборудование #${item.client_equipment_id}`;
+            }
+            return `#${item.id}`;
+        };
+
         const addWork = async () => {
+            if (!workForm.order_item_id) {
+                toastService.error("Выберите позицию заказа");
+                return;
+            }
+
             isAddingWork.value = true;
             try {
                 const orderData = await orderService.addWork(
                     orderId.value,
-                    workForm.description
+                    workForm.description,
+                    workForm.order_item_id
                 );
                 syncOrderDetails(orderData);
                 toastService.success("Работа добавлена");
                 workForm.description = "";
+                ensureDefaultWorkItem();
             } catch (error) {
                 console.error("Error adding work:", error);
                 toastService.error(
@@ -426,6 +568,60 @@ export default {
                 );
             } finally {
                 isAddingWork.value = false;
+            }
+        };
+
+        const rejectItem = async (item) => {
+            const isSharpening = item.quantity != null;
+            let quantity = 1;
+
+            if (isSharpening) {
+                const maxQty = item.repairable_quantity || item.quantity || 1;
+                const input = prompt(
+                    `Сколько единиц неремонтопригодно? (макс. ${maxQty})`,
+                    "1"
+                );
+                if (input === null) {
+                    return;
+                }
+                quantity = parseInt(input, 10);
+                if (!Number.isFinite(quantity) || quantity < 1) {
+                    toastService.error("Укажите корректное количество");
+                    return;
+                }
+            } else if (
+                !confirm("Отметить оборудование как неремонтопригодное?")
+            ) {
+                return;
+            }
+
+            const reason = prompt("Причина (неремонтопригодно):");
+            if (reason === null) {
+                return;
+            }
+            if (!reason.trim()) {
+                toastService.error("Укажите причину");
+                return;
+            }
+
+            isRejectingItem[item.id] = true;
+            try {
+                const orderData = await orderService.rejectItem(
+                    orderId.value,
+                    item.id,
+                    reason.trim(),
+                    quantity
+                );
+                syncOrderDetails(orderData);
+                toastService.success("Позиция обновлена");
+            } catch (error) {
+                console.error("Error rejecting item:", error);
+                toastService.error(
+                    error.response?.data?.message ||
+                        "Ошибка при отклонении позиции"
+                );
+            } finally {
+                isRejectingItem[item.id] = false;
             }
         };
 
@@ -523,11 +719,9 @@ export default {
 
             isSavingComment.value = true;
             try {
-                const existing = order.value?.internal_notes?.trim();
-                const notes = existing ? `${existing}\n${newNote}` : newNote;
                 const orderData = await orderService.updateInternalNotes(
                     orderId.value,
-                    notes
+                    newNote
                 );
                 syncOrderDetails(orderData);
                 toastService.success("Комментарий сохранен");
@@ -553,7 +747,19 @@ export default {
 
             if (works.value.length === 0) {
                 toastService.error(
-                    "Нельзя завершить заказ без выполненных работ. Добавьте хотя бы одну работу."
+                    "Нельзя завершить заказ без выполненных работ. Добавьте работы по позициям."
+                );
+                return;
+            }
+
+            const itemsWithoutWorks = repairableItems.value.filter(
+                (item) =>
+                    !works.value.some((work) => work.order_item_id === item.id)
+            );
+
+            if (itemsWithoutWorks.length > 0) {
+                toastService.error(
+                    "Укажите выполненные работы по каждой позиции заказа"
                 );
                 return;
             }
@@ -626,6 +832,15 @@ export default {
                 return "Нельзя завершить заказ без выполненных работ";
             }
 
+            const itemsWithoutWorks = repairableItems.value.filter(
+                (item) =>
+                    !works.value.some((work) => work.order_item_id === item.id)
+            );
+
+            if (itemsWithoutWorks.length > 0) {
+                return "Укажите работы по каждой позиции";
+            }
+
             return "";
         });
 
@@ -646,6 +861,9 @@ export default {
             isLoading,
             works,
             workForm,
+            repairableItems,
+            masterInternalComments,
+            worksByItem,
             equipmentSerialRowsComputed,
             equipmentBrandModelLineComputed,
             formatPosOrderPaymentType,
@@ -656,6 +874,7 @@ export default {
             backRouteName,
             isAddingWork,
             isDeletingWork,
+            isRejectingItem,
             isCompletingOrder,
             isChangingStatus,
             changingToStatus,
@@ -665,7 +884,9 @@ export default {
             setWaitingPartsStatus,
             saveComment,
             completeOrder,
+            itemLabel,
             addWork,
+            rejectItem,
             deleteWork,
             getStatusLabel: orderService.getStatusLabel,
             formatPrice: orderService.formatPrice,
@@ -1000,6 +1221,46 @@ export default {
     gap: 0.75rem;
 }
 
+.info-card-full {
+    grid-column: 1 / -1;
+}
+
+.order-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.order-item-row:last-child {
+    border-bottom: none;
+}
+
+.order-item-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.btn-reject-item {
+    flex-shrink: 0;
+    border: 1px solid #fca5a5;
+    background: #fef2f2;
+    color: #b91c1c;
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-reject-item:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .info-card-item {
     display: flex;
     flex-direction: column;
@@ -1083,6 +1344,31 @@ export default {
     margin-bottom: 0.25rem;
 }
 
+.position-works-group {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.position-works-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.position-works-title {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #003859;
+}
+
+.position-works-qty {
+    margin-left: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
 .works-list {
     display: flex;
     flex-direction: column;
@@ -1115,6 +1401,20 @@ export default {
     flex-direction: column;
     gap: 0.25rem;
     flex: 1;
+}
+
+.section-hint {
+    margin: 0 0 0.75rem;
+    font-size: 0.8125rem;
+    color: #6b7280;
+}
+
+.work-position {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #046490;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .work-description {

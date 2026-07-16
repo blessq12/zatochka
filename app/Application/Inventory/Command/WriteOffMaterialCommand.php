@@ -9,5 +9,7 @@ final readonly class WriteOffMaterialCommand
         public int $movementId,
         public string $quantity,
         public ?string $comment = null,
+        public ?string $orderId = null,
+        public ?int $orderItemId = null,
     ) {}
 }

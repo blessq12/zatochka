@@ -4,6 +4,9 @@ namespace App\Application\Order\DTO;
 
 final readonly class CreateOrderItemDTO
 {
+    /**
+     * @param list<array{name: string, serialNumber?: ?string}> $equipmentParts
+     */
     public function __construct(
         public int $orderItemId,
         public ?int $clientEquipmentId = null,
@@ -14,6 +17,7 @@ final readonly class CreateOrderItemDTO
         public ?string $equipmentBrand = null,
         public ?string $equipmentModelName = null,
         public ?string $equipmentNotes = null,
+        public array $equipmentParts = [],
     ) {}
 
     public function isNewEquipment(): bool

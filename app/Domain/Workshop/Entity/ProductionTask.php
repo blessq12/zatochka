@@ -2,8 +2,8 @@
 
 namespace App\Domain\Workshop\Entity;
 
+use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Event\DiagnosisCompleted;
-use App\Domain\Workshop\Event\ElementRejected;
 use App\Domain\Workshop\Event\MasterAssigned;
 use App\Domain\Workshop\Event\ProductionCompleted;
 use App\Domain\Workshop\Event\WorkCompleted;
@@ -25,14 +25,14 @@ final class ProductionTask extends AggregateRoot
 
     private function __construct(
         private readonly EntityId $id,
-        private readonly EntityId $orderItemId,
+        private readonly OrderId $orderId,
     ) {
         $this->status = ProductionStatus::Queued;
     }
 
-    public static function open(EntityId $id, EntityId $orderItemId): self
+    public static function open(EntityId $id, OrderId $orderId): self
     {
-        return new self($id, $orderItemId);
+        return new self($id, $orderId);
     }
 
     /**
@@ -40,14 +40,14 @@ final class ProductionTask extends AggregateRoot
      */
     public static function reconstitute(
         EntityId $id,
-        EntityId $orderItemId,
+        OrderId $orderId,
         ProductionStatus $status,
         ?EntityId $masterId = null,
         ?Diagnosis $diagnosis = null,
         ?WorkExecution $workExecution = null,
         array $comments = [],
     ): self {
-        $task = new self($id, $orderItemId);
+        $task = new self($id, $orderId);
         $task->status = $status;
         $task->masterId = $masterId;
         $task->diagnosis = $diagnosis;
@@ -62,9 +62,9 @@ final class ProductionTask extends AggregateRoot
         return $this->id;
     }
 
-    public function orderItemId(): EntityId
+    public function orderId(): OrderId
     {
-        return $this->orderItemId;
+        return $this->orderId;
     }
 
     public function status(): ProductionStatus
@@ -103,7 +103,7 @@ final class ProductionTask extends AggregateRoot
 
         $this->masterId = $masterId;
         $this->transitionTo(ProductionStatus::MasterAssigned);
-        $this->record(new MasterAssigned($this->id, $this->orderItemId, $masterId));
+        $this->record(new MasterAssigned($this->id, $this->orderId, $masterId));
     }
 
     public function completeDiagnosis(Diagnosis $diagnosis): void
@@ -120,27 +120,15 @@ final class ProductionTask extends AggregateRoot
 
         $this->diagnosis = $diagnosis;
         $this->transitionTo(ProductionStatus::Diagnosed);
-        $this->record(new DiagnosisCompleted($this->id, $this->orderItemId, $diagnosis->id()));
-    }
-
-    public function reject(string $reason): void
-    {
-        $this->assertNotTerminal();
-
-        if (trim($reason) === '') {
-            throw new DomainException('Rejection reason is required.');
-        }
-
-        $this->transitionTo(ProductionStatus::Rejected);
-        $this->record(new ElementRejected($this->id, $this->orderItemId, $reason));
+        $this->record(new DiagnosisCompleted($this->id, $this->orderId, $diagnosis->id()));
     }
 
     public function startWork(WorkExecution $workExecution): void
     {
         $this->assertNotTerminal();
 
-        if ($this->status !== ProductionStatus::Diagnosed) {
-            throw new DomainException('Work can start only after diagnosis.');
+        if (! in_array($this->status, [ProductionStatus::MasterAssigned, ProductionStatus::Diagnosed], true)) {
+            throw new DomainException('Work can start only after master assignment (diagnosis optional).');
         }
 
         if ($this->workExecution !== null) {
@@ -149,7 +137,29 @@ final class ProductionTask extends AggregateRoot
 
         $this->workExecution = $workExecution;
         $this->transitionTo(ProductionStatus::InWork);
-        $this->record(new WorkStarted($this->id, $this->orderItemId, $workExecution->id()));
+        $this->record(new WorkStarted($this->id, $this->orderId, $workExecution->id()));
+    }
+
+    public function pauseForParts(): void
+    {
+        $this->assertNotTerminal();
+
+        if ($this->status !== ProductionStatus::InWork) {
+            throw new DomainException('Waiting for parts is allowed only while work is in progress.');
+        }
+
+        $this->transitionTo(ProductionStatus::WaitingParts);
+    }
+
+    public function resumeFromParts(): void
+    {
+        $this->assertNotTerminal();
+
+        if ($this->status !== ProductionStatus::WaitingParts) {
+            throw new DomainException('Resume is allowed only from waiting for parts.');
+        }
+
+        $this->transitionTo(ProductionStatus::InWork);
     }
 
     public function completeWork(): void
@@ -162,7 +172,7 @@ final class ProductionTask extends AggregateRoot
 
         $this->workExecution->complete();
         $this->transitionTo(ProductionStatus::WorkCompleted);
-        $this->record(new WorkCompleted($this->id, $this->orderItemId, $this->workExecution->id()));
+        $this->record(new WorkCompleted($this->id, $this->orderId, $this->workExecution->id()));
     }
 
     public function completeProduction(): void
@@ -174,7 +184,7 @@ final class ProductionTask extends AggregateRoot
         }
 
         $this->transitionTo(ProductionStatus::Completed);
-        $this->record(new ProductionCompleted($this->id, $this->orderItemId));
+        $this->record(new ProductionCompleted($this->id, $this->orderId));
     }
 
     public function addComment(MasterComment $comment): void
@@ -186,6 +196,25 @@ final class ProductionTask extends AggregateRoot
         }
 
         $this->comments[] = $comment;
+    }
+
+    public function removeComment(EntityId $commentId, EntityId $masterId): void
+    {
+        $this->assertNotTerminal();
+
+        if ($this->masterId === null || ! $this->masterId->equals($masterId)) {
+            throw new DomainException('Only the assigned master can remove technical comments.');
+        }
+
+        $before = count($this->comments);
+        $this->comments = array_values(array_filter(
+            $this->comments,
+            static fn (MasterComment $comment): bool => ! $comment->id->equals($commentId),
+        ));
+
+        if (count($this->comments) === $before) {
+            throw new DomainException('Master comment not found.');
+        }
     }
 
     private function transitionTo(ProductionStatus $next): void

@@ -21,17 +21,19 @@ const buildPagination = (meta) => {
 };
 
 const mapWarehouseItem = (item) => ({
-    ...item,
-    article: item.sku ?? item.article ?? null,
+    id: item.id,
+    sku: item.materialSku ?? item.sku,
+    article: item.materialSku ?? item.sku ?? item.article ?? null,
+    name: item.materialName ?? item.name,
+    unit: item.unit,
     category:
         typeof item.category === "string"
             ? { name: item.category }
             : item.category,
+    quantity: item.quantityOnHand ?? item.quantity,
+    quantity_on_hand: item.quantityOnHand ?? item.quantity_on_hand,
 });
 
-/**
- * Сервис для работы со складом в POS панели мастера.
- */
 export const warehouseService = {
     async getAllItems(page = 1, perPage = 20, query = null) {
         const params = { page, per_page: perPage };
@@ -39,9 +41,7 @@ export const warehouseService = {
             params.query = query;
         }
 
-        const response = await axios.get("/api/pos/warehouse/items", {
-            params,
-        });
+        const response = await axios.get("/api/v1/stock-items", { params });
 
         return {
             items: (response.data.data || []).map(mapWarehouseItem),

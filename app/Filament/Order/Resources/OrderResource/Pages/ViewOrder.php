@@ -2,15 +2,12 @@
 
 namespace App\Filament\Order\Resources\OrderResource\Pages;
 
-use App\Domain\Order\VO\OrderStatus;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Filament\Order\Resources\OrderResource;
 use App\Infrastructure\Order\Model\OrderModel;
 use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\IconPosition;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -53,14 +50,19 @@ class ViewOrder extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        /** @var OrderModel $record */
-        $record = $this->getRecord();
+        $refresh = function (): void {
+            $this->getRecord()->refresh()->load([
+                'client',
+                'items.equipment.components',
+                'warrantySourceOrder',
+            ]);
+        };
 
-        $mutations = array_map(
-            function ($action) {
-                return $action->after(function (): void {
-                    $this->getRecord()->refresh()->load(['client', 'items.equipment', 'warrantySourceOrder']);
-                });
+        $actions = array_map(
+            function (Action $action) use ($refresh): Action {
+                return $action
+                    ->record($this->getRecord())
+                    ->after($refresh);
             },
             OrderResource::orderMutationActions(),
         );
@@ -71,21 +73,7 @@ class ViewOrder extends ViewRecord
                 ->icon(Heroicon::OutlinedArrowLeft)
                 ->color('gray')
                 ->url(OrderResource::getUrl('index')),
-            ActionGroup::make($mutations)
-                ->label('Статус заказа')
-                ->icon(Heroicon::OutlinedEllipsisVertical)
-                ->iconPosition(IconPosition::After)
-                ->button()
-                ->color('primary')
-                ->visible(fn (): bool => ! in_array(
-                    $record->status,
-                    [
-                        OrderStatus::Cancelled->value,
-                        OrderStatus::Closed->value,
-                        OrderStatus::Issued->value,
-                    ],
-                    true,
-                )),
+            ...$actions,
         ];
     }
 }

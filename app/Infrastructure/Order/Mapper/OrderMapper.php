@@ -46,17 +46,21 @@ final class OrderMapper
                 );
             }
 
-            $items[] = OrderItem::reconstitute(
+            $status = OrderItemStatus::from((string) $itemModel->status);
+            $quantity = $itemModel->quantity !== null ? (int) $itemModel->quantity : null;
+            $rejectedQuantity = (int) ($itemModel->rejected_quantity ?? 0);
+            $rejectionReason = $itemModel->rejection_reason !== null
+                ? (string) $itemModel->rejection_reason
+                : null;
+
+            $item = OrderItem::reconstitute(
                 new EntityId((int) $itemModel->id),
                 $itemModel->client_equipment_id !== null
                     ? new EntityId((int) $itemModel->client_equipment_id)
                     : null,
                 $itemModel->tool_name !== null ? (string) $itemModel->tool_name : null,
-                OrderItemStatus::from((string) $itemModel->status),
+                $status,
                 $reception,
-                $itemModel->production_task_id !== null
-                    ? new EntityId((int) $itemModel->production_task_id)
-                    : null,
                 $itemModel->item_price_id !== null
                     ? new EntityId((int) $itemModel->item_price_id)
                     : null,
@@ -66,8 +70,12 @@ final class OrderMapper
                 $itemModel->tool_type !== null
                     ? SharpeningToolType::from((string) $itemModel->tool_type)
                     : null,
-                $itemModel->quantity !== null ? (int) $itemModel->quantity : null,
+                $quantity,
+                $rejectedQuantity,
+                $rejectionReason,
             );
+
+            $items[] = $item;
         }
 
         return Order::reconstitute(
@@ -87,6 +95,9 @@ final class OrderMapper
             $model->warranty_source_order_id !== null
                 ? new OrderId((string) $model->warranty_source_order_id)
                 : null,
+            $model->assigned_master_id !== null
+                ? new EntityId((int) $model->assigned_master_id)
+                : null,
         );
     }
 
@@ -104,6 +115,7 @@ final class OrderMapper
         $model->defects = $order->defects();
         $model->internal_notes = $order->internalNotes();
         $model->warranty_source_order_id = $order->warrantySourceOrderId()?->value;
+        $model->assigned_master_id = $order->assignedMasterId()?->value;
         $model->estimated_amount = $order->estimatedCost()->amount;
         $model->estimated_currency = $order->estimatedCost()->currency;
         $model->created_at = $order->createdAt();
@@ -125,8 +137,9 @@ final class OrderMapper
             $row->tool_name = $item->toolName();
             $row->tool_type = $item->toolType()?->value;
             $row->quantity = $item->quantity();
+            $row->rejected_quantity = $item->rejectedQuantity();
+            $row->rejection_reason = $item->rejectionReason();
             $row->status = $item->status()->value;
-            $row->production_task_id = $item->productionTaskId()?->value;
             $row->item_price_id = $item->itemPriceId()?->value;
             $row->warranty_id = $item->warrantyId()?->value;
             $rows[] = $row;
@@ -165,15 +178,24 @@ final class OrderMapper
         $items = [];
 
         foreach ($model->items as $item) {
+            $quantity = $item->quantity !== null ? (int) $item->quantity : null;
+            $rejectedQuantity = (int) ($item->rejected_quantity ?? 0);
+            $status = (string) $item->status;
+            $repairableQuantity = $quantity !== null
+                ? max(0, $quantity - $rejectedQuantity)
+                : ($status === 'rejected' ? 0 : 1);
+
             $items[] = new OrderItemDTO(
                 (int) $item->id,
                 $item->client_equipment_id !== null ? (int) $item->client_equipment_id : null,
                 $item->tool_name !== null ? (string) $item->tool_name : null,
                 $item->tool_type !== null ? (string) $item->tool_type : null,
-                $item->quantity !== null ? (int) $item->quantity : null,
-                (string) $item->status,
+                $quantity,
+                $rejectedQuantity,
+                $item->rejection_reason !== null ? (string) $item->rejection_reason : null,
+                $repairableQuantity,
+                $status,
                 $item->reception !== null,
-                $item->production_task_id !== null ? (int) $item->production_task_id : null,
                 $item->item_price_id !== null ? (int) $item->item_price_id : null,
                 $item->warranty_id !== null ? (int) $item->warranty_id : null,
             );
@@ -191,6 +213,7 @@ final class OrderMapper
             $model->defects !== null ? (string) $model->defects : null,
             $model->internal_notes !== null ? (string) $model->internal_notes : null,
             $model->warranty_source_order_id !== null ? (string) $model->warranty_source_order_id : null,
+            $model->assigned_master_id !== null ? (int) $model->assigned_master_id : null,
             (string) $model->estimated_amount,
             (string) $model->estimated_currency,
             $model->created_at->toIso8601String(),

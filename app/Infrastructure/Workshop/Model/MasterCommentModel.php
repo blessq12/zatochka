@@ -17,6 +17,7 @@ final class MasterCommentModel extends Model
     protected $fillable = [
         'id',
         'production_task_id',
+        'order_item_id',
         'master_id',
         'text',
         'created_at',

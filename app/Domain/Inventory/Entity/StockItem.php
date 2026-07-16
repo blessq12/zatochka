@@ -67,34 +67,70 @@ final class StockItem extends AggregateRoot
         return $this->movements;
     }
 
-    public function receive(EntityId $movementId, Quantity $quantity, ?string $comment = null): void
-    {
+    public function receive(
+        EntityId $movementId,
+        Quantity $quantity,
+        ?string $comment = null,
+        ?string $orderId = null,
+        ?int $orderItemId = null,
+    ): void {
         if ((float) $quantity->value <= 0) {
             throw new DomainException('Received quantity must be positive.');
         }
 
         $this->quantityOnHand = $this->quantityOnHand->add($quantity);
-        $this->movements[] = new WarehouseMovement($movementId, MovementType::Receipt, $quantity, comment: $comment);
+        $this->movements[] = new WarehouseMovement(
+            $movementId,
+            MovementType::Receipt,
+            $quantity,
+            comment: $comment,
+            orderId: $orderId,
+            orderItemId: $orderItemId,
+        );
         $this->record(new MaterialReceived($this->id, $this->material->id(), $quantity->value));
         $this->record(new StockChanged($this->id, $this->material->id(), $this->quantityOnHand->value));
     }
 
-    public function writeOff(EntityId $movementId, Quantity $quantity, ?string $comment = null): void
-    {
+    public function writeOff(
+        EntityId $movementId,
+        Quantity $quantity,
+        ?string $comment = null,
+        ?string $orderId = null,
+        ?int $orderItemId = null,
+    ): void {
         if ((float) $quantity->value <= 0) {
             throw new DomainException('Write-off quantity must be positive.');
         }
 
         $this->quantityOnHand = $this->quantityOnHand->subtract($quantity);
-        $this->movements[] = new WarehouseMovement($movementId, MovementType::WriteOff, $quantity, comment: $comment);
+        $this->movements[] = new WarehouseMovement(
+            $movementId,
+            MovementType::WriteOff,
+            $quantity,
+            comment: $comment,
+            orderId: $orderId,
+            orderItemId: $orderItemId,
+        );
         $this->record(new MaterialWrittenOff($this->id, $this->material->id(), $quantity->value));
         $this->record(new StockChanged($this->id, $this->material->id(), $this->quantityOnHand->value));
     }
 
-    public function adjust(EntityId $movementId, Quantity $newQuantity, ?string $comment = null): void
-    {
+    public function adjust(
+        EntityId $movementId,
+        Quantity $newQuantity,
+        ?string $comment = null,
+        ?string $orderId = null,
+        ?int $orderItemId = null,
+    ): void {
         $this->quantityOnHand = $newQuantity;
-        $this->movements[] = new WarehouseMovement($movementId, MovementType::Adjustment, $newQuantity, comment: $comment);
+        $this->movements[] = new WarehouseMovement(
+            $movementId,
+            MovementType::Adjustment,
+            $newQuantity,
+            comment: $comment,
+            orderId: $orderId,
+            orderItemId: $orderItemId,
+        );
         $this->record(new StockChanged($this->id, $this->material->id(), $this->quantityOnHand->value));
     }
 }

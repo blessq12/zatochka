@@ -1,26 +1,27 @@
 import axios from "axios";
+import { mapTaskToPosCard } from "../../composables/mapTaskToPosCard.js";
 
-const POS_ORDERS_BASE = "/api/pos/orders";
+const TASKS_BASE = "/api/v1/workshop/production-tasks";
+
+const FUNNEL_BY_STATUS = {
+    new: "new",
+    active: "active",
+    waiting_parts: "waiting_parts",
+    completed: "completed",
+};
 
 /**
- * Сервис для работы с заказами в POS панели мастера.
- * Контракты соответствуют PosController (бэкенд — источник истины).
+ * Facade над Workshop production-tasks для POS UI.
  */
 export const orderService = {
-    /**
-     * @param {string|null} status — таб воронки: new | active | waiting_parts | completed
-     * @returns {Promise<Array>}
-     */
     async getOrders(status = null, page = 1, perPage = 20) {
-        const params = { page, per_page: perPage };
-        if (status) {
-            params.status = status;
-        }
-
-        const response = await axios.get(POS_ORDERS_BASE, { params });
+        const funnel = FUNNEL_BY_STATUS[status] || status || "new";
+        const response = await axios.get(TASKS_BASE, {
+            params: { funnel, page, per_page: perPage },
+        });
 
         return {
-            items: response.data.data || [],
+            items: (response.data.data || []).map(mapTaskToPosCard),
             meta: response.data.meta || {
                 total: 0,
                 page,
@@ -45,75 +46,85 @@ export const orderService = {
         return this.getOrders("completed");
     },
 
-    /**
-     * @returns {Promise<Object>} { new, in_work, waiting_parts, ready }
-     */
     async getOrdersCount() {
-        const response = await axios.get(`${POS_ORDERS_BASE}/counts`);
+        const response = await axios.get(`${TASKS_BASE}/counts`);
         const counts = response.data.data || {};
 
         return {
             new: counts.new || 0,
             in_work: counts.active || 0,
-            waiting_parts: counts.waiting_parts || 0,
+            waiting_parts: counts.waitingParts || counts.waiting_parts || 0,
             ready: counts.completed || 0,
         };
     },
 
-    async getOrderById(orderId) {
-        const response = await axios.get(`${POS_ORDERS_BASE}/${orderId}`);
-        return response.data.data;
+    async getOrderById(taskId) {
+        const response = await axios.get(`${TASKS_BASE}/${taskId}`);
+        return mapTaskToPosCard(response.data.data);
     },
 
-    async takeToWork(orderId) {
-        const response = await axios.post(
-            `${POS_ORDERS_BASE}/${orderId}/take-to-work`
-        );
-        return response.data.data;
-    },
-
-    async markWaitingForParts(orderId) {
-        const response = await axios.post(
-            `${POS_ORDERS_BASE}/${orderId}/waiting-parts`
-        );
-        return response.data.data;
-    },
-
-    async resume(orderId) {
-        const response = await axios.post(
-            `${POS_ORDERS_BASE}/${orderId}/resume`
-        );
-        return response.data.data;
-    },
-
-    async markReady(orderId) {
-        const response = await axios.post(
-            `${POS_ORDERS_BASE}/${orderId}/mark-ready`
-        );
-        return response.data.data;
-    },
-
-    async updateInternalNotes(orderId, notes) {
-        const response = await axios.patch(
-            `${POS_ORDERS_BASE}/${orderId}/internal-notes`,
-            { notes }
-        );
-        return response.data.data;
-    },
-
-    async addWork(orderId, description) {
-        const response = await axios.post(`${POS_ORDERS_BASE}/${orderId}/works`, {
-            description,
+    async takeToWork(taskId) {
+        const response = await axios.post(`${TASKS_BASE}/${taskId}/start-work`, {
+            description: "Взято в работу",
         });
-        return response.data.data;
+        return mapTaskToPosCard(response.data.data);
     },
 
-    async removeWork(orderId, sortOrder) {
-        const response = await axios.delete(
-            `${POS_ORDERS_BASE}/${orderId}/works`,
-            { data: { sort_order: sortOrder } }
+    async markWaitingForParts(taskId) {
+        const response = await axios.post(
+            `${TASKS_BASE}/${taskId}/waiting-parts`
         );
-        return response.data.data;
+        return mapTaskToPosCard(response.data.data);
+    },
+
+    async resume(taskId) {
+        const response = await axios.post(`${TASKS_BASE}/${taskId}/resume`);
+        return mapTaskToPosCard(response.data.data);
+    },
+
+    async markReady(taskId) {
+        const response = await axios.post(`${TASKS_BASE}/${taskId}/finish`);
+        return mapTaskToPosCard(response.data.data);
+    },
+
+    async updateInternalNotes(taskId, notes) {
+        const response = await axios.post(`${TASKS_BASE}/${taskId}/comments`, {
+            text: notes,
+        });
+        return mapTaskToPosCard(response.data.data);
+    },
+
+    async addWork(taskId, description, orderItemId) {
+        const response = await axios.post(`${TASKS_BASE}/${taskId}/works`, {
+            text: description,
+            orderItemId,
+        });
+        return mapTaskToPosCard(response.data.data);
+    },
+
+    async rejectItem(taskId, orderItemId, reason, quantity = 1) {
+        const response = await axios.post(`${TASKS_BASE}/${taskId}/reject`, {
+            orderItemId,
+            reason,
+            quantity,
+        });
+        return mapTaskToPosCard(response.data.data);
+    },
+
+    async removeWork(taskId, sortOrderOrId) {
+        const card = await this.getOrderById(taskId);
+        const work =
+            card.works?.find((w) => w.id === sortOrderOrId) ||
+            card.works?.find((w) => w.sort_order === sortOrderOrId);
+
+        if (!work) {
+            return card;
+        }
+
+        const response = await axios.delete(
+            `${TASKS_BASE}/${taskId}/comments/${work.id}`
+        );
+        return mapTaskToPosCard(response.data.data);
     },
 
     getStatusLabel(status) {

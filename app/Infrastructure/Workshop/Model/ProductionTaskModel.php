@@ -2,7 +2,9 @@
 
 namespace App\Infrastructure\Workshop\Model;
 
+use App\Infrastructure\Order\Model\OrderModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -14,7 +16,12 @@ final class ProductionTaskModel extends Model
 
     protected $keyType = 'int';
 
-    protected $fillable = ['id', 'order_item_id', 'status', 'master_id'];
+    protected $fillable = ['id', 'order_id', 'status', 'master_id'];
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(OrderModel::class, 'order_id');
+    }
 
     public function diagnosis(): HasOne
     {

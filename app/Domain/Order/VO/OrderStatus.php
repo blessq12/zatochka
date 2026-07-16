@@ -5,8 +5,10 @@ namespace App\Domain\Order\VO;
 enum OrderStatus: string
 {
     case Created = 'created';
+    case MasterAssigned = 'master_assigned';
     case ReceptionCompleted = 'reception_completed';
     case InProgress = 'in_progress';
+    case AwaitingPricing = 'awaiting_pricing';
     case Ready = 'ready';
     case Cancelled = 'cancelled';
     case Closed = 'closed';
@@ -15,9 +17,11 @@ enum OrderStatus: string
     public function canTransitionTo(self $next): bool
     {
         return match ($this) {
-            self::Created => in_array($next, [self::ReceptionCompleted, self::Cancelled], true),
+            self::Created => in_array($next, [self::MasterAssigned, self::ReceptionCompleted, self::Cancelled], true),
+            self::MasterAssigned => in_array($next, [self::InProgress, self::Cancelled], true),
             self::ReceptionCompleted => in_array($next, [self::InProgress, self::Cancelled], true),
-            self::InProgress => in_array($next, [self::Ready, self::Cancelled], true),
+            self::InProgress => in_array($next, [self::AwaitingPricing, self::Cancelled], true),
+            self::AwaitingPricing => in_array($next, [self::Ready, self::Cancelled], true),
             self::Ready => in_array($next, [self::Issued, self::Closed, self::Cancelled], true),
             self::Cancelled, self::Closed, self::Issued => false,
         };

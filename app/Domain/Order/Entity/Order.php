@@ -8,6 +8,8 @@ use App\Domain\Order\Event\OrderClosed;
 use App\Domain\Order\Event\OrderCreated;
 use App\Domain\Order\Event\OrderIssued;
 use App\Domain\Order\Event\OrderItemAdded;
+use App\Domain\Order\Event\OrderItemUnitsRejected;
+use App\Domain\Order\Event\OrderMasterAssigned;
 use App\Domain\Order\Event\ReceptionCompleted;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
@@ -48,6 +50,7 @@ final class Order extends AggregateRoot
         private readonly ?string $defects,
         private readonly ?string $internalNotes,
         private readonly ?OrderId $warrantySourceOrderId = null,
+        private ?EntityId $assignedMasterId = null,
         OrderStatus $status = OrderStatus::Created,
     ) {
         if ($items === []) {
@@ -139,6 +142,7 @@ final class Order extends AggregateRoot
         ?string $defects = null,
         ?string $internalNotes = null,
         ?OrderId $warrantySourceOrderId = null,
+        ?EntityId $assignedMasterId = null,
     ): self {
         return new self(
             $id,
@@ -154,6 +158,7 @@ final class Order extends AggregateRoot
             $defects,
             $internalNotes,
             $warrantySourceOrderId,
+            $assignedMasterId,
             $status,
         );
     }
@@ -218,6 +223,28 @@ final class Order extends AggregateRoot
         return $this->warrantySourceOrderId;
     }
 
+    public function assignedMasterId(): ?EntityId
+    {
+        return $this->assignedMasterId;
+    }
+
+    public function assignMaster(EntityId $masterId): void
+    {
+        $this->assertNotTerminal();
+
+        if ($this->status !== OrderStatus::Created) {
+            throw new DomainException('Master can be assigned only for orders in Created status.');
+        }
+
+        if ($this->assignedMasterId !== null) {
+            throw new DomainException('Master is already assigned to this order.');
+        }
+
+        $this->assignedMasterId = $masterId;
+        $this->transitionTo(OrderStatus::MasterAssigned);
+        $this->record(new OrderMasterAssigned($this->id, $masterId));
+    }
+
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
@@ -238,6 +265,67 @@ final class Order extends AggregateRoot
         }
 
         return $item;
+    }
+
+    public function rejectItemUnits(EntityId $orderItemId, int $count, string $reason): void
+    {
+        $this->assertNotTerminal();
+
+        $item = $this->item($orderItemId);
+        $rejected = $item->rejectUnits($count, $reason);
+
+        $this->record(new OrderItemUnitsRejected(
+            $this->id,
+            $orderItemId,
+            $rejected,
+            $item->rejectedQuantity(),
+            $reason,
+        ));
+    }
+
+    public function rejectEquipmentItem(EntityId $orderItemId, string $reason): void
+    {
+        $this->assertNotTerminal();
+
+        $item = $this->item($orderItemId);
+        $item->markRejected($reason);
+
+        $this->record(new OrderItemUnitsRejected(
+            $this->id,
+            $orderItemId,
+            1,
+            1,
+            $reason,
+        ));
+    }
+
+    public function markItemsInProduction(): void
+    {
+        foreach ($this->items as $item) {
+            $item->markInProduction();
+        }
+    }
+
+    public function finalizeItemsAfterProduction(): void
+    {
+        foreach ($this->items as $item) {
+            if ($item->isFullyRejected()) {
+                continue;
+            }
+
+            $item->markCompleted();
+        }
+    }
+
+    public function allItemsFinalized(): bool
+    {
+        foreach ($this->items as $item) {
+            if (! $item->isFinalized()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function reassignClient(EntityId $clientId): never
@@ -275,12 +363,36 @@ final class Order extends AggregateRoot
 
     public function markInProgress(): void
     {
-        $this->assertNotTerminal();
-        $this->transitionTo(OrderStatus::InProgress);
+        if ($this->status === OrderStatus::InProgress) {
+            return;
+        }
+
+        if ($this->status->isTerminal() || ! $this->status->canTransitionTo(OrderStatus::InProgress)) {
+            return;
+        }
+
+        $this->status = OrderStatus::InProgress;
+    }
+
+    public function markAwaitingPricing(): void
+    {
+        if ($this->status === OrderStatus::AwaitingPricing) {
+            return;
+        }
+
+        if ($this->status->isTerminal() || ! $this->status->canTransitionTo(OrderStatus::AwaitingPricing)) {
+            return;
+        }
+
+        $this->status = OrderStatus::AwaitingPricing;
     }
 
     public function markReady(): void
     {
+        if ($this->status === OrderStatus::Ready) {
+            return;
+        }
+
         $this->assertNotTerminal();
         $this->transitionTo(OrderStatus::Ready);
     }

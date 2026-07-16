@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Workshop\Repository;
 
+use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Entity\ProductionTask;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
 use App\Domain\Workshop\VO\ProductionStatus;
@@ -55,11 +56,11 @@ final readonly class EloquentProductionTaskRepository implements ProductionTaskR
             ?? throw new DomainException(sprintf('Production task %d not found.', $id->value));
     }
 
-    public function findByOrderItemId(EntityId $orderItemId): ?ProductionTask
+    public function findByOrderId(OrderId $orderId): ?ProductionTask
     {
         $model = ProductionTaskModel::query()
             ->with(['diagnosis', 'workExecution', 'comments'])
-            ->where('order_item_id', $orderItemId->value)
+            ->where('order_id', $orderId->value)
             ->first();
 
         return $model === null ? null : $this->mapper->toDomain($model);

@@ -12,6 +12,7 @@ use App\Application\Inventory\Command\WriteOffMaterialCommand;
 use App\Application\Inventory\Command\WriteOffMaterialHandler;
 use App\Application\Inventory\Query\GetStockItemByIdHandler;
 use App\Application\Inventory\Query\GetStockItemByIdQuery;
+use App\Application\Inventory\ReadPort\StockReadPort;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Illuminate\Http\JsonResponse;
@@ -25,8 +26,29 @@ final class StockItemController extends Controller
         private WriteOffMaterialHandler $writeOffMaterial,
         private ChangeStockHandler $changeStock,
         private GetStockItemByIdHandler $getStockItemById,
+        private StockReadPort $stockRead,
         private SequentialEntityIdGenerator $ids,
     ) {}
+
+    public function index(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'query' => ['nullable', 'string'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $result = $this->stockRead->search(
+            $data['query'] ?? null,
+            (int) ($data['page'] ?? 1),
+            (int) ($data['per_page'] ?? 20),
+        );
+
+        return response()->json([
+            'data' => $this->serialize($result['items']),
+            'meta' => $result['meta'],
+        ]);
+    }
 
     public function store(Request $request): JsonResponse
     {

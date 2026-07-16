@@ -19,6 +19,7 @@ final readonly class OrderDTO
         public ?string $defects,
         public ?string $internalNotes,
         public ?string $warrantySourceOrderId,
+        public ?int $assignedMasterId,
         public string $estimatedAmount,
         public string $estimatedCurrency,
         public string $createdAt,

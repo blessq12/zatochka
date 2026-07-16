@@ -13,6 +13,7 @@ final readonly class MasterComment
         public EntityId $masterId,
         public string $text,
         public DateTimeImmutable $createdAt = new DateTimeImmutable(),
+        public ?EntityId $orderItemId = null,
     ) {
         if (trim($this->text) === '') {
             throw new DomainException('Master comment cannot be empty.');

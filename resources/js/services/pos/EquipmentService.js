@@ -1,55 +1,54 @@
 import axios from "axios";
 
 const formatEquipmentItem = (item) => {
-    const brandModel = [item.brand, item.model].filter(Boolean).join(" ");
-    const fullName = brandModel
-        ? `${item.name} (${brandModel})`
-        : item.name;
+    const name = item.title || item.name || "";
+    const brand = item.brand || "";
+    const model = item.modelName || item.model || "";
+    const brandModel = [brand, model].filter(Boolean).join(" ");
+    const fullName = brandModel ? `${name} (${brandModel})` : name;
 
-    const serialNumbers = item.serial_numbers;
+    const components = item.components || [];
+    const serialNumbers = {};
+    for (const component of components) {
+        if (component.serialNumber || component.serial_number) {
+            serialNumbers[component.name] =
+                component.serialNumber || component.serial_number;
+        }
+    }
 
     let serialNumbersDisplay = "—";
-
-    if (
-        serialNumbers &&
-        typeof serialNumbers === "object" &&
-        !Array.isArray(serialNumbers)
-    ) {
+    if (Object.keys(serialNumbers).length > 0) {
         serialNumbersDisplay = Object.entries(serialNumbers)
             .map(([component, serial]) => `${component}: ${serial}`)
             .join(", ");
-    } else if (Array.isArray(serialNumbers)) {
-        serialNumbersDisplay = serialNumbers.join(", ");
     }
 
     return {
-        ...item,
+        id: item.id,
+        name,
+        title: name,
+        brand,
+        model,
         full_name: fullName,
+        serial_numbers: serialNumbers,
         serial_numbers_display: serialNumbersDisplay,
+        components,
     };
 };
 
 export const equipmentService = {
-    /**
-     * @param {string} query
-     * @returns {Promise<Array>}
-     */
     async search(query) {
         const trimmed = query.trim();
-        const response = await axios.get("/api/pos/equipment", {
+        const response = await axios.get("/api/v1/equipment", {
             params: { query: trimmed, page: 1, per_page: 20 },
         });
 
         return (response.data.data || []).map(formatEquipmentItem);
     },
 
-    /**
-     * @param {number|string} equipmentId
-     * @returns {Promise<{ equipment: object|null, orders: Array }>}
-     */
     async getOrderHistory(equipmentId) {
         const response = await axios.get(
-            `/api/pos/equipment/${equipmentId}/orders`
+            `/api/v1/equipment/${equipmentId}/orders`
         );
 
         return {

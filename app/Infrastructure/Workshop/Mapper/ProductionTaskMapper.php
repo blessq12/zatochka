@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Workshop\Mapper;
 
 use App\Application\Workshop\DTO\ProductionTaskDTO;
+use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Entity\Diagnosis;
 use App\Domain\Workshop\Entity\MasterComment;
 use App\Domain\Workshop\Entity\ProductionTask;
@@ -53,12 +54,15 @@ final class ProductionTaskMapper
                 new EntityId((int) $comment->master_id),
                 (string) $comment->text,
                 DateTimeImmutable::createFromInterface($comment->created_at),
+                $comment->order_item_id !== null
+                    ? new EntityId((int) $comment->order_item_id)
+                    : null,
             );
         }
 
         return ProductionTask::reconstitute(
             new EntityId((int) $model->id),
-            new EntityId((int) $model->order_item_id),
+            new OrderId((string) $model->order_id),
             ProductionStatus::from((string) $model->status),
             $model->master_id !== null ? new EntityId((int) $model->master_id) : null,
             $diagnosis,
@@ -71,7 +75,7 @@ final class ProductionTaskMapper
     {
         $model ??= new ProductionTaskModel();
         $model->id = $task->id()->value;
-        $model->order_item_id = $task->orderItemId()->value;
+        $model->order_id = $task->orderId()->value;
         $model->status = $task->status()->value;
         $model->master_id = $task->masterId()?->value;
 
@@ -126,6 +130,7 @@ final class ProductionTaskMapper
             $row->master_id = $comment->masterId->value;
             $row->text = $comment->text;
             $row->created_at = $comment->createdAt;
+            $row->order_item_id = $comment->orderItemId?->value;
             $rows[] = $row;
         }
 
@@ -136,7 +141,7 @@ final class ProductionTaskMapper
     {
         return new ProductionTaskDTO(
             (int) $model->id,
-            (int) $model->order_item_id,
+            (string) $model->order_id,
             (string) $model->status,
             $model->master_id !== null ? (int) $model->master_id : null,
             $model->diagnosis !== null ? (int) $model->diagnosis->id : null,

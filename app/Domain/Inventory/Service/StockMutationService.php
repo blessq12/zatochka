@@ -13,9 +13,15 @@ final class StockMutationService
         $stockItem->receive($movementId, $quantity, $comment);
     }
 
-    public function writeOff(StockItem $stockItem, EntityId $movementId, Quantity $quantity, ?string $comment = null): void
-    {
-        $stockItem->writeOff($movementId, $quantity, $comment);
+    public function writeOff(
+        StockItem $stockItem,
+        EntityId $movementId,
+        Quantity $quantity,
+        ?string $comment = null,
+        ?string $orderId = null,
+        ?int $orderItemId = null,
+    ): void {
+        $stockItem->writeOff($movementId, $quantity, $comment, $orderId, $orderItemId);
     }
 
     public function changeBalance(StockItem $stockItem, EntityId $movementId, Quantity $quantity, ?string $comment = null): void

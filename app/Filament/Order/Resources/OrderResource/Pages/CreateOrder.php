@@ -324,6 +324,22 @@ class CreateOrder extends CreateRecord
                                         ->label('Заметки')
                                         ->rows(2)
                                         ->columnSpanFull(),
+                                    Repeater::make('parts')
+                                        ->label('Части оборудования')
+                                        ->schema([
+                                            TextInput::make('name')
+                                                ->label('Название')
+                                                ->required()
+                                                ->placeholder('Ручка / Блок управления / Блок питания'),
+                                            TextInput::make('serialNumber')
+                                                ->label('Серийный номер')
+                                                ->placeholder('Необязательно'),
+                                        ])
+                                        ->defaultItems(0)
+                                        ->addActionLabel('Добавить часть')
+                                        ->columns(2)
+                                        ->columnSpanFull()
+                                        ->collapsible(),
                                 ])
                                 ->columns(3)
                                 ->defaultItems(1)
@@ -452,6 +468,21 @@ class CreateOrder extends CreateRecord
         }
 
         foreach ($data['new_equipment'] ?? [] as $equipment) {
+            $parts = [];
+
+            foreach ($equipment['parts'] ?? [] as $part) {
+                if (! filled($part['name'] ?? null)) {
+                    continue;
+                }
+
+                $parts[] = [
+                    'name' => (string) $part['name'],
+                    'serialNumber' => filled($part['serialNumber'] ?? null)
+                        ? (string) $part['serialNumber']
+                        : null,
+                ];
+            }
+
             $items[] = new CreateOrderItemDTO(
                 $ids->next('order_item')->value,
                 null,
@@ -462,6 +493,7 @@ class CreateOrder extends CreateRecord
                 (string) $equipment['brand'],
                 (string) $equipment['model_name'],
                 filled($equipment['notes'] ?? null) ? (string) $equipment['notes'] : null,
+                $parts,
             );
         }
 
@@ -489,7 +521,7 @@ class CreateOrder extends CreateRecord
 
         return $query->get()
             ->mapWithKeys(fn (OrderModel $order): array => [
-                (int) $order->id => $this->formatWarrantySourceOrder($order),
+                (string) $order->id => $this->formatWarrantySourceOrder($order),
             ])
             ->all();
     }
@@ -500,7 +532,7 @@ class CreateOrder extends CreateRecord
             return null;
         }
 
-        $order = OrderModel::query()->with('client')->find((int) $value);
+        $order = OrderModel::query()->with('client')->find((string) $value);
 
         return $order === null ? null : $this->formatWarrantySourceOrder($order);
     }

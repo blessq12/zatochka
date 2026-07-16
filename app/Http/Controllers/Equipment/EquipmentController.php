@@ -11,6 +11,7 @@ use App\Application\Equipment\Command\RegisterSerialNumberHandler;
 use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Equipment\Query\GetEquipmentByIdHandler;
 use App\Application\Equipment\Query\GetEquipmentByIdQuery;
+use App\Application\Equipment\ReadPort\EquipmentReadPort;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Illuminate\Http\JsonResponse;
@@ -23,8 +24,34 @@ final class EquipmentController extends Controller
         private AddComponentHandler $addComponent,
         private RegisterSerialNumberHandler $registerSerialNumber,
         private GetEquipmentByIdHandler $getEquipmentById,
+        private EquipmentReadPort $equipmentRead,
         private SequentialEntityIdGenerator $ids,
     ) {}
+
+    public function index(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'query' => ['nullable', 'string'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $result = $this->equipmentRead->search(
+            $data['query'] ?? null,
+            (int) ($data['page'] ?? 1),
+            (int) ($data['per_page'] ?? 20),
+        );
+
+        return response()->json([
+            'data' => $this->serialize($result['items']),
+            'meta' => $result['meta'],
+        ]);
+    }
+
+    public function orderHistory(int $equipmentId): JsonResponse
+    {
+        return $this->ok($this->equipmentRead->orderHistory($equipmentId));
+    }
 
     public function store(Request $request): JsonResponse
     {

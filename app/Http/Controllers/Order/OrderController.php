@@ -12,10 +12,13 @@ use App\Application\Order\Command\CreateOrderCommand;
 use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\Command\IssueOrderCommand;
 use App\Application\Order\Command\IssueOrderHandler;
+use App\Application\Order\Command\RejectOrderItemUnitsCommand;
+use App\Application\Order\Command\RejectOrderItemUnitsHandler;
 use App\Application\Order\DTO\CreateOrderItemDTO;
 use App\Application\Order\DTO\ReceptionItemDTO;
 use App\Application\Order\Query\GetOrderByIdHandler;
 use App\Application\Order\Query\GetOrderByIdQuery;
+use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Domain\Order\VO\OrderId;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
@@ -31,7 +34,9 @@ final class OrderController extends Controller
         private CancelOrderHandler $cancelOrder,
         private CloseOrderHandler $closeOrder,
         private IssueOrderHandler $issueOrder,
+        private RejectOrderItemUnitsHandler $rejectOrderItemUnits,
         private GetOrderByIdHandler $getOrderById,
+        private OrderContainerReadPort $orderContainer,
         private SequentialEntityIdGenerator $ids,
     ) {}
 
@@ -108,6 +113,34 @@ final class OrderController extends Controller
         }
 
         return $this->ok($order);
+    }
+
+    public function container(string $orderId): JsonResponse
+    {
+        $container = $this->orderContainer->findById($orderId);
+
+        if ($container === null) {
+            return response()->json(['message' => 'Order not found.'], 404);
+        }
+
+        return $this->ok($container);
+    }
+
+    public function rejectItemUnits(Request $request, string $orderId, int $orderItemId): JsonResponse
+    {
+        $data = $request->validate([
+            'quantity' => ['nullable', 'integer', 'min:1'],
+            'reason' => ['required', 'string'],
+        ]);
+
+        $this->rejectOrderItemUnits->handle(new RejectOrderItemUnitsCommand(
+            $orderId,
+            $orderItemId,
+            (int) ($data['quantity'] ?? 1),
+            $data['reason'],
+        ));
+
+        return $this->ok($this->orderContainer->findById($orderId));
     }
 
     public function completeReception(Request $request, string $orderId): JsonResponse
