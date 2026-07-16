@@ -27,7 +27,6 @@ final class OrderItemModel extends Model
         'rejected_quantity',
         'rejection_reason',
         'status',
-        'item_price_id',
         'warranty_id',
     ];
 

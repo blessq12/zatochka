@@ -71,7 +71,7 @@ final class OrderController extends Controller
 
         foreach ($data['items'] as $item) {
             $items[] = new CreateOrderItemDTO(
-                $this->ids->next('order_item')->value,
+                null,
                 isset($item['clientEquipmentId']) ? (int) $item['clientEquipmentId'] : null,
                 $item['toolName'] ?? null,
                 $item['toolType'] ?? null,

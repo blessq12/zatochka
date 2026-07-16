@@ -2,23 +2,20 @@
 
 namespace App\Infrastructure\Order\Listener;
 
-use App\Application\Shared\DomainEventPublisher;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Application\Order\Command\MarkOrderInProgressCommand;
+use App\Application\Order\Command\MarkOrderInProgressHandler;
 use App\Domain\Workshop\Event\WorkStarted;
 
 final readonly class MarkOrderInProgressOnWorkStarted
 {
     public function __construct(
-        private OrderRepository $orders,
-        private DomainEventPublisher $events,
+        private MarkOrderInProgressHandler $markInProgress,
     ) {}
 
     public function handle(WorkStarted $event): void
     {
-        $order = $this->orders->getById($event->orderId);
-        $order->markInProgress();
-        $order->markItemsInProduction();
-        $this->orders->save($order);
-        $this->events->publish($order->pullDomainEvents());
+        $this->markInProgress->handle(new MarkOrderInProgressCommand(
+            $event->orderId->value,
+        ));
     }
 }

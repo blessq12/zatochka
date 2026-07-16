@@ -107,5 +107,9 @@ export function mapTaskToPosCard(task) {
             : null,
         created_at: task.createdAt,
         master_id: task.masterId,
+        work_target_mode:
+            task.workTargetMode ||
+            task.work_target_mode ||
+            (serviceType === "repair" ? "equipment_component" : "order_item"),
     };
 }

@@ -22,7 +22,7 @@ Applies to:
 
 ## Allowed
 
-- English domain terms: `Order`, `OrderItem`, `Reception`, `Workshop`, `Estimate`
+- English domain terms: `Order`, `OrderItem`, `Reception`, `Workshop`, `WorkPrice`
 - User-facing copy / comments / docs may be Russian
 - String literals for UI/API messages may be Russian when that is product copy
 

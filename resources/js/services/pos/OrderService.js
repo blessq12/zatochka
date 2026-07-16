@@ -107,13 +107,13 @@ export const orderService = {
         return mapTaskToPosCard(response.data.data);
     },
 
-    async rejectItem(taskId, orderItemId, reason, quantity = 1) {
-        const response = await axios.post(`${TASKS_BASE}/${taskId}/reject`, {
-            orderItemId,
+    async rejectItem(taskId, orderId, orderItemId, reason, quantity = 1) {
+        await axios.post(`/api/v1/orders/${orderId}/items/${orderItemId}/reject-units`, {
             reason,
             quantity,
         });
-        return mapTaskToPosCard(response.data.data);
+
+        return this.getOrderById(taskId);
     },
 
     async removeWork(taskId, sortOrderOrId) {

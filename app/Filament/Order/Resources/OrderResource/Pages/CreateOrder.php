@@ -11,9 +11,9 @@ use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
 use App\Filament\Order\Resources\OrderResource;
+use App\Filament\Order\Resources\OrderResource\Support\OrderPresentation;
 use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
 use App\Infrastructure\Order\Model\OrderModel;
-use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use App\Shared\Domain\DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
@@ -191,7 +191,7 @@ class CreateOrder extends CreateRecord
                                         $set('client_equipment_ids', []);
                                     }
                                 }),
-                            OrderResource::clientSelect('client_id')
+                            OrderPresentation::clientSelect('client_id')
                                 ->live()
                                 ->afterStateUpdated(fn (Set $set) => $set('client_equipment_ids', []))
                                 ->visible(fn (Get $get): bool => $get('client_mode') === 'existing')
@@ -394,9 +394,8 @@ class CreateOrder extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         try {
-            $ids = app(SequentialEntityIdGenerator::class);
             $orderId = OrderId::generate()->value;
-            $items = $this->buildItems($data, $ids);
+            $items = $this->buildItems($data);
 
             $isWarranty = ($data['billing_type'] ?? null) === OrderBillingType::Warranty->value;
             $isNewClient = ! $isWarranty && ($data['client_mode'] ?? null) === 'new';
@@ -437,7 +436,7 @@ class CreateOrder extends CreateRecord
      * @param  array<string, mixed>  $data
      * @return list<CreateOrderItemDTO>
      */
-    private function buildItems(array $data, SequentialEntityIdGenerator $ids): array
+    private function buildItems(array $data): array
     {
         $serviceType = (string) $data['service_type'];
         $items = [];
@@ -445,7 +444,7 @@ class CreateOrder extends CreateRecord
         if ($serviceType === OrderServiceType::Sharpening->value) {
             foreach ($data['tools'] ?? [] as $tool) {
                 $items[] = new CreateOrderItemDTO(
-                    $ids->next('order_item')->value,
+                    null,
                     null,
                     (string) $tool['name'],
                     (string) $tool['tool_type'],
@@ -459,7 +458,7 @@ class CreateOrder extends CreateRecord
         if (($data['equipment_mode'] ?? null) === 'existing') {
             foreach ($data['client_equipment_ids'] ?? [] as $equipmentId) {
                 $items[] = new CreateOrderItemDTO(
-                    $ids->next('order_item')->value,
+                    null,
                     (int) $equipmentId,
                 );
             }
@@ -484,7 +483,7 @@ class CreateOrder extends CreateRecord
             }
 
             $items[] = new CreateOrderItemDTO(
-                $ids->next('order_item')->value,
+                null,
                 null,
                 null,
                 null,
@@ -544,9 +543,9 @@ class CreateOrder extends CreateRecord
             ? 'Клиент #'.$order->client_id
             : trim(($client->name ?: 'Без имени').' · '.$client->phone);
 
-        $type = OrderResource::serviceTypeOptions()[$order->service_type] ?? $order->service_type;
+        $type = OrderPresentation::serviceTypeOptions()[$order->service_type] ?? $order->service_type;
 
-        return (string) OrderResource::orderNumber($order).' · '.$type.' · '.$clientLabel;
+        return (string) OrderPresentation::orderNumber($order).' · '.$type.' · '.$clientLabel;
     }
 
     protected function getCreateFormAction(): Action

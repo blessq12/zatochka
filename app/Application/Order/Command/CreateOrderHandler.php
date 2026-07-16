@@ -2,20 +2,17 @@
 
 namespace App\Application\Order\Command;
 
-use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Order\Port\ClientProvisioningPort;
-use App\Application\Order\Port\EquipmentProvisioningPort;
+use App\Application\Order\ServiceType\OrderItemBuildStrategyResolver;
 use App\Application\Shared\DomainEventPublisher;
+use App\Application\Shared\EntityIdGenerator;
 use App\Domain\Order\Entity\Order;
-use App\Domain\Order\Entity\OrderItem;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderNumber;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderUrgency;
-use App\Domain\Order\VO\SharpeningToolType;
-use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
 use App\Shared\ValueObject\Money;
@@ -26,8 +23,8 @@ final readonly class CreateOrderHandler
         private OrderRepository $orders,
         private DomainEventPublisher $events,
         private ClientProvisioningPort $clients,
-        private EquipmentProvisioningPort $equipment,
-        private SequentialEntityIdGenerator $ids,
+        private EntityIdGenerator $ids,
+        private OrderItemBuildStrategyResolver $itemBuilders,
     ) {}
 
     public function handle(CreateOrderCommand $command): void
@@ -83,64 +80,11 @@ final readonly class CreateOrderHandler
             }
         }
 
+        $itemBuilder = $this->itemBuilders->for($serviceType);
         $items = [];
 
         foreach ($command->items as $itemDto) {
-            if ($serviceType === OrderServiceType::Sharpening) {
-                if (! filled($itemDto->toolName)) {
-                    throw new DomainException('Sharpening item requires a tool name.');
-                }
-
-                $toolType = SharpeningToolType::tryFrom((string) $itemDto->toolType)
-                    ?? throw new DomainException('Unknown sharpening tool type.');
-
-                $items[] = OrderItem::forTool(
-                    new EntityId($itemDto->orderItemId),
-                    (string) $itemDto->toolName,
-                    $toolType,
-                    (int) ($itemDto->quantity ?? 0),
-                );
-
-                continue;
-            }
-
-            $equipmentId = $itemDto->clientEquipmentId;
-
-            if ($itemDto->isNewEquipment()) {
-                $equipmentId = $this->ids->next('equipment')->value;
-                $parts = [];
-
-                foreach ($itemDto->equipmentParts as $part) {
-                    if (! filled($part['name'] ?? null)) {
-                        continue;
-                    }
-
-                    $parts[] = new EquipmentPartDTO(
-                        $this->ids->next('equipment_component')->value,
-                        (string) $part['name'],
-                        filled($part['serialNumber'] ?? null) ? (string) $part['serialNumber'] : null,
-                    );
-                }
-
-                $this->equipment->register(
-                    $equipmentId,
-                    $clientId,
-                    (string) $itemDto->equipmentTitle,
-                    (string) $itemDto->equipmentBrand,
-                    (string) $itemDto->equipmentModelName,
-                    $itemDto->equipmentNotes,
-                    $parts,
-                );
-            }
-
-            if ($equipmentId === null) {
-                throw new DomainException('Repair item requires client equipment.');
-            }
-
-            $items[] = OrderItem::forEquipment(
-                new EntityId($itemDto->orderItemId),
-                new EntityId($equipmentId),
-            );
+            $items[] = $itemBuilder->buildItem($itemDto, $clientId);
         }
 
         $createdAt = new \DateTimeImmutable();

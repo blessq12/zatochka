@@ -208,10 +208,8 @@ class StockItemResource extends DomainResource
                 ])
                 ->action(function (StockItemModel $record, array $data): void {
                     try {
-                        $movementId = app(SequentialEntityIdGenerator::class)->next('warehouse_movement')->value;
                         app(WriteOffMaterialHandler::class)->handle(new WriteOffMaterialCommand(
                             (int) $record->id,
-                            $movementId,
                             (string) $data['quantity'],
                             $data['comment'] ?? null,
                         ));

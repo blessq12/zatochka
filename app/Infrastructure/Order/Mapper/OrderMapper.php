@@ -61,9 +61,6 @@ final class OrderMapper
                 $itemModel->tool_name !== null ? (string) $itemModel->tool_name : null,
                 $status,
                 $reception,
-                $itemModel->item_price_id !== null
-                    ? new EntityId((int) $itemModel->item_price_id)
-                    : null,
                 $itemModel->warranty_id !== null
                     ? new EntityId((int) $itemModel->warranty_id)
                     : null,
@@ -144,7 +141,6 @@ final class OrderMapper
             $row->rejected_quantity = $item->rejectedQuantity();
             $row->rejection_reason = $item->rejectionReason();
             $row->status = $item->status()->value;
-            $row->item_price_id = $item->itemPriceId()?->value;
             $row->warranty_id = $item->warrantyId()?->value;
             $rows[] = $row;
         }
@@ -200,7 +196,6 @@ final class OrderMapper
                 $repairableQuantity,
                 $status,
                 $item->reception !== null,
-                $item->item_price_id !== null ? (int) $item->item_price_id : null,
                 $item->warranty_id !== null ? (int) $item->warranty_id : null,
             );
         }

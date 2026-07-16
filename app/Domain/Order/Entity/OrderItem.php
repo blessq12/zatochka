@@ -11,7 +11,6 @@ final class OrderItem
 {
     private OrderItemStatus $status;
     private ?ReceptionData $receptionData = null;
-    private ?EntityId $itemPriceId = null;
     private ?EntityId $warrantyId = null;
     private ?string $toolName;
     private ?SharpeningToolType $toolType;
@@ -73,7 +72,6 @@ final class OrderItem
         ?string $toolName,
         OrderItemStatus $status,
         ?ReceptionData $receptionData = null,
-        ?EntityId $itemPriceId = null,
         ?EntityId $warrantyId = null,
         ?SharpeningToolType $toolType = null,
         ?int $quantity = null,
@@ -82,7 +80,6 @@ final class OrderItem
     ): self {
         $item = new self($id, $clientEquipmentId, $toolName, $toolType, $quantity, $status);
         $item->receptionData = $receptionData;
-        $item->itemPriceId = $itemPriceId;
         $item->warrantyId = $warrantyId;
         $item->rejectedQuantity = max(0, $rejectedQuantity);
         $item->rejectionReason = $rejectionReason;
@@ -135,11 +132,6 @@ final class OrderItem
         return $this->receptionData;
     }
 
-    public function itemPriceId(): ?EntityId
-    {
-        return $this->itemPriceId;
-    }
-
     public function warrantyId(): ?EntityId
     {
         return $this->warrantyId;
@@ -152,11 +144,6 @@ final class OrderItem
         }
 
         $this->receptionData = $receptionData;
-    }
-
-    public function bindItemPrice(EntityId $itemPriceId): void
-    {
-        $this->itemPriceId = $itemPriceId;
     }
 
     public function bindWarranty(EntityId $warrantyId): void

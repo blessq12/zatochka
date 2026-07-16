@@ -36,7 +36,6 @@ return new class extends Migration
             $table->unsignedInteger('quantity')->nullable();
             $table->string('status');
             $table->unsignedBigInteger('production_task_id')->nullable();
-            $table->unsignedBigInteger('item_price_id')->nullable();
             $table->unsignedBigInteger('warranty_id')->nullable();
             $table->foreign('order_id')->references('id')->on('orders')->cascadeOnDelete();
         });

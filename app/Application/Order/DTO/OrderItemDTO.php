@@ -15,7 +15,6 @@ final readonly class OrderItemDTO
         public int $repairableQuantity,
         public string $status,
         public bool $hasReception,
-        public ?int $itemPriceId,
         public ?int $warrantyId,
     ) {}
 }

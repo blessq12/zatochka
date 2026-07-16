@@ -4,6 +4,7 @@ namespace App\Filament\Order\Resources\OrderResource\Pages;
 
 use App\Domain\Order\VO\OrderUrgency;
 use App\Filament\Order\Resources\OrderResource;
+use App\Filament\Order\Resources\OrderResource\Support\OrderPresentation;
 use App\Infrastructure\Order\Model\OrderModel;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
@@ -32,8 +33,8 @@ class ViewOrder extends ViewRecord
         $record->loadMissing('client');
 
         $parts = [
-            OrderResource::serviceTypeOptions()[$record->service_type] ?? $record->service_type,
-            OrderResource::billingTypeOptions()[$record->billing_type] ?? $record->billing_type,
+            OrderPresentation::serviceTypeOptions()[$record->service_type] ?? $record->service_type,
+            OrderPresentation::billingTypeOptions()[$record->billing_type] ?? $record->billing_type,
         ];
 
         if ($record->urgency === OrderUrgency::Urgent->value) {

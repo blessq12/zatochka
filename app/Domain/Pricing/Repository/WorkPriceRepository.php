@@ -17,4 +17,6 @@ interface WorkPriceRepository
      * @param list<int> $performedWorkIds
      */
     public function deleteByPerformedWorkIds(array $performedWorkIds): void;
+
+    public function deleteByOrderId(string $orderId): void;
 }

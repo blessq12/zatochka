@@ -2,11 +2,12 @@
 
 namespace App\Infrastructure\Shared\Persistence;
 
+use App\Application\Shared\EntityIdGenerator;
 use App\Shared\ValueObject\EntityId;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-final class SequentialEntityIdGenerator
+final class SequentialEntityIdGenerator implements EntityIdGenerator
 {
     /**
      * Sequence name → table used to keep next_value ahead of existing rows.
@@ -24,9 +25,6 @@ final class SequentialEntityIdGenerator
         'equipment' => 'client_equipment',
         'equipment_component' => 'equipment_components',
         'reception' => 'reception_data',
-        'estimate' => 'estimates',
-        'item_price' => 'item_prices',
-        'discount' => 'discounts',
         'stock_item' => 'stock_items',
         'material' => 'materials',
         'warehouse_movement' => 'warehouse_movements',

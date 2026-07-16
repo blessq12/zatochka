@@ -1,0 +1,69 @@
+---
+description: Isolated BC verticals, sync domain events, transactional Unit of Work
+alwaysApply: true
+---
+
+# Bounded Context Verticals & Event Spine
+
+## Decisions (locked)
+
+- Pricing write-path: **WorkPrice only**. Estimate / ItemPrice — kill (no new usage).
+- Inter-BC communication: **sync domain events only** (no queues in this refactor).
+- Inventory write-off from order UI: **Inventory command + event** (Order does not orchestrate Inventory).
+
+## Vertical isolation
+
+Each BC is a vertical: `Domain → Application → Infrastructure` (+ own HTTP/Filament adapter if needed).
+
+**Forbidden**
+
+- Application handler of BC-A calling Repository / Handler / Eloquent of BC-B
+- Application importing `App\Infrastructure\*\Model` (use ports / repositories only)
+- UI (Filament / Vue API controller) calling handlers of **two** BCs in one action as an orchestrator
+- Cross-BC “convenience” sync method calls instead of domain events
+
+**Allowed**
+
+- UI → **one** write command of the owning BC
+- Aggregate mutates → records domain events → save → **publish inside same DB transaction**
+- Listener (Infrastructure, thin) → Application command of the **target** BC
+- Own-BC ReadPort for queries; cross-BC read only via dedicated read model / port (never via foreign write stack)
+
+## Transactional Unit of Work
+
+Initiating write use-case owns one outer transaction:
+
+1. Load aggregate (source BC)
+2. Mutate + record domain events
+3. Persist aggregate
+4. `DomainEventPublisher::publish` **inside the same transaction**
+5. Sync listeners run Application commands of other BCs on the **same connection**
+6. Any exception → **full rollback** of source + all reactions
+
+**Rules**
+
+- Do not open nested `DB::transaction()` in listeners blindly
+- Critical listeners must be idempotent w.r.t. FSM
+- Queries / ReadPorts stay outside write transactions
+
+## Event listener shape
+
+```
+Infrastructure\Listener\XOnY
+  → Application\<TargetBc>\Command\...Handler
+```
+
+Listener must not contain business rules or Eloquent writes beyond delegating to Application.
+
+Catalog: `docs/architecture/domain-event-catalog.md` — every domain event is **LIVE** or **FUTURE_HOOK**. No silent orphan listener classes.
+
+## Service types
+
+Sharpening vs repair branching lives in Application **Strategy** packages:
+
+- `Application\Order\ServiceType\*` — order item build
+- `Application\Workshop\WorkAttachment\*` — work target
+- `Application\Workshop\ServiceType\*` — production completion
+- `Application\Pricing\ServiceType\*` — pricing presentation
+
+Not scattered UI if/else on `service_type` strings when a policy already exists.

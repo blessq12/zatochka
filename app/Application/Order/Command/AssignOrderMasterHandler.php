@@ -3,6 +3,7 @@
 namespace App\Application\Order\Command;
 
 use App\Application\Shared\DomainEventPublisher;
+use App\Application\Shared\UnitOfWork;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\VO\OrderId;
 use App\Models\User;
@@ -15,19 +16,22 @@ final readonly class AssignOrderMasterHandler
     public function __construct(
         private OrderRepository $orders,
         private DomainEventPublisher $events,
+        private UnitOfWork $unitOfWork,
     ) {}
 
     public function handle(AssignOrderMasterCommand $command): void
     {
-        $master = User::query()->find($command->masterId);
+        $this->unitOfWork->execute(function () use ($command): void {
+            $master = User::query()->find($command->masterId);
 
-        if ($master === null || $master->role !== UserRole::Master) {
-            throw new DomainException('Selected user is not a master.');
-        }
+            if ($master === null || $master->role !== UserRole::Master) {
+                throw new DomainException('Selected user is not a master.');
+            }
 
-        $order = $this->orders->getById(new OrderId($command->orderId));
-        $order->assignMaster(new EntityId($command->masterId));
-        $this->orders->save($order);
-        $this->events->publish($order->pullDomainEvents());
+            $order = $this->orders->getById(new OrderId($command->orderId));
+            $order->assignMaster(new EntityId($command->masterId));
+            $this->orders->save($order);
+            $this->events->publish($order->pullDomainEvents());
+        });
     }
 }

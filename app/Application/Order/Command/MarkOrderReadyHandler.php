@@ -2,60 +2,49 @@
 
 namespace App\Application\Order\Command;
 
-use App\Application\Pricing\ReadPort\WorkPriceReadPort;
+use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\VO\OrderId;
-use App\Infrastructure\Workshop\Model\PerformedWorkModel;
-use App\Infrastructure\Workshop\Model\ProductionTaskModel;
+use App\Domain\Order\VO\OrderItemStatus;
 use App\Shared\Domain\DomainException;
 
 final readonly class MarkOrderReadyHandler
 {
     public function __construct(
         private OrderRepository $orders,
-        private WorkPriceReadPort $workPrices,
+        private OrderContainerReadPort $orderContainers,
         private DomainEventPublisher $events,
     ) {}
 
     public function handle(MarkOrderReadyCommand $command): void
     {
         $order = $this->orders->getById(new OrderId($command->orderId));
-        $taskId = ProductionTaskModel::query()
-            ->where('order_id', $command->orderId)
-            ->value('id');
+        $container = $this->orderContainers->findById($command->orderId);
 
-        if ($taskId === null) {
+        if ($container === null || $container->productionTask === null) {
             throw new DomainException('Production task not found for order.');
         }
 
-        $works = PerformedWorkModel::query()
-            ->where('production_task_id', $taskId)
-            ->get();
-
-        foreach ($order->items() as $item) {
-            if ($item->isFullyRejected()) {
+        foreach ($container->items as $item) {
+            if ($item->status === OrderItemStatus::Rejected->value || $item->repairableQuantity < 1) {
                 continue;
             }
 
-            $itemWorks = $works->filter(
-                static fn ($work) => (int) $work->order_item_id === $item->id()->value,
-            );
-
-            if ($itemWorks->isEmpty()) {
+            if ($item->works === []) {
                 throw new DomainException(sprintf(
                     'Item #%d has no completed works to price.',
-                    $item->id()->value,
+                    $item->id,
                 ));
             }
 
-            foreach ($itemWorks as $work) {
-                $workPrice = $this->workPrices->findByPerformedWorkId((int) $work->id);
+            foreach ($item->works as $work) {
+                $price = $work['price'] ?? null;
 
-                if ($workPrice === null || ! $workPrice->calculated) {
+                if (! is_array($price) || ! ($price['calculated'] ?? false)) {
                     throw new DomainException(sprintf(
                         'Work #%d does not have a calculated price yet.',
-                        $work->id,
+                        $work['id'],
                     ));
                 }
             }

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Workshop;
 
-use App\Application\Order\Command\RejectOrderItemUnitsCommand;
-use App\Application\Order\Command\RejectOrderItemUnitsHandler;
 use App\Application\Workshop\Command\AddMasterCommentCommand;
 use App\Application\Workshop\Command\AddMasterCommentHandler;
 use App\Application\Workshop\Command\AddMasterWorkCommand;
@@ -40,7 +38,6 @@ final class ProductionTaskController extends Controller
     public function __construct(
         private AssignMasterHandler $assignMaster,
         private CompleteDiagnosisHandler $completeDiagnosis,
-        private RejectOrderItemUnitsHandler $rejectOrderItemUnits,
         private StartWorkHandler $startWork,
         private CompleteWorkHandler $completeWork,
         private CompleteProductionHandler $completeProduction,
@@ -140,26 +137,6 @@ final class ProductionTaskController extends Controller
             $this->ids->next('diagnosis')->value,
             $data['summary'],
             $data['technicalNotes'] ?? null,
-        ));
-
-        return $this->ok($this->cardOrFail($productionTaskId));
-    }
-
-    public function reject(Request $request, int $productionTaskId): JsonResponse
-    {
-        $card = $this->assertTaskOwned($productionTaskId);
-
-        $data = $request->validate([
-            'orderItemId' => ['required', 'integer'],
-            'quantity' => ['nullable', 'integer', 'min:1'],
-            'reason' => ['required', 'string'],
-        ]);
-
-        $this->rejectOrderItemUnits->handle(new RejectOrderItemUnitsCommand(
-            $card->orderId,
-            (int) $data['orderItemId'],
-            (int) ($data['quantity'] ?? 1),
-            $data['reason'],
         ));
 
         return $this->ok($this->cardOrFail($productionTaskId));

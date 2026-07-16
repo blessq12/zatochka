@@ -126,6 +126,10 @@ final class MasterProductionTaskPresenter
 
         $subjectLine = $subjectParts === [] ? null : implode(', ', $subjectParts);
         $status = (string) $model->status;
+        $serviceType = (string) ($order?->service_type ?? '');
+        $workTargetMode = $serviceType === OrderServiceType::Repair->value
+            ? 'equipment_component'
+            : 'order_item';
 
         return new MasterProductionTaskCardDTO(
             (int) $model->id,
@@ -134,7 +138,7 @@ final class MasterProductionTaskPresenter
             $model->master_id !== null ? (int) $model->master_id : null,
             (string) ($order?->id ?? ''),
             (string) ($order?->number ?? ''),
-            (string) ($order?->service_type ?? ''),
+            $serviceType,
             (string) ($order?->billing_type ?? ''),
             (string) ($order?->urgency ?? ''),
             (bool) ($order?->delivery_required ?? false),
@@ -151,6 +155,7 @@ final class MasterProductionTaskPresenter
             $equipmentList,
             $subjectLine,
             $order?->defects !== null ? mb_substr((string) $order->defects, 0, 160) : null,
+            $workTargetMode,
         );
     }
 

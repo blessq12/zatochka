@@ -62,4 +62,15 @@ final readonly class EloquentWorkPriceRepository implements WorkPriceRepository
             ->whereIn('performed_work_id', $performedWorkIds)
             ->delete();
     }
+
+    public function deleteByOrderId(string $orderId): void
+    {
+        WorkPriceModel::query()
+            ->whereIn('order_item_id', static function ($query) use ($orderId): void {
+                $query->select('id')
+                    ->from('order_items')
+                    ->where('order_id', $orderId);
+            })
+            ->delete();
+    }
 }

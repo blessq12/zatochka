@@ -111,7 +111,6 @@ final class StockItemController extends Controller
 
         $this->writeOffMaterial->handle(new WriteOffMaterialCommand(
             $stockItemId,
-            $this->ids->next('warehouse_movement')->value,
             (string) $data['quantity'],
             $data['comment'] ?? null,
         ));

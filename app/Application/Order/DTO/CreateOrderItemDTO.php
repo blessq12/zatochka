@@ -8,7 +8,7 @@ final readonly class CreateOrderItemDTO
      * @param list<array{name: string, serialNumber?: ?string}> $equipmentParts
      */
     public function __construct(
-        public int $orderItemId,
+        public ?int $orderItemId = null,
         public ?int $clientEquipmentId = null,
         public ?string $toolName = null,
         public ?string $toolType = null,

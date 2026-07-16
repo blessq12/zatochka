@@ -41,7 +41,6 @@ final readonly class EloquentOrderRepository implements OrderRepository
                         'rejected_quantity' => $row->rejected_quantity,
                         'rejection_reason' => $row->rejection_reason,
                         'status' => $row->status,
-                        'item_price_id' => $row->item_price_id,
                         'warranty_id' => $row->warranty_id,
                     ],
                 );

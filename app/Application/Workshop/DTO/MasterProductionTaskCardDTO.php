@@ -10,6 +10,7 @@ namespace App\Application\Workshop\DTO;
  * @param list<array{id:int,tool_name:?string,tool_type:?string,quantity:?int,rejected_quantity:int,repairable_quantity:int,status:string,client_equipment_id:?int,components:list<array{id:int,name:string,serial_number:?string}>}> $items
  * @param list<array{tool_type:?string,name:?string,quantity:?int,rejected_quantity:int,repairable_quantity:int}> $toolsSummary
  * @param list<array{id:int,name:?string,brand:?string,model:?string,serial_numbers:array<string,string>,components:list<array{id:int,name:string,serial_number:?string}>}> $equipmentList
+ * @param 'order_item'|'equipment_component' $workTargetMode
  */
 final readonly class MasterProductionTaskCardDTO
 {
@@ -37,5 +38,6 @@ final readonly class MasterProductionTaskCardDTO
         public array $equipmentList,
         public ?string $subjectLine,
         public ?string $problemExcerpt,
+        public string $workTargetMode = 'order_item',
     ) {}
 }

@@ -13,9 +13,11 @@ use App\Application\Order\Port\ClientProvisioningPort;
 use App\Application\Order\Port\EquipmentProvisioningPort;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Application\Order\ReadPort\OrderReadPort;
-use App\Application\Pricing\ReadPort\EstimateReadPort;
+use App\Application\Pricing\Port\PerformedWorkRefPort;
 use App\Application\Pricing\ReadPort\WorkPriceReadPort;
 use App\Application\Shared\DomainEventPublisher;
+use App\Application\Shared\EntityIdGenerator;
+use App\Application\Shared\UnitOfWork;
 use App\Application\Workshop\ReadPort\ProductionTaskReadPort;
 use App\Domain\CRM\Repository\ClientRepository;
 use App\Domain\Delivery\Repository\DeliveryRequestRepository;
@@ -26,9 +28,9 @@ use App\Domain\Finance\Repository\PaymentRepository;
 use App\Domain\Inventory\Repository\StockItemRepository;
 use App\Domain\Order\Event\OrderCancelled;
 use App\Domain\Order\Event\OrderMasterAssigned;
+use App\Domain\Order\Event\OrderReturnedToMaster;
 use App\Domain\Order\Event\ReceptionCompleted;
 use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Pricing\Repository\EstimateRepository;
 use App\Domain\Pricing\Repository\WorkPriceRepository;
 use App\Domain\Workshop\Event\ProductionCompleted;
 use App\Domain\Workshop\Event\WorkStarted;
@@ -47,22 +49,25 @@ use App\Infrastructure\Finance\Repository\EloquentCashOperationRepository;
 use App\Infrastructure\Finance\Repository\EloquentPaymentRepository;
 use App\Infrastructure\Inventory\ReadModel\EloquentStockReadModel;
 use App\Infrastructure\Inventory\Repository\EloquentStockItemRepository;
-use App\Infrastructure\Order\Listener\MarkOrderWorksCompletedOnProductionCompleted;
 use App\Infrastructure\Order\Listener\MarkOrderInProgressOnWorkStarted;
+use App\Infrastructure\Order\Listener\MarkOrderWorksCompletedOnProductionCompleted;
 use App\Infrastructure\Order\Port\RegisterClientProvisioningAdapter;
 use App\Infrastructure\Order\Port\RegisterEquipmentProvisioningAdapter;
 use App\Infrastructure\Order\ReadModel\EloquentOrderContainerReadModel;
 use App\Infrastructure\Order\ReadModel\EloquentOrderReadModel;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
-use App\Infrastructure\Pricing\Listener\CreateEstimateOnProductionCompleted;
-use App\Infrastructure\Pricing\ReadModel\EloquentEstimateReadModel;
+use App\Infrastructure\Pricing\Listener\ClearWorkPricesOnOrderCancelled;
+use App\Infrastructure\Pricing\Listener\ClearWorkPricesOnOrderReturnedToMaster;
+use App\Infrastructure\Pricing\Port\EloquentPerformedWorkRefPort;
 use App\Infrastructure\Pricing\ReadModel\EloquentWorkPriceReadModel;
-use App\Infrastructure\Pricing\Repository\EloquentEstimateRepository;
 use App\Infrastructure\Pricing\Repository\EloquentWorkPriceRepository;
 use App\Infrastructure\Shared\Event\LaravelDomainEventPublisher;
+use App\Infrastructure\Shared\Persistence\EloquentUnitOfWork;
+use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use App\Infrastructure\Workshop\Listener\CancelProductionTaskOnOrderCancelled;
 use App\Infrastructure\Workshop\Listener\OpenAndAssignTasksOnOrderMasterAssigned;
 use App\Infrastructure\Workshop\Listener\OpenProductionTasksOnReceptionCompleted;
+use App\Infrastructure\Workshop\Listener\ReopenProductionTaskOnOrderReturnedToMaster;
 use App\Infrastructure\Workshop\ReadModel\EloquentProductionTaskReadModel;
 use App\Infrastructure\Workshop\Repository\EloquentProductionTaskRepository;
 use Illuminate\Support\Facades\Event;
@@ -73,6 +78,8 @@ final class PersistenceServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(DomainEventPublisher::class, LaravelDomainEventPublisher::class);
+        $this->app->bind(EntityIdGenerator::class, SequentialEntityIdGenerator::class);
+        $this->app->bind(UnitOfWork::class, EloquentUnitOfWork::class);
 
         $this->app->bind(ClientRepository::class, EloquentClientRepository::class);
         $this->app->bind(ClientReadPort::class, EloquentClientReadModel::class);
@@ -89,10 +96,9 @@ final class PersistenceServiceProvider extends ServiceProvider
         $this->app->bind(ProductionTaskRepository::class, EloquentProductionTaskRepository::class);
         $this->app->bind(ProductionTaskReadPort::class, EloquentProductionTaskReadModel::class);
 
-        $this->app->bind(EstimateRepository::class, EloquentEstimateRepository::class);
-        $this->app->bind(EstimateReadPort::class, EloquentEstimateReadModel::class);
         $this->app->bind(WorkPriceRepository::class, EloquentWorkPriceRepository::class);
         $this->app->bind(WorkPriceReadPort::class, EloquentWorkPriceReadModel::class);
+        $this->app->bind(PerformedWorkRefPort::class, EloquentPerformedWorkRefPort::class);
 
         $this->app->bind(StockItemRepository::class, EloquentStockItemRepository::class);
         $this->app->bind(StockReadPort::class, EloquentStockReadModel::class);
@@ -114,6 +120,9 @@ final class PersistenceServiceProvider extends ServiceProvider
         Event::listen(ReceptionCompleted::class, OpenProductionTasksOnReceptionCompleted::class);
         Event::listen(OrderMasterAssigned::class, OpenAndAssignTasksOnOrderMasterAssigned::class);
         Event::listen(OrderCancelled::class, CancelProductionTaskOnOrderCancelled::class);
+        Event::listen(OrderCancelled::class, ClearWorkPricesOnOrderCancelled::class);
+        Event::listen(OrderReturnedToMaster::class, ReopenProductionTaskOnOrderReturnedToMaster::class);
+        Event::listen(OrderReturnedToMaster::class, ClearWorkPricesOnOrderReturnedToMaster::class);
         Event::listen(WorkStarted::class, MarkOrderInProgressOnWorkStarted::class);
         Event::listen(ProductionCompleted::class, MarkOrderWorksCompletedOnProductionCompleted::class);
     }

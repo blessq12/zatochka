@@ -12,7 +12,6 @@ Route::prefix('workshop/production-tasks')->group(function (): void {
         Route::get('stats', [ProductionTaskController::class, 'stats']);
         Route::get('{productionTaskId}', [ProductionTaskController::class, 'show']);
         Route::post('{productionTaskId}/diagnosis', [ProductionTaskController::class, 'completeDiagnosis']);
-        Route::post('{productionTaskId}/reject', [ProductionTaskController::class, 'reject']);
         Route::post('{productionTaskId}/start-work', [ProductionTaskController::class, 'startWork']);
         Route::post('{productionTaskId}/waiting-parts', [ProductionTaskController::class, 'pauseForParts']);
         Route::post('{productionTaskId}/resume', [ProductionTaskController::class, 'resume']);
