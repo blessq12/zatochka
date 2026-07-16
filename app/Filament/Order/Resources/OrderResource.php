@@ -10,6 +10,7 @@ use App\Application\Order\Command\IssueOrderCommand;
 use App\Application\Order\Command\IssueOrderHandler;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderItemStatus;
+use App\Domain\Order\VO\OrderNumber;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderStatus;
 use App\Domain\Order\VO\OrderUrgency;
@@ -28,7 +29,6 @@ use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
@@ -73,7 +73,12 @@ class OrderResource extends DomainResource
             return static::getModelLabel();
         }
 
-        return 'Заказ №'.$record->getKey();
+        return (string) static::orderNumber($record);
+    }
+
+    public static function orderNumber(OrderModel $record): OrderNumber
+    {
+        return new OrderNumber((string) $record->number);
     }
 
     public static function canCreate(): bool
@@ -170,10 +175,12 @@ class OrderResource extends DomainResource
 
     public static function infolist(Schema $schema): Schema
     {
-        return $schema->components([
-            Section::make('Статус и параметры')
-                ->description('Классификация и текущее состояние заказа')
+        return $schema
+            ->columns(1)
+            ->components([
+            Section::make('Сводка')
                 ->icon(Heroicon::OutlinedClipboardDocumentList)
+                ->columnSpanFull()
                 ->schema([
                     Grid::make(2)->schema([
                         TextEntry::make('status')
@@ -197,12 +204,28 @@ class OrderResource extends DomainResource
                                 OrderStatus::ReceptionCompleted->value => Heroicon::OutlinedInboxArrowDown,
                                 default => Heroicon::OutlinedClock,
                             }),
-                        TextEntry::make('created_at')
-                            ->label('Создан')
-                            ->dateTime('d.m.Y H:i')
-                            ->icon(Heroicon::OutlinedCalendarDays),
+                        TextEntry::make('estimated_amount')
+                            ->label('Ориентировочная стоимость')
+                            ->weight(FontWeight::Bold)
+                            ->size(TextSize::Large)
+                            ->formatStateUsing(fn (?string $state): string => $state !== null
+                                ? number_format((float) $state, 2, '.', ' ').' ₽'
+                                : '—')
+                            ->icon(Heroicon::OutlinedBanknotes),
                     ]),
-                    Grid::make(3)->schema([
+                    Grid::make(4)->schema([
+                        TextEntry::make('urgency')
+                            ->label('Срочность')
+                            ->badge()
+                            ->formatStateUsing(fn (?string $state): string => static::urgencyOptions()[$state] ?? ($state ?? '—'))
+                            ->color(fn (?string $state): string => match ($state) {
+                                OrderUrgency::Urgent->value => 'danger',
+                                default => 'gray',
+                            })
+                            ->icon(fn (?string $state): Heroicon => match ($state) {
+                                OrderUrgency::Urgent->value => Heroicon::OutlinedBolt,
+                                default => Heroicon::OutlinedClock,
+                            }),
                         TextEntry::make('service_type')
                             ->label('Тип')
                             ->badge()
@@ -231,18 +254,10 @@ class OrderResource extends DomainResource
                                 OrderBillingType::Warranty->value => Heroicon::OutlinedShieldCheck,
                                 default => Heroicon::OutlinedTag,
                             }),
-                        TextEntry::make('urgency')
-                            ->label('Срочность')
-                            ->badge()
-                            ->formatStateUsing(fn (?string $state): string => static::urgencyOptions()[$state] ?? ($state ?? '—'))
-                            ->color(fn (?string $state): string => match ($state) {
-                                OrderUrgency::Urgent->value => 'danger',
-                                default => 'gray',
-                            })
-                            ->icon(fn (?string $state): Heroicon => match ($state) {
-                                OrderUrgency::Urgent->value => Heroicon::OutlinedBolt,
-                                default => Heroicon::OutlinedClock,
-                            }),
+                        TextEntry::make('created_at')
+                            ->label('Создан')
+                            ->dateTime('d.m.Y H:i')
+                            ->icon(Heroicon::OutlinedCalendarDays),
                     ]),
                     TextEntry::make('warranty_source_order_id')
                         ->label('Гарантия по заказу')
@@ -253,11 +268,14 @@ class OrderResource extends DomainResource
                             }
 
                             $source = $record->warrantySourceOrder;
-                            $type = $source !== null
-                                ? (static::serviceTypeOptions()[$source->service_type] ?? $source->service_type)
-                                : null;
+                            if ($source === null) {
+                                return 'ORD-??-'.$state;
+                            }
 
-                            return $type !== null ? '№'.$state.' · '.$type : '№'.$state;
+                            $number = (string) static::orderNumber($source);
+                            $type = static::serviceTypeOptions()[$source->service_type] ?? $source->service_type;
+
+                            return $number.' · '.$type;
                         })
                         ->url(fn (?int $state): ?string => $state !== null
                             ? static::getUrl('view', ['record' => $state])
@@ -267,8 +285,9 @@ class OrderResource extends DomainResource
                 ]),
             Section::make('Клиент')
                 ->icon(Heroicon::OutlinedUser)
+                ->columnSpanFull()
                 ->schema([
-                    Grid::make(2)->schema([
+                    Grid::make(3)->schema([
                         TextEntry::make('client.name')
                             ->label('ФИО')
                             ->weight(FontWeight::SemiBold)
@@ -283,26 +302,56 @@ class OrderResource extends DomainResource
                             ->copyable()
                             ->copyMessage('Телефон скопирован')
                             ->icon(Heroicon::OutlinedPhone),
+                        TextEntry::make('client.email')
+                            ->label('Эл. почта')
+                            ->placeholder('—')
+                            ->icon(Heroicon::OutlinedEnvelope)
+                            ->copyable()
+                            ->copyMessage('Почта скопирована'),
                     ]),
-                    TextEntry::make('client.email')
-                        ->label('Эл. почта')
-                        ->placeholder('—')
-                        ->icon(Heroicon::OutlinedEnvelope)
-                        ->copyable()
-                        ->copyMessage('Почта скопирована'),
                 ]),
-            Section::make('Состав заказа')
+            Section::make(fn (OrderModel $record): string => 'Состав · '.$record->items->count())
                 ->description(fn (OrderModel $record): string => $record->service_type === OrderServiceType::Sharpening->value
                     ? 'Инструменты на заточку'
                     : 'Оборудование на ремонт')
                 ->icon(Heroicon::OutlinedCube)
+                ->columnSpanFull()
                 ->schema([
                     RepeatableEntry::make('items')
                         ->hiddenLabel()
+                        ->visible(fn (OrderModel $record): bool => $record->service_type === OrderServiceType::Sharpening->value)
                         ->table([
                             TableColumn::make('Наименование'),
-                            TableColumn::make('Тип / модель'),
+                            TableColumn::make('Тип инструмента'),
                             TableColumn::make('Кол-во'),
+                            TableColumn::make('Статус'),
+                        ])
+                        ->schema([
+                            TextEntry::make('tool_name')
+                                ->placeholder('—'),
+                            TextEntry::make('tool_type')
+                                ->formatStateUsing(fn (?string $state): string => filled($state)
+                                    ? (SharpeningToolType::tryFrom($state)?->label() ?? $state)
+                                    : '—'),
+                            TextEntry::make('quantity')
+                                ->placeholder('—')
+                                ->alignCenter(),
+                            TextEntry::make('status')
+                                ->badge()
+                                ->formatStateUsing(fn (?string $state): string => static::itemStatusOptions()[$state] ?? ($state ?? '—'))
+                                ->color(fn (?string $state): string => match ($state) {
+                                    OrderItemStatus::Rejected->value => 'danger',
+                                    OrderItemStatus::Issued->value, OrderItemStatus::Completed->value => 'success',
+                                    OrderItemStatus::InProduction->value => 'warning',
+                                    default => 'gray',
+                                }),
+                        ]),
+                    RepeatableEntry::make('items')
+                        ->hiddenLabel()
+                        ->visible(fn (OrderModel $record): bool => $record->service_type === OrderServiceType::Repair->value)
+                        ->table([
+                            TableColumn::make('Оборудование'),
+                            TableColumn::make('Бренд / модель'),
                             TableColumn::make('Статус'),
                         ])
                         ->schema([
@@ -322,21 +371,14 @@ class OrderResource extends DomainResource
                                 }),
                             TextEntry::make('tool_type')
                                 ->formatStateUsing(function (?string $state, OrderItemModel $record): string {
-                                    if (filled($state)) {
-                                        return SharpeningToolType::tryFrom($state)?->label() ?? $state;
-                                    }
-
                                     $equipment = $record->equipment;
 
                                     if ($equipment === null) {
                                         return '—';
                                     }
 
-                                    return trim($equipment->brand.' '.$equipment->model_name);
+                                    return trim($equipment->brand.' '.$equipment->model_name) ?: '—';
                                 }),
-                            TextEntry::make('quantity')
-                                ->placeholder('—')
-                                ->alignCenter(),
                             TextEntry::make('status')
                                 ->badge()
                                 ->formatStateUsing(fn (?string $state): string => static::itemStatusOptions()[$state] ?? ($state ?? '—'))
@@ -349,24 +391,17 @@ class OrderResource extends DomainResource
                         ]),
                 ]),
             Section::make('Приёмка')
-                ->description('Стоимость, доставка и заметки')
                 ->icon(Heroicon::OutlinedClipboardDocumentCheck)
+                ->columnSpanFull()
                 ->schema([
-                    Grid::make(2)->schema([
-                        TextEntry::make('estimated_amount')
-                            ->label('Ориентировочная стоимость')
-                            ->weight(FontWeight::Bold)
-                            ->size(TextSize::Large)
-                            ->formatStateUsing(fn (?string $state): string => $state !== null ? number_format((float) $state, 2, '.', ' ').' ₽' : '—')
-                            ->icon(Heroicon::OutlinedBanknotes),
-                        IconEntry::make('delivery_required')
-                            ->label('Доставка')
-                            ->boolean()
-                            ->trueIcon(Heroicon::OutlinedTruck)
-                            ->falseIcon(Heroicon::OutlinedXMark)
-                            ->trueColor('success')
-                            ->falseColor('gray'),
-                    ]),
+                    TextEntry::make('delivery_required')
+                        ->label('Доставка')
+                        ->formatStateUsing(fn (?bool $state): string => $state ? 'Нужна' : 'Нет')
+                        ->badge()
+                        ->color(fn (?bool $state): string => $state ? 'success' : 'gray')
+                        ->icon(fn (?bool $state): Heroicon => $state
+                            ? Heroicon::OutlinedTruck
+                            : Heroicon::OutlinedXMark),
                     TextEntry::make('defects')
                         ->label('Дефекты')
                         ->placeholder('Не указаны')
@@ -387,8 +422,9 @@ class OrderResource extends DomainResource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('№')
+                TextColumn::make('number')
+                    ->label('Номер')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('client_id')
                     ->label('Клиент')
@@ -458,7 +494,7 @@ class OrderResource extends DomainResource
                 ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready->value)
                 ->action(function (OrderModel $record): void {
                     try {
-                        app(IssueOrderHandler::class)->handle(new IssueOrderCommand((int) $record->id));
+                        app(IssueOrderHandler::class)->handle(new IssueOrderCommand((string) $record->id));
                         Notification::make()->title('Заказ выдан')->success()->send();
                     } catch (DomainException $exception) {
                         Notification::make()->title($exception->getMessage())->danger()->send();
@@ -470,7 +506,7 @@ class OrderResource extends DomainResource
                 ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready->value)
                 ->action(function (OrderModel $record): void {
                     try {
-                        app(CloseOrderHandler::class)->handle(new CloseOrderCommand((int) $record->id));
+                        app(CloseOrderHandler::class)->handle(new CloseOrderCommand((string) $record->id));
                         Notification::make()->title('Заказ закрыт')->success()->send();
                     } catch (DomainException $exception) {
                         Notification::make()->title($exception->getMessage())->danger()->send();
@@ -493,7 +529,7 @@ class OrderResource extends DomainResource
                 ->action(function (OrderModel $record, array $data): void {
                     try {
                         app(CancelOrderHandler::class)->handle(new CancelOrderCommand(
-                            (int) $record->id,
+                            (string) $record->id,
                             $data['reason'],
                         ));
                         Notification::make()->title('Заказ отменён')->success()->send();

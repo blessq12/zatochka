@@ -6,6 +6,7 @@ use App\Application\Order\Command\CreateOrderCommand;
 use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\DTO\CreateOrderItemDTO;
 use App\Domain\Order\VO\OrderBillingType;
+use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
@@ -378,7 +379,7 @@ class CreateOrder extends CreateRecord
     {
         try {
             $ids = app(SequentialEntityIdGenerator::class);
-            $orderId = $ids->next('order')->value;
+            $orderId = OrderId::generate()->value;
             $items = $this->buildItems($data, $ids);
 
             $isWarranty = ($data['billing_type'] ?? null) === OrderBillingType::Warranty->value;
@@ -399,7 +400,7 @@ class CreateOrder extends CreateRecord
                 $isNewClient ? ($data['new_client_name'] ?? null) : null,
                 $isNewClient ? ($data['new_client_phone'] ?? null) : null,
                 $isNewClient ? ($data['new_client_email'] ?? null) : null,
-                $isWarranty ? (int) $data['warranty_source_order_id'] : null,
+                $isWarranty ? (string) $data['warranty_source_order_id'] : null,
             ));
 
             return OrderModel::query()->findOrFail($orderId);
@@ -513,7 +514,7 @@ class CreateOrder extends CreateRecord
 
         $type = OrderResource::serviceTypeOptions()[$order->service_type] ?? $order->service_type;
 
-        return '№'.$order->id.' · '.$type.' · '.$clientLabel;
+        return (string) OrderResource::orderNumber($order).' · '.$type.' · '.$clientLabel;
     }
 
     protected function getCreateFormAction(): Action

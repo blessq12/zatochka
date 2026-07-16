@@ -13,12 +13,13 @@ final class OrderModel extends Model
 
     public $incrementing = false;
 
-    protected $keyType = 'int';
+    protected $keyType = 'string';
 
     public $timestamps = false;
 
     protected $fillable = [
         'id',
+        'number',
         'client_id',
         'status',
         'service_type',

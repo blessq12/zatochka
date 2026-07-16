@@ -10,7 +10,7 @@ final readonly class CreateOrderCommand
      * @param list<CreateOrderItemDTO> $items
      */
     public function __construct(
-        public int $orderId,
+        public string $orderId,
         public int $clientId,
         public string $estimatedAmount,
         public array $items,
@@ -24,7 +24,7 @@ final readonly class CreateOrderCommand
         public ?string $newClientName = null,
         public ?string $newClientPhone = null,
         public ?string $newClientEmail = null,
-        public ?int $warrantySourceOrderId = null,
+        public ?string $warrantySourceOrderId = null,
     ) {}
 
     public function shouldCreateClient(): bool

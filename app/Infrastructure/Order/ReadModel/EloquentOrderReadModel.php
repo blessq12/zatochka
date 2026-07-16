@@ -13,7 +13,7 @@ final readonly class EloquentOrderReadModel implements OrderReadPort
         private OrderMapper $mapper,
     ) {}
 
-    public function findById(int $orderId): ?OrderDTO
+    public function findById(string $orderId): ?OrderDTO
     {
         $model = OrderModel::query()->with(['items.reception'])->find($orderId);
 

@@ -9,7 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
+            $table->string('id', 32)->primary();
+            $table->string('number')->unique();
             $table->unsignedBigInteger('client_id');
             $table->string('status');
             $table->string('service_type');
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->boolean('delivery_required')->default(false);
             $table->text('defects')->nullable();
             $table->text('internal_notes')->nullable();
-            $table->unsignedBigInteger('warranty_source_order_id')->nullable();
+            $table->string('warranty_source_order_id', 32)->nullable();
             $table->decimal('estimated_amount', 12, 2);
             $table->string('estimated_currency', 3)->default('RUB');
             $table->timestamp('created_at');
@@ -28,7 +29,7 @@ return new class extends Migration
 
         Schema::create('order_items', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
-            $table->unsignedBigInteger('order_id');
+            $table->string('order_id', 32);
             $table->unsignedBigInteger('client_equipment_id')->nullable();
             $table->string('tool_name')->nullable();
             $table->string('tool_type')->nullable();

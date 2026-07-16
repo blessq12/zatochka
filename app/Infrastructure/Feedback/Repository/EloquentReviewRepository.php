@@ -7,6 +7,7 @@ use App\Domain\Feedback\Repository\ReviewRepository;
 use App\Infrastructure\Feedback\Mapper\ReviewMapper;
 use App\Infrastructure\Feedback\Model\ReviewModel;
 use App\Shared\Domain\DomainException;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 
 final readonly class EloquentReviewRepository implements ReviewRepository
@@ -35,7 +36,7 @@ final readonly class EloquentReviewRepository implements ReviewRepository
             ?? throw new DomainException(sprintf('Review %d not found.', $id->value));
     }
 
-    public function findByOrderId(EntityId $orderId): ?Review
+    public function findByOrderId(OrderId $orderId): ?Review
     {
         $model = ReviewModel::query()->where('order_id', $orderId->value)->first();
 

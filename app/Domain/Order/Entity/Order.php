@@ -10,6 +10,8 @@ use App\Domain\Order\Event\OrderIssued;
 use App\Domain\Order\Event\OrderItemAdded;
 use App\Domain\Order\Event\ReceptionCompleted;
 use App\Domain\Order\VO\OrderBillingType;
+use App\Domain\Order\VO\OrderId;
+use App\Domain\Order\VO\OrderNumber;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderStatus;
 use App\Domain\Order\VO\OrderUrgency;
@@ -33,7 +35,8 @@ final class Order extends AggregateRoot
      * @param list<OrderItem> $items
      */
     private function __construct(
-        private readonly EntityId $id,
+        private readonly OrderId $id,
+        private readonly OrderNumber $number,
         EntityId $clientId,
         Money $estimatedCost,
         DateTimeImmutable $createdAt,
@@ -44,7 +47,7 @@ final class Order extends AggregateRoot
         private readonly bool $deliveryRequired,
         private readonly ?string $defects,
         private readonly ?string $internalNotes,
-        private readonly ?EntityId $warrantySourceOrderId = null,
+        private readonly ?OrderId $warrantySourceOrderId = null,
         OrderStatus $status = OrderStatus::Created,
     ) {
         if ($items === []) {
@@ -67,7 +70,7 @@ final class Order extends AggregateRoot
      * @param list<OrderItem> $items
      */
     public static function create(
-        EntityId $id,
+        OrderId $id,
         EntityId $clientId,
         Money $estimatedCost,
         array $items,
@@ -77,14 +80,19 @@ final class Order extends AggregateRoot
         bool $deliveryRequired = false,
         ?string $defects = null,
         ?string $internalNotes = null,
-        ?EntityId $warrantySourceOrderId = null,
+        ?OrderId $warrantySourceOrderId = null,
         ?DateTimeImmutable $createdAt = null,
+        ?OrderNumber $number = null,
     ): self {
         self::assertWarrantySource($billingType, $warrantySourceOrderId, $id);
 
         $createdAt ??= new DateTimeImmutable();
+        if ($number === null) {
+            throw new DomainException('Order number is required.');
+        }
         $order = new self(
             $id,
+            $number,
             $clientId,
             $estimatedCost,
             $createdAt,
@@ -117,7 +125,8 @@ final class Order extends AggregateRoot
      * @param list<OrderItem> $items
      */
     public static function reconstitute(
-        EntityId $id,
+        OrderId $id,
+        OrderNumber $number,
         EntityId $clientId,
         Money $estimatedCost,
         DateTimeImmutable $createdAt,
@@ -129,10 +138,11 @@ final class Order extends AggregateRoot
         bool $deliveryRequired = false,
         ?string $defects = null,
         ?string $internalNotes = null,
-        ?EntityId $warrantySourceOrderId = null,
+        ?OrderId $warrantySourceOrderId = null,
     ): self {
         return new self(
             $id,
+            $number,
             $clientId,
             $estimatedCost,
             $createdAt,
@@ -148,9 +158,14 @@ final class Order extends AggregateRoot
         );
     }
 
-    public function id(): EntityId
+    public function id(): OrderId
     {
         return $this->id;
+    }
+
+    public function number(): OrderNumber
+    {
+        return $this->number;
     }
 
     public function clientId(): EntityId
@@ -198,7 +213,7 @@ final class Order extends AggregateRoot
         return $this->internalNotes;
     }
 
-    public function warrantySourceOrderId(): ?EntityId
+    public function warrantySourceOrderId(): ?OrderId
     {
         return $this->warrantySourceOrderId;
     }
@@ -325,8 +340,8 @@ final class Order extends AggregateRoot
 
     private static function assertWarrantySource(
         OrderBillingType $billingType,
-        ?EntityId $warrantySourceOrderId,
-        EntityId $orderId,
+        ?OrderId $warrantySourceOrderId,
+        OrderId $orderId,
     ): void {
         if ($billingType === OrderBillingType::Warranty) {
             if ($warrantySourceOrderId === null) {

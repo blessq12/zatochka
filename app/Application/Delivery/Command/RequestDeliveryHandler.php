@@ -6,6 +6,7 @@ use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Delivery\Entity\DeliveryRequest;
 use App\Domain\Delivery\Repository\DeliveryRequestRepository;
 use App\Domain\Delivery\VO\DeliveryAddress;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 
 final readonly class RequestDeliveryHandler
@@ -19,7 +20,7 @@ final readonly class RequestDeliveryHandler
     {
         $request = DeliveryRequest::request(
             new EntityId($command->deliveryRequestId),
-            new EntityId($command->orderId),
+            new OrderId($command->orderId),
             new DeliveryAddress(
                 $command->city,
                 $command->street,

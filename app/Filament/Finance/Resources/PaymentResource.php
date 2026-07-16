@@ -101,7 +101,7 @@ class PaymentResource extends DomainResource
                 ->label('Accept payment')
                 ->icon(Heroicon::OutlinedPlus)
                 ->form([
-                    TextInput::make('orderId')->numeric()->required()->label('Order ID'),
+                    TextInput::make('orderId')->required()->label('ID заказа')->length(32),
                     TextInput::make('amount')->required(),
                     Select::make('method')->options([
                         'cash' => 'Cash',
@@ -115,7 +115,7 @@ class PaymentResource extends DomainResource
                         $paymentId = app(SequentialEntityIdGenerator::class)->next('payment')->value;
                         app(AcceptPaymentHandler::class)->handle(new AcceptPaymentCommand(
                             $paymentId,
-                            (int) $data['orderId'],
+                            (string) $data['orderId'],
                             (string) $data['amount'],
                             $data['method'],
                             $data['currency'] ?? 'RUB',

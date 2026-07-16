@@ -1,6 +1,5 @@
 <?php
 
-namespace App\Infrastructure\Feedback\ReadModel;
 
 use App\Application\Feedback\DTO\ReviewDTO;
 use App\Application\Feedback\ReadPort\ReviewReadPort;
@@ -21,7 +20,7 @@ final readonly class EloquentReviewReadModel implements ReviewReadPort
         return $model === null ? null : $this->mapper->toDTO($model);
     }
 
-    public function findByOrderId(int $orderId): ?ReviewDTO
+    public function findByOrderId(string $orderId): ?ReviewDTO
     {
         $model = ReviewModel::query()->where('order_id', $orderId)->first();
 

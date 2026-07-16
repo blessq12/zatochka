@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Application\Feedback\Port;
 
 interface CompletedOrderPort
 {
-    public function isCompletedForClient(int $orderId, int $clientId): bool;
+    public function isCompletedForClient(string $orderId, int $clientId): bool;
 }

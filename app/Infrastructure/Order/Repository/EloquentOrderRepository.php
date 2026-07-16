@@ -9,7 +9,7 @@ use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Infrastructure\Order\Model\ReceptionDataModel;
 use App\Shared\Domain\DomainException;
-use App\Shared\ValueObject\EntityId;
+use App\Domain\Order\VO\OrderId;
 use Illuminate\Support\Facades\DB;
 
 final readonly class EloquentOrderRepository implements OrderRepository
@@ -41,16 +41,16 @@ final readonly class EloquentOrderRepository implements OrderRepository
         });
     }
 
-    public function findById(EntityId $id): ?Order
+    public function findById(OrderId $id): ?Order
     {
         $model = OrderModel::query()->with(['items.reception'])->find($id->value);
 
         return $model === null ? null : $this->mapper->toDomain($model);
     }
 
-    public function getById(EntityId $id): Order
+    public function getById(OrderId $id): Order
     {
         return $this->findById($id)
-            ?? throw new DomainException(sprintf('Order %d not found.', $id->value));
+            ?? throw new DomainException(sprintf('Order %s not found.', $id->value));
     }
 }

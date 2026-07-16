@@ -125,7 +125,7 @@ class DeliveryRequestResource extends DomainResource
                 ->label('Request delivery')
                 ->icon(Heroicon::OutlinedPlus)
                 ->form([
-                    TextInput::make('orderId')->numeric()->required()->label('Order ID'),
+                    TextInput::make('orderId')->required()->label('ID заказа')->length(32),
                     TextInput::make('city')->required(),
                     TextInput::make('street')->required(),
                     TextInput::make('building')->required(),
@@ -138,7 +138,7 @@ class DeliveryRequestResource extends DomainResource
                         $id = app(SequentialEntityIdGenerator::class)->next('delivery_request')->value;
                         app(RequestDeliveryHandler::class)->handle(new RequestDeliveryCommand(
                             $id,
-                            (int) $data['orderId'],
+                            (string) $data['orderId'],
                             $data['city'],
                             $data['street'],
                             $data['building'],

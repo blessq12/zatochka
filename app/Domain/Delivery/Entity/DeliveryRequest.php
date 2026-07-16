@@ -10,6 +10,7 @@ use App\Domain\Delivery\VO\DeliveryAddress;
 use App\Domain\Delivery\VO\DeliveryStatus;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 
 final class DeliveryRequest extends AggregateRoot
@@ -19,7 +20,7 @@ final class DeliveryRequest extends AggregateRoot
 
     private function __construct(
         private readonly EntityId $id,
-        private readonly EntityId $orderId,
+        private readonly OrderId $orderId,
         private readonly DeliveryAddress $address,
         private readonly bool $pickup,
     ) {
@@ -28,7 +29,7 @@ final class DeliveryRequest extends AggregateRoot
 
     public static function request(
         EntityId $id,
-        EntityId $orderId,
+        OrderId $orderId,
         DeliveryAddress $address,
         bool $pickup = false,
     ): self {
@@ -40,7 +41,7 @@ final class DeliveryRequest extends AggregateRoot
 
     public static function reconstitute(
         EntityId $id,
-        EntityId $orderId,
+        OrderId $orderId,
         DeliveryAddress $address,
         bool $pickup,
         DeliveryStatus $status,
@@ -58,7 +59,7 @@ final class DeliveryRequest extends AggregateRoot
         return $this->id;
     }
 
-    public function orderId(): EntityId
+    public function orderId(): OrderId
     {
         return $this->orderId;
     }

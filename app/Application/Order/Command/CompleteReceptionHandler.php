@@ -7,7 +7,7 @@ use App\Domain\Order\Entity\ReceptionData;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\Service\OrderReceptionService;
 use App\Domain\Order\VO\ReceptionCondition;
-use App\Shared\ValueObject\EntityId;
+use App\Domain\Order\VO\OrderId;
 use DateTimeImmutable;
 
 final readonly class CompleteReceptionHandler
@@ -20,7 +20,7 @@ final readonly class CompleteReceptionHandler
 
     public function handle(CompleteReceptionCommand $command): void
     {
-        $order = $this->orders->getById(new EntityId($command->orderId));
+        $order = $this->orders->getById(new OrderId($command->orderId));
         $receptionByItemId = [];
 
         foreach ($command->items as $itemDto) {

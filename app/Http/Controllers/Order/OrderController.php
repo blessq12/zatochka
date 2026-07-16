@@ -16,6 +16,7 @@ use App\Application\Order\DTO\CreateOrderItemDTO;
 use App\Application\Order\DTO\ReceptionItemDTO;
 use App\Application\Order\Query\GetOrderByIdHandler;
 use App\Application\Order\Query\GetOrderByIdQuery;
+use App\Domain\Order\VO\OrderId;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Illuminate\Http\JsonResponse;
@@ -45,7 +46,7 @@ final class OrderController extends Controller
             'serviceType' => ['required', Rule::in(['sharpening', 'repair'])],
             'billingType' => ['required', Rule::in(['paid', 'warranty'])],
             'urgency' => ['required', Rule::in(['normal', 'urgent'])],
-            'warrantySourceOrderId' => ['nullable', 'integer'],
+            'warrantySourceOrderId' => ['nullable', 'string', 'size:32'],
             'deliveryRequired' => ['nullable', 'boolean'],
             'defects' => ['nullable', 'string'],
             'internalNotes' => ['nullable', 'string'],
@@ -60,7 +61,7 @@ final class OrderController extends Controller
             'items.*.equipmentNotes' => ['nullable', 'string'],
         ]);
 
-        $orderId = $this->ids->next('order')->value;
+        $orderId = OrderId::generate()->value;
         $items = [];
 
         foreach ($data['items'] as $item) {
@@ -92,13 +93,13 @@ final class OrderController extends Controller
             $data['newClientName'] ?? null,
             $data['newClientPhone'] ?? null,
             $data['newClientEmail'] ?? null,
-            isset($data['warrantySourceOrderId']) ? (int) $data['warrantySourceOrderId'] : null,
+            isset($data['warrantySourceOrderId']) ? (string) $data['warrantySourceOrderId'] : null,
         ));
 
         return $this->created($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));
     }
 
-    public function show(int $orderId): JsonResponse
+    public function show(string $orderId): JsonResponse
     {
         $order = $this->getOrderById->handle(new GetOrderByIdQuery($orderId));
 
@@ -109,7 +110,7 @@ final class OrderController extends Controller
         return $this->ok($order);
     }
 
-    public function completeReception(Request $request, int $orderId): JsonResponse
+    public function completeReception(Request $request, string $orderId): JsonResponse
     {
         $data = $request->validate([
             'items' => ['required', 'array', 'min:1'],
@@ -137,7 +138,7 @@ final class OrderController extends Controller
         return $this->ok($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));
     }
 
-    public function cancel(Request $request, int $orderId): JsonResponse
+    public function cancel(Request $request, string $orderId): JsonResponse
     {
         $data = $request->validate([
             'reason' => ['required', 'string'],
@@ -148,14 +149,14 @@ final class OrderController extends Controller
         return $this->ok($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));
     }
 
-    public function close(int $orderId): JsonResponse
+    public function close(string $orderId): JsonResponse
     {
         $this->closeOrder->handle(new CloseOrderCommand($orderId));
 
         return $this->ok($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));
     }
 
-    public function issue(int $orderId): JsonResponse
+    public function issue(string $orderId): JsonResponse
     {
         $this->issueOrder->handle(new IssueOrderCommand($orderId));
 

@@ -3,6 +3,7 @@
 namespace App\Domain\Feedback\Repository;
 
 use App\Domain\Feedback\Entity\Review;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 
 interface ReviewRepository
@@ -13,5 +14,5 @@ interface ReviewRepository
 
     public function getById(EntityId $id): Review;
 
-    public function findByOrderId(EntityId $orderId): ?Review;
+    public function findByOrderId(OrderId $orderId): ?Review;
 }

@@ -9,6 +9,8 @@ use App\Domain\Order\Entity\Order;
 use App\Domain\Order\Entity\OrderItem;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\VO\OrderBillingType;
+use App\Domain\Order\VO\OrderId;
+use App\Domain\Order\VO\OrderNumber;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
@@ -43,11 +45,11 @@ final readonly class CreateOrderHandler
         $warrantySourceOrderId = null;
 
         if ($billingType === OrderBillingType::Warranty) {
-            if ($command->warrantySourceOrderId === null || $command->warrantySourceOrderId <= 0) {
+            if ($command->warrantySourceOrderId === null || $command->warrantySourceOrderId === '') {
                 throw new DomainException('Warranty order requires a source order.');
             }
 
-            $sourceOrder = $this->orders->findById(new EntityId($command->warrantySourceOrderId));
+            $sourceOrder = $this->orders->findById(new OrderId($command->warrantySourceOrderId));
 
             if ($sourceOrder === null) {
                 throw new DomainException('Warranty source order not found.');
@@ -125,8 +127,9 @@ final readonly class CreateOrderHandler
             );
         }
 
+        $createdAt = new \DateTimeImmutable();
         $order = Order::create(
-            new EntityId($command->orderId),
+            new OrderId($command->orderId),
             new EntityId($clientId),
             new Money($command->estimatedAmount, 'RUB'),
             $items,
@@ -137,6 +140,8 @@ final readonly class CreateOrderHandler
             $command->defects,
             $command->internalNotes,
             $warrantySourceOrderId,
+            $createdAt,
+            OrderNumber::fromSequenceAndDate($this->ids->next('order_number')->value, $createdAt),
         );
 
         $this->orders->save($order);

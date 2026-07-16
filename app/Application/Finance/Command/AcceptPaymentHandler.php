@@ -6,6 +6,7 @@ use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Finance\Entity\Payment;
 use App\Domain\Finance\Repository\PaymentRepository;
 use App\Domain\Finance\VO\PaymentMethod;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use App\Shared\ValueObject\Money;
 
@@ -20,7 +21,7 @@ final readonly class AcceptPaymentHandler
     {
         $payment = Payment::accept(
             new EntityId($command->paymentId),
-            new EntityId($command->orderId),
+            new OrderId($command->orderId),
             new Money($command->amount, $command->currency),
             PaymentMethod::from($command->method),
         );

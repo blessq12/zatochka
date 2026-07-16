@@ -31,7 +31,7 @@ final class DeliveryRequestController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'orderId' => ['required', 'integer'],
+            'orderId' => ['required', 'string', 'size:32'],
             'city' => ['required', 'string'],
             'street' => ['required', 'string'],
             'building' => ['required', 'string'],
@@ -44,7 +44,7 @@ final class DeliveryRequestController extends Controller
 
         $this->requestDelivery->handle(new RequestDeliveryCommand(
             $deliveryRequestId,
-            (int) $data['orderId'],
+            (string) $data['orderId'],
             $data['city'],
             $data['street'],
             $data['building'],

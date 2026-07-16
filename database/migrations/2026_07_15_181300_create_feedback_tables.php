@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
-            $table->unsignedBigInteger('order_id')->unique();
+            $table->string('order_id', 32)->unique();
             $table->unsignedBigInteger('client_id');
             $table->unsignedTinyInteger('rating');
             $table->text('comment')->nullable();

@@ -8,7 +8,8 @@ final readonly class OrderDTO
      * @param list<OrderItemDTO> $items
      */
     public function __construct(
-        public int $id,
+        public string $id,
+        public string $number,
         public int $clientId,
         public string $status,
         public string $serviceType,
@@ -17,7 +18,7 @@ final readonly class OrderDTO
         public bool $deliveryRequired,
         public ?string $defects,
         public ?string $internalNotes,
-        public ?int $warrantySourceOrderId,
+        public ?string $warrantySourceOrderId,
         public string $estimatedAmount,
         public string $estimatedCurrency,
         public string $createdAt,

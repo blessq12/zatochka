@@ -10,7 +10,7 @@ final readonly class CompleteReceptionCommand
      * @param list<ReceptionItemDTO> $items
      */
     public function __construct(
-        public int $orderId,
+        public string $orderId,
         public array $items,
     ) {}
 }

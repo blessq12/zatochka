@@ -8,6 +8,7 @@ use App\Domain\Finance\Entity\Refund;
 use App\Domain\Finance\VO\PaymentMethod;
 use App\Infrastructure\Finance\Model\PaymentModel;
 use App\Infrastructure\Finance\Model\RefundModel;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use App\Shared\ValueObject\Money;
 use DateTimeImmutable;
@@ -30,7 +31,7 @@ final class PaymentMapper
 
         return Payment::reconstitute(
             new EntityId((int) $model->id),
-            new EntityId((int) $model->order_id),
+            new OrderId((string) $model->order_id),
             new Money((string) $model->amount, (string) $model->currency),
             PaymentMethod::from((string) $model->method),
             DateTimeImmutable::createFromInterface($model->accepted_at),
@@ -76,7 +77,7 @@ final class PaymentMapper
     {
         return new PaymentDTO(
             (int) $model->id,
-            (int) $model->order_id,
+            (string) $model->order_id,
             (string) $model->amount,
             (string) $model->currency,
             (string) $model->method,

@@ -8,6 +8,7 @@ use App\Domain\Feedback\Entity\Review;
 use App\Domain\Feedback\Repository\ReviewRepository;
 use App\Domain\Feedback\VO\Rating;
 use App\Shared\Domain\DomainException;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 
 final readonly class SubmitReviewHandler
@@ -24,13 +25,13 @@ final readonly class SubmitReviewHandler
             throw new DomainException('Review can be submitted only for a completed order owned by the client.');
         }
 
-        if ($this->reviews->findByOrderId(new EntityId($command->orderId)) !== null) {
+        if ($this->reviews->findByOrderId(new OrderId($command->orderId)) !== null) {
             throw new DomainException('Review for this order already exists.');
         }
 
         $review = Review::submit(
             new EntityId($command->reviewId),
-            new EntityId($command->orderId),
+            new OrderId($command->orderId),
             new EntityId($command->clientId),
             new Rating($command->rating),
             $command->comment,

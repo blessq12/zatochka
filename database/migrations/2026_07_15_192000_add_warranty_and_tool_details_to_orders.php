@@ -11,7 +11,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('orders') && ! Schema::hasColumn('orders', 'warranty_source_order_id')) {
             Schema::table('orders', function (Blueprint $table): void {
-                $table->unsignedBigInteger('warranty_source_order_id')->nullable()->after('internal_notes');
+                $table->string('warranty_source_order_id', 32)->nullable()->after('internal_notes');
             });
         }
 

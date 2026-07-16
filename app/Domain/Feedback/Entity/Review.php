@@ -12,6 +12,7 @@ use App\Domain\Feedback\VO\Rating;
 use App\Domain\Feedback\VO\ReviewStatus;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use DateTimeImmutable;
 
@@ -26,7 +27,7 @@ final class Review extends AggregateRoot
 
     private function __construct(
         private readonly EntityId $id,
-        private readonly EntityId $orderId,
+        private readonly OrderId $orderId,
         private readonly EntityId $clientId,
         private readonly Rating $rating,
         private readonly ?string $comment,
@@ -37,7 +38,7 @@ final class Review extends AggregateRoot
 
     public static function submit(
         EntityId $id,
-        EntityId $orderId,
+        OrderId $orderId,
         EntityId $clientId,
         Rating $rating,
         ?string $comment = null,
@@ -60,7 +61,7 @@ final class Review extends AggregateRoot
 
     public static function reconstitute(
         EntityId $id,
-        EntityId $orderId,
+        OrderId $orderId,
         EntityId $clientId,
         Rating $rating,
         ?string $comment,
@@ -88,7 +89,7 @@ final class Review extends AggregateRoot
         return $this->id;
     }
 
-    public function orderId(): EntityId
+    public function orderId(): OrderId
     {
         return $this->orderId;
     }

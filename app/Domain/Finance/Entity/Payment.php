@@ -7,6 +7,7 @@ use App\Domain\Finance\Event\RefundCreated;
 use App\Domain\Finance\VO\PaymentMethod;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use App\Shared\ValueObject\Money;
 use DateTimeImmutable;
@@ -18,7 +19,7 @@ final class Payment extends AggregateRoot
 
     private function __construct(
         private readonly EntityId $id,
-        private readonly EntityId $orderId,
+        private readonly OrderId $orderId,
         private readonly Money $amount,
         private readonly PaymentMethod $method,
         private readonly DateTimeImmutable $acceptedAt,
@@ -30,7 +31,7 @@ final class Payment extends AggregateRoot
 
     public static function accept(
         EntityId $id,
-        EntityId $orderId,
+        OrderId $orderId,
         Money $amount,
         PaymentMethod $method,
         ?DateTimeImmutable $acceptedAt = null,
@@ -46,7 +47,7 @@ final class Payment extends AggregateRoot
      */
     public static function reconstitute(
         EntityId $id,
-        EntityId $orderId,
+        OrderId $orderId,
         Money $amount,
         PaymentMethod $method,
         DateTimeImmutable $acceptedAt,
@@ -63,7 +64,7 @@ final class Payment extends AggregateRoot
         return $this->id;
     }
 
-    public function orderId(): EntityId
+    public function orderId(): OrderId
     {
         return $this->orderId;
     }

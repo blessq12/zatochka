@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Infrastructure\Feedback\Port;
 
 use App\Application\Feedback\Port\CompletedOrderPort;
 use App\Infrastructure\Order\Model\OrderModel;
 
 final class EloquentCompletedOrderPort implements CompletedOrderPort
 {
-    public function isCompletedForClient(int $orderId, int $clientId): bool
+    public function isCompletedForClient(string $orderId, int $clientId): bool
     {
         return OrderModel::query()
             ->where('id', $orderId)

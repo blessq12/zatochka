@@ -7,6 +7,7 @@ use App\Domain\Feedback\Entity\Review;
 use App\Domain\Feedback\VO\Rating;
 use App\Domain\Feedback\VO\ReviewStatus;
 use App\Infrastructure\Feedback\Model\ReviewModel;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -17,7 +18,7 @@ final class ReviewMapper
     {
         return Review::reconstitute(
             new EntityId((int) $model->id),
-            new EntityId((int) $model->order_id),
+            new OrderId((string) $model->order_id),
             new EntityId((int) $model->client_id),
             new Rating((int) $model->rating),
             $model->comment !== null ? (string) $model->comment : null,
@@ -60,7 +61,7 @@ final class ReviewMapper
     {
         return new ReviewDTO(
             (int) $model->id,
-            (int) $model->order_id,
+            (string) $model->order_id,
             (int) $model->client_id,
             (int) $model->rating,
             $model->comment !== null ? (string) $model->comment : null,

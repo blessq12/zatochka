@@ -9,6 +9,7 @@ use App\Domain\CRM\Entity\ClientHistoryEntry;
 use App\Infrastructure\CRM\Model\ClientHistoryModel;
 use App\Infrastructure\CRM\Model\ClientModel;
 use App\Shared\ValueObject\Email;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use App\Shared\ValueObject\Phone;
 use DateTimeImmutable;
@@ -22,7 +23,7 @@ final class ClientMapper
         foreach ($model->history as $row) {
             $history[] = new ClientHistoryEntry(
                 new EntityId((int) $row->id),
-                new EntityId((int) $row->order_id),
+                new OrderId((string) $row->order_id),
                 (string) $row->note,
                 DateTimeImmutable::createFromInterface($row->recorded_at),
             );

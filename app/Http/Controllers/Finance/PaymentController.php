@@ -25,7 +25,7 @@ final class PaymentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'orderId' => ['required', 'integer'],
+            'orderId' => ['required', 'string', 'size:32'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'method' => ['required', 'string', 'in:cash,card,transfer'],
             'currency' => ['nullable', 'string', 'size:3'],
@@ -35,7 +35,7 @@ final class PaymentController extends Controller
 
         $this->acceptPayment->handle(new AcceptPaymentCommand(
             $paymentId,
-            (int) $data['orderId'],
+            (string) $data['orderId'],
             (string) $data['amount'],
             $data['method'],
             $data['currency'] ?? 'RUB',

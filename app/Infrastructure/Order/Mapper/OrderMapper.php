@@ -9,6 +9,8 @@ use App\Domain\Order\Entity\OrderItem;
 use App\Domain\Order\Entity\ReceptionData;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderItemStatus;
+use App\Domain\Order\VO\OrderId;
+use App\Domain\Order\VO\OrderNumber;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderStatus;
 use App\Domain\Order\VO\OrderUrgency;
@@ -69,7 +71,8 @@ final class OrderMapper
         }
 
         return Order::reconstitute(
-            new EntityId((int) $model->id),
+            new OrderId((string) $model->id),
+            new OrderNumber((string) $model->number),
             new EntityId((int) $model->client_id),
             new Money((string) $model->estimated_amount, (string) $model->estimated_currency),
             DateTimeImmutable::createFromInterface($model->created_at),
@@ -82,7 +85,7 @@ final class OrderMapper
             $model->defects !== null ? (string) $model->defects : null,
             $model->internal_notes !== null ? (string) $model->internal_notes : null,
             $model->warranty_source_order_id !== null
-                ? new EntityId((int) $model->warranty_source_order_id)
+                ? new OrderId((string) $model->warranty_source_order_id)
                 : null,
         );
     }
@@ -91,6 +94,7 @@ final class OrderMapper
     {
         $model ??= new OrderModel();
         $model->id = $order->id()->value;
+        $model->number = $order->number()->value;
         $model->client_id = $order->clientId()->value;
         $model->status = $order->status()->value;
         $model->service_type = $order->serviceType()->value;
@@ -176,7 +180,8 @@ final class OrderMapper
         }
 
         return new OrderDTO(
-            (int) $model->id,
+            (string) $model->id,
+            (string) $model->number,
             (int) $model->client_id,
             (string) $model->status,
             (string) $model->service_type,
@@ -185,7 +190,7 @@ final class OrderMapper
             (bool) $model->delivery_required,
             $model->defects !== null ? (string) $model->defects : null,
             $model->internal_notes !== null ? (string) $model->internal_notes : null,
-            $model->warranty_source_order_id !== null ? (int) $model->warranty_source_order_id : null,
+            $model->warranty_source_order_id !== null ? (string) $model->warranty_source_order_id : null,
             (string) $model->estimated_amount,
             (string) $model->estimated_currency,
             $model->created_at->toIso8601String(),

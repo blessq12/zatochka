@@ -8,6 +8,7 @@ use App\Domain\Delivery\Entity\DeliveryRequest;
 use App\Domain\Delivery\VO\DeliveryAddress;
 use App\Domain\Delivery\VO\DeliveryStatus;
 use App\Infrastructure\Delivery\Model\DeliveryRequestModel;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use DateTimeImmutable;
 
@@ -28,7 +29,7 @@ final class DeliveryRequestMapper
 
         return DeliveryRequest::reconstitute(
             new EntityId((int) $model->id),
-            new EntityId((int) $model->order_id),
+            new OrderId((string) $model->order_id),
             new DeliveryAddress(
                 (string) $model->city,
                 (string) $model->street,
@@ -67,7 +68,7 @@ final class DeliveryRequestMapper
     {
         return new DeliveryRequestDTO(
             (int) $model->id,
-            (int) $model->order_id,
+            (string) $model->order_id,
             (string) $model->status,
             (bool) $model->pickup,
             (string) $model->city,
