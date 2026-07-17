@@ -6,15 +6,11 @@ use App\Application\Equipment\DTO\ClientEquipmentDTO;
 use App\Application\Equipment\ReadPort\EquipmentReadPort;
 use App\Infrastructure\Equipment\Mapper\ClientEquipmentMapper;
 use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
-use App\Infrastructure\Order\Model\OrderItemModel;
-use App\Infrastructure\Workshop\Model\ProductionTaskModel;
-use App\Infrastructure\Workshop\Presenter\MasterProductionTaskPresenter;
 
 final readonly class EloquentEquipmentReadModel implements EquipmentReadPort
 {
     public function __construct(
         private ClientEquipmentMapper $mapper,
-        private MasterProductionTaskPresenter $taskPresenter,
     ) {}
 
     public function findById(int $equipmentId): ?ClientEquipmentDTO
@@ -70,41 +66,5 @@ final readonly class EloquentEquipmentReadModel implements EquipmentReadPort
                 'per_page' => $perPage,
             ],
         ];
-    }
-
-    public function orderHistory(int $equipmentId): array
-    {
-        $itemIds = OrderItemModel::query()
-            ->where('client_equipment_id', $equipmentId)
-            ->pluck('id')
-            ->all();
-
-        if ($itemIds === []) {
-            return [];
-        }
-
-        return ProductionTaskModel::query()
-            ->with([
-                'comments',
-                'orderItem.order.client',
-                'orderItem.equipment.components',
-            ])
-            ->whereIn('order_item_id', $itemIds)
-            ->orderByDesc('id')
-            ->get()
-            ->map(function ($model) {
-                $card = $this->taskPresenter->present($model);
-
-                return [
-                    'id' => $card->id,
-                    'order_number' => $card->orderNumber,
-                    'status' => $card->posStatus,
-                    'works' => $card->works,
-                    'internal_notes' => $card->internalNotes,
-                    'created_at' => $card->createdAt,
-                    'service_type' => $card->serviceType,
-                ];
-            })
-            ->all();
     }
 }

@@ -5,8 +5,8 @@ namespace App\Filament\Equipment\Resources;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\CreateEquipment;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\EditEquipment;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\ListEquipments;
+use App\Filament\Support\ClientSelectField;
 use App\Filament\Support\DomainResource;
-use App\Infrastructure\CRM\Model\ClientModel;
 use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -61,19 +61,7 @@ class EquipmentResource extends DomainResource
 
     public static function clientSelect(): Select
     {
-        return Select::make('client_id')
-            ->label('Клиент')
-            ->options(fn (): array => ClientModel::query()
-                ->orderBy('name')
-                ->orderBy('phone')
-                ->get()
-                ->mapWithKeys(static function (ClientModel $client): array {
-                    $label = trim(($client->name ?: 'Без имени').' · '.$client->phone);
-
-                    return [(int) $client->id => $label];
-                })
-                ->all())
-            ->searchable()
+        return ClientSelectField::make()
             ->nullable()
             ->placeholder('Не выбран');
     }
@@ -136,14 +124,7 @@ class EquipmentResource extends DomainResource
 
     public static function table(Table $table): Table
     {
-        $clients = ClientModel::query()
-            ->get()
-            ->mapWithKeys(static function (ClientModel $client): array {
-                $label = trim(($client->name ?: 'Без имени').' · '.$client->phone);
-
-                return [(int) $client->id => $label];
-            })
-            ->all();
+        $clients = ClientSelectField::options();
 
         return $table
             ->columns([

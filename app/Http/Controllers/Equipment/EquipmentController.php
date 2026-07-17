@@ -11,6 +11,7 @@ use App\Application\Equipment\Command\RegisterSerialNumberHandler;
 use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Equipment\Query\GetEquipmentByIdHandler;
 use App\Application\Equipment\Query\GetEquipmentByIdQuery;
+use App\Application\Equipment\ReadPort\EquipmentOrderHistoryPort;
 use App\Application\Equipment\ReadPort\EquipmentReadPort;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
@@ -25,6 +26,7 @@ final class EquipmentController extends Controller
         private RegisterSerialNumberHandler $registerSerialNumber,
         private GetEquipmentByIdHandler $getEquipmentById,
         private EquipmentReadPort $equipmentRead,
+        private EquipmentOrderHistoryPort $orderHistory,
         private SequentialEntityIdGenerator $ids,
     ) {}
 
@@ -50,7 +52,7 @@ final class EquipmentController extends Controller
 
     public function orderHistory(int $equipmentId): JsonResponse
     {
-        return $this->ok($this->equipmentRead->orderHistory($equipmentId));
+        return $this->ok($this->orderHistory->historyForEquipment($equipmentId));
     }
 
     public function store(Request $request): JsonResponse

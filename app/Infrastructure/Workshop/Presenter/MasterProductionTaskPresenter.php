@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Workshop\Presenter;
 
 use App\Application\Workshop\DTO\MasterProductionTaskCardDTO;
+use App\Domain\Order\Service\OrderItemRejectionPolicy;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Workshop\VO\ProductionStatus;
@@ -57,9 +58,7 @@ final class MasterProductionTaskPresenter
             $quantity = $item->quantity !== null ? (int) $item->quantity : null;
             $rejectedQuantity = (int) ($item->rejected_quantity ?? 0);
             $status = (string) $item->status;
-            $repairableQuantity = $quantity !== null
-                ? max(0, $quantity - $rejectedQuantity)
-                : ($status === 'rejected' ? 0 : 1);
+            $repairableQuantity = OrderItemRejectionPolicy::repairableQuantity($quantity, $rejectedQuantity, $status);
 
             $components = [];
             $serialNumbers = [];

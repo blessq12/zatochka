@@ -2,22 +2,19 @@
 
 namespace App\Filament\Order\Resources\OrderResource\Pages;
 
-use App\Application\CRM\Command\RegisterClientCommand;
-use App\Application\CRM\Command\RegisterClientHandler;
-use App\Application\Equipment\Command\RegisterEquipmentCommand;
-use App\Application\Equipment\Command\RegisterEquipmentHandler;
-use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Order\Command\CreateOrderCommand;
 use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\DTO\CreateOrderItemDTO;
-use App\Application\Shared\EntityIdGenerator;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
+use App\Filament\CRM\Support\RegisterClientOption;
+use App\Filament\Equipment\Support\RegisterEquipmentOption;
 use App\Filament\Order\Resources\OrderResource;
 use App\Filament\Order\Resources\OrderResource\Support\OrderPresentation;
+use App\Filament\Order\Resources\OrderResource\Support\WarrantySourceOrderSelect;
 use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Shared\Domain\DomainException;
@@ -68,330 +65,253 @@ class CreateOrder extends CreateRecord
     protected function getSteps(): array
     {
         return [
-            Step::make('Параметры')
-                ->description('Тип, вид и срочность')
-                ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
-                ->schema([
-                    Section::make('Параметры заказа')
-                        ->description('Базовая классификация приёмки')
-                        ->schema([
-                            ToggleButtons::make('service_type')
-                                ->label('Тип заказа')
-                                ->options([
-                                    OrderServiceType::Sharpening->value => 'Заточка',
-                                    OrderServiceType::Repair->value => 'Ремонт',
-                                ])
-                                ->icons([
-                                    OrderServiceType::Sharpening->value => Heroicon::OutlinedScissors,
-                                    OrderServiceType::Repair->value => Heroicon::OutlinedWrenchScrewdriver,
-                                ])
-                                ->colors([
-                                    OrderServiceType::Sharpening->value => 'info',
-                                    OrderServiceType::Repair->value => 'warning',
-                                ])
-                                ->grouped()
-                                ->required()
-                                ->live(),
-                            ToggleButtons::make('billing_type')
-                                ->label('Вид заказа')
-                                ->options([
-                                    OrderBillingType::Paid->value => 'Платный',
-                                    OrderBillingType::Warranty->value => 'Гарантийный',
-                                ])
-                                ->icons([
-                                    OrderBillingType::Paid->value => Heroicon::OutlinedBanknotes,
-                                    OrderBillingType::Warranty->value => Heroicon::OutlinedShieldCheck,
-                                ])
-                                ->colors([
-                                    OrderBillingType::Paid->value => 'success',
-                                    OrderBillingType::Warranty->value => 'danger',
-                                ])
-                                ->grouped()
-                                ->required()
-                                ->live()
-                                ->afterStateUpdated(function (mixed $state, Set $set): void {
-                                    if ($state !== OrderBillingType::Warranty->value) {
-                                        $set('warranty_source_order_id', null);
-                                    }
-                                }),
-                            ToggleButtons::make('urgency')
-                                ->label('Срочность')
-                                ->options([
-                                    OrderUrgency::Normal->value => 'Обычный',
-                                    OrderUrgency::Urgent->value => 'Срочный',
-                                ])
-                                ->icons([
-                                    OrderUrgency::Normal->value => Heroicon::OutlinedClock,
-                                    OrderUrgency::Urgent->value => Heroicon::OutlinedBolt,
-                                ])
-                                ->colors([
-                                    OrderUrgency::Normal->value => 'gray',
-                                    OrderUrgency::Urgent->value => 'danger',
-                                ])
-                                ->grouped()
-                                ->required(),
-                        ]),
-                    Section::make('Гарантийный заказ')
-                        ->description('Выберите исходный заказ, по которому оформляется гарантия')
-                        ->icon(Heroicon::OutlinedShieldCheck)
-                        ->visible(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
-                        ->schema([
-                            Select::make('warranty_source_order_id')
-                                ->label('Заказ по гарантии')
-                                ->placeholder('Выберите заказ')
-                                ->searchable()
-                                ->preload()
-                                ->options(fn (): array => $this->warrantySourceOrderOptions())
-                                ->getSearchResultsUsing(fn (string $search): array => $this->warrantySourceOrderOptions($search))
-                                ->getOptionLabelUsing(fn ($value): ?string => $this->warrantySourceOrderLabel($value))
-                                ->required(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
-                                ->live()
-                                ->afterStateUpdated(function (mixed $state, Set $set): void {
-                                    if (blank($state)) {
-                                        return;
-                                    }
-
-                                    $order = OrderModel::query()->find((int) $state);
-
-                                    if ($order === null) {
-                                        return;
-                                    }
-
-                                    $set('client_id', (int) $order->client_id);
-                                    $set('client_equipment_ids', []);
-                                }),
-                        ]),
-                ]),
-            Step::make('Клиент')
-                ->description('Выбор или регистрация')
-                ->icon(Heroicon::OutlinedUser)
-                ->schema([
-                    Section::make('Клиент')
-                        ->schema([
-                            OrderPresentation::clientSelect('client_id')
-                                ->createOptionForm([
-                                    TextInput::make('name')
-                                        ->label('ФИО')
-                                        ->required()
-                                        ->maxLength(255),
-                                    TextInput::make('phone')
-                                        ->label('Телефон')
-                                        ->tel()
-                                        ->telRegex('/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/')
-                                        ->mask('+7 (999) 999-99-99')
-                                        ->placeholder('+7 (___) ___-__-__')
-                                        ->required(),
-                                    TextInput::make('email')
-                                        ->label('Эл. почта')
-                                        ->email()
-                                        ->maxLength(255),
-                                ])
-                                ->createOptionUsing(function (array $data): int {
-                                    $ids = app(EntityIdGenerator::class);
-                                    $clientId = $ids->next('client')->value;
-
-                                    app(RegisterClientHandler::class)->handle(new RegisterClientCommand(
-                                        $clientId,
-                                        $ids->next('bonus_account')->value,
-                                        $data['phone'],
-                                        $data['name'],
-                                        filled($data['email'] ?? null) ? $data['email'] : null,
-                                    ));
-
-                                    return $clientId;
-                                })
-                                ->createOptionAction(fn (Action $action): Action => $action
-                                    ->label('Зарегистрировать клиента')
-                                    ->modalHeading('Новый клиент'))
-                                ->live()
-                                ->afterStateUpdated(fn (Set $set) => $set('client_equipment_ids', []))
-                                ->disabled(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value
-                                    && filled($get('warranty_source_order_id'))),
-                        ]),
-                ]),
-            Step::make('Состав')
-                ->description('Инструменты или оборудование')
-                ->icon(Heroicon::OutlinedCube)
-                ->schema([
-                    Section::make('Инструменты')
-                        ->description('Укажите каждый инструмент отдельно')
-                        ->icon(Heroicon::OutlinedScissors)
-                        ->visible(fn (Get $get): bool => $get('service_type') === OrderServiceType::Sharpening->value)
-                        ->schema([
-                            Repeater::make('tools')
-                                ->label('Список инструментов')
-                                ->schema([
-                                    TextInput::make('name')
-                                        ->label('Наименование')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->columnSpan(2),
-                                    Select::make('tool_type')
-                                        ->label('Тип инструмента')
-                                        ->options(SharpeningToolType::options())
-                                        ->searchable()
-                                        ->required()
-                                        ->native(false),
-                                    TextInput::make('quantity')
-                                        ->label('Количество')
-                                        ->numeric()
-                                        ->minValue(1)
-                                        ->default(1)
-                                        ->required(),
-                                ])
-                                ->columns(4)
-                                ->defaultItems(1)
-                                ->minItems(1)
-                                ->addActionLabel('Добавить инструмент')
-                                ->cloneable()
-                                ->collapsible()
-                                ->itemLabel(fn (array $state): ?string => filled($state['name'] ?? null)
-                                    ? (string) $state['name']
-                                    : 'Инструмент')
-                                ->required(),
-                        ]),
-                    Section::make('Оборудование')
-                        ->description('Выберите оборудование клиента или зарегистрируйте новое')
-                        ->icon(Heroicon::OutlinedWrenchScrewdriver)
-                        ->visible(fn (Get $get): bool => $get('service_type') === OrderServiceType::Repair->value)
-                        ->schema([
-                            Select::make('client_equipment_ids')
-                                ->label('Оборудование клиента')
-                                ->multiple()
-                                ->searchable()
-                                ->preload()
-                                ->options(function (Get $get): array {
-                                    if (blank($get('client_id'))) {
-                                        return [];
-                                    }
-
-                                    return ClientEquipmentModel::query()
-                                        ->where('client_id', (int) $get('client_id'))
-                                        ->orderBy('title')
-                                        ->get()
-                                        ->mapWithKeys(static function (ClientEquipmentModel $equipment): array {
-                                            $label = trim($equipment->title.' · '.$equipment->brand.' '.$equipment->model_name);
-
-                                            return [(int) $equipment->id => $label];
-                                        })
-                                        ->all();
-                                })
-                                ->createOptionForm([
-                                    TextInput::make('title')
-                                        ->label('Название')
-                                        ->required()
-                                        ->maxLength(255),
-                                    TextInput::make('brand')
-                                        ->label('Бренд')
-                                        ->required()
-                                        ->maxLength(255),
-                                    TextInput::make('model_name')
-                                        ->label('Модель')
-                                        ->required()
-                                        ->maxLength(255),
-                                    Textarea::make('notes')
-                                        ->label('Заметки')
-                                        ->rows(2)
-                                        ->columnSpanFull(),
-                                    Repeater::make('parts')
-                                        ->label('Части оборудования')
-                                        ->schema([
-                                            TextInput::make('name')
-                                                ->label('Название')
-                                                ->required()
-                                                ->placeholder('Ручка / Блок управления / Блок питания'),
-                                            TextInput::make('serialNumber')
-                                                ->label('Серийный номер')
-                                                ->placeholder('Необязательно'),
-                                        ])
-                                        ->defaultItems(0)
-                                        ->addActionLabel('Добавить часть')
-                                        ->columns(2)
-                                        ->columnSpanFull()
-                                        ->collapsible(),
-                                ])
-                                ->createOptionUsing(function (array $data): int {
-                                    $clientId = (int) ($this->data['client_id'] ?? 0);
-
-                                    if ($clientId <= 0) {
-                                        throw ValidationException::withMessages([
-                                            'data.client_id' => 'Сначала выберите клиента.',
-                                        ]);
-                                    }
-
-                                    $ids = app(EntityIdGenerator::class);
-                                    $equipmentId = $ids->next('equipment')->value;
-                                    $parts = [];
-
-                                    foreach ($data['parts'] ?? [] as $part) {
-                                        if (! filled($part['name'] ?? null)) {
-                                            continue;
-                                        }
-
-                                        $parts[] = new EquipmentPartDTO(
-                                            $ids->next('equipment_component')->value,
-                                            (string) $part['name'],
-                                            filled($part['serialNumber'] ?? null)
-                                                ? (string) $part['serialNumber']
-                                                : null,
-                                        );
-                                    }
-
-                                    app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
-                                        $equipmentId,
-                                        (string) $data['title'],
-                                        (string) $data['brand'],
-                                        (string) $data['model_name'],
-                                        $clientId,
-                                        filled($data['notes'] ?? null) ? (string) $data['notes'] : null,
-                                        $parts,
-                                    ));
-
-                                    return $equipmentId;
-                                })
-                                ->createOptionAction(fn (Action $action): Action => $action
-                                    ->label('Зарегистрировать оборудование')
-                                    ->modalHeading('Новое оборудование')
-                                    ->disabled(fn (Get $get): bool => blank($get('client_id'))))
-                                ->required()
-                                ->disabled(fn (Get $get): bool => blank($get('client_id'))),
-                        ]),
-                ]),
-            Step::make('Приёмка')
-                ->description('Стоимость, доставка и примечания')
-                ->icon(Heroicon::OutlinedClipboardDocumentCheck)
-                ->schema([
-                    Section::make('Стоимость и доставка')
-                        ->schema([
-                            Grid::make(2)->schema([
-                                TextInput::make('estimated_amount')
-                                    ->label('Ориентировочная стоимость')
-                                    ->numeric()
-                                    ->required()
-                                    ->minValue(0)
-                                    ->prefix('₽'),
-                                Toggle::make('delivery_required')
-                                    ->label('Нужна доставка')
-                                    ->inline(false)
-                                    ->onIcon(Heroicon::OutlinedTruck)
-                                    ->offIcon(Heroicon::OutlinedXMark)
-                                    ->default(false),
-                            ]),
-                        ]),
-                    Section::make('Заметки приёмки')
-                        ->schema([
-                            Textarea::make('defects')
-                                ->label('Дефекты')
-                                ->rows(4)
-                                ->columnSpanFull(),
-                            Textarea::make('internal_notes')
-                                ->label('Внутренние заметки')
-                                ->rows(4)
-                                ->columnSpanFull()
-                                ->helperText('Не видны клиенту'),
-                        ]),
-                ]),
+            $this->parametersStep(),
+            $this->clientStep(),
+            $this->compositionStep(),
+            $this->receptionStep(),
         ];
+    }
+
+    private function parametersStep(): Step
+    {
+        return Step::make('Параметры')
+            ->description('Тип, вид и срочность')
+            ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
+            ->schema([
+                Section::make('Параметры заказа')
+                    ->description('Базовая классификация приёмки')
+                    ->schema([
+                        ToggleButtons::make('service_type')
+                            ->label('Тип заказа')
+                            ->options([
+                                OrderServiceType::Sharpening->value => 'Заточка',
+                                OrderServiceType::Repair->value => 'Ремонт',
+                            ])
+                            ->icons([
+                                OrderServiceType::Sharpening->value => Heroicon::OutlinedScissors,
+                                OrderServiceType::Repair->value => Heroicon::OutlinedWrenchScrewdriver,
+                            ])
+                            ->colors([
+                                OrderServiceType::Sharpening->value => 'info',
+                                OrderServiceType::Repair->value => 'warning',
+                            ])
+                            ->grouped()
+                            ->required()
+                            ->live(),
+                        ToggleButtons::make('billing_type')
+                            ->label('Вид заказа')
+                            ->options([
+                                OrderBillingType::Paid->value => 'Платный',
+                                OrderBillingType::Warranty->value => 'Гарантийный',
+                            ])
+                            ->icons([
+                                OrderBillingType::Paid->value => Heroicon::OutlinedBanknotes,
+                                OrderBillingType::Warranty->value => Heroicon::OutlinedShieldCheck,
+                            ])
+                            ->colors([
+                                OrderBillingType::Paid->value => 'success',
+                                OrderBillingType::Warranty->value => 'danger',
+                            ])
+                            ->grouped()
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (mixed $state, Set $set): void {
+                                if ($state !== OrderBillingType::Warranty->value) {
+                                    $set('warranty_source_order_id', null);
+                                }
+                            }),
+                        ToggleButtons::make('urgency')
+                            ->label('Срочность')
+                            ->options([
+                                OrderUrgency::Normal->value => 'Обычный',
+                                OrderUrgency::Urgent->value => 'Срочный',
+                            ])
+                            ->icons([
+                                OrderUrgency::Normal->value => Heroicon::OutlinedClock,
+                                OrderUrgency::Urgent->value => Heroicon::OutlinedBolt,
+                            ])
+                            ->colors([
+                                OrderUrgency::Normal->value => 'gray',
+                                OrderUrgency::Urgent->value => 'danger',
+                            ])
+                            ->grouped()
+                            ->required(),
+                    ]),
+                Section::make('Гарантийный заказ')
+                    ->description('Выберите исходный заказ, по которому оформляется гарантия')
+                    ->icon(Heroicon::OutlinedShieldCheck)
+                    ->visible(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
+                    ->schema([
+                        WarrantySourceOrderSelect::make()
+                            ->required(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
+                            ->live()
+                            ->afterStateUpdated(function (mixed $state, Set $set): void {
+                                if (blank($state)) {
+                                    return;
+                                }
+
+                                $order = OrderModel::query()->find((int) $state);
+
+                                if ($order === null) {
+                                    return;
+                                }
+
+                                $set('client_id', (int) $order->client_id);
+                                $set('client_equipment_ids', []);
+                            }),
+                    ]),
+            ]);
+    }
+
+    private function clientStep(): Step
+    {
+        return Step::make('Клиент')
+            ->description('Выбор или регистрация')
+            ->icon(Heroicon::OutlinedUser)
+            ->schema([
+                Section::make('Клиент')
+                    ->schema([
+                        RegisterClientOption::applyTo(OrderPresentation::clientSelect('client_id'))
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('client_equipment_ids', []))
+                            ->disabled(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value
+                                && filled($get('warranty_source_order_id'))),
+                    ]),
+            ]);
+    }
+
+    private function compositionStep(): Step
+    {
+        return Step::make('Состав')
+            ->description('Инструменты или оборудование')
+            ->icon(Heroicon::OutlinedCube)
+            ->schema([
+                Section::make('Инструменты')
+                    ->description('Укажите каждый инструмент отдельно')
+                    ->icon(Heroicon::OutlinedScissors)
+                    ->visible(fn (Get $get): bool => $get('service_type') === OrderServiceType::Sharpening->value)
+                    ->schema([
+                        Repeater::make('tools')
+                            ->label('Список инструментов')
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('Наименование')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->columnSpan(2),
+                                Select::make('tool_type')
+                                    ->label('Тип инструмента')
+                                    ->options(SharpeningToolType::options())
+                                    ->searchable()
+                                    ->required()
+                                    ->native(false),
+                                TextInput::make('quantity')
+                                    ->label('Количество')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(1)
+                                    ->required(),
+                            ])
+                            ->columns(4)
+                            ->defaultItems(1)
+                            ->minItems(1)
+                            ->addActionLabel('Добавить инструмент')
+                            ->cloneable()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => filled($state['name'] ?? null)
+                                ? (string) $state['name']
+                                : 'Инструмент')
+                            ->required(),
+                    ]),
+                Section::make('Оборудование')
+                    ->description('Выберите оборудование клиента или зарегистрируйте новое')
+                    ->icon(Heroicon::OutlinedWrenchScrewdriver)
+                    ->visible(fn (Get $get): bool => $get('service_type') === OrderServiceType::Repair->value)
+                    ->schema([
+                        RegisterEquipmentOption::applyTo(
+                            $this->clientEquipmentSelect(),
+                            fn (): int => (int) ($this->data['client_id'] ?? 0),
+                        )
+                            ->required()
+                            ->disabled(fn (Get $get): bool => blank($get('client_id'))),
+                    ]),
+            ]);
+    }
+
+    private function clientEquipmentSelect(): Select
+    {
+        return Select::make('client_equipment_ids')
+            ->label('Оборудование клиента')
+            ->multiple()
+            ->searchable()
+            ->preload()
+            ->helperText('Выберите существующее или зарегистрируйте новое кнопкой справа')
+            ->options(function (Get $get): array {
+                if (blank($get('client_id'))) {
+                    return [];
+                }
+
+                return ClientEquipmentModel::query()
+                    ->where('client_id', (int) $get('client_id'))
+                    ->orderBy('title')
+                    ->get()
+                    ->mapWithKeys(static function (ClientEquipmentModel $equipment): array {
+                        return [(int) $equipment->id => self::equipmentLabel($equipment)];
+                    })
+                    ->all();
+            })
+            ->getOptionLabelsUsing(function (array $values): array {
+                return ClientEquipmentModel::query()
+                    ->whereIn('id', $values)
+                    ->get()
+                    ->mapWithKeys(static fn (ClientEquipmentModel $equipment): array => [
+                        (int) $equipment->id => self::equipmentLabel($equipment),
+                    ])
+                    ->all();
+            });
+    }
+
+    private static function equipmentLabel(ClientEquipmentModel $equipment): string
+    {
+        return trim($equipment->title.' · '.$equipment->brand.' '.$equipment->model_name);
+    }
+
+    private function receptionStep(): Step
+    {
+        return Step::make('Приёмка')
+            ->description('Стоимость, доставка и примечания')
+            ->icon(Heroicon::OutlinedClipboardDocumentCheck)
+            ->schema([
+                Section::make('Стоимость и доставка')
+                    ->schema([
+                        Grid::make(2)->schema([
+                            TextInput::make('estimated_amount')
+                                ->label('Ориентировочная стоимость')
+                                ->numeric()
+                                ->required()
+                                ->minValue(0)
+                                ->prefix('₽'),
+                            Toggle::make('delivery_required')
+                                ->label('Нужна доставка')
+                                ->inline(false)
+                                ->onIcon(Heroicon::OutlinedTruck)
+                                ->offIcon(Heroicon::OutlinedXMark)
+                                ->default(false),
+                        ]),
+                    ]),
+                Section::make('Заметки приёмки')
+                    ->schema([
+                        Textarea::make('defects')
+                            ->label('Дефекты')
+                            ->rows(4)
+                            ->columnSpanFull(),
+                        Textarea::make('internal_notes')
+                            ->label('Внутренние заметки')
+                            ->rows(4)
+                            ->columnSpanFull()
+                            ->helperText('Не видны клиенту'),
+                    ]),
+            ]);
     }
 
     protected function handleRecordCreation(array $data): Model
@@ -461,55 +381,6 @@ class CreateOrder extends CreateRecord
         }
 
         return $items;
-    }
-
-    /** @return array<int, string> */
-    private function warrantySourceOrderOptions(?string $search = null): array
-    {
-        $query = OrderModel::query()
-            ->with('client')
-            ->where('billing_type', '!=', OrderBillingType::Warranty->value)
-            ->orderByDesc('created_at')
-            ->limit(50);
-
-        if (filled($search)) {
-            $query->where(function ($builder) use ($search): void {
-                $builder->where('id', 'like', "%{$search}%")
-                    ->orWhereHas('client', function ($client) use ($search): void {
-                        $client->where('name', 'like', "%{$search}%")
-                            ->orWhere('phone', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        return $query->get()
-            ->mapWithKeys(fn (OrderModel $order): array => [
-                (string) $order->id => $this->formatWarrantySourceOrder($order),
-            ])
-            ->all();
-    }
-
-    private function warrantySourceOrderLabel(mixed $value): ?string
-    {
-        if (blank($value)) {
-            return null;
-        }
-
-        $order = OrderModel::query()->with('client')->find((string) $value);
-
-        return $order === null ? null : $this->formatWarrantySourceOrder($order);
-    }
-
-    private function formatWarrantySourceOrder(OrderModel $order): string
-    {
-        $client = $order->client;
-        $clientLabel = $client === null
-            ? 'Клиент #'.$order->client_id
-            : trim(($client->name ?: 'Без имени').' · '.$client->phone);
-
-        $type = OrderPresentation::serviceTypeOptions()[$order->service_type] ?? $order->service_type;
-
-        return (string) OrderPresentation::orderNumber($order).' · '.$type.' · '.$clientLabel;
     }
 
     protected function getCreateFormAction(): Action

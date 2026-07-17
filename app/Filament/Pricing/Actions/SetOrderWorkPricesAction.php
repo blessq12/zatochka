@@ -6,7 +6,7 @@ use App\Application\Pricing\Command\SetOrderWorkPricesCommand;
 use App\Application\Pricing\Command\SetOrderWorkPricesHandler;
 use App\Application\Pricing\ServiceType\WorkPricingPolicyResolver;
 use App\Domain\Order\VO\OrderStatus;
-use App\Filament\Order\Resources\OrderResource\Support\OrderPresentation;
+use App\Filament\Order\Resources\OrderResource\Support\OrderWorkPricing;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Shared\Domain\DomainException;
 use Filament\Actions\Action;
@@ -32,7 +32,7 @@ final class SetOrderWorkPricesAction
                 ->forValue((string) $record->service_type)
                 ->modalDescription())
             ->fillForm(fn (OrderModel $record): array => [
-                'work_prices' => OrderPresentation::buildWorkPricesFormDefaults($record),
+                'work_prices' => OrderWorkPricing::buildWorkPricesFormDefaults($record),
             ])
             ->form(fn (OrderModel $record): array => [
                 Repeater::make('work_prices')
@@ -84,7 +84,7 @@ final class SetOrderWorkPricesAction
                                     return '—';
                                 }
 
-                                return OrderPresentation::formatMoney((string) round($unitAmount * $quantity, 2));
+                                return OrderWorkPricing::formatMoney((string) round($unitAmount * $quantity, 2));
                             })
                             ->columnSpan(1),
                     ])
@@ -95,7 +95,7 @@ final class SetOrderWorkPricesAction
             ])
             ->action(function (OrderModel $record, array $data): void {
                 try {
-                    if (OrderPresentation::buildWorkPricesFormDefaults($record) === []) {
+                    if (OrderWorkPricing::buildWorkPricesFormDefaults($record) === []) {
                         Notification::make()
                             ->title('Нет выполненных работ для оценки')
                             ->danger()

@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Pricing\Port;
 
 use App\Application\Pricing\Port\OrderPricingGatePort;
-use App\Domain\Order\VO\OrderItemStatus;
+use App\Domain\Order\Service\OrderItemRejectionPolicy;
 use App\Domain\Order\VO\OrderStatus;
 use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Order\Model\OrderModel;
@@ -35,13 +35,11 @@ final readonly class EloquentOrderPricingGatePort implements OrderPricingGatePor
             throw new DomainException('Order item not found.');
         }
 
-        $quantity = (int) $item->quantity;
-        $rejectedQuantity = (int) $item->rejected_quantity;
-        $status = (string) $item->status;
-        $repairableQuantity = $quantity > 0
-            ? max(0, $quantity - $rejectedQuantity)
-            : ($status === OrderItemStatus::Rejected->value ? 0 : 1);
-        $fullyRejected = $status === OrderItemStatus::Rejected->value || $repairableQuantity === 0;
+        $fullyRejected = OrderItemRejectionPolicy::isFullyRejected(
+            (int) $item->quantity,
+            (int) $item->rejected_quantity,
+            (string) $item->status,
+        );
 
         if ($fullyRejected) {
             throw new DomainException('Cannot set price for a fully rejected order item.');

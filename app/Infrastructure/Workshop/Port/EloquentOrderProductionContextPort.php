@@ -5,7 +5,7 @@ namespace App\Infrastructure\Workshop\Port;
 use App\Application\Workshop\DTO\OrderProductionContextDTO;
 use App\Application\Workshop\DTO\OrderProductionItemDTO;
 use App\Application\Workshop\Port\OrderProductionContextPort;
-use App\Domain\Order\VO\OrderItemStatus;
+use App\Domain\Order\Service\OrderItemRejectionPolicy;
 use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Shared\Domain\DomainException;
@@ -24,21 +24,15 @@ final readonly class EloquentOrderProductionContextPort implements OrderProducti
             ->where('order_id', $orderId)
             ->orderBy('id')
             ->get()
-            ->map(static function (OrderItemModel $item): OrderProductionItemDTO {
-                $quantity = (int) $item->quantity;
-                $rejectedQuantity = (int) $item->rejected_quantity;
-                $status = (string) $item->status;
-                $repairableQuantity = $quantity > 0
-                    ? max(0, $quantity - $rejectedQuantity)
-                    : ($status === OrderItemStatus::Rejected->value ? 0 : 1);
-                $fullyRejected = $status === OrderItemStatus::Rejected->value || $repairableQuantity === 0;
-
-                return new OrderProductionItemDTO(
-                    (int) $item->id,
-                    $item->client_equipment_id !== null ? (int) $item->client_equipment_id : null,
-                    $fullyRejected,
-                );
-            })
+            ->map(static fn (OrderItemModel $item): OrderProductionItemDTO => new OrderProductionItemDTO(
+                (int) $item->id,
+                $item->client_equipment_id !== null ? (int) $item->client_equipment_id : null,
+                OrderItemRejectionPolicy::isFullyRejected(
+                    (int) $item->quantity,
+                    (int) $item->rejected_quantity,
+                    (string) $item->status,
+                ),
+            ))
             ->values()
             ->all();
 
