@@ -12,7 +12,7 @@ Dead classes (defined but never `record()`'d): **none** (P6 audit).
 | Event | Listener(s) | Target BC effect |
 |-------|-------------|------------------|
 | `Order\ReceptionCompleted` | `OpenProductionTasksOnReceptionCompleted` | Workshop open task (idempotent) |
-| `Order\OrderMasterAssigned` | `OpenAndAssignTasksOnOrderMasterAssigned` | Workshop open + assign master |
+| `Order\OrderMasterAssigned` | `OpenAndAssignTasksOnOrderMasterAssigned` → `EnsureProductionTaskOpenedAndAssignedHandler` | Workshop open + assign master |
 | `Order\OrderCancelled` | `CancelProductionTaskOnOrderCancelled` | Workshop cancel task |
 | `Order\OrderCancelled` | `ClearWorkPricesOnOrderCancelled` | Pricing clear |
 | `Order\OrderReturnedToMaster` | `ReopenProductionTaskOnOrderReturnedToMaster` | Workshop reopen |

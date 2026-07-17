@@ -2,16 +2,17 @@
 
 namespace App\Infrastructure\Order\Port;
 
+use App\Application\Identity\ReadPort\StaffUserReadPort;
 use App\Application\Order\Port\MasterDirectoryPort;
-use App\Models\User;
-use App\Models\UserRole;
 
 final readonly class EloquentMasterDirectoryPort implements MasterDirectoryPort
 {
+    public function __construct(
+        private StaffUserReadPort $staffUsers,
+    ) {}
+
     public function existsAsMaster(int $userId): bool
     {
-        $user = User::query()->find($userId);
-
-        return $user !== null && $user->role === UserRole::Master;
+        return $this->staffUsers->existsAsMaster($userId);
     }
 }

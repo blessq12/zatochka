@@ -2,12 +2,15 @@
 
 namespace App\Filament\Identity\Resources;
 
+use App\Application\Identity\Command\ChangeStaffPasswordCommand;
+use App\Application\Identity\Command\ChangeStaffPasswordHandler;
 use App\Filament\Identity\Resources\UserResource\Pages\CreateUser;
 use App\Filament\Identity\Resources\UserResource\Pages\EditUser;
 use App\Filament\Identity\Resources\UserResource\Pages\ListUsers;
 use App\Filament\Support\CatalogResource;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Shared\Domain\DomainException;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -16,6 +19,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -118,9 +122,15 @@ class UserResource extends CatalogResource
                             ->minLength(8),
                     ])
                     ->action(function (User $record, array $data): void {
-                        $record->update([
-                            'password' => $data['password'],
-                        ]);
+                        try {
+                            app(ChangeStaffPasswordHandler::class)->handle(new ChangeStaffPasswordCommand(
+                                (int) $record->id,
+                                (string) $data['password'],
+                            ));
+                            Notification::make()->title('Пароль обновлён')->success()->send();
+                        } catch (DomainException $exception) {
+                            Notification::make()->title($exception->getMessage())->danger()->send();
+                        }
                     }),
                 DeleteAction::make()->label('Удалить'),
             ])

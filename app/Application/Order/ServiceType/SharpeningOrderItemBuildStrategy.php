@@ -15,7 +15,7 @@ final readonly class SharpeningOrderItemBuildStrategy implements OrderItemBuildS
         private EntityIdGenerator $ids,
     ) {}
 
-    public function buildItem(CreateOrderItemDTO $itemDto, int $clientId): OrderItem
+    public function buildItem(CreateOrderItemDTO $itemDto): OrderItem
     {
         if (! filled($itemDto->toolName)) {
             throw new DomainException('Sharpening item requires a tool name.');

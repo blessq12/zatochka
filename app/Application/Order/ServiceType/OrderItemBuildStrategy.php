@@ -7,5 +7,5 @@ use App\Domain\Order\Entity\OrderItem;
 
 interface OrderItemBuildStrategy
 {
-    public function buildItem(CreateOrderItemDTO $itemDto, int $clientId): OrderItem;
+    public function buildItem(CreateOrderItemDTO $itemDto): OrderItem;
 }

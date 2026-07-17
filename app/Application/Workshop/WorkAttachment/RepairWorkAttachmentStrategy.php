@@ -2,8 +2,8 @@
 
 namespace App\Application\Workshop\WorkAttachment;
 
-use App\Domain\Equipment\Repository\ClientEquipmentRepository;
-use App\Domain\Order\Entity\Order;
+use App\Application\Workshop\DTO\OrderProductionContextDTO;
+use App\Application\Workshop\Port\EquipmentComponentBelongingPort;
 use App\Domain\Workshop\VO\WorkTarget;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
@@ -11,11 +11,11 @@ use App\Shared\ValueObject\EntityId;
 final readonly class RepairWorkAttachmentStrategy implements WorkAttachmentStrategy
 {
     public function __construct(
-        private ClientEquipmentRepository $equipment,
+        private EquipmentComponentBelongingPort $equipmentComponents,
     ) {}
 
     public function resolveTarget(
-        Order $order,
+        OrderProductionContextDTO $context,
         ?int $orderItemId,
         ?int $equipmentComponentId,
     ): WorkTarget {
@@ -29,30 +29,22 @@ final readonly class RepairWorkAttachmentStrategy implements WorkAttachmentStrat
 
         $componentId = new EntityId($equipmentComponentId);
 
-        foreach ($order->items() as $item) {
-            $equipmentId = $item->clientEquipmentId();
+        foreach ($context->items as $item) {
+            $equipmentId = $item->clientEquipmentId;
 
             if ($equipmentId === null) {
                 continue;
             }
 
-            if ($item->isFullyRejected()) {
+            if ($item->fullyRejected) {
                 continue;
             }
 
-            $equipment = $this->equipment->findById($equipmentId);
-
-            if ($equipment === null) {
+            if (! $this->equipmentComponents->belongsToEquipment($equipmentId, $equipmentComponentId)) {
                 continue;
             }
 
-            $component = $equipment->findComponent($componentId);
-
-            if ($component === null) {
-                continue;
-            }
-
-            return new WorkTarget($item->id(), $componentId);
+            return new WorkTarget(new EntityId($item->orderItemId), $componentId);
         }
 
         throw new DomainException('Equipment component does not belong to this repair order.');

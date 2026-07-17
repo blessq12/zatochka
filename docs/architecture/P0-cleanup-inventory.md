@@ -17,17 +17,20 @@ Remaining Application→Model: **0** (Estimate killed in P3).
 
 ## 2. Cross-BC write violations (vertical breaks)
 
-| Location | Violation | Target |
+| Location | Violation | Status |
 |----------|-----------|--------|
-| `ReturnOrderToMasterHandler` | Order App mutates Workshop + Pricing repos in one handler | Order mutates+events only; listeners: Workshop reopen, Pricing clear |
-| `ProductionTaskController::reject` | Workshop HTTP → Order `RejectOrderItemUnitsHandler` | Workshop event **or** Order command from POS via Order API (not Workshop controller) |
-| Filament `OrderResource` write-off | Order UI → Inventory handler (acceptable write BC) | Keep Inventory command; ensure `MaterialWrittenOff` event; Order reacts only if needed via listener |
-| Filament Order actions | Many Order commands OK | Split god-file in P4; no multi-BC orchestration in one action |
+| `ReturnOrderToMasterHandler` | Order App mutates Workshop + Pricing | **Closed** — Order + events only |
+| `ProductionTaskController::reject` | Workshop HTTP → Order handler | **Closed** — Order API |
+| Sync provisioning CRM/Equipment from CreateOrder | Order App → foreign handlers | **Closed** — UI/API pre-registers; CreateOrder IDs only |
+| `RepairWorkAttachmentStrategy` → Equipment repo | Workshop App → Equipment write stack | **Closed** → `EquipmentComponentBelongingPort` |
+| Workshop/Pricing ports hydrate `Order` aggregate | foreign write stack via ports | **Closed** — DTO / read-query gates |
+| Filament Pricing/Inventory actions in Order folder | wrong BC placement | **Closed** — `Filament/Pricing`, `Filament/Inventory` actions |
 
 ## 3. Estimate / ItemPrice kill-list — **DONE P3**
 
 Removed Domain/App/Infra/HTTP/schema for Estimate, ItemPrice, Discount.
 Runtime pricing write-path: **WorkPrice only**.
+Estimate leftover Query/Controller/Presenter: **deleted**.
 
 Remaining Application→Model: **0**.
 
@@ -40,41 +43,35 @@ Canonical catalog: [`domain-event-catalog.md`](./domain-event-catalog.md).
 | Event | Listener | Effect |
 |-------|----------|--------|
 | `ReceptionCompleted` | `OpenProductionTasksOnReceptionCompleted` | Workshop opens task |
-| `OrderMasterAssigned` | `OpenAndAssignTasksOnOrderMasterAssigned` | Workshop assign master |
+| `OrderMasterAssigned` | `OpenAndAssignTasksOnOrderMasterAssigned` → `EnsureProductionTaskOpenedAndAssignedHandler` | Workshop open + assign |
 | `OrderCancelled` | `CancelProductionTaskOnOrderCancelled` | Workshop cancel task |
-| `OrderCancelled` | `ClearWorkPricesOnOrderCancelled` | Pricing clear (**P2**) |
-| `OrderReturnedToMaster` | `ReopenProductionTaskOnOrderReturnedToMaster` | Workshop reopen (**P2**) |
-| `OrderReturnedToMaster` | `ClearWorkPricesOnOrderReturnedToMaster` | Pricing clear (**P2**) |
+| `OrderCancelled` | `ClearWorkPricesOnOrderCancelled` | Pricing clear |
+| `OrderReturnedToMaster` | `ReopenProductionTaskOnOrderReturnedToMaster` | Workshop reopen |
+| `OrderReturnedToMaster` | `ClearWorkPricesOnOrderReturnedToMaster` | Pricing clear |
 | `WorkStarted` | `MarkOrderInProgressOnWorkStarted` → App command | Order → in_progress |
 | `ProductionCompleted` | `MarkOrderWorksCompletedOnProductionCompleted` → App command | Order → works_completed |
 
-### P6 hygiene — DONE
-
-- Dead event classes (never recorded): **0**
-- Orphan listener `CreateEstimateOnProductionCompleted`: already gone with Estimate
-- Published without listeners: classified as **FUTURE_HOOK** (kept, documented)
-- Workshop open-task listeners: ID gen + idempotency moved into `OpenProductionTaskHandler` (`EntityIdGenerator`)
-
-### P2 TX UoW
+### P2 / extended TX UoW
 
 - Port `UnitOfWork` → `EloquentUnitOfWork`
-- Entry handlers wrapped: ReturnToMaster, Cancel, AssignMaster, CompleteReception, StartWork, FinishProduction
+- Entry handlers wrapped: ReturnToMaster, Cancel, AssignMaster, CompleteReception, StartWork, FinishProduction, **CreateOrder**, **SetOrderWorkPrices**, **WriteOffMaterial**, **MarkOrderReady**
 - Sync listeners run inside parent TX (Laravel savepoints on nest)
 
-### Remaining vertical debt
+## 5. Vertical isolation uplift (to 5.0) — DONE
 
-- ~~`FinishProductionTaskHandler` still reads `OrderRepository`~~ → `OrderProductionContextPort` (**closed**)
-- ~~`AssignOrderMasterHandler` still uses `User` Eloquent~~ → `MasterDirectoryPort` (**closed**)
-- Pricing: `OrderPricingGatePort` instead of `OrderRepository` (**closed**)
-- Estimate leftover Query/Controller: **gone**
-- Optional next: `RepairWorkAttachmentStrategy` → Equipment via Workshop-owned port (not Order write-repo)
+- CreateOrder: no `ClientProvisioningPort` / `EquipmentProvisioningPort`
+- Workshop: `OrderProductionContextPort` → `OrderProductionContextDTO` (no `Order` entity / `OrderRepository`)
+- Workshop: `EquipmentComponentBelongingPort` for repair attachment
+- Pricing: `EloquentOrderPricingGatePort` via Order read-query (no `OrderRepository`)
+- Identity vertical: Domain/Application/Infrastructure + Filament via Register/Update/ChangePassword commands
+- Order `MasterDirectoryPort` → Identity `StaffUserReadPort`
+- Arch tests: `tests/Unit/Architecture/VerticalIsolationTest.php`
 
 ## P4 UI thin — DONE
 
-- Filament: `OrderPresentation` + `OrderMutationActions`; resource ~582 LOC
-- POS: composable + Header/Context/Works; page ~1010 (mostly CSS)
+- Filament: `OrderPresentation` + `OrderMutationActions`; Pricing/Inventory actions owned by their BC folders
+- POS: composable + Header/Context/Works
 - Reject: Order API (`auth:sanctum,master`); Workshop reject removed
-- IDs: CreateOrder items + WriteOffMaterial movement generated in Application handlers
 
 ## P5 ServiceType Strategy — DONE
 
@@ -84,18 +81,11 @@ Canonical catalog: [`domain-event-catalog.md`](./domain-event-catalog.md).
 ## P6 Event catalog hygiene — DONE
 
 - See `docs/architecture/domain-event-catalog.md`
-- LIVE spine unchanged; FUTURE_HOOK explicit; thin open-task listeners
+- LIVE spine unchanged; FUTURE_HOOK explicit; listeners thin
 
 ## P7 Safety net — DONE
 
-- Unit: Order/Workshop status transitions + aggregate FSM + completion policies
+- Unit: Order/Workshop status transitions + aggregate FSM + completion policies + architecture isolation
 - Feature smoke: sharpening + repair → `works_completed`
-- Feature TX: `CancelOrder` mid-chain listener fail → full rollback (order + production task)
+- Feature TX: `CancelOrder` mid-chain listener fail → full rollback
 - Run: `php artisan test`
-
-## Debt close (post-audit) — DONE
-
-- Workshop: `OrderProductionContextPort` (Finish / AddMasterWork)
-- Pricing: `OrderPricingGatePort` (SetWorkPrice / SetOrderWorkPrices)
-- Order: `MasterDirectoryPort` (AssignOrderMaster)
-- Estimate leftover Application/HTTP: already absent on disk

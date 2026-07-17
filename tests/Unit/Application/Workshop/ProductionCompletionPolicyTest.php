@@ -2,104 +2,90 @@
 
 namespace Tests\Unit\Application\Workshop;
 
+use App\Application\Workshop\DTO\OrderProductionContextDTO;
+use App\Application\Workshop\DTO\OrderProductionItemDTO;
 use App\Application\Workshop\ServiceType\RepairProductionCompletionPolicy;
 use App\Application\Workshop\ServiceType\SharpeningProductionCompletionPolicy;
-use App\Domain\Order\Entity\Order;
-use App\Domain\Order\Entity\OrderItem;
-use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
-use App\Domain\Order\VO\OrderNumber;
-use App\Domain\Order\VO\OrderServiceType;
-use App\Domain\Order\VO\OrderUrgency;
-use App\Domain\Order\VO\SharpeningToolType;
 use App\Domain\Workshop\Entity\PerformedWork;
 use App\Domain\Workshop\Entity\ProductionTask;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
-use App\Shared\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
 final class ProductionCompletionPolicyTest extends TestCase
 {
     public function test_sharpening_requires_work_per_item(): void
     {
-        $itemId = new EntityId(11);
-        $order = $this->sharpeningOrder($itemId);
-        $task = ProductionTask::open(new EntityId(1), $order->id());
+        $itemId = 11;
+        $context = $this->sharpeningContext($itemId);
+        $task = ProductionTask::open(new EntityId(1), new OrderId($context->orderId));
         $task->assignMaster(new EntityId(5));
 
         $this->expectException(DomainException::class);
-        (new SharpeningProductionCompletionPolicy())->assertReadyToFinish($order, $task);
+        (new SharpeningProductionCompletionPolicy())->assertReadyToFinish($context, $task);
     }
 
     public function test_sharpening_passes_when_work_exists(): void
     {
-        $itemId = new EntityId(11);
-        $order = $this->sharpeningOrder($itemId);
-        $task = ProductionTask::open(new EntityId(1), $order->id());
+        $itemId = 11;
+        $context = $this->sharpeningContext($itemId);
+        $task = ProductionTask::open(new EntityId(1), new OrderId($context->orderId));
         $masterId = new EntityId(5);
         $task->assignMaster($masterId);
-        $task->addWork(new PerformedWork(new EntityId(99), $itemId, $masterId, 'заточка'));
+        $task->addWork(new PerformedWork(new EntityId(99), new EntityId($itemId), $masterId, 'заточка'));
 
-        (new SharpeningProductionCompletionPolicy())->assertReadyToFinish($order, $task);
+        (new SharpeningProductionCompletionPolicy())->assertReadyToFinish($context, $task);
         $this->assertTrue(true);
     }
 
     public function test_repair_requires_work_per_equipment_item(): void
     {
-        $itemId = new EntityId(21);
-        $order = $this->repairOrder($itemId);
-        $task = ProductionTask::open(new EntityId(2), $order->id());
+        $itemId = 21;
+        $context = $this->repairContext($itemId);
+        $task = ProductionTask::open(new EntityId(2), new OrderId($context->orderId));
         $task->assignMaster(new EntityId(5));
 
         $this->expectException(DomainException::class);
-        (new RepairProductionCompletionPolicy())->assertReadyToFinish($order, $task);
+        (new RepairProductionCompletionPolicy())->assertReadyToFinish($context, $task);
     }
 
     public function test_repair_passes_when_component_work_exists(): void
     {
-        $itemId = new EntityId(21);
-        $order = $this->repairOrder($itemId);
-        $task = ProductionTask::open(new EntityId(2), $order->id());
+        $itemId = 21;
+        $context = $this->repairContext($itemId);
+        $task = ProductionTask::open(new EntityId(2), new OrderId($context->orderId));
         $masterId = new EntityId(5);
         $task->assignMaster($masterId);
         $task->addWork(new PerformedWork(
             new EntityId(99),
-            $itemId,
+            new EntityId($itemId),
             $masterId,
             'замена подшипника',
             new EntityId(77),
         ));
 
-        (new RepairProductionCompletionPolicy())->assertReadyToFinish($order, $task);
+        (new RepairProductionCompletionPolicy())->assertReadyToFinish($context, $task);
         $this->assertTrue(true);
     }
 
-    private function sharpeningOrder(EntityId $itemId): Order
+    private function sharpeningContext(int $itemId): OrderProductionContextDTO
     {
-        return Order::create(
-            OrderId::generate(),
-            new EntityId(1),
-            new Money('500.00'),
-            [OrderItem::forTool($itemId, 'Нож', SharpeningToolType::KitchenKnife, 1)],
-            OrderServiceType::Sharpening,
-            OrderBillingType::Paid,
-            OrderUrgency::Normal,
-            number: new OrderNumber('ORD-26-10'),
+        return new OrderProductionContextDTO(
+            OrderId::generate()->value,
+            'sharpening',
+            'in_progress',
+            [new OrderProductionItemDTO($itemId, null, false)],
         );
     }
 
-    private function repairOrder(EntityId $itemId): Order
+    private function repairContext(int $itemId): OrderProductionContextDTO
     {
-        return Order::create(
-            OrderId::generate(),
-            new EntityId(1),
-            new Money('1500.00'),
-            [OrderItem::forEquipment($itemId, new EntityId(50))],
-            OrderServiceType::Repair,
-            OrderBillingType::Paid,
-            OrderUrgency::Normal,
-            number: new OrderNumber('ORD-26-11'),
+        return new OrderProductionContextDTO(
+            OrderId::generate()->value,
+            'repair',
+            'in_progress',
+            [new OrderProductionItemDTO($itemId, 50, false)],
         );
     }
 }

@@ -2,6 +2,11 @@
 
 namespace Tests\Support;
 
+use App\Application\CRM\Command\RegisterClientCommand;
+use App\Application\CRM\Command\RegisterClientHandler;
+use App\Application\Equipment\Command\RegisterEquipmentCommand;
+use App\Application\Equipment\Command\RegisterEquipmentHandler;
+use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Order\Command\AssignOrderMasterCommand;
 use App\Application\Order\Command\AssignOrderMasterHandler;
 use App\Application\Order\Command\CreateOrderCommand;
@@ -37,16 +42,67 @@ trait BuildsWorkshopFlows
         ]);
     }
 
+    protected function registerClient(string $name, string $phone): int
+    {
+        $ids = app(EntityIdGenerator::class);
+        $clientId = $ids->next('client')->value;
+
+        app(RegisterClientHandler::class)->handle(new RegisterClientCommand(
+            $clientId,
+            $ids->next('bonus_account')->value,
+            $phone,
+            $name,
+        ));
+
+        return $clientId;
+    }
+
+    /**
+     * @param list<array{name: string, serialNumber?: ?string}> $parts
+     */
+    protected function registerEquipment(
+        int $clientId,
+        string $title,
+        string $brand,
+        string $modelName,
+        array $parts = [],
+    ): int {
+        $ids = app(EntityIdGenerator::class);
+        $equipmentId = $ids->next('equipment')->value;
+        $partDtos = [];
+
+        foreach ($parts as $part) {
+            $partDtos[] = new EquipmentPartDTO(
+                $ids->next('equipment_component')->value,
+                $part['name'],
+                $part['serialNumber'] ?? null,
+            );
+        }
+
+        app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
+            $equipmentId,
+            $title,
+            $brand,
+            $modelName,
+            $clientId,
+            null,
+            $partDtos,
+        ));
+
+        return $equipmentId;
+    }
+
     /**
      * @return array{orderId: string, masterId: int, taskId: int, orderItemId: int}
      */
     protected function createSharpeningOrderWithMaster(User $master): array
     {
         $orderId = OrderId::generate()->value;
+        $clientId = $this->registerClient('Smoke Client', '+79990001122');
 
         app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
             orderId: $orderId,
-            clientId: 0,
+            clientId: $clientId,
             estimatedAmount: '1000.00',
             items: [
                 new CreateOrderItemDTO(
@@ -58,8 +114,6 @@ trait BuildsWorkshopFlows
             serviceType: 'sharpening',
             billingType: 'paid',
             urgency: 'normal',
-            newClientName: 'Smoke Client',
-            newClientPhone: '+79990001122',
         ));
 
         app(AssignOrderMasterHandler::class)->handle(new AssignOrderMasterCommand(
@@ -84,26 +138,27 @@ trait BuildsWorkshopFlows
     protected function createRepairOrderWithMaster(User $master): array
     {
         $orderId = OrderId::generate()->value;
+        $clientId = $this->registerClient('Repair Client', '+79990003344');
+        $equipmentId = $this->registerEquipment(
+            $clientId,
+            'Газонокосилка',
+            'Honda',
+            'HRX',
+            [['name' => 'Нож', 'serialNumber' => 'SN-1']],
+        );
 
         app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
             orderId: $orderId,
-            clientId: 0,
+            clientId: $clientId,
             estimatedAmount: '2500.00',
             items: [
                 new CreateOrderItemDTO(
-                    equipmentTitle: 'Газонокосилка',
-                    equipmentBrand: 'Honda',
-                    equipmentModelName: 'HRX',
-                    equipmentParts: [
-                        ['name' => 'Нож', 'serialNumber' => 'SN-1'],
-                    ],
+                    clientEquipmentId: $equipmentId,
                 ),
             ],
             serviceType: 'repair',
             billingType: 'paid',
             urgency: 'normal',
-            newClientName: 'Repair Client',
-            newClientPhone: '+79990003344',
         ));
 
         app(AssignOrderMasterHandler::class)->handle(new AssignOrderMasterCommand(

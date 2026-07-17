@@ -21,14 +21,6 @@ final readonly class CreateOrderCommand
         public ?string $defects = null,
         public ?string $internalNotes = null,
         public string $estimatedCurrency = 'RUB',
-        public ?string $newClientName = null,
-        public ?string $newClientPhone = null,
-        public ?string $newClientEmail = null,
         public ?string $warrantySourceOrderId = null,
     ) {}
-
-    public function shouldCreateClient(): bool
-    {
-        return filled($this->newClientPhone) && filled($this->newClientName);
-    }
 }

@@ -2,14 +2,12 @@
 
 namespace App\Application\Workshop\Port;
 
-use App\Domain\Order\Entity\Order;
-use App\Domain\Order\VO\OrderId;
+use App\Application\Workshop\DTO\OrderProductionContextDTO;
 
 /**
- * Cross-BC read of Order for production policies / work attachment.
- * Workshop Application must not depend on Order write Repository.
+ * Workshop-owned read projection of Order for production completion / work attachment.
  */
 interface OrderProductionContextPort
 {
-    public function getById(OrderId $orderId): Order;
+    public function getById(string $orderId): OrderProductionContextDTO;
 }

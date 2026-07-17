@@ -2,10 +2,10 @@
 
 namespace App\Application\Workshop\ServiceType;
 
-use App\Domain\Order\Entity\Order;
+use App\Application\Workshop\DTO\OrderProductionContextDTO;
 use App\Domain\Workshop\Entity\ProductionTask;
 
 interface ProductionCompletionPolicy
 {
-    public function assertReadyToFinish(Order $order, ProductionTask $task): void;
+    public function assertReadyToFinish(OrderProductionContextDTO $context, ProductionTask $task): void;
 }

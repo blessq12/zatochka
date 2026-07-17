@@ -2,9 +2,15 @@
 
 namespace App\Filament\Order\Resources\OrderResource\Pages;
 
+use App\Application\CRM\Command\RegisterClientCommand;
+use App\Application\CRM\Command\RegisterClientHandler;
+use App\Application\Equipment\Command\RegisterEquipmentCommand;
+use App\Application\Equipment\Command\RegisterEquipmentHandler;
+use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Order\Command\CreateOrderCommand;
 use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\DTO\CreateOrderItemDTO;
+use App\Application\Shared\EntityIdGenerator;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderServiceType;
@@ -16,7 +22,6 @@ use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Shared\Domain\DomainException;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -107,11 +112,6 @@ class CreateOrder extends CreateRecord
                                 ->afterStateUpdated(function (mixed $state, Set $set): void {
                                     if ($state !== OrderBillingType::Warranty->value) {
                                         $set('warranty_source_order_id', null);
-                                    } else {
-                                        $set('client_mode', 'existing');
-                                        $set('new_client_name', null);
-                                        $set('new_client_phone', null);
-                                        $set('new_client_email', null);
                                     }
                                 }),
                             ToggleButtons::make('urgency')
@@ -157,68 +157,56 @@ class CreateOrder extends CreateRecord
                                         return;
                                     }
 
-                                    $set('client_mode', 'existing');
                                     $set('client_id', (int) $order->client_id);
                                     $set('client_equipment_ids', []);
-                                    $set('equipment_mode', 'existing');
                                 }),
                         ]),
                 ]),
             Step::make('Клиент')
-                ->description('Существующий или новый')
+                ->description('Выбор или регистрация')
                 ->icon(Heroicon::OutlinedUser)
                 ->schema([
                     Section::make('Клиент')
                         ->schema([
-                            Radio::make('client_mode')
-                                ->label('Как указать клиента')
-                                ->options([
-                                    'existing' => 'Существующий клиент',
-                                    'new' => 'Новый клиент',
-                                ])
-                                ->descriptions([
-                                    'existing' => 'Выбор из базы клиентов',
-                                    'new' => 'Регистрация при создании заказа',
-                                ])
-                                ->default('existing')
-                                ->required()
-                                ->live()
-                                ->disabled(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
-                                ->afterStateUpdated(function (mixed $state, Set $set): void {
-                                    if ($state === 'new') {
-                                        $set('client_id', null);
-                                        $set('equipment_mode', 'new');
-                                        $set('client_equipment_ids', []);
-                                    }
-                                }),
                             OrderPresentation::clientSelect('client_id')
-                                ->live()
-                                ->afterStateUpdated(fn (Set $set) => $set('client_equipment_ids', []))
-                                ->visible(fn (Get $get): bool => $get('client_mode') === 'existing')
-                                ->required(fn (Get $get): bool => $get('client_mode') === 'existing')
-                                ->disabled(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value
-                                    && filled($get('warranty_source_order_id'))),
-                            Grid::make(2)
-                                ->visible(fn (Get $get): bool => $get('client_mode') === 'new'
-                                    && $get('billing_type') !== OrderBillingType::Warranty->value)
-                                ->schema([
-                                    TextInput::make('new_client_name')
+                                ->createOptionForm([
+                                    TextInput::make('name')
                                         ->label('ФИО')
-                                        ->maxLength(255)
-                                        ->required(fn (Get $get): bool => $get('client_mode') === 'new'),
-                                    TextInput::make('new_client_phone')
+                                        ->required()
+                                        ->maxLength(255),
+                                    TextInput::make('phone')
                                         ->label('Телефон')
                                         ->tel()
                                         ->telRegex('/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/')
                                         ->mask('+7 (999) 999-99-99')
                                         ->placeholder('+7 (___) ___-__-__')
-                                        ->required(fn (Get $get): bool => $get('client_mode') === 'new'),
-                                    TextInput::make('new_client_email')
+                                        ->required(),
+                                    TextInput::make('email')
                                         ->label('Эл. почта')
                                         ->email()
-                                        ->maxLength(255)
-                                        ->columnSpanFull(),
-                                ]),
+                                        ->maxLength(255),
+                                ])
+                                ->createOptionUsing(function (array $data): int {
+                                    $ids = app(EntityIdGenerator::class);
+                                    $clientId = $ids->next('client')->value;
+
+                                    app(RegisterClientHandler::class)->handle(new RegisterClientCommand(
+                                        $clientId,
+                                        $ids->next('bonus_account')->value,
+                                        $data['phone'],
+                                        $data['name'],
+                                        filled($data['email'] ?? null) ? $data['email'] : null,
+                                    ));
+
+                                    return $clientId;
+                                })
+                                ->createOptionAction(fn (Action $action): Action => $action
+                                    ->label('Зарегистрировать клиента')
+                                    ->modalHeading('Новый клиент'))
+                                ->live()
+                                ->afterStateUpdated(fn (Set $set) => $set('client_equipment_ids', []))
+                                ->disabled(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value
+                                    && filled($get('warranty_source_order_id'))),
                         ]),
                 ]),
             Step::make('Состав')
@@ -263,31 +251,17 @@ class CreateOrder extends CreateRecord
                                 ->required(),
                         ]),
                     Section::make('Оборудование')
-                        ->description('Выберите существующее или зарегистрируйте новое')
+                        ->description('Выберите оборудование клиента или зарегистрируйте новое')
                         ->icon(Heroicon::OutlinedWrenchScrewdriver)
                         ->visible(fn (Get $get): bool => $get('service_type') === OrderServiceType::Repair->value)
                         ->schema([
-                            ToggleButtons::make('equipment_mode')
-                                ->label('Источник оборудования')
-                                ->options([
-                                    'existing' => 'У клиента',
-                                    'new' => 'Новое',
-                                ])
-                                ->icons([
-                                    'existing' => Heroicon::OutlinedArchiveBox,
-                                    'new' => Heroicon::OutlinedPlusCircle,
-                                ])
-                                ->grouped()
-                                ->default('existing')
-                                ->live()
-                                ->required(),
                             Select::make('client_equipment_ids')
                                 ->label('Оборудование клиента')
                                 ->multiple()
                                 ->searchable()
                                 ->preload()
                                 ->options(function (Get $get): array {
-                                    if ($get('client_mode') !== 'existing' || blank($get('client_id'))) {
+                                    if (blank($get('client_id'))) {
                                         return [];
                                     }
 
@@ -302,12 +276,7 @@ class CreateOrder extends CreateRecord
                                         })
                                         ->all();
                                 })
-                                ->visible(fn (Get $get): bool => $get('equipment_mode') === 'existing')
-                                ->required(fn (Get $get): bool => $get('equipment_mode') === 'existing')
-                                ->disabled(fn (Get $get): bool => $get('client_mode') !== 'existing' || blank($get('client_id'))),
-                            Repeater::make('new_equipment')
-                                ->label('Новое оборудование')
-                                ->schema([
+                                ->createOptionForm([
                                     TextInput::make('title')
                                         ->label('Название')
                                         ->required()
@@ -341,17 +310,51 @@ class CreateOrder extends CreateRecord
                                         ->columnSpanFull()
                                         ->collapsible(),
                                 ])
-                                ->columns(3)
-                                ->defaultItems(1)
-                                ->minItems(1)
-                                ->addActionLabel('Добавить оборудование')
-                                ->cloneable()
-                                ->collapsible()
-                                ->itemLabel(fn (array $state): ?string => filled($state['title'] ?? null)
-                                    ? (string) $state['title']
-                                    : 'Оборудование')
-                                ->visible(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                                ->required(fn (Get $get): bool => $get('equipment_mode') === 'new'),
+                                ->createOptionUsing(function (array $data): int {
+                                    $clientId = (int) ($this->data['client_id'] ?? 0);
+
+                                    if ($clientId <= 0) {
+                                        throw ValidationException::withMessages([
+                                            'data.client_id' => 'Сначала выберите клиента.',
+                                        ]);
+                                    }
+
+                                    $ids = app(EntityIdGenerator::class);
+                                    $equipmentId = $ids->next('equipment')->value;
+                                    $parts = [];
+
+                                    foreach ($data['parts'] ?? [] as $part) {
+                                        if (! filled($part['name'] ?? null)) {
+                                            continue;
+                                        }
+
+                                        $parts[] = new EquipmentPartDTO(
+                                            $ids->next('equipment_component')->value,
+                                            (string) $part['name'],
+                                            filled($part['serialNumber'] ?? null)
+                                                ? (string) $part['serialNumber']
+                                                : null,
+                                        );
+                                    }
+
+                                    app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(
+                                        $equipmentId,
+                                        (string) $data['title'],
+                                        (string) $data['brand'],
+                                        (string) $data['model_name'],
+                                        $clientId,
+                                        filled($data['notes'] ?? null) ? (string) $data['notes'] : null,
+                                        $parts,
+                                    ));
+
+                                    return $equipmentId;
+                                })
+                                ->createOptionAction(fn (Action $action): Action => $action
+                                    ->label('Зарегистрировать оборудование')
+                                    ->modalHeading('Новое оборудование')
+                                    ->disabled(fn (Get $get): bool => blank($get('client_id'))))
+                                ->required()
+                                ->disabled(fn (Get $get): bool => blank($get('client_id'))),
                         ]),
                 ]),
             Step::make('Приёмка')
@@ -396,13 +399,11 @@ class CreateOrder extends CreateRecord
         try {
             $orderId = OrderId::generate()->value;
             $items = $this->buildItems($data);
-
             $isWarranty = ($data['billing_type'] ?? null) === OrderBillingType::Warranty->value;
-            $isNewClient = ! $isWarranty && ($data['client_mode'] ?? null) === 'new';
 
             app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
                 $orderId,
-                $isNewClient ? 0 : (int) ($data['client_id'] ?? 0),
+                (int) ($data['client_id'] ?? 0),
                 (string) $data['estimated_amount'],
                 $items,
                 (string) $data['service_type'],
@@ -412,9 +413,6 @@ class CreateOrder extends CreateRecord
                 $data['defects'] ?? null,
                 $data['internal_notes'] ?? null,
                 'RUB',
-                $isNewClient ? ($data['new_client_name'] ?? null) : null,
-                $isNewClient ? ($data['new_client_phone'] ?? null) : null,
-                $isNewClient ? ($data['new_client_email'] ?? null) : null,
                 $isWarranty ? (string) $data['warranty_source_order_id'] : null,
             ));
 
@@ -455,44 +453,10 @@ class CreateOrder extends CreateRecord
             return $items;
         }
 
-        if (($data['equipment_mode'] ?? null) === 'existing') {
-            foreach ($data['client_equipment_ids'] ?? [] as $equipmentId) {
-                $items[] = new CreateOrderItemDTO(
-                    null,
-                    (int) $equipmentId,
-                );
-            }
-
-            return $items;
-        }
-
-        foreach ($data['new_equipment'] ?? [] as $equipment) {
-            $parts = [];
-
-            foreach ($equipment['parts'] ?? [] as $part) {
-                if (! filled($part['name'] ?? null)) {
-                    continue;
-                }
-
-                $parts[] = [
-                    'name' => (string) $part['name'],
-                    'serialNumber' => filled($part['serialNumber'] ?? null)
-                        ? (string) $part['serialNumber']
-                        : null,
-                ];
-            }
-
+        foreach ($data['client_equipment_ids'] ?? [] as $equipmentId) {
             $items[] = new CreateOrderItemDTO(
                 null,
-                null,
-                null,
-                null,
-                null,
-                (string) $equipment['title'],
-                (string) $equipment['brand'],
-                (string) $equipment['model_name'],
-                filled($equipment['notes'] ?? null) ? (string) $equipment['notes'] : null,
-                $parts,
+                (int) $equipmentId,
             );
         }
 

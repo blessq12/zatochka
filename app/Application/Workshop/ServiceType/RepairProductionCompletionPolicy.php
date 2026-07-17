@@ -2,7 +2,7 @@
 
 namespace App\Application\Workshop\ServiceType;
 
-use App\Domain\Order\Entity\Order;
+use App\Application\Workshop\DTO\OrderProductionContextDTO;
 use App\Domain\Workshop\Entity\ProductionTask;
 use App\Shared\Domain\DomainException;
 
@@ -12,22 +12,22 @@ use App\Shared\Domain\DomainException;
  */
 final class RepairProductionCompletionPolicy implements ProductionCompletionPolicy
 {
-    public function assertReadyToFinish(Order $order, ProductionTask $task): void
+    public function assertReadyToFinish(OrderProductionContextDTO $context, ProductionTask $task): void
     {
-        foreach ($order->items() as $item) {
-            if ($item->isFullyRejected()) {
+        foreach ($context->items as $item) {
+            if ($item->fullyRejected) {
                 continue;
             }
 
             foreach ($task->works() as $work) {
-                if ($work->orderItemId->equals($item->id())) {
+                if ($work->orderItemId->value === $item->orderItemId) {
                     continue 2;
                 }
             }
 
             throw new DomainException(sprintf(
                 'Equipment item #%d has no completed works on its components.',
-                $item->id()->value,
+                $item->orderItemId,
             ));
         }
     }

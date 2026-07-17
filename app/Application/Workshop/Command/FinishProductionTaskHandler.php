@@ -25,9 +25,9 @@ final readonly class FinishProductionTaskHandler
     {
         $this->unitOfWork->execute(function () use ($command): void {
             $task = $this->tasks->getById(new EntityId($command->productionTaskId));
-            $order = $this->orders->getById($task->orderId());
+            $context = $this->orders->getById($task->orderId()->value);
 
-            $this->completionPolicies->for($order)->assertReadyToFinish($order, $task);
+            $this->completionPolicies->for($context)->assertReadyToFinish($context, $task);
 
             if ($task->status() === ProductionStatus::WaitingParts) {
                 $task->resumeFromParts();

@@ -2,8 +2,9 @@
 
 namespace App\Application\Workshop\WorkAttachment;
 
-use App\Domain\Order\Entity\Order;
+use App\Application\Workshop\DTO\OrderProductionContextDTO;
 use App\Domain\Order\VO\OrderServiceType;
+use App\Shared\Domain\DomainException;
 
 final readonly class WorkAttachmentStrategyResolver
 {
@@ -12,11 +13,12 @@ final readonly class WorkAttachmentStrategyResolver
         private RepairWorkAttachmentStrategy $repair,
     ) {}
 
-    public function for(Order $order): WorkAttachmentStrategy
+    public function for(OrderProductionContextDTO $context): WorkAttachmentStrategy
     {
-        return match ($order->serviceType()) {
-            OrderServiceType::Sharpening => $this->sharpening,
-            OrderServiceType::Repair => $this->repair,
+        return match ($context->serviceType) {
+            OrderServiceType::Sharpening->value => $this->sharpening,
+            OrderServiceType::Repair->value => $this->repair,
+            default => throw new DomainException('Unknown order service type.'),
         };
     }
 }

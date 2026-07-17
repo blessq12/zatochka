@@ -43,10 +43,7 @@ final class OrderController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'clientId' => ['nullable', 'integer'],
-            'newClientName' => ['nullable', 'string'],
-            'newClientPhone' => ['nullable', 'string'],
-            'newClientEmail' => ['nullable', 'email'],
+            'clientId' => ['nullable', 'integer', 'min:1'],
             'estimatedAmount' => ['required', 'numeric'],
             'serviceType' => ['required', Rule::in(['sharpening', 'repair'])],
             'billingType' => ['required', Rule::in(['paid', 'warranty'])],
@@ -56,14 +53,10 @@ final class OrderController extends Controller
             'defects' => ['nullable', 'string'],
             'internalNotes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.clientEquipmentId' => ['nullable', 'integer'],
+            'items.*.clientEquipmentId' => ['nullable', 'integer', 'min:1'],
             'items.*.toolName' => ['nullable', 'string'],
             'items.*.toolType' => ['nullable', 'string'],
             'items.*.quantity' => ['nullable', 'integer', 'min:1'],
-            'items.*.equipmentTitle' => ['nullable', 'string'],
-            'items.*.equipmentBrand' => ['nullable', 'string'],
-            'items.*.equipmentModelName' => ['nullable', 'string'],
-            'items.*.equipmentNotes' => ['nullable', 'string'],
         ]);
 
         $orderId = OrderId::generate()->value;
@@ -76,10 +69,6 @@ final class OrderController extends Controller
                 $item['toolName'] ?? null,
                 $item['toolType'] ?? null,
                 isset($item['quantity']) ? (int) $item['quantity'] : null,
-                $item['equipmentTitle'] ?? null,
-                $item['equipmentBrand'] ?? null,
-                $item['equipmentModelName'] ?? null,
-                $item['equipmentNotes'] ?? null,
             );
         }
 
@@ -95,9 +84,6 @@ final class OrderController extends Controller
             $data['defects'] ?? null,
             $data['internalNotes'] ?? null,
             'RUB',
-            $data['newClientName'] ?? null,
-            $data['newClientPhone'] ?? null,
-            $data['newClientEmail'] ?? null,
             isset($data['warrantySourceOrderId']) ? (string) $data['warrantySourceOrderId'] : null,
         ));
 

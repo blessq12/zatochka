@@ -21,10 +21,10 @@ final readonly class AddMasterWorkHandler
     public function handle(AddMasterWorkCommand $command): void
     {
         $task = $this->tasks->getById(new EntityId($command->productionTaskId));
-        $order = $this->orders->getById($task->orderId());
+        $context = $this->orders->getById($task->orderId()->value);
         $target = $this->workAttachment
-            ->for($order)
-            ->resolveTarget($order, $command->orderItemId, $command->equipmentComponentId);
+            ->for($context)
+            ->resolveTarget($context, $command->orderItemId, $command->equipmentComponentId);
 
         $task->addWork(new PerformedWork(
             new EntityId($command->workId),
