@@ -4,8 +4,8 @@ namespace App\Application\Workshop\Command;
 
 use App\Application\Shared\DomainEventPublisher;
 use App\Application\Shared\UnitOfWork;
+use App\Application\Workshop\Port\OrderProductionContextPort;
 use App\Application\Workshop\ServiceType\ProductionCompletionPolicyResolver;
-use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
 use App\Domain\Workshop\VO\ProductionStatus;
 use App\Shared\Domain\DomainException;
@@ -15,7 +15,7 @@ final readonly class FinishProductionTaskHandler
 {
     public function __construct(
         private ProductionTaskRepository $tasks,
-        private OrderRepository $orders,
+        private OrderProductionContextPort $orders,
         private ProductionCompletionPolicyResolver $completionPolicies,
         private DomainEventPublisher $events,
         private UnitOfWork $unitOfWork,

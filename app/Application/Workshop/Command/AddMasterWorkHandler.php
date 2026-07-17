@@ -3,8 +3,8 @@
 namespace App\Application\Workshop\Command;
 
 use App\Application\Shared\DomainEventPublisher;
+use App\Application\Workshop\Port\OrderProductionContextPort;
 use App\Application\Workshop\WorkAttachment\WorkAttachmentStrategyResolver;
-use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Workshop\Entity\PerformedWork;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
 use App\Shared\ValueObject\EntityId;
@@ -13,7 +13,7 @@ final readonly class AddMasterWorkHandler
 {
     public function __construct(
         private ProductionTaskRepository $tasks,
-        private OrderRepository $orders,
+        private OrderProductionContextPort $orders,
         private WorkAttachmentStrategyResolver $workAttachment,
         private DomainEventPublisher $events,
     ) {}

@@ -63,8 +63,11 @@ Canonical catalog: [`domain-event-catalog.md`](./domain-event-catalog.md).
 
 ### Remaining vertical debt
 
-- `FinishProductionTaskHandler` still reads `OrderRepository` for work-completeness check
-- `AssignOrderMasterHandler` still uses `User` Eloquent
+- ~~`FinishProductionTaskHandler` still reads `OrderRepository`~~ → `OrderProductionContextPort` (**closed**)
+- ~~`AssignOrderMasterHandler` still uses `User` Eloquent~~ → `MasterDirectoryPort` (**closed**)
+- Pricing: `OrderPricingGatePort` instead of `OrderRepository` (**closed**)
+- Estimate leftover Query/Controller: **gone**
+- Optional next: `RepairWorkAttachmentStrategy` → Equipment via Workshop-owned port (not Order write-repo)
 
 ## P4 UI thin — DONE
 
@@ -89,3 +92,10 @@ Canonical catalog: [`domain-event-catalog.md`](./domain-event-catalog.md).
 - Feature smoke: sharpening + repair → `works_completed`
 - Feature TX: `CancelOrder` mid-chain listener fail → full rollback (order + production task)
 - Run: `php artisan test`
+
+## Debt close (post-audit) — DONE
+
+- Workshop: `OrderProductionContextPort` (Finish / AddMasterWork)
+- Pricing: `OrderPricingGatePort` (SetWorkPrice / SetOrderWorkPrices)
+- Order: `MasterDirectoryPort` (AssignOrderMaster)
+- Estimate leftover Application/HTTP: already absent on disk

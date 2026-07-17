@@ -2,25 +2,19 @@
 
 namespace App\Application\Pricing\Command;
 
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Order\VO\OrderId;
-use App\Domain\Order\VO\OrderStatus;
+use App\Application\Pricing\Port\OrderPricingGatePort;
 use App\Shared\Domain\DomainException;
 
 final readonly class SetOrderWorkPricesHandler
 {
     public function __construct(
-        private OrderRepository $orders,
+        private OrderPricingGatePort $orderGate,
         private SetWorkPriceHandler $setWorkPrice,
     ) {}
 
     public function handle(SetOrderWorkPricesCommand $command): void
     {
-        $order = $this->orders->getById(new OrderId($command->orderId));
-
-        if ($order->status() !== OrderStatus::WorksCompleted) {
-            throw new DomainException('Prices can only be changed while order is awaiting pricing.');
-        }
+        $this->orderGate->assertAwaitingPricing($command->orderId);
 
         if ($command->works === []) {
             throw new DomainException('At least one work price is required.');

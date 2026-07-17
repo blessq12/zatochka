@@ -2,12 +2,11 @@
 
 namespace App\Application\Order\Command;
 
+use App\Application\Order\Port\MasterDirectoryPort;
 use App\Application\Shared\DomainEventPublisher;
 use App\Application\Shared\UnitOfWork;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\VO\OrderId;
-use App\Models\User;
-use App\Models\UserRole;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
 
@@ -15,6 +14,7 @@ final readonly class AssignOrderMasterHandler
 {
     public function __construct(
         private OrderRepository $orders,
+        private MasterDirectoryPort $masters,
         private DomainEventPublisher $events,
         private UnitOfWork $unitOfWork,
     ) {}
@@ -22,9 +22,7 @@ final readonly class AssignOrderMasterHandler
     public function handle(AssignOrderMasterCommand $command): void
     {
         $this->unitOfWork->execute(function () use ($command): void {
-            $master = User::query()->find($command->masterId);
-
-            if ($master === null || $master->role !== UserRole::Master) {
+            if (! $this->masters->existsAsMaster($command->masterId)) {
                 throw new DomainException('Selected user is not a master.');
             }
 
