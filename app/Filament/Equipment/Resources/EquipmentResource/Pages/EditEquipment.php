@@ -113,7 +113,6 @@ class EditEquipment extends EditRecord
             $data['model_name'],
             (string) $data['equipment_type'],
             filled($data['client_id'] ?? null) ? (int) $data['client_id'] : null,
-            $data['notes'] ?? null,
         ));
 
         return $record->refresh();

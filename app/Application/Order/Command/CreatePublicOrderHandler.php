@@ -42,7 +42,7 @@ final readonly class CreatePublicOrderHandler
             $intake = $command->intake ?? [];
             $items = match ($serviceType) {
                 OrderServiceType::Sharpening => $this->sharpeningItems($intake),
-                OrderServiceType::Repair => $this->repairItems($clientId, $intake, $command->comment),
+                OrderServiceType::Repair => $this->repairItems($clientId, $intake),
             };
 
             $urgency = match ($serviceType) {
@@ -106,21 +106,17 @@ final readonly class CreatePublicOrderHandler
      * @param array<string, mixed> $intake
      * @return list<CreateOrderItemDTO>
      */
-    private function repairItems(int $clientId, array $intake, ?string $comment): array
+    private function repairItems(int $clientId, array $intake): array
     {
         $deviceName = $this->nullableString($intake['device_name'] ?? null)
             ?? throw new DomainException('Device name is required for repair.');
         $equipmentType = $this->nullableString($intake['equipment_type'] ?? null)
             ?? throw new DomainException('Equipment type is required for repair.');
 
-        $problem = $this->nullableString($intake['problem_description'] ?? null)
-            ?? $this->nullableString($comment);
-
         $equipmentId = $this->repairEquipment->ensureForClient(
             $clientId,
             $deviceName,
             $equipmentType,
-            $problem,
         );
 
         return [

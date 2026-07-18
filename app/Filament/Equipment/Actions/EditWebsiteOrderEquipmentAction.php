@@ -22,7 +22,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
@@ -57,7 +56,6 @@ final class EditWebsiteOrderEquipmentAction
                             (string) $data['model_name'],
                             (string) $data['equipment_type'],
                             $equipment->client_id !== null ? (int) $equipment->client_id : null,
-                            filled($data['notes'] ?? null) ? (string) $data['notes'] : null,
                         ));
 
                         $ids = app(EntityIdGenerator::class);
@@ -189,10 +187,6 @@ final class EditWebsiteOrderEquipmentAction
                 ->label('Модель')
                 ->required()
                 ->maxLength(255),
-            Textarea::make('notes')
-                ->label('Заметки')
-                ->rows(2)
-                ->columnSpanFull(),
             Repeater::make('existing_components')
                 ->label('Текущие части')
                 ->schema([
@@ -268,7 +262,10 @@ final class EditWebsiteOrderEquipmentAction
             $equipment = $item->equipment;
             $label = filled($equipment->title)
                 ? (string) $equipment->title
-                : 'Оборудование #'.$equipment->id;
+                : (filled($equipment->number) ? (string) $equipment->number : 'Оборудование');
+            if (filled($equipment->number) && filled($equipment->title)) {
+                $label = (string) $equipment->number.' · '.$label;
+            }
             $options[(int) $equipment->id] = $label;
         }
 
@@ -293,7 +290,6 @@ final class EditWebsiteOrderEquipmentAction
      *     title: string,
      *     brand: string,
      *     model_name: string,
-     *     notes: ?string,
      *     existing_components: list<array{id: int, name: string, serial_number: ?string, original_serial_number: ?string}>
      * }
      */
@@ -305,7 +301,6 @@ final class EditWebsiteOrderEquipmentAction
                 'equipment_type' => EquipmentType::Other->value,
                 'brand' => '',
                 'model_name' => '',
-                'notes' => null,
                 'existing_components' => [],
             ];
         }
@@ -317,7 +312,6 @@ final class EditWebsiteOrderEquipmentAction
             'equipment_type' => (string) ($equipment->equipment_type ?: EquipmentType::Other->value),
             'brand' => (string) ($equipment->brand ?? ''),
             'model_name' => (string) ($equipment->model_name ?? ''),
-            'notes' => $equipment->notes !== null ? (string) $equipment->notes : null,
             'existing_components' => $equipment->components
                 ->map(static function ($component): array {
                     $serial = $component->serial_number !== null ? (string) $component->serial_number : null;

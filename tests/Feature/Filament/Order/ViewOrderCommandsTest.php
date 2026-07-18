@@ -119,7 +119,6 @@ final class ViewOrderCommandsTest extends TestCase
                 'Super Taper',
                 'clipper',
                 $clientId,
-                'Клиент принёс без ножа',
             ));
 
             app(AddComponentHandler::class)->handle(new AddComponentCommand(
@@ -136,7 +135,6 @@ final class ViewOrderCommandsTest extends TestCase
             'brand' => 'Wahl',
             'model_name' => 'Super Taper',
             'equipment_type' => 'clipper',
-            'notes' => 'Клиент принёс без ножа',
         ]);
         $this->assertDatabaseHas('equipment_components', [
             'equipment_id' => $equipmentId,

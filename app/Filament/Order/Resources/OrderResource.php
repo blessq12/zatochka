@@ -2,14 +2,17 @@
 
 namespace App\Filament\Order\Resources;
 
+use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderStatus;
+use App\Domain\Order\VO\OrderUrgency;
 use App\Filament\Order\Resources\OrderResource\Actions\OrderMutationActions;
 use App\Filament\Order\Resources\OrderResource\Pages\CreateOrder;
 use App\Filament\Order\Resources\OrderResource\Pages\ListOrders;
 use App\Filament\Order\Resources\OrderResource\Pages\ViewOrder;
 use App\Filament\Order\Resources\OrderResource\Support\OrderInfolist;
 use App\Filament\Order\Resources\OrderResource\Support\OrderPresentation;
+use App\Filament\Order\Resources\OrderResource\Support\OrderWorkPricing;
 use App\Filament\Support\DomainResource;
 use App\Infrastructure\Order\Model\OrderModel;
 use BackedEnum;
@@ -19,6 +22,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,10 +128,9 @@ class OrderResource extends DomainResource
                     ->state(fn (OrderModel $record): Htmlable => OrderPresentation::typeFlagsHtml($record))
                     ->html()
                     ->alignCenter(),
-                TextColumn::make('estimated_amount')
+                TextColumn::make('listing_cost')
                     ->label('Стоимость')
-                    ->formatStateUsing(fn (?string $state): string => $state !== null ? $state.' ₽' : '—')
-                    ->sortable()
+                    ->state(fn (OrderModel $record): string => OrderWorkPricing::formatListingCost($record))
                     ->alignEnd(),
                 TextColumn::make('created_at')
                     ->label('Создан')
@@ -135,6 +138,17 @@ class OrderResource extends DomainResource
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
+            ->filters([
+                SelectFilter::make('service_type')
+                    ->label('Тип заказа')
+                    ->options(OrderServiceType::options()),
+                SelectFilter::make('source')
+                    ->label('Источник')
+                    ->options(OrderSource::options()),
+                SelectFilter::make('urgency')
+                    ->label('Срочность')
+                    ->options(OrderUrgency::options()),
+            ])
             ->recordActions(static::tableRecordActions(), RecordActionsPosition::BeforeColumns)
             ->recordActionsColumnLabel('');
     }

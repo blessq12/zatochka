@@ -33,7 +33,6 @@ final class SequentialEntityIdGenerator implements EntityIdGenerator
         'payment' => 'payments',
         'refund' => 'refunds',
         'cash_operation' => 'cash_operations',
-        'delivery_request' => 'delivery_requests',
         'user' => 'users',
     ];
 
@@ -75,6 +74,10 @@ final class SequentialEntityIdGenerator implements EntityIdGenerator
 
         if ($sequenceName === 'payment_number') {
             return $this->existingMaxPaymentNumberSequence();
+        }
+
+        if ($sequenceName === 'equipment_number') {
+            return $this->existingMaxEquipmentNumberSequence();
         }
 
         $table = self::TABLE_BY_SEQUENCE[$sequenceName] ?? null;
@@ -119,6 +122,26 @@ final class SequentialEntityIdGenerator implements EntityIdGenerator
         foreach (DB::table('payments')->where('number', 'like', $yearPrefix.'%')->pluck('number') as $number) {
             $parts = explode('-', (string) $number);
             $sequence = (int) ($parts[2] ?? 0);
+
+            if ($sequence > $max) {
+                $max = $sequence;
+            }
+        }
+
+        return $max;
+    }
+
+    private function existingMaxEquipmentNumberSequence(): int
+    {
+        if (! Schema::hasTable('client_equipment') || ! Schema::hasColumn('client_equipment', 'number')) {
+            return 0;
+        }
+
+        $max = 0;
+
+        foreach (DB::table('client_equipment')->where('number', 'like', 'EQP-%')->pluck('number') as $number) {
+            $parts = explode('-', (string) $number);
+            $sequence = (int) ($parts[1] ?? 0);
 
             if ($sequence > $max) {
                 $max = $sequence;

@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Application\CRM\ReadPort\ClientReadPort;
-use App\Application\Delivery\ReadPort\DeliveryReadPort;
 use App\Application\Equipment\ReadPort\EquipmentOrderHistoryPort;
 use App\Application\Equipment\ReadPort\EquipmentReadPort;
 use App\Application\Feedback\Port\CompletedOrderPort;
@@ -30,7 +29,6 @@ use App\Application\Workshop\Port\EquipmentComponentBelongingPort;
 use App\Application\Workshop\Port\OrderProductionContextPort;
 use App\Application\Workshop\ReadPort\ProductionTaskReadPort;
 use App\Domain\CRM\Repository\ClientRepository;
-use App\Domain\Delivery\Repository\DeliveryRequestRepository;
 use App\Domain\Equipment\Repository\ClientEquipmentRepository;
 use App\Domain\Feedback\Repository\ReviewRepository;
 use App\Domain\Finance\Event\PaymentAccepted;
@@ -52,8 +50,6 @@ use App\Domain\Workshop\Event\WorkStarted;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
 use App\Infrastructure\CRM\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\CRM\Repository\EloquentClientRepository;
-use App\Infrastructure\Delivery\ReadModel\EloquentDeliveryReadModel;
-use App\Infrastructure\Delivery\Repository\EloquentDeliveryRequestRepository;
 use App\Infrastructure\Equipment\ReadModel\EloquentEquipmentReadModel;
 use App\Infrastructure\Equipment\Repository\EloquentClientEquipmentRepository;
 use App\Infrastructure\Feedback\Port\EloquentCompletedOrderPort;
@@ -148,9 +144,6 @@ final class PersistenceServiceProvider extends ServiceProvider
         $this->app->bind(PaymentReadPort::class, EloquentPaymentReadModel::class);
         $this->app->bind(CashDeskReadPort::class, EloquentCashDeskReadModel::class);
         $this->app->bind(OrderSettlementPort::class, EloquentOrderSettlementPort::class);
-
-        $this->app->bind(DeliveryRequestRepository::class, EloquentDeliveryRequestRepository::class);
-        $this->app->bind(DeliveryReadPort::class, EloquentDeliveryReadModel::class);
 
         $this->app->bind(ReviewRepository::class, EloquentReviewRepository::class);
         $this->app->bind(ReviewReadPort::class, EloquentReviewReadModel::class);

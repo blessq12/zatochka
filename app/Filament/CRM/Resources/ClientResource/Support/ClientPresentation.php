@@ -40,13 +40,15 @@ final class ClientPresentation
 
     public static function equipmentLabel(ClientEquipmentModel $equipment): string
     {
+        $number = filled($equipment->number) ? (string) $equipment->number.' · ' : '';
+
         if (filled($equipment->title)) {
-            return (string) $equipment->title;
+            return $number.(string) $equipment->title;
         }
 
         $brandModel = trim(($equipment->brand ?? '').' '.($equipment->model_name ?? ''));
 
-        return $brandModel !== '' ? $brandModel : 'Оборудование #'.$equipment->id;
+        return $number.($brandModel !== '' ? $brandModel : 'Оборудование');
     }
 
     public static function equipmentDetails(ClientEquipmentModel $equipment): string

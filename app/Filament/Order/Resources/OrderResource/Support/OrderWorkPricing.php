@@ -5,6 +5,7 @@ namespace App\Filament\Order\Resources\OrderResource\Support;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Domain\Inventory\VO\MovementType;
 use App\Domain\Order\VO\OrderItemStatus;
+use App\Domain\Order\VO\OrderStatus;
 use App\Filament\Inventory\Support\OrderMaterialWriteOffs;
 use App\Infrastructure\Inventory\Model\WarehouseMovementModel;
 use App\Infrastructure\Order\Model\OrderModel;
@@ -36,6 +37,23 @@ final class OrderWorkPricing
     public static function formatOrderActualTotal(OrderModel $order): string
     {
         return self::calculateOrderItemsTotal($order);
+    }
+
+    /**
+     * Листинг: ориентировочная, пока нет назначенных цен работ;
+     * иначе фактическая. Для выданных — только фактическая.
+     */
+    public static function formatListingCost(OrderModel $order): string
+    {
+        if ((string) $order->status === OrderStatus::Issued->value) {
+            return self::formatOrderActualTotal($order);
+        }
+
+        if (self::resolveOrderItemsTotalState($order) !== null) {
+            return self::formatOrderActualTotal($order);
+        }
+
+        return self::formatOrderEstimatedTotal($order);
     }
 
     /**

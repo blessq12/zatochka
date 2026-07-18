@@ -2,12 +2,9 @@
 
 namespace App\Filament\Order\Resources\OrderResource\Support;
 
-use App\Application\Delivery\DTO\DeliveryRequestDTO;
-use App\Application\Delivery\ReadPort\DeliveryReadPort;
 use App\Application\Finance\DTO\PaymentDTO;
 use App\Application\Finance\ReadPort\PaymentReadPort;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
-use App\Domain\Delivery\VO\DeliveryStatus;
 use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderItemStatus;
@@ -17,7 +14,6 @@ use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
 use App\Domain\Workshop\VO\ProductionStatus;
 use App\Filament\CRM\Resources\ClientResource;
-use App\Filament\Delivery\Resources\DeliveryRequestResource;
 use App\Filament\Finance\Pages\CashDeskDashboard;
 use App\Filament\Finance\Support\PaymentPresentation;
 use App\Filament\Order\Resources\OrderResource;
@@ -318,10 +314,23 @@ final class OrderInfolist
                         TableColumn::make('Статус'),
                     ])
                     ->schema([
-                        TextEntry::make('equipment.title')
-                            ->placeholder(fn (OrderItemModel $record): string => $record->client_equipment_id
-                                ? 'Оборудование #'.$record->client_equipment_id
-                                : '—'),
+                        TextEntry::make('equipment.number')
+                            ->state(function (OrderItemModel $record): string {
+                                $equipment = $record->equipment;
+
+                                if ($equipment === null) {
+                                    return '—';
+                                }
+
+                                $number = filled($equipment->number) ? (string) $equipment->number : null;
+                                $title = filled($equipment->title) ? (string) $equipment->title : null;
+
+                                if ($number !== null && $title !== null) {
+                                    return $number.' · '.$title;
+                                }
+
+                                return $number ?? $title ?? '—';
+                            }),
                         TextEntry::make('equipment.equipment_type')
                             ->formatStateUsing(fn (?string $state): string => EquipmentType::tryLabel($state) ?? '—'),
                         TextEntry::make('equipment.brand')
@@ -560,109 +569,29 @@ final class OrderInfolist
             ->icon(Heroicon::OutlinedTruck)
             ->columnSpanFull()
             ->schema([
-                TextEntry::make('delivery_summary')
-                    ->label('Статус')
-                    ->state(function (OrderModel $record): string {
-                        if (! $record->delivery_required) {
-                            return 'Доставка не требуется';
-                        }
-
-                        $delivery = self::deliveryFor($record);
-
-                        if ($delivery === null) {
-                            return 'Нужна · заявка ещё не создана';
-                        }
-
-                        return self::deliveryStatusLabel($delivery->status);
-                    })
+                TextEntry::make('delivery_required')
+                    ->label('Доставка')
+                    ->state(fn (OrderModel $record): string => $record->delivery_required
+                        ? 'Нужна доставка'
+                        : 'Без доставки')
                     ->badge()
-                    ->color(function (OrderModel $record): string {
-                        if (! $record->delivery_required) {
-                            return 'gray';
-                        }
-
-                        $delivery = self::deliveryFor($record);
-
-                        if ($delivery === null) {
-                            return 'warning';
-                        }
-
-                        return match ($delivery->status) {
-                            DeliveryStatus::Delivered->value => 'success',
-                            DeliveryStatus::Cancelled->value => 'danger',
-                            default => 'info',
-                        };
-                    })
-                    ->icon(fn(OrderModel $record): Heroicon => $record->delivery_required
+                    ->color(fn (OrderModel $record): string => $record->delivery_required ? 'info' : 'gray')
+                    ->icon(fn (OrderModel $record): Heroicon => $record->delivery_required
                         ? Heroicon::OutlinedTruck
                         : Heroicon::OutlinedXMark),
-                TextEntry::make('delivery_address')
-                    ->label('Адрес')
-                    ->state(function (OrderModel $record): string {
-                        $delivery = self::deliveryFor($record);
-
-                        return $delivery === null ? '—' : self::formatDeliveryAddress($delivery);
-                    })
-                    ->visible(fn(OrderModel $record): bool => self::deliveryFor($record) !== null)
+                TextEntry::make('client_delivery_address')
+                    ->label('Адрес клиента')
+                    ->state(fn (OrderModel $record): string => filled($record->client?->delivery_address)
+                        ? (string) $record->client->delivery_address
+                        : '—')
+                    ->visible(fn (OrderModel $record): bool => (bool) $record->delivery_required)
                     ->icon(Heroicon::OutlinedMapPin)
                     ->columnSpanFull(),
-                TextEntry::make('delivery_mode')
-                    ->label('Режим')
-                    ->state(function (OrderModel $record): string {
-                        $delivery = self::deliveryFor($record);
-
-                        return $delivery?->pickup ? 'Самовывоз / забор' : 'Доставка клиенту';
-                    })
-                    ->visible(fn(OrderModel $record): bool => self::deliveryFor($record) !== null),
-                TextEntry::make('delivery_link')
-                    ->label('Заявка')
-                    ->state('Открыть в Доставке')
-                    ->url(function (OrderModel $record): ?string {
-                        $delivery = self::deliveryFor($record);
-
-                        return $delivery === null
-                            ? null
-                            : DeliveryRequestResource::getUrl('view', ['record' => $delivery->id]);
-                    })
-                    ->color('primary')
-                    ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
-                    ->visible(fn(OrderModel $record): bool => self::deliveryFor($record) !== null),
             ]);
     }
 
     private static function paymentFor(OrderModel $record): ?PaymentDTO
     {
         return app(PaymentReadPort::class)->findByOrderId((string) $record->id);
-    }
-
-    private static function deliveryFor(OrderModel $record): ?DeliveryRequestDTO
-    {
-        return app(DeliveryReadPort::class)->findByOrderId((string) $record->id);
-    }
-
-    private static function deliveryStatusLabel(string $status): string
-    {
-        return match ($status) {
-            DeliveryStatus::Requested->value => 'Заявка создана',
-            DeliveryStatus::CourierAssigned->value => 'Курьер назначен',
-            DeliveryStatus::Collected->value => 'Забрано',
-            DeliveryStatus::Delivered->value => 'Доставлено',
-            DeliveryStatus::Cancelled->value => 'Отменено',
-            default => $status,
-        };
-    }
-
-    private static function formatDeliveryAddress(DeliveryRequestDTO $delivery): string
-    {
-        $parts = array_filter([
-            $delivery->city,
-            $delivery->street,
-            $delivery->building,
-            $delivery->apartment !== null && $delivery->apartment !== ''
-                ? 'кв. ' . $delivery->apartment
-                : null,
-        ], static fn(?string $part): bool => filled($part));
-
-        return $parts === [] ? '—' : implode(', ', $parts);
     }
 }

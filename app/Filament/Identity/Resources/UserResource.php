@@ -73,10 +73,10 @@ class UserResource extends CatalogResource
                 ->label('Пароль')
                 ->password()
                 ->revealable()
-                ->required(fn (string $operation): bool => $operation === 'create')
-                ->dehydrated(fn (?string $state): bool => filled($state))
+                ->required(fn(string $operation): bool => $operation === 'create')
+                ->dehydrated(fn(?string $state): bool => filled($state))
                 ->minLength(8)
-                ->helperText(fn (string $operation): ?string => $operation === 'edit'
+                ->helperText(fn(string $operation): ?string => $operation === 'edit'
                     ? 'Оставьте пустым, если не нужно менять пароль'
                     : null),
         ]);
@@ -98,9 +98,10 @@ class UserResource extends CatalogResource
                 TextColumn::make('role')
                     ->label('Роль')
                     ->badge()
-                    ->formatStateUsing(fn (UserRole|string $state): string => match ($state instanceof UserRole ? $state : UserRole::from((string) $state)) {
+                    ->formatStateUsing(fn(UserRole|string $state): string => match ($state instanceof UserRole ? $state : UserRole::from((string) $state)) {
                         UserRole::Manager => 'Менеджер',
                         UserRole::Master => 'Мастер',
+                        UserRole::Client => 'Клиент',
                     })
                     ->sortable(),
                 TextColumn::make('created_at')

@@ -30,7 +30,7 @@ final class VerticalIsolationTest extends TestCase
     public function test_application_handlers_do_not_import_foreign_bc_handlers(): void
     {
         $boundedContexts = [
-            'CRM', 'Delivery', 'Equipment', 'Feedback', 'Finance',
+            'CRM', 'Equipment', 'Feedback', 'Finance',
             'Identity', 'Inventory', 'Order', 'Pricing', 'Workshop',
         ];
 

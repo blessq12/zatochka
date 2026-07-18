@@ -65,7 +65,6 @@ final class EquipmentController extends Controller
             'brand' => ['required', 'string'],
             'modelName' => ['required', 'string'],
             'equipmentType' => ['required', 'string', Rule::enum(EquipmentType::class)],
-            'notes' => ['nullable', 'string'],
             'parts' => ['nullable', 'array'],
             'parts.*.name' => ['required', 'string'],
             'parts.*.serialNumber' => ['nullable', 'string'],
@@ -90,7 +89,6 @@ final class EquipmentController extends Controller
             $data['modelName'],
             $data['equipmentType'],
             isset($data['clientId']) ? (int) $data['clientId'] : null,
-            $data['notes'] ?? null,
             $parts,
         ));
 

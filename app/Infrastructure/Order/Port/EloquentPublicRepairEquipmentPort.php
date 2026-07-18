@@ -20,7 +20,6 @@ final readonly class EloquentPublicRepairEquipmentPort implements PublicRepairEq
         int $clientId,
         string $deviceName,
         string $equipmentType,
-        ?string $problemDescription = null,
     ): int {
         $type = EquipmentType::tryFrom($equipmentType)
             ?? throw new DomainException('Unknown equipment type.');
@@ -34,7 +33,6 @@ final readonly class EloquentPublicRepairEquipmentPort implements PublicRepairEq
             'Не указана',
             $type->value,
             $clientId,
-            $problemDescription,
             [],
         ));
 

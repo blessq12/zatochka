@@ -11,6 +11,5 @@ interface PublicRepairEquipmentPort
         int $clientId,
         string $deviceName,
         string $equipmentType,
-        ?string $problemDescription = null,
     ): int;
 }

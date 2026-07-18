@@ -16,7 +16,6 @@ final readonly class RegisterEquipmentCommand
         public string $modelName,
         public string $equipmentType,
         public ?int $clientId = null,
-        public ?string $notes = null,
         public array $parts = [],
     ) {}
 }

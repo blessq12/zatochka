@@ -6,6 +6,7 @@ use App\Domain\Equipment\VO\EquipmentType;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\CreateEquipment;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\EditEquipment;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\ListEquipments;
+use App\Filament\Equipment\Support\EquipmentPresentation;
 use App\Filament\Equipment\Support\RegisterEquipmentOption;
 use App\Filament\Support\ClientSelectField;
 use App\Filament\Support\DomainResource;
@@ -18,6 +19,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -37,7 +39,7 @@ class EquipmentResource extends DomainResource
 
     protected static ?string $pluralModelLabel = 'Оборудование';
 
-    protected static ?string $recordTitleAttribute = 'title';
+    protected static ?string $recordTitleAttribute = 'number';
 
     protected static ?int $navigationSort = 10;
 
@@ -58,19 +60,24 @@ class EquipmentResource extends DomainResource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('components');
+        return parent::getEloquentQuery()->with(['components', 'client']);
     }
 
     public static function clientSelect(): Select
     {
         return ClientSelectField::make()
-            ->nullable()
-            ->placeholder('Не выбран');
+            ->required()
+            ->helperText(null);
     }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
+            TextInput::make('number')
+                ->label('Номер')
+                ->disabled()
+                ->dehydrated(false)
+                ->visible(fn (string $operation): bool => $operation === 'edit'),
             TextInput::make('title')
                 ->label('Название')
                 ->required()
@@ -90,8 +97,6 @@ class EquipmentResource extends DomainResource
                 ->required()
                 ->maxLength(255),
             static::clientSelect(),
-            TextInput::make('notes')
-                ->label('Заметки'),
             RegisterEquipmentOption::partsRepeater()
                 ->visible(fn (string $operation): bool => $operation === 'create'),
             Repeater::make('components_display')
@@ -119,16 +124,17 @@ class EquipmentResource extends DomainResource
 
     public static function table(Table $table): Table
     {
-        $clients = ClientSelectField::options();
-
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('№')
-                    ->sortable(),
+                TextColumn::make('number')
+                    ->label('Номер')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('semibold'),
                 TextColumn::make('title')
                     ->label('Название')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('equipment_type')
                     ->label('Тип')
                     ->formatStateUsing(fn (?string $state): string => EquipmentType::tryLabel($state) ?? '—')
@@ -143,19 +149,30 @@ class EquipmentResource extends DomainResource
                     ->sortable(),
                 TextColumn::make('client_id')
                     ->label('Клиент')
-                    ->formatStateUsing(fn (?int $state) => $state !== null ? ($clients[$state] ?? ('#'.$state)) : '—')
+                    ->formatStateUsing(fn (?int $state, ClientEquipmentModel $record): string => EquipmentPresentation::clientListingName($record))
+                    ->description(fn (ClientEquipmentModel $record): string => EquipmentPresentation::clientListingPhone($record))
+                    ->wrap()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('client', function (Builder $client) use ($search): void {
+                            $client->where('name', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
                 TextColumn::make('components_count')
                     ->counts('components')
-                    ->label('Частей'),
-                TextColumn::make('notes')
-                    ->label('Заметки')
-                    ->limit(40)
-                    ->placeholder('—'),
+                    ->label('Частей')
+                    ->alignCenter(),
             ])
+            ->defaultSort('id', 'desc')
             ->recordActions([
-                EditAction::make()->label('Редактировать'),
-            ]);
+                EditAction::make()
+                    ->label('Редактировать')
+                    ->icon(Heroicon::OutlinedPencilSquare)
+                    ->iconButton()
+                    ->tooltip('Редактировать'),
+            ], RecordActionsPosition::BeforeColumns)
+            ->recordActionsColumnLabel('');
     }
 
     public static function getPages(): array

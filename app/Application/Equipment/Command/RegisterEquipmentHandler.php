@@ -3,9 +3,11 @@
 namespace App\Application\Equipment\Command;
 
 use App\Application\Shared\DomainEventPublisher;
+use App\Application\Shared\EntityIdGenerator;
 use App\Domain\Equipment\Entity\ClientEquipment;
 use App\Domain\Equipment\Entity\EquipmentComponent;
 use App\Domain\Equipment\Repository\ClientEquipmentRepository;
+use App\Domain\Equipment\VO\EquipmentNumber;
 use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Equipment\VO\SerialNumber;
 use App\Shared\Domain\DomainException;
@@ -15,6 +17,7 @@ final readonly class RegisterEquipmentHandler
 {
     public function __construct(
         private ClientEquipmentRepository $equipment,
+        private EntityIdGenerator $ids,
         private DomainEventPublisher $events,
     ) {}
 
@@ -25,12 +28,12 @@ final readonly class RegisterEquipmentHandler
 
         $aggregate = ClientEquipment::register(
             new EntityId($command->equipmentId),
+            EquipmentNumber::fromSequence($this->ids->next('equipment_number')->value),
             $command->title,
             $command->brand,
             $command->modelName,
             $type,
             $command->clientId !== null ? new EntityId($command->clientId) : null,
-            $command->notes,
         );
 
         foreach ($command->parts as $part) {

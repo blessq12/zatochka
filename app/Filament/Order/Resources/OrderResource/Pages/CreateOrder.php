@@ -283,7 +283,6 @@ class CreateOrder extends CreateRecord
                     'equipment_type' => $this->data['new_equipment_type'] ?? null,
                     'brand' => $this->data['new_equipment_brand'] ?? null,
                     'model_name' => $this->data['new_equipment_model_name'] ?? null,
-                    'notes' => $this->data['new_equipment_notes'] ?? null,
                     'parts' => $this->data['new_equipment_parts'] ?? [],
                 ], (int) ($this->data['client_id'] ?? 0))];
             })
@@ -395,12 +394,6 @@ class CreateOrder extends CreateRecord
                             ->required(fn(Get $get): bool => $get('equipment_mode') === 'new')
                             ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
                             ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new'),
-                        Textarea::make('new_equipment_notes')
-                            ->label('Заметки')
-                            ->rows(2)
-                            ->columnSpanFull()
-                            ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
-                            ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new'),
                         RegisterEquipmentOption::partsRepeater('new_equipment_parts')
                             ->required(fn(Get $get): bool => $get('equipment_mode') === 'new')
                             ->minItems(fn(Get $get): int => $get('equipment_mode') === 'new' ? 1 : 0)
@@ -447,7 +440,9 @@ class CreateOrder extends CreateRecord
 
     private static function equipmentLabel(ClientEquipmentModel $equipment): string
     {
-        return trim($equipment->title . ' · ' . $equipment->brand . ' ' . $equipment->model_name);
+        $number = filled($equipment->number) ? (string) $equipment->number.' · ' : '';
+
+        return trim($number.$equipment->title.' · '.$equipment->brand.' '.$equipment->model_name);
     }
 
     private function receptionStep(): Step
@@ -609,7 +604,6 @@ class CreateOrder extends CreateRecord
             'equipment_type' => $data['new_equipment_type'] ?? $this->data['new_equipment_type'] ?? null,
             'brand' => $data['new_equipment_brand'] ?? $this->data['new_equipment_brand'] ?? null,
             'model_name' => $data['new_equipment_model_name'] ?? $this->data['new_equipment_model_name'] ?? null,
-            'notes' => $data['new_equipment_notes'] ?? $this->data['new_equipment_notes'] ?? null,
             'parts' => $data['new_equipment_parts'] ?? $this->data['new_equipment_parts'] ?? [],
         ], (int) ($data['client_id'] ?? 0));
 
@@ -665,7 +659,6 @@ class CreateOrder extends CreateRecord
         $set('new_equipment_type', null);
         $set('new_equipment_brand', null);
         $set('new_equipment_model_name', null);
-        $set('new_equipment_notes', null);
         $set('new_equipment_parts', []);
     }
 

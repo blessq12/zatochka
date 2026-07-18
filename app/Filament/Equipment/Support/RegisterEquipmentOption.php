@@ -12,7 +12,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Validation\ValidationException;
@@ -64,10 +63,6 @@ final class RegisterEquipmentOption
                 ->label('Модель')
                 ->required()
                 ->maxLength(255),
-            Textarea::make('notes')
-                ->label('Заметки')
-                ->rows(2)
-                ->columnSpanFull(),
             self::partsRepeater(),
         ];
     }
@@ -139,7 +134,6 @@ final class RegisterEquipmentOption
             (string) $data['model_name'],
             (string) $data['equipment_type'],
             $clientId,
-            filled($data['notes'] ?? null) ? (string) $data['notes'] : null,
             $parts,
         ));
 

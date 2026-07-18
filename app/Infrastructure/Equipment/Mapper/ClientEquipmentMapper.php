@@ -6,6 +6,7 @@ use App\Application\Equipment\DTO\ClientEquipmentDTO;
 use App\Domain\Equipment\Entity\ClientEquipment;
 use App\Domain\Equipment\Entity\EquipmentComponent;
 use App\Domain\Equipment\Entity\RepairHistoryEntry;
+use App\Domain\Equipment\VO\EquipmentNumber;
 use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Equipment\VO\SerialNumber;
 use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
@@ -41,13 +42,13 @@ final class ClientEquipmentMapper
 
         return ClientEquipment::reconstitute(
             new EntityId((int) $model->id),
+            new EquipmentNumber((string) $model->number),
             (string) $model->title,
             (string) $model->brand,
             (string) $model->model_name,
             EquipmentType::tryFrom((string) ($model->equipment_type ?? ''))
                 ?? EquipmentType::Other,
             $model->client_id !== null ? new EntityId((int) $model->client_id) : null,
-            $model->notes !== null ? (string) $model->notes : null,
             $components,
             $history,
         );
@@ -57,12 +58,12 @@ final class ClientEquipmentMapper
     {
         $model ??= new ClientEquipmentModel();
         $model->id = $equipment->id()->value;
+        $model->number = $equipment->number()->value;
         $model->client_id = $equipment->clientId()?->value;
         $model->title = $equipment->title();
         $model->brand = $equipment->brand();
         $model->model_name = $equipment->modelName();
         $model->equipment_type = $equipment->equipmentType()->value;
-        $model->notes = $equipment->notes();
 
         return $model;
     }
@@ -127,12 +128,12 @@ final class ClientEquipmentMapper
 
         return new ClientEquipmentDTO(
             (int) $model->id,
+            (string) $model->number,
             $model->client_id !== null ? (int) $model->client_id : null,
             (string) $model->title,
             (string) $model->brand,
             (string) $model->model_name,
             (string) ($model->equipment_type ?: EquipmentType::Other->value),
-            $model->notes !== null ? (string) $model->notes : null,
             $components,
             $history,
         );

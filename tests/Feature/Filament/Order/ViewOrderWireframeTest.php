@@ -2,16 +2,14 @@
 
 namespace Tests\Feature\Filament\Order;
 
-use App\Application\Delivery\ReadPort\DeliveryReadPort;
 use App\Application\Finance\ReadPort\PaymentReadPort;
 use App\Application\Order\Command\CreateOrderCommand;
 use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\DTO\CreateOrderItemDTO;
-use App\Domain\Delivery\VO\DeliveryStatus;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderStatus;
 use App\Filament\Order\Resources\OrderResource\Pages\ViewOrder;
-use App\Infrastructure\Delivery\Model\DeliveryRequestModel;
+use App\Infrastructure\CRM\Model\ClientModel;
 use App\Infrastructure\Finance\Model\PaymentModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Models\User;
@@ -69,7 +67,7 @@ final class ViewOrderWireframeTest extends TestCase
             ->assertSee('Действия')
             ->assertDontSee('Цены')
             ->assertSee('Платежа нет')
-            ->assertSee('Доставка не требуется')
+            ->assertSee('Без доставки')
             ->assertSee('Материалы не списывались')
             ->assertSee('Отменить')
             ->assertSee('Назначить мастера')
@@ -100,7 +98,7 @@ final class ViewOrderWireframeTest extends TestCase
             ->assertDontSee('Отменить');
     }
 
-    public function test_finance_and_delivery_read_ports_feed_order_view_blocks(): void
+    public function test_finance_and_delivery_flag_feed_order_view_blocks(): void
     {
         $this->actingAs($this->manager());
 
@@ -108,7 +106,12 @@ final class ViewOrderWireframeTest extends TestCase
         $flow = $this->createSharpeningOrderWithMaster($master);
         $orderId = (string) $flow['orderId'];
 
-        OrderModel::query()->whereKey($orderId)->update(['delivery_required' => true]);
+        $order = OrderModel::query()->whereKey($orderId)->firstOrFail();
+        $order->update(['delivery_required' => true]);
+
+        ClientModel::query()->whereKey($order->client_id)->update([
+            'delivery_address' => 'Москва, Тверская, 1, кв. 10',
+        ]);
 
         PaymentModel::query()->create([
             'id' => 9001,
@@ -120,32 +123,17 @@ final class ViewOrderWireframeTest extends TestCase
             'accepted_at' => now(),
         ]);
 
-        DeliveryRequestModel::query()->create([
-            'id' => 8001,
-            'order_id' => $orderId,
-            'status' => DeliveryStatus::Requested->value,
-            'pickup' => false,
-            'city' => 'Москва',
-            'street' => 'Тверская',
-            'building' => '1',
-            'apartment' => '10',
-        ]);
-
         $payment = app(PaymentReadPort::class)->findByOrderId($orderId);
         $this->assertNotNull($payment);
         $this->assertSame('PMT-26-1', $payment->number);
 
-        $delivery = app(DeliveryReadPort::class)->findByOrderId($orderId);
-        $this->assertNotNull($delivery);
-        $this->assertSame('Москва', $delivery->city);
-
         Livewire::test(ViewOrder::class, ['record' => $orderId])
             ->assertSuccessful()
             ->assertSee('PMT-26-1')
-            ->assertSee('Заявка создана')
+            ->assertSee('Нужна доставка')
             ->assertSee('Москва, Тверская, 1, кв. 10')
             ->assertDontSee('Платежа нет')
-            ->assertDontSee('Доставка не требуется');
+            ->assertDontSee('Без доставки');
     }
 
     private function manager(): User

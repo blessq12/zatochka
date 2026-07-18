@@ -26,7 +26,6 @@ final readonly class UpdateEquipmentHandler
             $command->brand,
             $command->modelName,
             $type,
-            $command->notes,
             $command->clientId !== null ? new EntityId($command->clientId) : null,
         );
         $this->equipment->save($aggregate);

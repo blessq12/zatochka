@@ -2,7 +2,9 @@
 
 namespace App\Infrastructure\Equipment\Model;
 
+use App\Infrastructure\CRM\Model\ClientModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class ClientEquipmentModel extends Model
@@ -13,7 +15,12 @@ final class ClientEquipmentModel extends Model
 
     protected $keyType = 'int';
 
-    protected $fillable = ['id', 'client_id', 'title', 'brand', 'model_name', 'equipment_type', 'notes'];
+    protected $fillable = ['id', 'number', 'client_id', 'title', 'brand', 'model_name', 'equipment_type'];
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(ClientModel::class, 'client_id');
+    }
 
     public function components(): HasMany
     {

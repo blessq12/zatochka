@@ -40,7 +40,8 @@ final readonly class EloquentEquipmentReadModel implements EquipmentReadPort
         if ($query !== null && trim($query) !== '') {
             $term = '%'.trim($query).'%';
             $builder->where(function ($q) use ($term): void {
-                $q->where('title', 'like', $term)
+                $q->where('number', 'like', $term)
+                    ->orWhere('title', 'like', $term)
                     ->orWhere('brand', 'like', $term)
                     ->orWhere('model_name', 'like', $term)
                     ->orWhereHas('components', function ($cq) use ($term): void {

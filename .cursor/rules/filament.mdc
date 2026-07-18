@@ -13,14 +13,14 @@ Code stays in its BC; only the sidebar group label may cluster related resources
 
 Canonical sidebar groups (order in `AdminPanelProvider`):
 
-| Group | Resources |
-|-------|-----------|
-| Клиенты | Clients (CRM), Reviews moderation (Feedback) |
-| Заказы | Orders, Delivery |
-| Оборудование | Equipment |
-| Склад | Stock |
-| Финансы | Payments, Cash operations |
-| Сотрудники | Staff users (Identity) |
+| Group        | Resources                                    |
+| ------------ | -------------------------------------------- |
+| Клиенты      | Clients (CRM), Reviews moderation (Feedback) |
+| Заказы       | Orders                                       |
+| Оборудование | Equipment                                    |
+| Склад        | Stock                                        |
+| Финансы      | Payments, Cash operations                    |
+| Сотрудники   | Staff users (Identity)                       |
 
 ## Architecture
 
@@ -75,10 +75,10 @@ Every phone `TextInput` / form field in Filament **must** use:
 
 Visual target matches the public site (`+7 (___) ___-__-__`), but the **mask engine is different**.
 
-| Layer | Library | Digit wildcard | Phone mask |
-|-------|---------|----------------|------------|
-| Public Vue (`resources/js`) | maska (`data-maska`) | `#` | `+7 (###) ###-##-##` |
-| Filament (`app/Filament`) | Alpine Mask (`->mask()`) | `9` | `+7 (999) 999-99-99` |
+| Layer                       | Library                  | Digit wildcard | Phone mask           |
+| --------------------------- | ------------------------ | -------------- | -------------------- |
+| Public Vue (`resources/js`) | maska (`data-maska`)     | `#`            | `+7 (###) ###-##-##` |
+| Filament (`app/Filament`)   | Alpine Mask (`->mask()`) | `9`            | `+7 (999) 999-99-99` |
 
 Filament `TextInput::mask()` is Alpine.js Mask. Alpine wildcards:
 
@@ -107,3 +107,6 @@ TextInput::make('phone')
     ->placeholder('+7 (___) ___-__-__')
     ->required();
 ```
+
+для листинга в ресурсах кнопки действий ВСЕГДА располагать нужно слевой стороны, не использовать текст для кнопок, только иконки
+если в листинге указывается клиент - всегда выводим ФИО и номер телефона в две строки

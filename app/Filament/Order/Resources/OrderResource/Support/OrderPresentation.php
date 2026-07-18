@@ -158,18 +158,24 @@ final class OrderPresentation
 
         $equipment = $item->equipment;
         if ($equipment !== null) {
+            $number = filled($equipment->number ?? null) ? (string) $equipment->number : null;
             $label = trim(($equipment->brand ?? '').' '.($equipment->model_name ?? ''));
-            if ($label !== '') {
-                return $label;
+
+            if ($label === '' && filled($equipment->title ?? null)) {
+                $label = (string) $equipment->title;
             }
 
-            if (filled($equipment->title ?? null)) {
-                return (string) $equipment->title;
+            if ($label !== '') {
+                return $number !== null ? $number.' · '.$label : $label;
+            }
+
+            if ($number !== null) {
+                return $number;
             }
         }
 
         if ($item->client_equipment_id !== null) {
-            return 'Оборудование #'.$item->client_equipment_id;
+            return 'Оборудование';
         }
 
         return 'Позиция #'.$item->id;
@@ -285,7 +291,7 @@ final class OrderPresentation
         }
 
         if ($item->clientEquipmentId !== null) {
-            return 'Оборудование #'.$item->clientEquipmentId;
+            return 'Оборудование';
         }
 
         return 'Позиция #'.$item->id;

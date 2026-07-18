@@ -5,6 +5,7 @@ namespace App\Domain\Equipment\Entity;
 use App\Domain\Equipment\Event\ComponentAdded;
 use App\Domain\Equipment\Event\EquipmentRegistered;
 use App\Domain\Equipment\Event\SerialNumberRegistered;
+use App\Domain\Equipment\VO\EquipmentNumber;
 use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Equipment\VO\SerialNumber;
 use App\Shared\Domain\AggregateRoot;
@@ -21,12 +22,12 @@ final class ClientEquipment extends AggregateRoot
 
     private function __construct(
         private readonly EntityId $id,
+        private readonly EquipmentNumber $number,
         private ?EntityId $clientId,
         private string $title,
         private string $brand,
         private string $modelName,
         private EquipmentType $equipmentType,
-        private ?string $notes = null,
     ) {
         $this->assertNonEmptyLabel($this->title, 'Equipment title cannot be empty.');
         $this->assertNonEmptyLabel($this->brand, 'Equipment brand cannot be empty.');
@@ -35,14 +36,14 @@ final class ClientEquipment extends AggregateRoot
 
     public static function register(
         EntityId $id,
+        EquipmentNumber $number,
         string $title,
         string $brand,
         string $modelName,
         EquipmentType $equipmentType,
         ?EntityId $clientId = null,
-        ?string $notes = null,
     ): self {
-        $equipment = new self($id, $clientId, $title, $brand, $modelName, $equipmentType, $notes);
+        $equipment = new self($id, $number, $clientId, $title, $brand, $modelName, $equipmentType);
         $equipment->record(new EquipmentRegistered($id, $title, $clientId));
 
         return $equipment;
@@ -54,16 +55,16 @@ final class ClientEquipment extends AggregateRoot
      */
     public static function reconstitute(
         EntityId $id,
+        EquipmentNumber $number,
         string $title,
         string $brand,
         string $modelName,
         EquipmentType $equipmentType,
         ?EntityId $clientId = null,
-        ?string $notes = null,
         array $components = [],
         array $repairHistory = [],
     ): self {
-        $equipment = new self($id, $clientId, $title, $brand, $modelName, $equipmentType, $notes);
+        $equipment = new self($id, $number, $clientId, $title, $brand, $modelName, $equipmentType);
 
         foreach ($components as $component) {
             $equipment->components[$component->id()->value] = $component;
@@ -77,6 +78,11 @@ final class ClientEquipment extends AggregateRoot
     public function id(): EntityId
     {
         return $this->id;
+    }
+
+    public function number(): EquipmentNumber
+    {
+        return $this->number;
     }
 
     public function clientId(): ?EntityId
@@ -102,11 +108,6 @@ final class ClientEquipment extends AggregateRoot
     public function equipmentType(): EquipmentType
     {
         return $this->equipmentType;
-    }
-
-    public function notes(): ?string
-    {
-        return $this->notes;
     }
 
     /** @return list<EquipmentComponent> */
@@ -166,7 +167,6 @@ final class ClientEquipment extends AggregateRoot
         string $brand,
         string $modelName,
         EquipmentType $equipmentType,
-        ?string $notes = null,
         ?EntityId $clientId = null,
     ): void {
         $this->assertNonEmptyLabel($title, 'Equipment title cannot be empty.');
@@ -177,7 +177,6 @@ final class ClientEquipment extends AggregateRoot
         $this->brand = $brand;
         $this->modelName = $modelName;
         $this->equipmentType = $equipmentType;
-        $this->notes = $notes;
         $this->clientId = $clientId;
     }
 

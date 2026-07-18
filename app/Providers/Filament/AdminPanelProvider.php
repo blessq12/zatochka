@@ -29,7 +29,6 @@ class AdminPanelProvider extends PanelProvider
         'Order',
         'Inventory',
         'Finance',
-        'Delivery',
         'Feedback',
     ];
 

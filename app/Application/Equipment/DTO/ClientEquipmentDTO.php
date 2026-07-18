@@ -10,12 +10,12 @@ final readonly class ClientEquipmentDTO
      */
     public function __construct(
         public int $id,
+        public string $number,
         public ?int $clientId,
         public string $title,
         public string $brand,
         public string $modelName,
         public string $equipmentType,
-        public ?string $notes,
         public array $components,
         public array $repairHistory,
     ) {}

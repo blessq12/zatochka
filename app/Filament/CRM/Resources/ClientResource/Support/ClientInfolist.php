@@ -137,7 +137,6 @@ final class ClientInfolist
                 TableColumn::make('Тип'),
                 TableColumn::make('Марка / модель'),
                 TableColumn::make('Компоненты'),
-                TableColumn::make('Заметки'),
             ])
             ->schema([
                 TextEntry::make('title')
@@ -149,8 +148,6 @@ final class ClientInfolist
                     ->state(fn (ClientEquipmentModel $equipment): string => ClientPresentation::equipmentDetails($equipment)),
                 TextEntry::make('components')
                     ->state(fn (ClientEquipmentModel $equipment): string => ClientPresentation::equipmentComponentsSummary($equipment)),
-                TextEntry::make('notes')
-                    ->placeholder('—'),
             ])
             ->placeholder('Оборудование не зарегистрировано');
     }

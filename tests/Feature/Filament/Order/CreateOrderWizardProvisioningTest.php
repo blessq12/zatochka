@@ -85,7 +85,6 @@ final class CreateOrderWizardProvisioningTest extends TestCase
                 'new_equipment_type' => 'other',
                 'new_equipment_brand' => 'Honda',
                 'new_equipment_model_name' => 'HRX',
-                'new_equipment_notes' => 'тест',
                 'new_equipment_parts' => [
                     ['name' => 'Нож', 'serialNumber' => 'SN-42'],
                 ],
