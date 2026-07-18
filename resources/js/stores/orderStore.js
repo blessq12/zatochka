@@ -1,6 +1,6 @@
 import axios from "axios";
 import { acceptHMRUpdate, defineStore } from "pinia";
-import createLeadRequestDto from "../dto/form/leadRequestDto.js";
+import createPublicOrderRequestDto from "../dto/form/publicOrderRequestDto.js";
 import { toastService } from "../services/toastService.js";
 
 export const useOrderStore = defineStore("order", {
@@ -9,7 +9,7 @@ export const useOrderStore = defineStore("order", {
         historyOrders: [],
         isLoadingActive: false,
         isLoadingHistory: false,
-        submitLeadLoading: false,
+        submitOrderLoading: false,
         historyPagination: {
             total: 0,
             page: 1,
@@ -18,29 +18,29 @@ export const useOrderStore = defineStore("order", {
     }),
 
     actions: {
-        async submitLead(formData, serviceType = "sharpening") {
-            this.submitLeadLoading = true;
+        async createPublicOrder(formData, serviceType = "sharpening") {
+            this.submitOrderLoading = true;
 
             try {
-                const payload = createLeadRequestDto({
+                const payload = createPublicOrderRequestDto({
                     serviceType,
                     formData,
                 });
 
-                const response = await axios.post("/api/leads", payload);
+                const response = await axios.post("/api/public/orders", payload);
 
                 toastService.success(
                     response.data.data?.message ||
-                        "Заявка принята. Менеджер свяжется с вами."
+                        "Заказ создан. Менеджер свяжется с вами."
                 );
                 return { success: true, data: response.data };
             } catch (error) {
                 const message =
-                    error.response?.data?.message || "Ошибка отправки заявки";
+                    error.response?.data?.message || "Ошибка создания заказа";
                 toastService.error(message);
                 return { success: false, error: message };
             } finally {
-                this.submitLeadLoading = false;
+                this.submitOrderLoading = false;
             }
         },
 

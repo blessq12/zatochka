@@ -22,6 +22,8 @@ final class SequentialEntityIdGenerator implements EntityIdGenerator
         'diagnosis' => 'diagnoses',
         'work_price' => 'work_prices',
         'client' => 'clients',
+        'client_lead' => 'client_leads',
+        'review' => 'reviews',
         'equipment' => 'client_equipment',
         'equipment_component' => 'equipment_components',
         'reception' => 'reception_data',

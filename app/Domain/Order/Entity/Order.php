@@ -53,6 +53,7 @@ final class Order extends AggregateRoot
         private readonly bool $deliveryRequired,
         private readonly ?string $defects,
         private readonly ?string $internalNotes,
+        private readonly ?string $clientComment = null,
         private readonly ?OrderId $warrantySourceOrderId = null,
         private ?EntityId $assignedMasterId = null,
         private ?string $managerReworkComment = null,
@@ -88,6 +89,7 @@ final class Order extends AggregateRoot
         bool $deliveryRequired = false,
         ?string $defects = null,
         ?string $internalNotes = null,
+        ?string $clientComment = null,
         ?OrderId $warrantySourceOrderId = null,
         ?DateTimeImmutable $createdAt = null,
         ?OrderNumber $number = null,
@@ -111,6 +113,7 @@ final class Order extends AggregateRoot
             $deliveryRequired,
             self::normalizeText($defects),
             self::normalizeText($internalNotes),
+            self::normalizeText($clientComment),
             $warrantySourceOrderId,
         );
 
@@ -146,6 +149,7 @@ final class Order extends AggregateRoot
         bool $deliveryRequired = false,
         ?string $defects = null,
         ?string $internalNotes = null,
+        ?string $clientComment = null,
         ?OrderId $warrantySourceOrderId = null,
         ?EntityId $assignedMasterId = null,
         ?string $managerReworkComment = null,
@@ -163,6 +167,7 @@ final class Order extends AggregateRoot
             $deliveryRequired,
             $defects,
             $internalNotes,
+            $clientComment,
             $warrantySourceOrderId,
             $assignedMasterId,
             $managerReworkComment,
@@ -223,6 +228,11 @@ final class Order extends AggregateRoot
     public function internalNotes(): ?string
     {
         return $this->internalNotes;
+    }
+
+    public function clientComment(): ?string
+    {
+        return $this->clientComment;
     }
 
     public function warrantySourceOrderId(): ?OrderId

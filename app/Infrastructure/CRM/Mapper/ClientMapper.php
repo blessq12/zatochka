@@ -39,6 +39,12 @@ final class ClientMapper
             $model->name !== null ? (string) $model->name : null,
             $model->email !== null ? new Email((string) $model->email) : null,
             $history,
+            $model->birth_date !== null
+                ? ($model->birth_date instanceof \DateTimeInterface
+                    ? $model->birth_date->format('Y-m-d')
+                    : (string) $model->birth_date)
+                : null,
+            $model->delivery_address !== null ? (string) $model->delivery_address : null,
         );
     }
 
@@ -49,6 +55,8 @@ final class ClientMapper
         $model->phone = $client->phone()->value;
         $model->name = $client->name();
         $model->email = $client->email()?->value;
+        $model->birth_date = $client->birthDate();
+        $model->delivery_address = $client->deliveryAddress();
         $model->bonus_account_id = $client->bonusAccount()->id()->value;
         $model->bonus_balance = $client->bonusAccount()->balance();
 
@@ -81,6 +89,12 @@ final class ClientMapper
             $model->name !== null ? (string) $model->name : null,
             $model->email !== null ? (string) $model->email : null,
             (string) $model->bonus_balance,
+            $model->birth_date !== null
+                ? ($model->birth_date instanceof \DateTimeInterface
+                    ? $model->birth_date->format('Y-m-d')
+                    : (string) $model->birth_date)
+                : null,
+            $model->delivery_address !== null ? (string) $model->delivery_address : null,
         );
     }
 }

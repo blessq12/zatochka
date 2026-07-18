@@ -1,5 +1,6 @@
 <?php
 
+namespace App\Infrastructure\Feedback\Port;
 
 use App\Application\Feedback\Port\CompletedOrderPort;
 use App\Infrastructure\Order\Model\OrderModel;

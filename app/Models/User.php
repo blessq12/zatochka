@@ -20,10 +20,13 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'role',
+        'client_id',
+        'requires_password_set',
     ];
 
     protected $attributes = [
         'role' => 'manager',
+        'requires_password_set' => false,
     ];
 
     protected $hidden = [
@@ -37,6 +40,8 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'requires_password_set' => 'boolean',
+            'client_id' => 'integer',
         ];
     }
 
@@ -47,5 +52,10 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return $this->role === UserRole::Manager;
+    }
+
+    public function isClientPortal(): bool
+    {
+        return $this->role === UserRole::Client && $this->client_id !== null;
     }
 }

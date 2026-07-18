@@ -18,6 +18,8 @@ final class ClientModel extends Model
         'phone',
         'name',
         'email',
+        'birth_date',
+        'delivery_address',
         'bonus_account_id',
         'bonus_balance',
     ];
@@ -26,6 +28,7 @@ final class ClientModel extends Model
     {
         return [
             'bonus_balance' => 'string',
+            'birth_date' => 'date:Y-m-d',
         ];
     }
 

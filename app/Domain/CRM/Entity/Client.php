@@ -16,6 +16,8 @@ final class Client extends AggregateRoot
     private Phone $phone;
     private ?string $name;
     private ?Email $email;
+    private ?string $birthDate;
+    private ?string $deliveryAddress;
     private BonusAccount $bonusAccount;
 
     /** @var list<ClientHistoryEntry> */
@@ -27,11 +29,15 @@ final class Client extends AggregateRoot
         BonusAccount $bonusAccount,
         ?string $name = null,
         ?Email $email = null,
+        ?string $birthDate = null,
+        ?string $deliveryAddress = null,
     ) {
         $this->phone = $phone;
         $this->bonusAccount = $bonusAccount;
         $this->name = $name;
         $this->email = $email;
+        $this->birthDate = $birthDate;
+        $this->deliveryAddress = $deliveryAddress;
     }
 
     public static function register(
@@ -40,8 +46,10 @@ final class Client extends AggregateRoot
         EntityId $bonusAccountId,
         ?string $name = null,
         ?Email $email = null,
+        ?string $birthDate = null,
+        ?string $deliveryAddress = null,
     ): self {
-        $client = new self($id, $phone, new BonusAccount($bonusAccountId), $name, $email);
+        $client = new self($id, $phone, new BonusAccount($bonusAccountId), $name, $email, $birthDate, $deliveryAddress);
         $client->record(new ClientRegistered($id, $phone->value));
 
         return $client;
@@ -57,8 +65,10 @@ final class Client extends AggregateRoot
         ?string $name,
         ?Email $email,
         array $history = [],
+        ?string $birthDate = null,
+        ?string $deliveryAddress = null,
     ): self {
-        $client = new self($id, $phone, $bonusAccount, $name, $email);
+        $client = new self($id, $phone, $bonusAccount, $name, $email, $birthDate, $deliveryAddress);
         $client->history = $history;
 
         return $client;
@@ -84,6 +94,16 @@ final class Client extends AggregateRoot
         return $this->email;
     }
 
+    public function birthDate(): ?string
+    {
+        return $this->birthDate;
+    }
+
+    public function deliveryAddress(): ?string
+    {
+        return $this->deliveryAddress;
+    }
+
     public function bonusAccount(): BonusAccount
     {
         return $this->bonusAccount;
@@ -95,8 +115,15 @@ final class Client extends AggregateRoot
         return $this->history;
     }
 
-    public function updateProfile(?string $name, ?Phone $phone, ?Email $email): void
-    {
+    public function updateProfile(
+        ?string $name,
+        ?Phone $phone,
+        ?Email $email,
+        ?string $birthDate = null,
+        ?string $deliveryAddress = null,
+        bool $updateBirthDate = false,
+        bool $updateDeliveryAddress = false,
+    ): void {
         if ($name !== null) {
             if (trim($name) === '') {
                 throw new DomainException('Client name cannot be empty.');
@@ -111,6 +138,15 @@ final class Client extends AggregateRoot
 
         if ($email !== null) {
             $this->email = $email;
+        }
+
+        if ($updateBirthDate) {
+            $this->birthDate = $birthDate !== null && trim($birthDate) !== '' ? trim($birthDate) : null;
+        }
+
+        if ($updateDeliveryAddress) {
+            $normalized = $deliveryAddress !== null ? trim($deliveryAddress) : null;
+            $this->deliveryAddress = $normalized !== '' ? $normalized : null;
         }
 
         $this->record(new ClientUpdated($this->id));

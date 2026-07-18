@@ -60,8 +60,8 @@ class CreateOrder extends CreateRecord
             ->skippable(false)
             ->contained(false)
             ->persistStepInQueryString('step')
-            ->nextAction(fn (Action $action): Action => $action->label('Далее')->icon(Heroicon::OutlinedArrowRight))
-            ->previousAction(fn (Action $action): Action => $action->label('Назад')->icon(Heroicon::OutlinedArrowLeft));
+            ->nextAction(fn(Action $action): Action => $action->label('Далее')->icon(Heroicon::OutlinedArrowRight))
+            ->previousAction(fn(Action $action): Action => $action->label('Назад')->icon(Heroicon::OutlinedArrowLeft));
     }
 
     protected function getSteps(): array
@@ -133,10 +133,10 @@ class CreateOrder extends CreateRecord
                 Section::make('Гарантийный заказ')
                     ->description('Выберите исходный заказ, по которому оформляется гарантия')
                     ->icon(Heroicon::OutlinedShieldCheck)
-                    ->visible(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
+                    ->visible(fn(Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
                     ->schema([
                         WarrantySourceOrderSelect::make()
-                            ->required(fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
+                            ->required(fn(Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value)
                             ->live()
                             ->afterStateUpdated(function (mixed $state, Set $set): void {
                                 if (blank($state)) {
@@ -164,7 +164,7 @@ class CreateOrder extends CreateRecord
 
     private function clientStep(): Step
     {
-        $warrantyLocksClient = fn (Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value
+        $warrantyLocksClient = fn(Get $get): bool => $get('billing_type') === OrderBillingType::Warranty->value
             && filled($get('warranty_source_order_id'));
 
         return Step::make('Клиент')
@@ -223,8 +223,8 @@ class CreateOrder extends CreateRecord
                         Hidden::make('client_id')->dehydrated(true),
                         ClientSelectField::make('client_picker')
                             ->label('Клиент из базы')
-                            ->visible(fn (Get $get): bool => ($get('client_mode') ?? 'existing') === 'existing')
-                            ->required(fn (Get $get): bool => ($get('client_mode') ?? 'existing') === 'existing')
+                            ->visible(fn(Get $get): bool => ($get('client_mode') ?? 'existing') === 'existing')
+                            ->required(fn(Get $get): bool => ($get('client_mode') ?? 'existing') === 'existing')
                             ->dehydrated(false)
                             ->live()
                             ->afterStateUpdated(function (mixed $state, Set $set): void {
@@ -236,24 +236,24 @@ class CreateOrder extends CreateRecord
                         TextInput::make('new_client_name')
                             ->label('ФИО')
                             ->maxLength(255)
-                            ->required(fn (Get $get): bool => $get('client_mode') === 'new')
-                            ->visible(fn (Get $get): bool => $get('client_mode') === 'new')
-                            ->dehydrated(fn (Get $get): bool => $get('client_mode') === 'new'),
+                            ->required(fn(Get $get): bool => $get('client_mode') === 'new')
+                            ->visible(fn(Get $get): bool => $get('client_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('client_mode') === 'new'),
                         TextInput::make('new_client_phone')
                             ->label('Телефон')
                             ->tel()
                             ->telRegex('/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/')
                             ->mask('+7 (999) 999-99-99')
                             ->placeholder('+7 (___) ___-__-__')
-                            ->required(fn (Get $get): bool => $get('client_mode') === 'new')
-                            ->visible(fn (Get $get): bool => $get('client_mode') === 'new')
-                            ->dehydrated(fn (Get $get): bool => $get('client_mode') === 'new'),
+                            ->required(fn(Get $get): bool => $get('client_mode') === 'new')
+                            ->visible(fn(Get $get): bool => $get('client_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('client_mode') === 'new'),
                         TextInput::make('new_client_email')
                             ->label('Эл. почта')
                             ->email()
                             ->maxLength(255)
-                            ->visible(fn (Get $get): bool => $get('client_mode') === 'new')
-                            ->dehydrated(fn (Get $get): bool => $get('client_mode') === 'new'),
+                            ->visible(fn(Get $get): bool => $get('client_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('client_mode') === 'new'),
                     ]),
             ]);
     }
@@ -288,7 +288,7 @@ class CreateOrder extends CreateRecord
                 Section::make('Инструменты')
                     ->description('Укажите каждый инструмент отдельно')
                     ->icon(Heroicon::OutlinedScissors)
-                    ->visible(fn (Get $get): bool => $get('service_type') === OrderServiceType::Sharpening->value)
+                    ->visible(fn(Get $get): bool => $get('service_type') === OrderServiceType::Sharpening->value)
                     ->schema([
                         Repeater::make('tools')
                             ->label('Список инструментов')
@@ -317,7 +317,7 @@ class CreateOrder extends CreateRecord
                             ->addActionLabel('Добавить инструмент')
                             ->cloneable()
                             ->collapsible()
-                            ->itemLabel(fn (array $state): ?string => filled($state['name'] ?? null)
+                            ->itemLabel(fn(array $state): ?string => filled($state['name'] ?? null)
                                 ? (string) $state['name']
                                 : 'Инструмент')
                             ->required(),
@@ -325,7 +325,7 @@ class CreateOrder extends CreateRecord
                 Section::make('Оборудование')
                     ->description('Выберите: указать существующее оборудование или создать новое')
                     ->icon(Heroicon::OutlinedWrenchScrewdriver)
-                    ->visible(fn (Get $get): bool => $get('service_type') === OrderServiceType::Repair->value)
+                    ->visible(fn(Get $get): bool => $get('service_type') === OrderServiceType::Repair->value)
                     ->schema([
                         ToggleButtons::make('equipment_mode')
                             ->label('Оборудование')
@@ -345,7 +345,7 @@ class CreateOrder extends CreateRecord
                             ->default('existing')
                             ->required()
                             ->live()
-                            ->disabled(fn (Get $get): bool => blank($get('client_id')))
+                            ->disabled(fn(Get $get): bool => blank($get('client_id')))
                             ->afterStateUpdated(function (mixed $state, Set $set): void {
                                 if ($state === 'existing') {
                                     $this->clearNewEquipmentFields($set);
@@ -361,40 +361,40 @@ class CreateOrder extends CreateRecord
                             }),
                         Hidden::make('client_equipment_ids')->dehydrated(true),
                         $this->clientEquipmentSelect()
-                            ->visible(fn (Get $get): bool => ($get('equipment_mode') ?? 'existing') === 'existing')
-                            ->required(fn (Get $get): bool => ($get('equipment_mode') ?? 'existing') === 'existing'
+                            ->visible(fn(Get $get): bool => ($get('equipment_mode') ?? 'existing') === 'existing')
+                            ->required(fn(Get $get): bool => ($get('equipment_mode') ?? 'existing') === 'existing'
                                 && $get('service_type') === OrderServiceType::Repair->value)
                             ->dehydrated(false)
-                            ->disabled(fn (Get $get): bool => blank($get('client_id'))),
+                            ->disabled(fn(Get $get): bool => blank($get('client_id'))),
                         TextInput::make('new_equipment_title')
                             ->label('Название')
                             ->maxLength(255)
-                            ->required(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->visible(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->dehydrated(fn (Get $get): bool => $get('equipment_mode') === 'new'),
+                            ->required(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new'),
                         TextInput::make('new_equipment_brand')
                             ->label('Бренд')
                             ->maxLength(255)
-                            ->required(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->visible(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->dehydrated(fn (Get $get): bool => $get('equipment_mode') === 'new'),
+                            ->required(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new'),
                         TextInput::make('new_equipment_model_name')
                             ->label('Модель')
                             ->maxLength(255)
-                            ->required(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->visible(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->dehydrated(fn (Get $get): bool => $get('equipment_mode') === 'new'),
+                            ->required(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new'),
                         Textarea::make('new_equipment_notes')
                             ->label('Заметки')
                             ->rows(2)
                             ->columnSpanFull()
-                            ->visible(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->dehydrated(fn (Get $get): bool => $get('equipment_mode') === 'new'),
+                            ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new'),
                         RegisterEquipmentOption::partsRepeater('new_equipment_parts')
-                            ->required(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->minItems(fn (Get $get): int => $get('equipment_mode') === 'new' ? 1 : 0)
-                            ->visible(fn (Get $get): bool => $get('equipment_mode') === 'new')
-                            ->dehydrated(fn (Get $get): bool => $get('equipment_mode') === 'new'),
+                            ->required(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->minItems(fn(Get $get): int => $get('equipment_mode') === 'new' ? 1 : 0)
+                            ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new'),
                     ]),
             ]);
     }
@@ -408,7 +408,7 @@ class CreateOrder extends CreateRecord
             ->preload()
             ->helperText('Выберите одно или несколько единиц из базы клиента')
             ->live()
-            ->afterStateUpdated(fn (mixed $state, Set $set) => $set('client_equipment_ids', $state ?? []))
+            ->afterStateUpdated(fn(mixed $state, Set $set) => $set('client_equipment_ids', $state ?? []))
             ->options(function (Get $get): array {
                 if (blank($get('client_id'))) {
                     return [];
@@ -427,7 +427,7 @@ class CreateOrder extends CreateRecord
                 return ClientEquipmentModel::query()
                     ->whereIn('id', $values)
                     ->get()
-                    ->mapWithKeys(static fn (ClientEquipmentModel $equipment): array => [
+                    ->mapWithKeys(static fn(ClientEquipmentModel $equipment): array => [
                         (int) $equipment->id => self::equipmentLabel($equipment),
                     ])
                     ->all();
@@ -436,7 +436,7 @@ class CreateOrder extends CreateRecord
 
     private static function equipmentLabel(ClientEquipmentModel $equipment): string
     {
-        return trim($equipment->title.' · '.$equipment->brand.' '.$equipment->model_name);
+        return trim($equipment->title . ' · ' . $equipment->brand . ' ' . $equipment->model_name);
     }
 
     private function receptionStep(): Step
@@ -466,6 +466,7 @@ class CreateOrder extends CreateRecord
                     ->schema([
                         Textarea::make('defects')
                             ->label('Дефекты')
+                            ->default('Мелкие дефекты, потертости, царапины')
                             ->rows(4)
                             ->columnSpanFull(),
                         Textarea::make('internal_notes')

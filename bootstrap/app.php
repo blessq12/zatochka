@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'master' => \App\Http\Middleware\EnsureUserIsMaster::class,
+            'client' => \App\Http\Middleware\EnsureUserIsClient::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -22,5 +22,6 @@ final readonly class CreateOrderCommand
         public ?string $internalNotes = null,
         public string $estimatedCurrency = 'RUB',
         public ?string $warrantySourceOrderId = null,
+        public ?string $clientComment = null,
     ) {}
 }

@@ -1,5 +1,6 @@
 <?php
 
+namespace App\Application\Feedback\Command;
 
 final readonly class SubmitReviewCommand
 {

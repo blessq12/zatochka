@@ -120,6 +120,12 @@ final class OrderInfolist
                         : null)
                     ->color('primary')
                     ->visible(fn (OrderModel $record): bool => $record->billing_type === OrderBillingType::Warranty->value),
+                TextEntry::make('client_comment')
+                    ->label('Комментарий клиента')
+                    ->placeholder('Нет')
+                    ->prose()
+                    ->columnSpanFull()
+                    ->icon(Heroicon::OutlinedChatBubbleBottomCenterText),
                 TextEntry::make('defects')
                     ->label('Дефекты')
                     ->placeholder('Не указаны')

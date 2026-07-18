@@ -28,6 +28,7 @@ final class OrderModel extends Model
         'delivery_required',
         'defects',
         'internal_notes',
+        'client_comment',
         'manager_rework_comment',
         'warranty_source_order_id',
         'assigned_master_id',

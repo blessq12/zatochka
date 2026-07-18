@@ -87,6 +87,7 @@ final readonly class CreateOrderHandler
                 $command->deliveryRequired,
                 $command->defects,
                 $command->internalNotes,
+                $command->clientComment,
                 $warrantySourceOrderId,
                 $createdAt,
                 OrderNumber::fromSequenceAndDate($this->ids->next('order_number')->value, $createdAt),

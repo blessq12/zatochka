@@ -1,4 +1,5 @@
 <script>
+import axios from "axios";
 import { mapStores } from "pinia";
 import * as yup from "yup";
 import { useAuthStore } from "../../stores/authStore.js";
@@ -21,13 +22,8 @@ export default {
                 delivery_conditions_agreement: false,
             },
             errors: {},
-            toolTypes: [
-                { value: "manicure", label: "Маникюрные" },
-                { value: "hair", label: "Парикмахерские" },
-                { value: "grooming", label: "Грумерские" },
-                { value: "barber", label: "Барберские" },
-                { value: "other", label: "Другие" },
-            ],
+            toolTypes: [],
+            toolTypesLoading: false,
             schema: yup.object().shape({
                 tools_count: yup
                     .number()
@@ -59,6 +55,8 @@ export default {
         ...mapStores(useOrderStore, useAuthStore),
     },
     async mounted() {
+        await this.loadToolTypes();
+
         // Проверяем авторизацию и загружаем данные пользователя
         if (this.authStore.isAuthenticated && !this.authStore.user) {
             await this.authStore.checkAuth();
@@ -70,6 +68,21 @@ export default {
         }
     },
     methods: {
+        async loadToolTypes() {
+            this.toolTypesLoading = true;
+            try {
+                const response = await axios.get(
+                    "/api/public/sharpening-tool-types"
+                );
+                this.toolTypes = response.data.data || [];
+            } catch (error) {
+                this.errors.tool_type =
+                    error.response?.data?.message ||
+                    "Не удалось загрузить типы инструментов";
+            } finally {
+                this.toolTypesLoading = false;
+            }
+        },
         fillUserData() {
             const user = this.authStore.user;
             if (!user) return;
@@ -128,7 +141,7 @@ export default {
                     abortEarly: false,
                 });
 
-                const result = await this.orderStore.submitLead(
+                const result = await this.orderStore.createPublicOrder(
                     this.form,
                     "sharpening"
                 );
@@ -235,6 +248,7 @@ export default {
                             :class="{
                                 'border-red-500': errors.tool_type,
                             }"
+                            :disabled="toolTypesLoading || toolTypes.length === 0"
                             style="
                                 background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23333%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e');
                                 background-position: right 1rem center;
@@ -242,7 +256,11 @@ export default {
                             "
                         >
                             <option value="" disabled>
-                                Выберите тип инструментов
+                                {{
+                                    toolTypesLoading
+                                        ? "Загрузка типов..."
+                                        : "Выберите тип инструментов"
+                                }}
                             </option>
                             <option
                                 v-for="type in toolTypes"
@@ -438,10 +456,10 @@ export default {
                     <div class="pt-6">
                         <button
                             type="submit"
-                            :disabled="orderStore.submitLeadLoading"
+                            :disabled="orderStore.submitOrderLoading"
                             class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
-                            <span v-if="orderStore.submitLeadLoading"
+                            <span v-if="orderStore.submitOrderLoading"
                                 >Отправка...</span
                             >
                             <span v-else>ЗАКАЗАТЬ ЗАТОЧКУ</span>

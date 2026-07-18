@@ -7,3 +7,11 @@ Route::prefix('v1')->group(function (): void {
         require $routeFile;
     }
 });
+
+foreach ([
+    __DIR__.'/api/portal/auth.php',
+    __DIR__.'/api/portal/client.php',
+    __DIR__.'/api/portal/public_orders.php',
+] as $portalRouteFile) {
+    require $portalRouteFile;
+}

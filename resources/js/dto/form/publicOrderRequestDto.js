@@ -17,7 +17,7 @@ function buildRepairIntake(formData) {
     };
 }
 
-export default function createLeadRequestDto({
+export default function createPublicOrderRequestDto({
     serviceType = "sharpening",
     formData = {},
 } = {}) {
@@ -29,12 +29,11 @@ export default function createLeadRequestDto({
     return {
         full_name: formData.name || "",
         phone: formData.phone || "",
-        email: formData.email || null,
-        service_types: [serviceType === "repair" ? "repair" : "sharpening"],
+        service_type: serviceType === "repair" ? "repair" : "sharpening",
         comment:
             serviceType === "sharpening"
                 ? formData.comment?.trim() || null
-                : null,
+                : formData.comment?.trim() || null,
         intake_data: intakeData,
         needs_delivery: Boolean(formData.needs_delivery),
         delivery_address: formData.needs_delivery

@@ -131,7 +131,7 @@ export default {
                     abortEarly: false,
                 });
 
-                const result = await this.orderStore.submitLead(
+                const result = await this.orderStore.createPublicOrder(
                     this.form,
                     "repair"
                 );
@@ -489,10 +489,10 @@ export default {
                     <div class="pt-6">
                         <button
                             type="submit"
-                            :disabled="orderStore.submitLeadLoading"
+                            :disabled="orderStore.submitOrderLoading"
                             class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white border-2 border-white px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
-                            <span v-if="orderStore.submitLeadLoading">Отправка...</span>
+                            <span v-if="orderStore.submitOrderLoading">Отправка...</span>
                             <span v-else>ЗАКАЗАТЬ РЕМОНТ</span>
                         </button>
                     </div>

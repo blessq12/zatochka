@@ -89,6 +89,7 @@ final class OrderMapper
             (bool) $model->delivery_required,
             $model->defects !== null ? (string) $model->defects : null,
             $model->internal_notes !== null ? (string) $model->internal_notes : null,
+            $model->client_comment !== null ? (string) $model->client_comment : null,
             $model->warranty_source_order_id !== null
                 ? new OrderId((string) $model->warranty_source_order_id)
                 : null,
@@ -114,6 +115,7 @@ final class OrderMapper
         $model->delivery_required = $order->deliveryRequired();
         $model->defects = $order->defects();
         $model->internal_notes = $order->internalNotes();
+        $model->client_comment = $order->clientComment();
         $model->manager_rework_comment = $order->managerReworkComment();
         $model->warranty_source_order_id = $order->warrantySourceOrderId()?->value;
         $model->assigned_master_id = $order->assignedMasterId()?->value;
@@ -211,6 +213,7 @@ final class OrderMapper
             (bool) $model->delivery_required,
             $model->defects !== null ? (string) $model->defects : null,
             $model->internal_notes !== null ? (string) $model->internal_notes : null,
+            $model->client_comment !== null ? (string) $model->client_comment : null,
             $model->warranty_source_order_id !== null ? (string) $model->warranty_source_order_id : null,
             $model->assigned_master_id !== null ? (int) $model->assigned_master_id : null,
             (string) $model->estimated_amount,

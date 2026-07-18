@@ -17,6 +17,8 @@ use App\Application\Inventory\ReadPort\OrderMaterialWriteOffReadPort;
 use App\Application\Inventory\ReadPort\StockReadPort;
 use App\Application\Order\Port\MasterDirectoryPort;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
+use App\Application\Order\Port\ClientIdentityPort;
+use App\Application\Order\Port\PublicRepairEquipmentPort;
 use App\Application\Order\ReadPort\OrderReadPort;
 use App\Application\Pricing\Port\OrderPricingGatePort;
 use App\Application\Pricing\Port\PerformedWorkRefPort;
@@ -73,7 +75,9 @@ use App\Infrastructure\Inventory\ReadModel\EloquentStockReadModel;
 use App\Infrastructure\Inventory\Repository\EloquentStockItemRepository;
 use App\Infrastructure\Order\Listener\MarkOrderInProgressOnWorkStarted;
 use App\Infrastructure\Order\Listener\MarkOrderWorksCompletedOnProductionCompleted;
+use App\Infrastructure\Order\Port\EloquentClientIdentityPort;
 use App\Infrastructure\Order\Port\EloquentMasterDirectoryPort;
+use App\Infrastructure\Order\Port\EloquentPublicRepairEquipmentPort;
 use App\Infrastructure\Order\ReadModel\EloquentOrderContainerReadModel;
 use App\Infrastructure\Order\ReadModel\EloquentOrderReadModel;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
@@ -122,6 +126,8 @@ final class PersistenceServiceProvider extends ServiceProvider
         $this->app->bind(OrderReadPort::class, EloquentOrderReadModel::class);
         $this->app->bind(OrderContainerReadPort::class, EloquentOrderContainerReadModel::class);
         $this->app->bind(MasterDirectoryPort::class, EloquentMasterDirectoryPort::class);
+        $this->app->bind(ClientIdentityPort::class, EloquentClientIdentityPort::class);
+        $this->app->bind(PublicRepairEquipmentPort::class, EloquentPublicRepairEquipmentPort::class);
 
         $this->app->bind(ProductionTaskRepository::class, EloquentProductionTaskRepository::class);
         $this->app->bind(ProductionTaskReadPort::class, EloquentProductionTaskReadModel::class);
