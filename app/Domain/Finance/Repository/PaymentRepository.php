@@ -3,6 +3,7 @@
 namespace App\Domain\Finance\Repository;
 
 use App\Domain\Finance\Entity\Payment;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 
 interface PaymentRepository
@@ -12,4 +13,6 @@ interface PaymentRepository
     public function findById(EntityId $id): ?Payment;
 
     public function getById(EntityId $id): Payment;
+
+    public function findByOrderId(OrderId $orderId): ?Payment;
 }

@@ -52,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Сотрудники'),
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverPages(in: app_path('Filament/Finance/Pages'), for: 'App\\Filament\\Finance\\Pages')
             ->pages([
                 Dashboard::class,
             ])

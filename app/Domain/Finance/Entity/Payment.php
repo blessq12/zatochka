@@ -5,9 +5,10 @@ namespace App\Domain\Finance\Entity;
 use App\Domain\Finance\Event\PaymentAccepted;
 use App\Domain\Finance\Event\RefundCreated;
 use App\Domain\Finance\VO\PaymentMethod;
+use App\Domain\Finance\VO\PaymentNumber;
+use App\Domain\Order\VO\OrderId;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
-use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use App\Shared\ValueObject\Money;
 use DateTimeImmutable;
@@ -19,6 +20,7 @@ final class Payment extends AggregateRoot
 
     private function __construct(
         private readonly EntityId $id,
+        private readonly PaymentNumber $number,
         private readonly OrderId $orderId,
         private readonly Money $amount,
         private readonly PaymentMethod $method,
@@ -31,29 +33,33 @@ final class Payment extends AggregateRoot
 
     public static function accept(
         EntityId $id,
+        PaymentNumber $number,
         OrderId $orderId,
+        string $orderNumber,
         Money $amount,
         PaymentMethod $method,
         ?DateTimeImmutable $acceptedAt = null,
     ): self {
-        $payment = new self($id, $orderId, $amount, $method, $acceptedAt ?? new DateTimeImmutable());
-        $payment->record(new PaymentAccepted($id, $orderId, $amount));
+        $acceptedAt ??= new DateTimeImmutable;
+        $payment = new self($id, $number, $orderId, $amount, $method, $acceptedAt);
+        $payment->record(new PaymentAccepted($id, $orderId, $orderNumber, $amount, $method));
 
         return $payment;
     }
 
     /**
-     * @param list<Refund> $refunds
+     * @param  list<Refund>  $refunds
      */
     public static function reconstitute(
         EntityId $id,
+        PaymentNumber $number,
         OrderId $orderId,
         Money $amount,
         PaymentMethod $method,
         DateTimeImmutable $acceptedAt,
         array $refunds = [],
     ): self {
-        $payment = new self($id, $orderId, $amount, $method, $acceptedAt);
+        $payment = new self($id, $number, $orderId, $amount, $method, $acceptedAt);
         $payment->refunds = $refunds;
 
         return $payment;
@@ -62,6 +68,11 @@ final class Payment extends AggregateRoot
     public function id(): EntityId
     {
         return $this->id;
+    }
+
+    public function number(): PaymentNumber
+    {
+        return $this->number;
     }
 
     public function orderId(): OrderId
@@ -90,8 +101,12 @@ final class Payment extends AggregateRoot
         return $this->refunds;
     }
 
-    public function createRefund(EntityId $refundId, Money $amount, ?string $reason = null): Refund
-    {
+    public function createRefund(
+        EntityId $refundId,
+        Money $amount,
+        string $orderNumber,
+        ?string $reason = null,
+    ): Refund {
         $refunded = array_sum(array_map(
             static fn (Refund $refund): float => (float) $refund->amount()->amount,
             $this->refunds,
@@ -103,7 +118,7 @@ final class Payment extends AggregateRoot
 
         $refund = new Refund($refundId, $this->id, $amount, $reason);
         $this->refunds[] = $refund;
-        $this->record(new RefundCreated($refundId, $this->id, $amount));
+        $this->record(new RefundCreated($refundId, $this->id, $orderNumber, $amount, $this->method));
 
         return $refund;
     }

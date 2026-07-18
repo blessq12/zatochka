@@ -3,7 +3,6 @@
 namespace App\Domain\Order\Entity;
 
 use App\Domain\Order\Event\ClientAssigned;
-use App\Domain\Order\Event\OrderReturnedToMaster;
 use App\Domain\Order\Event\OrderCancelled;
 use App\Domain\Order\Event\OrderClosed;
 use App\Domain\Order\Event\OrderCreated;
@@ -11,6 +10,7 @@ use App\Domain\Order\Event\OrderIssued;
 use App\Domain\Order\Event\OrderItemAdded;
 use App\Domain\Order\Event\OrderItemUnitsRejected;
 use App\Domain\Order\Event\OrderMasterAssigned;
+use App\Domain\Order\Event\OrderReturnedToMaster;
 use App\Domain\Order\Event\ReceptionCompleted;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
@@ -27,15 +27,18 @@ use DateTimeImmutable;
 final class Order extends AggregateRoot
 {
     private EntityId $clientId;
+
     private Money $estimatedCost;
+
     private OrderStatus $status;
+
     private readonly DateTimeImmutable $createdAt;
 
     /** @var array<int, OrderItem> */
     private array $items = [];
 
     /**
-     * @param list<OrderItem> $items
+     * @param  list<OrderItem>  $items
      */
     private function __construct(
         private readonly OrderId $id,
@@ -72,7 +75,7 @@ final class Order extends AggregateRoot
     }
 
     /**
-     * @param list<OrderItem> $items
+     * @param  list<OrderItem>  $items
      */
     public static function create(
         OrderId $id,
@@ -91,7 +94,7 @@ final class Order extends AggregateRoot
     ): self {
         self::assertWarrantySource($billingType, $warrantySourceOrderId, $id);
 
-        $createdAt ??= new DateTimeImmutable();
+        $createdAt ??= new DateTimeImmutable;
         if ($number === null) {
             throw new DomainException('Order number is required.');
         }
@@ -127,7 +130,7 @@ final class Order extends AggregateRoot
     }
 
     /**
-     * @param list<OrderItem> $items
+     * @param  list<OrderItem>  $items
      */
     public static function reconstitute(
         OrderId $id,
@@ -438,7 +441,7 @@ final class Order extends AggregateRoot
         $this->record(new OrderClosed($this->id));
     }
 
-    public function issue(): void
+    public function issue(?string $paymentMethod = null): void
     {
         $this->assertNotTerminal();
 
@@ -446,16 +449,28 @@ final class Order extends AggregateRoot
             throw new DomainException('Order can be issued only from Ready status.');
         }
 
+        $normalizedMethod = $paymentMethod !== null ? trim($paymentMethod) : null;
+        if ($normalizedMethod === '') {
+            $normalizedMethod = null;
+        }
+
+        if ($this->billingType === OrderBillingType::Paid && $normalizedMethod === null) {
+            throw new DomainException('Payment method is required to issue a paid order.');
+        }
+
         foreach ($this->items as $item) {
             $item->markIssued();
         }
 
         $this->transitionTo(OrderStatus::Issued);
-        $this->record(new OrderIssued($this->id));
+        $this->record(new OrderIssued(
+            $this->id,
+            $this->billingType === OrderBillingType::Warranty ? null : $normalizedMethod,
+        ));
     }
 
     /**
-     * @param list<OrderItem> $items
+     * @param  list<OrderItem>  $items
      */
     private function assertItemsMatchServiceType(array $items, OrderServiceType $serviceType): void
     {

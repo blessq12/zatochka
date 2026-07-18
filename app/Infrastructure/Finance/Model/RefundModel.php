@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Finance\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class RefundModel extends Model
 {
@@ -29,5 +30,10 @@ final class RefundModel extends Model
             'amount' => 'string',
             'created_at' => 'datetime',
         ];
+    }
+
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(PaymentModel::class, 'payment_id');
     }
 }

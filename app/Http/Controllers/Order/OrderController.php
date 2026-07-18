@@ -19,6 +19,7 @@ use App\Application\Order\DTO\ReceptionItemDTO;
 use App\Application\Order\Query\GetOrderByIdHandler;
 use App\Application\Order\Query\GetOrderByIdQuery;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
+use App\Domain\Finance\VO\PaymentMethod;
 use App\Domain\Order\VO\OrderId;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
@@ -175,9 +176,16 @@ final class OrderController extends Controller
         return $this->ok($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));
     }
 
-    public function issue(string $orderId): JsonResponse
+    public function issue(Request $request, string $orderId): JsonResponse
     {
-        $this->issueOrder->handle(new IssueOrderCommand($orderId));
+        $data = $request->validate([
+            'paymentMethod' => ['nullable', 'string', Rule::enum(PaymentMethod::class)],
+        ]);
+
+        $this->issueOrder->handle(new IssueOrderCommand(
+            $orderId,
+            $data['paymentMethod'] ?? null,
+        ));
 
         return $this->ok($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));
     }

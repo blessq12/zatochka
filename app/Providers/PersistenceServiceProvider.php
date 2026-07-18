@@ -8,6 +8,8 @@ use App\Application\Equipment\ReadPort\EquipmentOrderHistoryPort;
 use App\Application\Equipment\ReadPort\EquipmentReadPort;
 use App\Application\Feedback\Port\CompletedOrderPort;
 use App\Application\Feedback\ReadPort\ReviewReadPort;
+use App\Application\Finance\Port\OrderSettlementPort;
+use App\Application\Finance\ReadPort\CashDeskReadPort;
 use App\Application\Finance\ReadPort\PaymentReadPort;
 use App\Application\Identity\Port\PasswordHasher;
 use App\Application\Identity\ReadPort\StaffUserReadPort;
@@ -28,11 +30,14 @@ use App\Domain\CRM\Repository\ClientRepository;
 use App\Domain\Delivery\Repository\DeliveryRequestRepository;
 use App\Domain\Equipment\Repository\ClientEquipmentRepository;
 use App\Domain\Feedback\Repository\ReviewRepository;
+use App\Domain\Finance\Event\PaymentAccepted;
+use App\Domain\Finance\Event\RefundCreated;
 use App\Domain\Finance\Repository\CashOperationRepository;
 use App\Domain\Finance\Repository\PaymentRepository;
 use App\Domain\Identity\Repository\StaffUserRepository;
 use App\Domain\Inventory\Repository\StockItemRepository;
 use App\Domain\Order\Event\OrderCancelled;
+use App\Domain\Order\Event\OrderIssued;
 use App\Domain\Order\Event\OrderMasterAssigned;
 use App\Domain\Order\Event\OrderReturnedToMaster;
 use App\Domain\Order\Event\ReceptionCompleted;
@@ -50,6 +55,11 @@ use App\Infrastructure\Equipment\Repository\EloquentClientEquipmentRepository;
 use App\Infrastructure\Feedback\Port\EloquentCompletedOrderPort;
 use App\Infrastructure\Feedback\ReadModel\EloquentReviewReadModel;
 use App\Infrastructure\Feedback\Repository\EloquentReviewRepository;
+use App\Infrastructure\Finance\Listener\RecordPaymentOnOrderIssued;
+use App\Infrastructure\Finance\Listener\RegisterCashInOnPaymentAccepted;
+use App\Infrastructure\Finance\Listener\RegisterCashOutOnRefundCreated;
+use App\Infrastructure\Finance\Port\EloquentOrderSettlementPort;
+use App\Infrastructure\Finance\ReadModel\EloquentCashDeskReadModel;
 use App\Infrastructure\Finance\ReadModel\EloquentPaymentReadModel;
 use App\Infrastructure\Finance\Repository\EloquentCashOperationRepository;
 use App\Infrastructure\Finance\Repository\EloquentPaymentRepository;
@@ -125,6 +135,8 @@ final class PersistenceServiceProvider extends ServiceProvider
         $this->app->bind(PaymentRepository::class, EloquentPaymentRepository::class);
         $this->app->bind(CashOperationRepository::class, EloquentCashOperationRepository::class);
         $this->app->bind(PaymentReadPort::class, EloquentPaymentReadModel::class);
+        $this->app->bind(CashDeskReadPort::class, EloquentCashDeskReadModel::class);
+        $this->app->bind(OrderSettlementPort::class, EloquentOrderSettlementPort::class);
 
         $this->app->bind(DeliveryRequestRepository::class, EloquentDeliveryRequestRepository::class);
         $this->app->bind(DeliveryReadPort::class, EloquentDeliveryReadModel::class);
@@ -144,5 +156,8 @@ final class PersistenceServiceProvider extends ServiceProvider
         Event::listen(OrderReturnedToMaster::class, ClearWorkPricesOnOrderReturnedToMaster::class);
         Event::listen(WorkStarted::class, MarkOrderInProgressOnWorkStarted::class);
         Event::listen(ProductionCompleted::class, MarkOrderWorksCompletedOnProductionCompleted::class);
+        Event::listen(OrderIssued::class, RecordPaymentOnOrderIssued::class);
+        Event::listen(PaymentAccepted::class, RegisterCashInOnPaymentAccepted::class);
+        Event::listen(RefundCreated::class, RegisterCashOutOnRefundCreated::class);
     }
 }

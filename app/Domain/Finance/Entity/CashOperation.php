@@ -4,6 +4,7 @@ namespace App\Domain\Finance\Entity;
 
 use App\Domain\Finance\Event\CashOperationRegistered;
 use App\Domain\Finance\VO\CashOperationType;
+use App\Domain\Finance\VO\PaymentMethod;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
@@ -18,9 +19,16 @@ final class CashOperation extends AggregateRoot
         private readonly Money $amount,
         private readonly DateTimeImmutable $registeredAt,
         private readonly ?string $comment = null,
+        private readonly ?EntityId $paymentId = null,
+        private readonly ?EntityId $refundId = null,
+        private readonly ?PaymentMethod $paymentMethod = null,
     ) {
         if ((float) $this->amount->amount <= 0) {
             throw new DomainException('Cash operation amount must be positive.');
+        }
+
+        if ($this->paymentId !== null && $this->refundId !== null) {
+            throw new DomainException('Cash operation cannot reference both payment and refund.');
         }
     }
 
@@ -30,8 +38,20 @@ final class CashOperation extends AggregateRoot
         Money $amount,
         ?string $comment = null,
         ?DateTimeImmutable $registeredAt = null,
+        ?EntityId $paymentId = null,
+        ?EntityId $refundId = null,
+        ?PaymentMethod $paymentMethod = null,
     ): self {
-        $operation = new self($id, $type, $amount, $registeredAt ?? new DateTimeImmutable(), $comment);
+        $operation = new self(
+            $id,
+            $type,
+            $amount,
+            $registeredAt ?? new DateTimeImmutable,
+            $comment,
+            $paymentId,
+            $refundId,
+            $paymentMethod,
+        );
         $operation->record(new CashOperationRegistered($id, $amount, $type->value));
 
         return $operation;
@@ -43,8 +63,11 @@ final class CashOperation extends AggregateRoot
         Money $amount,
         DateTimeImmutable $registeredAt,
         ?string $comment = null,
+        ?EntityId $paymentId = null,
+        ?EntityId $refundId = null,
+        ?PaymentMethod $paymentMethod = null,
     ): self {
-        return new self($id, $type, $amount, $registeredAt, $comment);
+        return new self($id, $type, $amount, $registeredAt, $comment, $paymentId, $refundId, $paymentMethod);
     }
 
     public function id(): EntityId
@@ -70,5 +93,20 @@ final class CashOperation extends AggregateRoot
     public function comment(): ?string
     {
         return $this->comment;
+    }
+
+    public function paymentId(): ?EntityId
+    {
+        return $this->paymentId;
+    }
+
+    public function refundId(): ?EntityId
+    {
+        return $this->refundId;
+    }
+
+    public function paymentMethod(): ?PaymentMethod
+    {
+        return $this->paymentMethod;
     }
 }

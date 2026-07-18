@@ -2,7 +2,9 @@
 
 namespace App\Infrastructure\Finance\Model;
 
+use App\Infrastructure\Order\Model\OrderModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class PaymentModel extends Model
@@ -17,6 +19,7 @@ final class PaymentModel extends Model
 
     protected $fillable = [
         'id',
+        'number',
         'order_id',
         'amount',
         'currency',
@@ -39,5 +42,10 @@ final class PaymentModel extends Model
     public function refunds(): HasMany
     {
         return $this->hasMany(RefundModel::class, 'payment_id');
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(OrderModel::class, 'order_id', 'id');
     }
 }

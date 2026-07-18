@@ -6,9 +6,10 @@ use App\Application\Finance\DTO\PaymentDTO;
 use App\Domain\Finance\Entity\Payment;
 use App\Domain\Finance\Entity\Refund;
 use App\Domain\Finance\VO\PaymentMethod;
+use App\Domain\Finance\VO\PaymentNumber;
+use App\Domain\Order\VO\OrderId;
 use App\Infrastructure\Finance\Model\PaymentModel;
 use App\Infrastructure\Finance\Model\RefundModel;
-use App\Domain\Order\VO\OrderId;
 use App\Shared\ValueObject\EntityId;
 use App\Shared\ValueObject\Money;
 use DateTimeImmutable;
@@ -31,6 +32,7 @@ final class PaymentMapper
 
         return Payment::reconstitute(
             new EntityId((int) $model->id),
+            new PaymentNumber((string) $model->number),
             new OrderId((string) $model->order_id),
             new Money((string) $model->amount, (string) $model->currency),
             PaymentMethod::from((string) $model->method),
@@ -41,8 +43,9 @@ final class PaymentMapper
 
     public function toPersistence(Payment $payment, ?PaymentModel $model = null): PaymentModel
     {
-        $model ??= new PaymentModel();
+        $model ??= new PaymentModel;
         $model->id = $payment->id()->value;
+        $model->number = $payment->number()->value;
         $model->order_id = $payment->orderId()->value;
         $model->amount = $payment->amount()->amount;
         $model->currency = $payment->amount()->currency;
@@ -60,7 +63,7 @@ final class PaymentMapper
         $rows = [];
 
         foreach ($payment->refunds() as $refund) {
-            $row = new RefundModel();
+            $row = new RefundModel;
             $row->id = $refund->id()->value;
             $row->payment_id = $payment->id()->value;
             $row->amount = $refund->amount()->amount;
@@ -77,6 +80,7 @@ final class PaymentMapper
     {
         return new PaymentDTO(
             (int) $model->id,
+            (string) $model->number,
             (string) $model->order_id,
             (string) $model->amount,
             (string) $model->currency,

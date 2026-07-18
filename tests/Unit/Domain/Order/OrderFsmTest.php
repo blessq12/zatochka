@@ -4,6 +4,7 @@ namespace Tests\Unit\Domain\Order;
 
 use App\Domain\Order\Entity\Order;
 use App\Domain\Order\Entity\OrderItem;
+use App\Domain\Order\Event\OrderCancelled;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderNumber;
@@ -34,7 +35,7 @@ final class OrderFsmTest extends TestCase
         $order->markReady();
         $this->assertSame(OrderStatus::Ready, $order->status());
 
-        $order->issue();
+        $order->issue('cash');
         $this->assertSame(OrderStatus::Issued, $order->status());
     }
 
@@ -54,6 +55,18 @@ final class OrderFsmTest extends TestCase
     public function test_cannot_issue_before_ready(): void
     {
         $order = $this->newSharpeningOrder();
+
+        $this->expectException(DomainException::class);
+        $order->issue('cash');
+    }
+
+    public function test_paid_issue_requires_payment_method(): void
+    {
+        $order = $this->newSharpeningOrder();
+        $order->assignMaster(new EntityId(10));
+        $order->markInProgress();
+        $order->markWorksCompleted();
+        $order->markReady();
 
         $this->expectException(DomainException::class);
         $order->issue();
@@ -76,7 +89,7 @@ final class OrderFsmTest extends TestCase
         $this->assertSame(OrderStatus::Cancelled, $order->status());
         $events = $order->pullDomainEvents();
         $types = array_map(static fn (object $e): string => $e::class, $events);
-        $this->assertContains(\App\Domain\Order\Event\OrderCancelled::class, $types);
+        $this->assertContains(OrderCancelled::class, $types);
     }
 
     private function newSharpeningOrder(): Order

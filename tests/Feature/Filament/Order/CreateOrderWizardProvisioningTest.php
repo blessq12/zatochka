@@ -21,35 +21,52 @@ final class CreateOrderWizardProvisioningTest extends TestCase
     use BuildsWorkshopFlows;
     use RefreshDatabase;
 
-    public function test_step_two_can_register_new_client_via_create_option(): void
+    public function test_step_two_shows_existing_client_select_by_default(): void
     {
         $this->actingAs($this->manager());
 
         Livewire::test(CreateOrder::class)
-            ->assertFormComponentActionExists('client_id', 'createOption')
-            ->callFormComponentAction('client_id', 'createOption', data: [
-                'name' => 'Иван Новый',
-                'phone' => '+7 (999) 111-22-33',
-                'email' => 'ivan@example.test',
+            ->fillForm([
+                'service_type' => OrderServiceType::Sharpening->value,
+                'billing_type' => 'paid',
+                'urgency' => 'normal',
+                'client_mode' => 'existing',
             ])
-            ->assertHasNoFormErrors();
+            ->goToNextWizardStep()
+            ->assertWizardCurrentStep(2)
+            ->assertFormSet(['client_mode' => 'existing'])
+            ->assertFormFieldIsVisible('client_picker')
+            ->assertFormFieldIsHidden('new_client_name')
+            ->assertFormComponentActionDoesNotExist('client_picker', 'createOption');
+    }
+
+    public function test_step_two_can_register_new_client_via_explicit_mode(): void
+    {
+        $this->actingAs($this->manager());
+
+        Livewire::test(CreateOrder::class)
+            ->fillForm([
+                'service_type' => OrderServiceType::Sharpening->value,
+                'billing_type' => 'paid',
+                'urgency' => 'normal',
+                'client_mode' => 'new',
+                'new_client_name' => 'Иван Новый',
+                'new_client_phone' => '+7 (999) 111-22-33',
+                'new_client_email' => 'ivan@example.test',
+            ])
+            ->goToNextWizardStep()
+            ->assertWizardCurrentStep(2)
+            ->goToNextWizardStep()
+            ->assertHasNoFormErrors()
+            ->assertWizardCurrentStep(3);
 
         $client = ClientModel::query()->where('phone', '+7 (999) 111-22-33')->first();
 
         $this->assertNotNull($client);
         $this->assertSame('Иван Новый', $client->name);
-
-        Livewire::test(CreateOrder::class)
-            ->callFormComponentAction('client_id', 'createOption', data: [
-                'name' => 'Пётр Новый',
-                'phone' => '+7 (999) 444-55-66',
-            ])
-            ->assertFormSet([
-                'client_id' => (int) ClientModel::query()->where('phone', '+7 (999) 444-55-66')->value('id'),
-            ]);
     }
 
-    public function test_step_three_repair_can_register_new_equipment_via_create_option(): void
+    public function test_step_three_repair_registers_new_equipment_via_explicit_mode(): void
     {
         $this->actingAs($this->manager());
 
@@ -58,19 +75,28 @@ final class CreateOrderWizardProvisioningTest extends TestCase
         Livewire::test(CreateOrder::class)
             ->fillForm([
                 'service_type' => OrderServiceType::Repair->value,
+                'billing_type' => 'paid',
+                'urgency' => 'normal',
+                'client_mode' => 'existing',
                 'client_id' => $clientId,
-            ])
-            ->assertFormComponentActionExists('client_equipment_ids', 'createOption')
-            ->callFormComponentAction('client_equipment_ids', 'createOption', data: [
-                'title' => 'Газонокосилка',
-                'brand' => 'Honda',
-                'model_name' => 'HRX',
-                'notes' => 'тест',
-                'parts' => [
+                'client_picker' => $clientId,
+                'equipment_mode' => 'new',
+                'new_equipment_title' => 'Газонокосилка',
+                'new_equipment_brand' => 'Honda',
+                'new_equipment_model_name' => 'HRX',
+                'new_equipment_notes' => 'тест',
+                'new_equipment_parts' => [
                     ['name' => 'Нож', 'serialNumber' => 'SN-42'],
                 ],
             ])
-            ->assertHasNoFormErrors();
+            ->goToNextWizardStep()
+            ->assertWizardCurrentStep(2)
+            ->assertFormComponentActionDoesNotExist('equipment_picker', 'createOption')
+            ->goToNextWizardStep()
+            ->assertWizardCurrentStep(3)
+            ->goToNextWizardStep()
+            ->assertHasNoFormErrors()
+            ->assertWizardCurrentStep(4);
 
         $equipment = ClientEquipmentModel::query()
             ->where('client_id', $clientId)
@@ -86,46 +112,38 @@ final class CreateOrderWizardProvisioningTest extends TestCase
     {
         $this->actingAs($this->manager());
 
-        $component = Livewire::test(CreateOrder::class)
+        Livewire::test(CreateOrder::class)
             ->fillForm([
                 'service_type' => OrderServiceType::Repair->value,
                 'billing_type' => 'paid',
                 'urgency' => 'normal',
+                'client_mode' => 'new',
+                'new_client_name' => 'Клиент Ремонт',
+                'new_client_phone' => '+7 (900) 111-22-33',
+                'equipment_mode' => 'new',
+                'new_equipment_title' => 'Триммер',
+                'new_equipment_brand' => 'Stihl',
+                'new_equipment_model_name' => 'FS 55',
+                'new_equipment_parts' => [
+                    ['name' => 'Голова', 'serialNumber' => null],
+                ],
                 'estimated_amount' => '1500',
                 'delivery_required' => false,
             ])
-            ->callFormComponentAction('client_id', 'createOption', data: [
-                'name' => 'Клиент Ремонт',
-                'phone' => '+7 (900) 111-22-33',
-            ]);
+            ->goToNextWizardStep()
+            ->goToNextWizardStep()
+            ->goToNextWizardStep()
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $clientId = (int) ClientModel::query()->where('phone', '+7 (900) 111-22-33')->value('id');
         $this->assertGreaterThan(0, $clientId);
-
-        $component
-            ->fillForm(['client_id' => $clientId])
-            ->callFormComponentAction('client_equipment_ids', 'createOption', data: [
-                'title' => 'Триммер',
-                'brand' => 'Stihl',
-                'model_name' => 'FS 55',
-                'parts' => [
-                    ['name' => 'Голова', 'serialNumber' => null],
-                ],
-            ]);
 
         $equipmentId = (int) ClientEquipmentModel::query()
             ->where('client_id', $clientId)
             ->where('title', 'Триммер')
             ->value('id');
         $this->assertGreaterThan(0, $equipmentId);
-
-        $component
-            ->fillForm([
-                'client_equipment_ids' => [$equipmentId],
-                'estimated_amount' => '1500',
-            ])
-            ->call('create')
-            ->assertHasNoFormErrors();
 
         $order = OrderModel::query()->latest('created_at')->first();
 

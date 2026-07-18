@@ -14,6 +14,8 @@ use App\Application\Order\Command\MarkOrderReadyCommand;
 use App\Application\Order\Command\MarkOrderReadyHandler;
 use App\Application\Order\Command\ReturnOrderToMasterCommand;
 use App\Application\Order\Command\ReturnOrderToMasterHandler;
+use App\Domain\Finance\VO\PaymentMethod;
+use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderStatus;
 use App\Filament\Inventory\Actions\WriteOffMaterialOnOrderAction;
 use App\Filament\Pricing\Actions\SetOrderWorkPricesAction;
@@ -104,9 +106,25 @@ final class OrderMutationActions
                 ->label('Выдать')
                 ->icon(Heroicon::OutlinedHandRaised)
                 ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready->value)
-                ->action(function (OrderModel $record): void {
+                ->modalHeading('Выдача заказа')
+                ->form(fn (OrderModel $record): array => $record->billing_type === OrderBillingType::Warranty->value
+                    ? []
+                    : [
+                        Select::make('payment_method')
+                            ->label('Метод оплаты')
+                            ->options(PaymentMethod::options())
+                            ->required(),
+                    ])
+                ->action(function (OrderModel $record, array $data): void {
                     try {
-                        app(IssueOrderHandler::class)->handle(new IssueOrderCommand((string) $record->id));
+                        $method = $record->billing_type === OrderBillingType::Warranty->value
+                            ? null
+                            : (string) ($data['payment_method'] ?? '');
+
+                        app(IssueOrderHandler::class)->handle(new IssueOrderCommand(
+                            (string) $record->id,
+                            $method,
+                        ));
                         Notification::make()->title('Заказ выдан')->success()->send();
                     } catch (DomainException $exception) {
                         Notification::make()->title($exception->getMessage())->danger()->send();

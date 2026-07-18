@@ -4,6 +4,7 @@ namespace App\Infrastructure\Finance\Repository;
 
 use App\Domain\Finance\Entity\Payment;
 use App\Domain\Finance\Repository\PaymentRepository;
+use App\Domain\Order\VO\OrderId;
 use App\Infrastructure\Finance\Mapper\PaymentMapper;
 use App\Infrastructure\Finance\Model\PaymentModel;
 use App\Infrastructure\Finance\Model\RefundModel;
@@ -43,5 +44,15 @@ final readonly class EloquentPaymentRepository implements PaymentRepository
     {
         return $this->findById($id)
             ?? throw new DomainException(sprintf('Payment %d not found.', $id->value));
+    }
+
+    public function findByOrderId(OrderId $orderId): ?Payment
+    {
+        $model = PaymentModel::query()
+            ->with('refunds')
+            ->where('order_id', $orderId->value)
+            ->first();
+
+        return $model === null ? null : $this->mapper->toDomain($model);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+namespace App\Application\Finance\Command;
 
 final readonly class AcceptPaymentCommand
 {

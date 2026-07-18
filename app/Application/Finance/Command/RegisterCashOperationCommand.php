@@ -10,5 +10,8 @@ final readonly class RegisterCashOperationCommand
         public string $amount,
         public string $currency = 'RUB',
         public ?string $comment = null,
+        public ?int $paymentId = null,
+        public ?int $refundId = null,
+        public ?string $paymentMethod = null,
     ) {}
 }

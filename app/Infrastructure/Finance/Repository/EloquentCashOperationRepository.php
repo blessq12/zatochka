@@ -34,4 +34,18 @@ final readonly class EloquentCashOperationRepository implements CashOperationRep
         return $this->findById($id)
             ?? throw new DomainException(sprintf('Cash operation %d not found.', $id->value));
     }
+
+    public function findByPaymentId(EntityId $paymentId): ?CashOperation
+    {
+        $model = CashOperationModel::query()->where('payment_id', $paymentId->value)->first();
+
+        return $model === null ? null : $this->mapper->toDomain($model);
+    }
+
+    public function findByRefundId(EntityId $refundId): ?CashOperation
+    {
+        $model = CashOperationModel::query()->where('refund_id', $refundId->value)->first();
+
+        return $model === null ? null : $this->mapper->toDomain($model);
+    }
 }

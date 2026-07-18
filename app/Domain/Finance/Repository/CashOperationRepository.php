@@ -12,4 +12,8 @@ interface CashOperationRepository
     public function findById(EntityId $id): ?CashOperation;
 
     public function getById(EntityId $id): CashOperation;
+
+    public function findByPaymentId(EntityId $paymentId): ?CashOperation;
+
+    public function findByRefundId(EntityId $refundId): ?CashOperation;
 }

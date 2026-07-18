@@ -71,6 +71,10 @@ final class SequentialEntityIdGenerator implements EntityIdGenerator
             return $this->existingMaxOrderNumberSequence();
         }
 
+        if ($sequenceName === 'payment_number') {
+            return $this->existingMaxPaymentNumberSequence();
+        }
+
         $table = self::TABLE_BY_SEQUENCE[$sequenceName] ?? null;
 
         if ($table === null || ! Schema::hasTable($table)) {
@@ -90,6 +94,27 @@ final class SequentialEntityIdGenerator implements EntityIdGenerator
         $max = 0;
 
         foreach (DB::table('orders')->where('number', 'like', $yearPrefix.'%')->pluck('number') as $number) {
+            $parts = explode('-', (string) $number);
+            $sequence = (int) ($parts[2] ?? 0);
+
+            if ($sequence > $max) {
+                $max = $sequence;
+            }
+        }
+
+        return $max;
+    }
+
+    private function existingMaxPaymentNumberSequence(): int
+    {
+        if (! Schema::hasTable('payments')) {
+            return 0;
+        }
+
+        $yearPrefix = 'PMT-'.now()->format('y').'-';
+        $max = 0;
+
+        foreach (DB::table('payments')->where('number', 'like', $yearPrefix.'%')->pluck('number') as $number) {
             $parts = explode('-', (string) $number);
             $sequence = (int) ($parts[2] ?? 0);
 

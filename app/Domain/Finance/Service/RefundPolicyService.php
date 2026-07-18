@@ -9,8 +9,13 @@ use App\Shared\ValueObject\Money;
 
 final class RefundPolicyService
 {
-    public function refund(Payment $payment, EntityId $refundId, Money $amount, ?string $reason = null): Refund
-    {
-        return $payment->createRefund($refundId, $amount, $reason);
+    public function refund(
+        Payment $payment,
+        EntityId $refundId,
+        Money $amount,
+        string $orderNumber,
+        ?string $reason = null,
+    ): Refund {
+        return $payment->createRefund($refundId, $amount, $orderNumber, $reason);
     }
 }

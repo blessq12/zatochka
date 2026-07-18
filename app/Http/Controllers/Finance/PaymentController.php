@@ -8,10 +8,12 @@ use App\Application\Finance\Command\CreateRefundCommand;
 use App\Application\Finance\Command\CreateRefundHandler;
 use App\Application\Finance\Query\GetPaymentByIdHandler;
 use App\Application\Finance\Query\GetPaymentByIdQuery;
+use App\Domain\Finance\VO\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 final class PaymentController extends Controller
 {
@@ -27,7 +29,7 @@ final class PaymentController extends Controller
         $data = $request->validate([
             'orderId' => ['required', 'string', 'size:32'],
             'amount' => ['required', 'numeric', 'gt:0'],
-            'method' => ['required', 'string', 'in:cash,card,transfer'],
+            'method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
             'currency' => ['nullable', 'string', 'size:3'],
         ]);
 
