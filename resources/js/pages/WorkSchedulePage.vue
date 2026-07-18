@@ -1,12 +1,14 @@
 <script>
 import { mapState } from "pinia";
 import PageHero from "../components/Layout/PageHero.vue";
+import OrderServiceCta from "../components/Support/OrderServiceCta.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
 
 export default {
     name: "WorkSchedulePage",
     components: {
         PageHero,
+        OrderServiceCta,
     },
     computed: {
         ...mapState(useBootstrapStore, ["scheduleDays"]),
@@ -61,6 +63,14 @@ export default {
                             </p>
                         </template>
                     </div>
+                </div>
+
+                <div class="pt-8">
+                    <OrderServiceCta
+                        with-delivery-hint
+                        sharpening-label="Заточка с доставкой"
+                        repair-label="Ремонт с доставкой"
+                    />
                 </div>
             </div>
         </section>

@@ -109,7 +109,7 @@ export default {
                 to="/delivery"
                 class="w-full bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 text-white text-center px-8 py-4 font-jost-bold text-lg tracking-wide transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1"
             >
-                ДОСТАВКА
+                ДОСТАВКА: ЗАБЕРЁМ И ВЕРНЁМ
             </router-link>
             <router-link
                 to="/contacts"

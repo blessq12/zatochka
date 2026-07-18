@@ -1,11 +1,14 @@
 <?php
 
+namespace App\Infrastructure\Feedback\ReadModel;
 
+use App\Application\Feedback\DTO\PublicReviewDTO;
 use App\Application\Feedback\DTO\ReviewDTO;
 use App\Application\Feedback\ReadPort\ReviewReadPort;
 use App\Domain\Feedback\VO\ReviewStatus;
 use App\Infrastructure\Feedback\Mapper\ReviewMapper;
 use App\Infrastructure\Feedback\Model\ReviewModel;
+use DateTimeInterface;
 
 final readonly class EloquentReviewReadModel implements ReviewReadPort
 {
@@ -47,6 +50,38 @@ final readonly class EloquentReviewReadModel implements ReviewReadPort
             ->all();
     }
 
+    public function listPublishedPublic(?int $limit = null): array
+    {
+        $query = ReviewModel::query()
+            ->with('client')
+            ->where('status', ReviewStatus::Published->value)
+            ->whereNotNull('comment')
+            ->where('comment', '!=', '')
+            ->orderByDesc('submitted_at');
+
+        if ($limit !== null && $limit > 0) {
+            $query->limit($limit);
+        }
+
+        return $query
+            ->get()
+            ->map(function (ReviewModel $model): PublicReviewDTO {
+                $submittedAt = $model->submitted_at instanceof DateTimeInterface
+                    ? $model->submitted_at->format(DateTimeInterface::ATOM)
+                    : (string) $model->submitted_at;
+
+                return new PublicReviewDTO(
+                    (int) $model->id,
+                    (int) $model->rating,
+                    $model->comment !== null ? (string) $model->comment : null,
+                    $model->manager_reply !== null ? (string) $model->manager_reply : null,
+                    self::publicClientName($model->client?->name),
+                    $submittedAt,
+                );
+            })
+            ->all();
+    }
+
     public function averagePublishedRating(): ?string
     {
         $average = ReviewModel::query()
@@ -58,5 +93,19 @@ final readonly class EloquentReviewReadModel implements ReviewReadPort
         }
 
         return number_format((float) $average, 2, '.', '');
+    }
+
+    private static function publicClientName(?string $name): string
+    {
+        $trimmed = trim((string) $name);
+
+        if ($trimmed === '') {
+            return 'Клиент';
+        }
+
+        $parts = preg_split('/\s+/u', $trimmed) ?: [];
+        $first = $parts[0] ?? '';
+
+        return $first !== '' ? $first : 'Клиент';
     }
 }

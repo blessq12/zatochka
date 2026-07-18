@@ -1,5 +1,6 @@
 <?php
 
+namespace App\Application\Feedback\DTO;
 
 final readonly class ReviewDTO
 {

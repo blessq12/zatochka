@@ -1,9 +1,12 @@
 <script>
 import { mapState } from "pinia";
+import ClientReviewsCarousel from "../components/Home/ClientReviewsCarousel.vue";
 import FaqSection from "../components/Home/FaqSection.vue";
 import HeroSection from "../components/Home/HeroSection.vue";
 import WorkScheduleSection from "../components/Home/WorkScheduleSection.vue";
+import OrderServiceCta from "../components/Support/OrderServiceCta.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
+import { useReviewsStore } from "../stores/reviewsStore.js";
 
 export default {
     name: "HomePage",
@@ -11,12 +14,21 @@ export default {
         HeroSection,
         FaqSection,
         WorkScheduleSection,
+        ClientReviewsCarousel,
+        OrderServiceCta,
     },
     computed: {
         ...mapState(useBootstrapStore, ["faqItems", "scheduleDays"]),
+        ...mapState(useReviewsStore, {
+            reviewItems: "items",
+            averageRating: "averageRating",
+        }),
     },
     async mounted() {
-        await useBootstrapStore().fetchBootstrap();
+        await Promise.all([
+            useBootstrapStore().fetchBootstrap(),
+            useReviewsStore().fetchPublished(),
+        ]);
     },
 };
 </script>
@@ -179,24 +191,24 @@ export default {
                                 <p
                                     class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 text-base sm:text-lg"
                                 >
-                                    Доставка
+                                    Доставка туда и обратно
                                 </p>
                                 <p
                                     class="font-jost-regular text-dark-gray-500 dark:text-gray-200 text-sm sm:text-base"
                                 >
-                                    Узнайте условия доставки на странице
+                                    Курьер заберёт заказ у вас и вернёт обратно
+                                    после работы
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-8 flex justify-center">
-                        <router-link
-                            to="/delivery"
-                            class="bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 text-white px-10 py-4 font-jost-bold text-lg tracking-wide transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1 text-center w-full sm:w-auto"
-                        >
-                            ЗАКАЗАТЬ ДОСТАВКУ
-                        </router-link>
+                    <div class="mt-8">
+                        <OrderServiceCta
+                            with-delivery-hint
+                            sharpening-label="Заточка с доставкой"
+                            repair-label="Ремонт с доставкой"
+                        />
                     </div>
                 </div>
             </div>
@@ -272,7 +284,7 @@ export default {
                     <div class="space-y-6 mt-4">
                         <div>
                             <RouterLink
-                                to="prices"
+                                to="/prices"
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 text-base sm:text-lg"
                             >
                                 Маникюр и подология:
@@ -285,7 +297,7 @@ export default {
                         </div>
                         <div>
                             <RouterLink
-                                to="prices"
+                                to="/prices"
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 text-base sm:text-lg"
                             >
                                 Парикмахеры/барберы:
@@ -299,7 +311,7 @@ export default {
                         </div>
                         <div>
                             <RouterLink
-                                to="prices"
+                                to="/prices"
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 text-base sm:text-lg"
                             >
                                 Грумеры:
@@ -312,7 +324,7 @@ export default {
                         </div>
                         <div>
                             <RouterLink
-                                to="prices"
+                                to="/prices"
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 text-base sm:text-lg"
                             >
                                 Лешмейкеры/бровисты:
@@ -377,7 +389,7 @@ export default {
                     >
                         <li>
                             <RouterLink
-                                to="prices"
+                                to="/prices"
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                             >
                                 Диагностика оборудования
@@ -385,7 +397,7 @@ export default {
                         </li>
                         <li>
                             <RouterLink
-                                to="prices"
+                                to="/prices"
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                             >
                                 Ремонт машинок для стрижки
@@ -393,7 +405,7 @@ export default {
                         </li>
                         <li>
                             <RouterLink
-                                to="prices"
+                                to="/prices"
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                             >
                                 Ремонт маникюрных аппаратов
@@ -401,7 +413,7 @@ export default {
                         </li>
                         <li>
                             <RouterLink
-                                to="prices"
+                                to="/prices"
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                             >
                                 Ремонт подологических аппаратов
@@ -631,49 +643,30 @@ export default {
                                 <p
                                     class="font-jost-regular text-dark-gray-500 dark:text-gray-200"
                                 >
-                                    Наш курьер аккуратно обращается с каждым
-                                    заказом и заранее согласует время приезда.
+                                    Курьер забирает инструменты по адресу и
+                                    привозит обратно после работы; время
+                                    согласуем заранее.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Блок отзывов -->
-                    <div
-                        class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch"
-                    >
-                        <div
-                            class="bg-dark-blue-500 text-white p-4 text-xs sm:text-sm font-jost-regular"
-                        >
-                            <p class="mb-2 font-jost-bold">Отзывы клиентов</p>
-                            <p>
-                                ★★★★★ Клиенты отмечают качество заточки и
-                                ремонта, удобство доставки и внимательное
-                                отношение.
-                            </p>
-                        </div>
-                        <div
-                            class="border border-dark-blue-500/30 dark:border-dark-gray-200/90 p-4 flex items-center justify-center text-center bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
-                        >
-                            <p
-                                class="text-sm sm:text-base font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
-                            >
-                                Отзывы 5★ в 2ГИС подтверждают качество.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 flex justify-center">
-                        <router-link
-                            to="/delivery"
-                            class="bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 text-white px-10 py-4 font-jost-bold text-lg tracking-wide transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1 text-center w-full sm:w-auto"
-                        >
-                            ЗАКАЗАТЬ ДОСТАВКУ
-                        </router-link>
+                    <div class="mt-8">
+                        <OrderServiceCta
+                            with-delivery-hint
+                            sharpening-label="Заточка с доставкой"
+                            repair-label="Ремонт с доставкой"
+                        />
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Отзывы клиентов -->
+        <ClientReviewsCarousel
+            :items="reviewItems"
+            :average-rating="averageRating"
+        />
 
         <!-- FAQ -->
         <FaqSection :items="faqItems" />

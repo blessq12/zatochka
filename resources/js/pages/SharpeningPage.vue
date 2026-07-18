@@ -63,12 +63,12 @@ export default {
                 class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 space-y-10"
             >
                 <div class="flex justify-center pt-4">
-                    <router-link
-                        to="/delivery"
+                    <a
+                        href="#order"
                         class="bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-10 py-8 w-full font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl text-center"
                     >
                         Заказать
-                    </router-link>
+                    </a>
                 </div>
             </div>
         </section>
@@ -84,7 +84,7 @@ export default {
         </section>
 
         <!-- Форма заказа -->
-        <section class="bg-white dark:bg-dark-blue-500">
+        <section id="order" class="bg-white dark:bg-dark-blue-500 scroll-mt-24">
             <SharpeningForm />
         </section>
     </div>

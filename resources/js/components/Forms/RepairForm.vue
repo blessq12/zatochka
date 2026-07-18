@@ -2,11 +2,15 @@
 import axios from "axios";
 import { mapStores } from "pinia";
 import * as yup from "yup";
+import FormContactActions from "../Support/FormContactActions.vue";
 import { useOrderStore } from "../../stores/orderStore.js";
 import { useAuthStore } from "../../stores/authStore.js";
 
 export default {
     name: "RepairForm",
+    components: {
+        FormContactActions,
+    },
     data() {
         return {
             form: {
@@ -353,21 +357,33 @@ export default {
                             for="needs_delivery"
                             class="text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200"
                         >
-                            Нужна доставка
+                            Нужна доставка (заберём у вас и вернём обратно)
                         </label>
                     </div>
+                    <p
+                        class="text-sm font-jost-regular text-dark-gray-500 dark:text-gray-300 -mt-3"
+                    >
+                        Курьер забирает инструменты по адресу и привозит обратно
+                        после работы.
+                        <router-link
+                            to="/delivery"
+                            class="underline text-[#C3006B]"
+                        >
+                            Условия доставки
+                        </router-link>
+                    </p>
 
                     <!-- Адрес доставки (показывается только если нужна доставка) -->
                     <div v-if="form.needs_delivery">
                         <label
                             class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            Адрес доставки
+                            Адрес (откуда забрать и куда вернуть)
                         </label>
                         <input
                             v-model="form.delivery_address"
                             type="text"
-                            placeholder="Введите адрес доставки"
+                            placeholder="Введите адрес"
                             class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                         />
                     </div>
@@ -548,28 +564,13 @@ export default {
                     </svg>
                 </div>
 
-                <!-- Текст призыва -->
                 <p
                     class="text-xl sm:text-2xl font-jost-regular text-white mb-8 sm:mb-12"
                 >
-                    Свяжитесь с нами для заказа доставки ваших инструментов
+                    Или свяжитесь с нами — ответим и подскажем по заявке
                 </p>
 
-                <!-- Кнопки контактов -->
-                <div
-                    class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8"
-                >
-                    <button
-                        class="bg-white dark:bg-dark-blue-500 hover:bg-gray-100 dark:hover:bg-dark-blue-400 text-dark-blue-500 dark:text-white border-2 border-dark-blue-500 dark:border-dark-blue-400 px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
-                    >
-                        ПОЗВОНИТЬ
-                    </button>
-                    <button
-                        class="bg-white dark:bg-dark-blue-500 hover:bg-gray-100 dark:hover:bg-dark-blue-400 text-dark-blue-500 dark:text-white border-2 border-dark-blue-500 dark:border-dark-blue-400 px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
-                    >
-                        НАПИСАТЬ
-                    </button>
-                </div>
+                <FormContactActions />
             </div>
         </section>
     </div>

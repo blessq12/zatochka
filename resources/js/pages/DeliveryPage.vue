@@ -1,12 +1,14 @@
 <script>
 import { mapState } from "pinia";
 import PageHero from "../components/Layout/PageHero.vue";
+import OrderServiceCta from "../components/Support/OrderServiceCta.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
 
 export default {
     name: "DeliveryPage",
     components: {
         PageHero,
+        OrderServiceCta,
     },
     computed: {
         ...mapState(useBootstrapStore, [
@@ -28,13 +30,30 @@ export default {
             <div
                 class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 space-y-10"
             >
-                <div class="flex justify-center pt-4">
-                    <button
-                        class="bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-10 py-8 w-full font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl"
-                        id="high"
+                <div class="text-center space-y-3">
+                    <p
+                        class="text-base sm:text-lg font-jost-regular text-dark-gray-500 dark:text-gray-200"
                     >
-                        Заказать
-                    </button>
+                        Курьер
+                        <span class="font-jost-bold">забирает</span>
+                        инструменты по вашему адресу и
+                        <span class="font-jost-bold">привозит обратно</span>
+                        после работы.
+                    </p>
+                    <p
+                        class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                    >
+                        Заявка — на заточку или ремонт; доставка отмечается в
+                        форме.
+                    </p>
+                </div>
+
+                <div class="pt-2" id="high">
+                    <OrderServiceCta
+                        layout="stack"
+                        sharpening-label="Заточка с доставкой"
+                        repair-label="Ремонт с доставкой"
+                    />
                 </div>
 
                 <div
@@ -44,7 +63,7 @@ export default {
                         <h3
                             class="text-lg sm:text-xl font-jost-bold text-[#C3006B] dark:text-[#C3006B]"
                         >
-                            ДОСТАВКА
+                            УСЛОВИЯ БЕСПЛАТНОЙ ДОСТАВКИ
                         </h3>
                     </div>
 
@@ -59,13 +78,12 @@ export default {
                     </div>
                 </div>
 
-                <div class="flex justify-center pt-4">
-                    <button
-                        class="bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl"
-                        id="low"
-                    >
-                        ОСТАВИТЬ ЗАЯВКУ
-                    </button>
+                <div class="pt-2" id="low">
+                    <OrderServiceCta
+                        layout="row"
+                        sharpening-label="Оставить заявку на заточку"
+                        repair-label="Оставить заявку на ремонт"
+                    />
                 </div>
 
                 <div

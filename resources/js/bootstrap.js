@@ -32,6 +32,7 @@ window.axios.interceptors.request.use(
                 '/api/auth/login',
                 '/api/auth/register',
                 '/api/bootstrap',
+                '/api/reviews',
             ];
             const isPublic = publicPaths.some((path) => url.startsWith(path));
 

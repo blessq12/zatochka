@@ -2,6 +2,7 @@
 import { mapState } from "pinia";
 import SocialNetworkIcon from "../components/Contacts/SocialNetworkIcon.vue";
 import PageHero from "../components/Layout/PageHero.vue";
+import OrderServiceCta from "../components/Support/OrderServiceCta.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
 
 export default {
@@ -9,6 +10,7 @@ export default {
     components: {
         PageHero,
         SocialNetworkIcon,
+        OrderServiceCta,
     },
     computed: {
         ...mapState(useBootstrapStore, [
@@ -46,7 +48,15 @@ export default {
                 >
                     {{ contactPerson }}
                 </p>
+                <a
+                    v-if="phoneTel"
+                    :href="`tel:${phoneTel}`"
+                    class="inline-block text-xl sm:text-2xl lg:text-3xl font-jost-regular text-white dark:text-white underline decoration-white/40 hover:decoration-white"
+                >
+                    {{ phone }}
+                </a>
                 <p
+                    v-else
                     class="text-xl sm:text-2xl lg:text-3xl font-jost-regular text-white dark:text-white"
                 >
                     {{ phone }}
@@ -143,6 +153,15 @@ export default {
                 >
                     {{ socialEmail }}
                 </p>
+
+                <div class="max-w-xl mx-auto">
+                    <h3
+                        class="text-xl sm:text-2xl font-jost-bold text-pink-500 dark:text-pink-500 uppercase mb-6 text-center"
+                    >
+                        Оставить заявку
+                    </h3>
+                    <OrderServiceCta layout="stack" />
+                </div>
             </div>
         </section>
     </div>

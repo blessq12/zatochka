@@ -1,6 +1,7 @@
 <script>
 import { mapState } from "pinia";
 import PageHero from "../components/Layout/PageHero.vue";
+import OrderServiceCta from "../components/Support/OrderServiceCta.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
 import { formatPriceItem } from "../utils/formatPriceItem.js";
 
@@ -8,6 +9,7 @@ export default {
     name: "PricePage",
     components: {
         PageHero,
+        OrderServiceCta,
     },
     computed: {
         ...mapState(useBootstrapStore, [
@@ -65,14 +67,7 @@ export default {
             <div
                 class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 space-y-10"
             >
-                <div class="flex justify-center pt-4">
-                    <router-link
-                        to="/delivery"
-                        class="bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-10 py-8 w-full font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl text-center"
-                    >
-                        Заказать
-                    </router-link>
-                </div>
+                <OrderServiceCta layout="stack" />
             </div>
         </section>
 
