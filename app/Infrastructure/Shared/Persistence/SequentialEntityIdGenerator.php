@@ -34,6 +34,10 @@ final class SequentialEntityIdGenerator implements EntityIdGenerator
         'refund' => 'refunds',
         'cash_operation' => 'cash_operations',
         'user' => 'users',
+        'site_schedule_day' => 'site_schedule_days',
+        'site_price_block' => 'site_price_blocks',
+        'site_price_item' => 'site_price_items',
+        'site_faq_item' => 'site_faq_items',
     ];
 
     public function next(string $name): EntityId

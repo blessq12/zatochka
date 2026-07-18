@@ -30,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
         'Inventory',
         'Finance',
         'Feedback',
+        'SiteContent',
     ];
 
     public function panel(Panel $panel): Panel
@@ -49,9 +50,11 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Склад'),
                 NavigationGroup::make('Финансы'),
                 NavigationGroup::make('Сотрудники'),
+                NavigationGroup::make('Сайт'),
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverPages(in: app_path('Filament/Finance/Pages'), for: 'App\\Filament\\Finance\\Pages')
+            ->discoverPages(in: app_path('Filament/SiteContent/Pages'), for: 'App\\Filament\\SiteContent\\Pages')
             ->pages([
                 Dashboard::class,
             ])
