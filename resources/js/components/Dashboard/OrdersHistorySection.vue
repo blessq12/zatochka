@@ -1,7 +1,14 @@
 <script>
 import { mapStores } from "pinia";
 import { useOrderStore } from "../../stores/orderStore.js";
-import { formatServiceTypes } from "../../utils/serviceTypes.js";
+import {
+    formatBillingType,
+    formatOrderStatus,
+    formatReviewStatus,
+    formatServiceTypes,
+    formatStars,
+    formatUrgency,
+} from "../../utils/serviceTypes.js";
 
 export default {
     name: "OrdersHistorySection",
@@ -35,6 +42,11 @@ export default {
     },
     methods: {
         formatServiceTypes,
+        formatOrderStatus,
+        formatBillingType,
+        formatUrgency,
+        formatReviewStatus,
+        formatStars,
         async changePage(page) {
             if (page < 1 || page > this.totalPages) {
                 return;
@@ -58,11 +70,16 @@ export default {
             });
         },
         formatPrice(price) {
-            if (!price) return "—";
+            if (price === null || price === undefined || price === "") {
+                return "—";
+            }
             return new Intl.NumberFormat("ru-RU", {
                 style: "currency",
                 currency: "RUB",
             }).format(price);
+        },
+        commentText(order) {
+            return order.client_comment || order.description || null;
         },
         canLeaveReview(order) {
             return !order.review_exists;
@@ -140,98 +157,238 @@ export default {
                     :key="order.id"
                     class="border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 bg-white/60 backdrop-blur-md dark:bg-gray-800/60 hover:shadow-lg transition-all duration-300"
                 >
-                    <div
-                        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-                    >
-                        <div class="flex-1">
+                    <div class="flex-1">
+                        <div
+                            class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3"
+                        >
                             <h3
-                                class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-3"
+                                class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                             >
                                 Заказ №{{ order.order_number }}
                             </h3>
-                            <div
-                                class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm sm:text-base"
+                            <span
+                                class="inline-flex self-start px-3 py-1 text-sm font-jost-medium rounded-full bg-dark-blue-500/10 text-dark-blue-500 dark:bg-dark-blue-300/20 dark:text-dark-blue-300"
                             >
-                                <div>
-                                    <span
-                                        class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                    >
-                                        Тип:
-                                    </span>
-                                    <span
-                                        class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                    >
-                                        {{ formatServiceTypes(order.service_types) }}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span
-                                        class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                    >
-                                        Дата:
-                                    </span>
-                                    <span
-                                        class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                    >
-                                        {{ formatDate(order.created_at) }}
-                                    </span>
-                                </div>
-                                <div v-if="order.price">
-                                    <span
-                                        class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                    >
-                                        Стоимость:
-                                    </span>
-                                    <span
-                                        class="ml-2 font-jost-bold text-[#C3006B]"
-                                    >
-                                        {{ formatPrice(order.price) }}
-                                    </span>
-                                </div>
+                                {{ formatOrderStatus(order.status) }}
+                            </span>
+                        </div>
+                        <div
+                            class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm sm:text-base"
+                        >
+                            <div>
+                                <span
+                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Тип:
+                                </span>
+                                <span
+                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                                >
+                                    {{ formatServiceTypes(order.service_types) }}
+                                </span>
                             </div>
-                            <div
-                                v-if="order.description"
-                                class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
+                            <div>
+                                <span
+                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Вид:
+                                </span>
+                                <span
+                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                                >
+                                    {{ formatBillingType(order.billing_type) }}
+                                </span>
+                            </div>
+                            <div>
+                                <span
+                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Срочность:
+                                </span>
+                                <span
+                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                                >
+                                    {{ formatUrgency(order.urgency) }}
+                                </span>
+                            </div>
+                            <div>
+                                <span
+                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Доставка:
+                                </span>
+                                <span
+                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                                >
+                                    {{
+                                        order.delivery_required
+                                            ? "Нужна"
+                                            : "Не требуется"
+                                    }}
+                                </span>
+                            </div>
+                            <div>
+                                <span
+                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Дата:
+                                </span>
+                                <span
+                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                                >
+                                    {{ formatDate(order.created_at) }}
+                                </span>
+                            </div>
+                            <div>
+                                <span
+                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Стоимость:
+                                </span>
+                                <span
+                                    class="ml-2 font-jost-bold text-[#C3006B]"
+                                >
+                                    {{ formatPrice(order.price) }}
+                                </span>
+                            </div>
+                        </div>
+                        <div
+                            v-if="commentText(order)"
+                            class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
+                        >
+                            <p
+                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
                             >
+                                <span
+                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Комментарий:
+                                </span>
+                                {{ commentText(order) }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="order.items && order.items.length"
+                            class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
+                        >
+                            <p
+                                class="text-sm sm:text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
+                            >
+                                Позиции заказа
+                            </p>
+                            <ul class="space-y-2">
+                                <li
+                                    v-for="item in order.items"
+                                    :key="item.id"
+                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1"
+                                >
+                                    <span>
+                                        {{ item.title
+                                        }}<template
+                                            v-if="
+                                                item.tool_type_label &&
+                                                item.tool_type_label !==
+                                                    item.title
+                                            "
+                                        >
+                                            · {{ item.tool_type_label }}
+                                        </template>
+                                        <template v-if="item.quantity != null">
+                                            · {{ item.quantity }} шт.
+                                        </template>
+                                    </span>
+                                    <span
+                                        class="text-dark-gray-400 dark:text-gray-400 shrink-0"
+                                    >
+                                        {{ item.status_label }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div
+                            v-if="order.review"
+                            class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20 space-y-2"
+                        >
+                            <div
+                                class="flex flex-wrap items-center gap-x-3 gap-y-1"
+                            >
+                                <span
+                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                                >
+                                    Ваш отзыв
+                                </span>
+                                <span
+                                    class="text-[#C3006B] tracking-wide"
+                                    :title="`${order.review.rating} из 5`"
+                                >
+                                    {{ formatStars(order.review.rating) }}
+                                </span>
+                                <span
+                                    class="text-sm font-jost-regular text-dark-gray-400 dark:text-gray-400"
+                                >
+                                    {{
+                                        formatReviewStatus(
+                                            order.review.status ||
+                                                order.review_status
+                                        )
+                                    }}
+                                </span>
+                            </div>
+                            <p
+                                v-if="order.review.comment"
+                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                            >
+                                {{ order.review.comment }}
+                            </p>
+                            <div
+                                v-if="order.review.manager_reply"
+                                class="rounded-lg bg-dark-blue-500/5 dark:bg-white/5 px-4 py-3"
+                            >
+                                <p
+                                    class="text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-1"
+                                >
+                                    Ответ сервиса
+                                </p>
                                 <p
                                     class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
                                 >
-                                    <span
-                                        class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                    >
-                                        Описание:
-                                    </span>
-                                    {{ order.description }}
+                                    {{ order.review.manager_reply }}
                                 </p>
                             </div>
-                            <div
-                                v-if="order.review_exists"
-                                class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
+                        </div>
+
+                        <div
+                            v-else-if="order.review_exists"
+                            class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
+                        >
+                            <p
+                                class="text-sm font-jost-regular text-dark-gray-500 dark:text-gray-300"
                             >
-                                <p
-                                    class="text-sm font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                                Отзыв отправлен
+                                <span
+                                    v-if="order.review_status"
+                                    class="text-gray-500 dark:text-gray-400"
                                 >
-                                    Отзыв отправлен
-                                    <span
-                                        v-if="order.review_status"
-                                        class="text-gray-500 dark:text-gray-400"
-                                    >
-                                        ({{ order.review_status === "pending" ? "на модерации" : order.review_status }})
-                                    </span>
-                                </p>
-                            </div>
-                            <div
-                                v-if="canLeaveReview(order)"
-                                class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
+                                    ({{
+                                        formatReviewStatus(order.review_status)
+                                    }})
+                                </span>
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="canLeaveReview(order)"
+                            class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
+                        >
+                            <button
+                                type="button"
+                                @click="openReviewModal(order)"
+                                class="text-sm sm:text-base font-jost-medium text-[#C3006B] hover:text-[#A8005A] dark:text-[#C20A6C] dark:hover:text-[#E01A7C] transition-colors"
                             >
-                                <button
-                                    type="button"
-                                    @click="openReviewModal(order)"
-                                    class="text-sm sm:text-base font-jost-medium text-[#C3006B] hover:text-[#A8005A] dark:text-[#C20A6C] dark:hover:text-[#E01A7C] transition-colors"
-                                >
-                                    Написать отзыв
-                                </button>
-                            </div>
+                                Написать отзыв
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -250,7 +407,9 @@ export default {
                             <h3
                                 class="text-lg font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 mb-1"
                             >
-                                Отзыв на заказ №{{ reviewModalOrder.order_number }}
+                                Отзыв на заказ №{{
+                                    reviewModalOrder.order_number
+                                }}
                             </h3>
                             <p
                                 class="text-sm text-gray-600 dark:text-gray-400 mb-6"
@@ -277,7 +436,8 @@ export default {
                                         v-model.number="reviewForm.rating"
                                         class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#C3006B] focus:border-transparent"
                                         :class="{
-                                            'border-red-500': reviewErrors.rating,
+                                            'border-red-500':
+                                                reviewErrors.rating,
                                         }"
                                     >
                                         <option
@@ -291,7 +451,7 @@ export default {
                                                     ? "звезда"
                                                     : n < 5
                                                       ? "звезды"
-                                                      : "звезд"
+                                                      : "звёзд"
                                             }}
                                         </option>
                                     </select>
@@ -314,7 +474,8 @@ export default {
                                         placeholder="Расскажите о качестве услуги..."
                                         class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#C3006B] focus:border-transparent resize-none"
                                         :class="{
-                                            'border-red-500': reviewErrors.comment,
+                                            'border-red-500':
+                                                reviewErrors.comment,
                                         }"
                                     ></textarea>
                                     <p
@@ -382,7 +543,7 @@ export default {
                         :disabled="pagination.page === totalPages"
                         class="px-4 py-2 font-jost-medium text-sm sm:text-base transition-all duration-300 border border-dark-blue-500/30 dark:border-dark-gray-200/90 text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Вперед
+                        Вперёд
                     </button>
                 </div>
 

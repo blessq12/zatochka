@@ -3,12 +3,18 @@
 namespace App\Application\CRM\Query;
 
 use App\Application\CRM\DTO\ClientPortalOrderDTO;
+use App\Application\CRM\DTO\ClientPortalOrderItemDTO;
+use App\Application\CRM\DTO\ClientPortalReviewDTO;
 use App\Application\Order\DTO\OrderDTO;
+use App\Application\Order\DTO\OrderItemDTO;
 use App\Application\Order\ReadPort\OrderReadPort;
+use App\Domain\Feedback\Entity\Review;
 use App\Domain\Feedback\Repository\ReviewRepository;
 use App\Domain\Feedback\VO\ReviewStatus;
 use App\Domain\Order\VO\OrderId;
+use App\Domain\Order\VO\OrderItemStatus;
 use App\Domain\Order\VO\OrderStatus;
+use App\Domain\Order\VO\SharpeningToolType;
 
 final readonly class ListClientPortalOrdersHandler
 {
@@ -39,22 +45,27 @@ final readonly class ListClientPortalOrdersHandler
         $data = [];
         foreach ($slice as $order) {
             $review = $this->reviews->findByOrderId(new OrderId($order->id));
-            $reviewStatus = null;
-            if ($review !== null) {
-                $reviewStatus = $review->status() === ReviewStatus::PendingModeration
-                    ? 'pending'
-                    : $review->status()->value;
-            }
+            $reviewDto = $review !== null ? $this->mapReview($review) : null;
 
             $data[] = new ClientPortalOrderDTO(
                 $order->id,
                 $order->number,
                 [$order->serviceType],
+                $order->status,
+                $order->billingType,
+                $order->urgency,
+                $order->deliveryRequired,
                 $order->createdAt,
                 is_numeric($order->estimatedAmount) ? (float) $order->estimatedAmount : null,
-                $order->defects ?? $order->internalNotes,
+                $order->clientComment,
+                $order->clientComment ?? $order->defects,
+                array_map(
+                    fn (OrderItemDTO $item): ClientPortalOrderItemDTO => $this->mapItem($item),
+                    $order->items,
+                ),
                 $review !== null,
-                $reviewStatus,
+                $reviewDto?->status,
+                $reviewDto,
             );
         }
 
@@ -66,6 +77,39 @@ final readonly class ListClientPortalOrdersHandler
                 'per_page' => $perPage,
             ],
         ];
+    }
+
+    private function mapItem(OrderItemDTO $item): ClientPortalOrderItemDTO
+    {
+        $toolTypeLabel = SharpeningToolType::tryLabel($item->toolType);
+        $title = $item->toolName
+            ?? $item->equipmentTitle
+            ?? $toolTypeLabel
+            ?? 'Позиция заказа';
+
+        return new ClientPortalOrderItemDTO(
+            $item->id,
+            $title,
+            $toolTypeLabel,
+            $item->quantity,
+            $item->status,
+            OrderItemStatus::tryLabel($item->status) ?? 'Статус неизвестен',
+        );
+    }
+
+    private function mapReview(Review $review): ClientPortalReviewDTO
+    {
+        $status = $review->status() === ReviewStatus::PendingModeration
+            ? 'pending'
+            : $review->status()->value;
+
+        return new ClientPortalReviewDTO(
+            $review->rating()->value,
+            $review->comment(),
+            $review->managerReply(),
+            $status,
+            $review->submittedAt()->format(\DateTimeInterface::ATOM),
+        );
     }
 
     private function isActive(string $status): bool

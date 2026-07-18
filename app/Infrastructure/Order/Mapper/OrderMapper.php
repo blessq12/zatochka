@@ -12,6 +12,7 @@ use App\Domain\Order\VO\OrderItemStatus;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderNumber;
 use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderStatus;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\ReceptionCondition;
@@ -86,6 +87,7 @@ final class OrderMapper
             OrderServiceType::from((string) $model->service_type),
             OrderBillingType::from((string) $model->billing_type),
             OrderUrgency::from((string) $model->urgency),
+            OrderSource::tryFrom((string) ($model->source ?? '')) ?? OrderSource::Admin,
             (bool) $model->delivery_required,
             $model->defects !== null ? (string) $model->defects : null,
             $model->internal_notes !== null ? (string) $model->internal_notes : null,
@@ -110,6 +112,7 @@ final class OrderMapper
         $model->client_id = $order->clientId()->value;
         $model->status = $order->status()->value;
         $model->service_type = $order->serviceType()->value;
+        $model->source = $order->source()->value;
         $model->billing_type = $order->billingType()->value;
         $model->urgency = $order->urgency()->value;
         $model->delivery_required = $order->deliveryRequired();
@@ -199,6 +202,7 @@ final class OrderMapper
                 $status,
                 $item->reception !== null,
                 $item->warranty_id !== null ? (int) $item->warranty_id : null,
+                $item->equipment?->title !== null ? (string) $item->equipment->title : null,
             );
         }
 
@@ -208,6 +212,7 @@ final class OrderMapper
             (int) $model->client_id,
             (string) $model->status,
             (string) $model->service_type,
+            (string) ($model->source ?? OrderSource::Admin->value),
             (string) $model->billing_type,
             (string) $model->urgency,
             (bool) $model->delivery_required,

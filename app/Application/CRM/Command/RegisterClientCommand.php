@@ -10,5 +10,7 @@ final readonly class RegisterClientCommand
         public string $phone,
         public ?string $name = null,
         public ?string $email = null,
+        public ?string $birthDate = null,
+        public ?string $deliveryAddress = null,
     ) {}
 }

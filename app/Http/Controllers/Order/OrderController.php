@@ -23,6 +23,7 @@ use App\Domain\Finance\VO\PaymentMethod;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
 use App\Http\Controllers\Controller;
@@ -90,6 +91,8 @@ final class OrderController extends Controller
             $data['internalNotes'] ?? null,
             'RUB',
             isset($data['warrantySourceOrderId']) ? (string) $data['warrantySourceOrderId'] : null,
+            null,
+            OrderSource::Api->value,
         ));
 
         return $this->created($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));

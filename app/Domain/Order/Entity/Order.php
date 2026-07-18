@@ -16,6 +16,7 @@ use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderNumber;
 use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderStatus;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Shared\Domain\AggregateRoot;
@@ -50,6 +51,7 @@ final class Order extends AggregateRoot
         private readonly OrderServiceType $serviceType,
         private readonly OrderBillingType $billingType,
         private readonly OrderUrgency $urgency,
+        private readonly OrderSource $source,
         private readonly bool $deliveryRequired,
         private readonly ?string $defects,
         private readonly ?string $internalNotes,
@@ -86,6 +88,7 @@ final class Order extends AggregateRoot
         OrderServiceType $serviceType,
         OrderBillingType $billingType,
         OrderUrgency $urgency,
+        OrderSource $source = OrderSource::Admin,
         bool $deliveryRequired = false,
         ?string $defects = null,
         ?string $internalNotes = null,
@@ -110,6 +113,7 @@ final class Order extends AggregateRoot
             $serviceType,
             $billingType,
             $urgency,
+            $source,
             $deliveryRequired,
             self::normalizeText($defects),
             self::normalizeText($internalNotes),
@@ -146,6 +150,7 @@ final class Order extends AggregateRoot
         OrderServiceType $serviceType,
         OrderBillingType $billingType,
         OrderUrgency $urgency,
+        OrderSource $source = OrderSource::Admin,
         bool $deliveryRequired = false,
         ?string $defects = null,
         ?string $internalNotes = null,
@@ -164,6 +169,7 @@ final class Order extends AggregateRoot
             $serviceType,
             $billingType,
             $urgency,
+            $source,
             $deliveryRequired,
             $defects,
             $internalNotes,
@@ -213,6 +219,11 @@ final class Order extends AggregateRoot
     public function urgency(): OrderUrgency
     {
         return $this->urgency;
+    }
+
+    public function source(): OrderSource
+    {
+        return $this->source;
     }
 
     public function deliveryRequired(): bool

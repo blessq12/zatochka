@@ -15,7 +15,7 @@ final readonly class EloquentOrderReadModel implements OrderReadPort
 
     public function findById(string $orderId): ?OrderDTO
     {
-        $model = OrderModel::query()->with(['items.reception'])->find($orderId);
+        $model = OrderModel::query()->with(['items.reception', 'items.equipment'])->find($orderId);
 
         return $model === null ? null : $this->mapper->toDTO($model);
     }
@@ -23,7 +23,7 @@ final readonly class EloquentOrderReadModel implements OrderReadPort
     public function listByClientId(int $clientId): array
     {
         return OrderModel::query()
-            ->with(['items.reception'])
+            ->with(['items.reception', 'items.equipment'])
             ->where('client_id', $clientId)
             ->orderByDesc('created_at')
             ->get()

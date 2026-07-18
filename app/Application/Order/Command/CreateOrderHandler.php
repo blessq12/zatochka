@@ -12,6 +12,7 @@ use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderNumber;
 use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
@@ -40,6 +41,8 @@ final readonly class CreateOrderHandler
                 ?? throw new DomainException('Unknown order billing type.');
             $urgency = OrderUrgency::tryFrom($command->urgency)
                 ?? throw new DomainException('Unknown order urgency.');
+            $source = OrderSource::tryFrom($command->source)
+                ?? throw new DomainException('Unknown order source.');
 
             $warrantySourceOrderId = null;
 
@@ -84,6 +87,7 @@ final readonly class CreateOrderHandler
                 $serviceType,
                 $billingType,
                 $urgency,
+                $source,
                 $command->deliveryRequired,
                 $command->defects,
                 $command->internalNotes,

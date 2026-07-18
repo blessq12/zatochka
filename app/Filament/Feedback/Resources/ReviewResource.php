@@ -2,23 +2,21 @@
 
 namespace App\Filament\Feedback\Resources;
 
-use App\Application\Feedback\Command\PublishReviewCommand;
-use App\Application\Feedback\Command\PublishReviewHandler;
-use App\Application\Feedback\Command\RejectReviewCommand;
-use App\Application\Feedback\Command\RejectReviewHandler;
-use App\Domain\Feedback\VO\ReviewStatus;
 use App\Filament\Feedback\Resources\ReviewResource\Pages\ListReviews;
+use App\Filament\Feedback\Resources\ReviewResource\Pages\ViewReview;
+use App\Filament\Feedback\Resources\ReviewResource\Support\ReviewInfolist;
+use App\Filament\Feedback\Resources\ReviewResource\Support\ReviewPresentation;
 use App\Filament\Support\DomainResource;
 use App\Infrastructure\Feedback\Model\ReviewModel;
-use App\Shared\Domain\DomainException;
 use BackedEnum;
-use Filament\Actions\Action;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
+use Filament\Actions\ViewAction;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -37,8 +35,6 @@ class ReviewResource extends DomainResource
 
     protected static ?string $pluralModelLabel = 'Отзывы';
 
-    protected static ?string $recordTitleAttribute = 'id';
-
     protected static ?int $navigationSort = 20;
 
     public static function canViewAny(): bool
@@ -48,14 +44,25 @@ class ReviewResource extends DomainResource
 
     public static function canView(Model $record): bool
     {
+        return true;
+    }
+
+    public static function canCreate(): bool
+    {
         return false;
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', ReviewStatus::PendingModeration->value)
-            ->orderBy('submitted_at');
+            ->with(['client', 'order.items.equipment.components']);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema
+            ->columns(1)
+            ->components(ReviewInfolist::components());
     }
 
     public static function table(Table $table): Table
@@ -64,105 +71,60 @@ class ReviewResource extends DomainResource
             ->columns([
                 TextColumn::make('order_id')
                     ->label('Заказ')
+                    ->formatStateUsing(fn (?string $state, ReviewModel $record): string => ReviewPresentation::orderNumberLabel($record))
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('order', function (Builder $order) use ($search): void {
+                            $order->where('number', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
                 TextColumn::make('client_id')
                     ->label('Клиент')
+                    ->formatStateUsing(fn (?int $state, ReviewModel $record): string => ReviewPresentation::clientName($record))
+                    ->description(fn (ReviewModel $record): string => ReviewPresentation::clientPhone($record))
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('client', function (Builder $client) use ($search): void {
+                            $client->where('name', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
                 TextColumn::make('rating')
                     ->label('Оценка')
+                    ->html()
+                    ->formatStateUsing(fn (?int $state): Htmlable => ReviewPresentation::ratingStarsHtml((int) ($state ?? 0)))
                     ->sortable(),
+                TextColumn::make('listing_flags')
+                    ->label('Статус')
+                    ->state(fn (ReviewModel $record): Htmlable => ReviewPresentation::listingFlagsHtml($record))
+                    ->html()
+                    ->alignCenter(),
                 TextColumn::make('submitted_at')
                     ->label('Отправлен')
-                    ->dateTime()
+                    ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
+            ->defaultSort('submitted_at', 'asc')
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('Статус')
+                    ->options(ReviewPresentation::listingStatusFilterOptions()),
+            ])
             ->recordActions([
-                Action::make('moderate')
+                ViewAction::make()
                     ->label('Просмотр')
                     ->icon(Heroicon::OutlinedEye)
-                    ->modalHeading('Модерация отзыва')
-                    ->modalWidth('xl')
-                    ->fillForm(fn (ReviewModel $record): array => [
-                        'order_id' => $record->order_id,
-                        'client_id' => $record->client_id,
-                        'rating' => $record->rating,
-                        'comment' => $record->comment ?: '—',
-                        'manager_reply' => $record->manager_reply,
-                    ])
-                    ->form([
-                        TextInput::make('order_id')
-                            ->label('Заказ')
-                            ->disabled()
-                            ->dehydrated(false),
-                        TextInput::make('client_id')
-                            ->label('Клиент')
-                            ->disabled()
-                            ->dehydrated(false),
-                        TextInput::make('rating')
-                            ->label('Оценка')
-                            ->disabled()
-                            ->dehydrated(false),
-                        Textarea::make('comment')
-                            ->label('Текст отзыва')
-                            ->rows(5)
-                            ->disabled()
-                            ->dehydrated(false),
-                        Textarea::make('manager_reply')
-                            ->label('Ответ менеджера')
-                            ->rows(4),
-                    ])
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Закрыть')
-                    ->extraModalFooterActions(fn (Action $action): array => [
-                        $action->makeModalSubmitAction('accept', arguments: ['decision' => 'accept'])
-                            ->label('Принять')
-                            ->color('success'),
-                        $action->makeModalSubmitAction('reject', arguments: ['decision' => 'reject'])
-                            ->label('Отклонить')
-                            ->color('danger'),
-                    ])
-                    ->action(function (ReviewModel $record, array $data, array $arguments): void {
-                        $moderatorId = (int) auth()->id();
-
-                        if ($moderatorId <= 0) {
-                            Notification::make()
-                                ->title('Не удалось определить менеджера')
-                                ->danger()
-                                ->send();
-
-                            return;
-                        }
-
-                        try {
-                            if (($arguments['decision'] ?? null) === 'accept') {
-                                app(PublishReviewHandler::class)->handle(new PublishReviewCommand(
-                                    (int) $record->id,
-                                    $moderatorId,
-                                    filled($data['manager_reply'] ?? null) ? (string) $data['manager_reply'] : null,
-                                ));
-                                Notification::make()->title('Отзыв опубликован')->success()->send();
-
-                                return;
-                            }
-
-                            if (($arguments['decision'] ?? null) === 'reject') {
-                                app(RejectReviewHandler::class)->handle(new RejectReviewCommand(
-                                    (int) $record->id,
-                                    $moderatorId,
-                                ));
-                                Notification::make()->title('Отзыв отклонён')->success()->send();
-                            }
-                        } catch (DomainException $exception) {
-                            Notification::make()->title($exception->getMessage())->danger()->send();
-                        }
-                    }),
-            ]);
+                    ->iconButton()
+                    ->tooltip('Просмотр'),
+            ], RecordActionsPosition::BeforeColumns)
+            ->recordActionsColumnLabel('');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListReviews::route('/'),
+            'view' => ViewReview::route('/{record}'),
         ];
     }
 }

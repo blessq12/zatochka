@@ -11,6 +11,7 @@ use App\Domain\Delivery\VO\DeliveryStatus;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderItemStatus;
 use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
 use App\Domain\Workshop\VO\ProductionStatus;
@@ -88,6 +89,16 @@ final class OrderInfolist
 
                         return $master?->name ?? ('#'.$state);
                     }),
+                TextEntry::make('source')
+                    ->label('Источник')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => OrderSource::tryLabel($state) ?? ($state ?? '—'))
+                    ->color(fn (?string $state): string => match ($state) {
+                        OrderSource::Website->value => 'info',
+                        OrderSource::Api->value => 'gray',
+                        default => 'primary',
+                    })
+                    ->icon(Heroicon::OutlinedGlobeAlt),
                 TextEntry::make('master_internal_comments')
                     ->label('Комментарий мастера')
                     ->state(

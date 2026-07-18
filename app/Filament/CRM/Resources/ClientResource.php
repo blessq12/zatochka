@@ -6,17 +6,21 @@ use App\Filament\CRM\Resources\ClientResource\Pages\CreateClient;
 use App\Filament\CRM\Resources\ClientResource\Pages\EditClient;
 use App\Filament\CRM\Resources\ClientResource\Pages\ListClients;
 use App\Filament\CRM\Resources\ClientResource\Pages\ViewClient;
+use App\Filament\CRM\Resources\ClientResource\Support\ClientInfolist;
+use App\Filament\CRM\Resources\ClientResource\Support\ClientPresentation;
 use App\Filament\Support\DomainResource;
 use App\Infrastructure\CRM\Model\ClientModel;
 use BackedEnum;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -43,9 +47,20 @@ class ClientResource extends DomainResource
         return true;
     }
 
+    public static function canView(Model $record): bool
+    {
+        return true;
+    }
+
     public static function canEdit(Model $record): bool
     {
         return true;
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withCount(['orders', 'equipment', 'reviews']);
     }
 
     public static function form(Schema $schema): Schema
@@ -66,26 +81,23 @@ class ClientResource extends DomainResource
                 ->label('Эл. почта')
                 ->email()
                 ->maxLength(255),
+            DatePicker::make('birth_date')
+                ->label('Дата рождения')
+                ->native(false)
+                ->displayFormat('d.m.Y'),
+            Textarea::make('delivery_address')
+                ->label('Адрес доставки')
+                ->rows(3)
+                ->maxLength(1000)
+                ->columnSpanFull(),
         ]);
     }
 
     public static function infolist(Schema $schema): Schema
     {
-        return $schema->components([
-            TextEntry::make('name')
-                ->label('ФИО')
-                ->placeholder('—'),
-            TextEntry::make('phone')
-                ->label('Телефон'),
-            TextEntry::make('email')
-                ->label('Эл. почта')
-                ->placeholder('—'),
-            TextEntry::make('bonus_balance')
-                ->label('Бонусы'),
-            TextEntry::make('created_at')
-                ->label('Создан')
-                ->dateTime(),
-        ]);
+        return $schema
+            ->columns(1)
+            ->components(ClientInfolist::components());
     }
 
     public static function table(Table $table): Table
@@ -94,23 +106,36 @@ class ClientResource extends DomainResource
             ->columns([
                 TextColumn::make('name')
                     ->label('ФИО')
-                    ->searchable()
-                    ->placeholder('—'),
-                TextColumn::make('phone')
-                    ->label('Телефон')
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->label('Эл. почта')
-                    ->searchable()
-                    ->placeholder('—'),
+                    ->formatStateUsing(fn (?string $state, ClientModel $record): string => ClientPresentation::displayName($record))
+                    ->description(fn (ClientModel $record): string => ClientPresentation::displayPhone($record))
+                    ->searchable(['name', 'phone'])
+                    ->sortable(),
+                TextColumn::make('orders_count')
+                    ->label('Заказы')
+                    ->sortable()
+                    ->alignCenter(),
+                TextColumn::make('equipment_count')
+                    ->label('Оборудование')
+                    ->sortable()
+                    ->alignCenter(),
+                TextColumn::make('reviews_count')
+                    ->label('Отзывы')
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('bonus_balance')
                     ->label('Бонусы')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignEnd(),
             ])
+            ->defaultSort('id', 'desc')
             ->recordActions([
-                ViewAction::make()->label('Просмотр'),
-                EditAction::make()->label('Редактировать'),
-            ]);
+                ViewAction::make()
+                    ->label('Просмотр')
+                    ->icon(Heroicon::OutlinedEye)
+                    ->iconButton()
+                    ->tooltip('Просмотр'),
+            ], RecordActionsPosition::BeforeColumns)
+            ->recordActionsColumnLabel('');
     }
 
     public static function getPages(): array

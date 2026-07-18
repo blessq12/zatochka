@@ -18,9 +18,13 @@ class EditClient extends EditRecord
     {
         app(UpdateClientHandler::class)->handle(new UpdateClientCommand(
             (int) $record->getKey(),
-            $data['name'],
-            $data['phone'],
+            $data['name'] ?? null,
+            $data['phone'] ?? null,
             filled($data['email'] ?? null) ? $data['email'] : null,
+            filled($data['birth_date'] ?? null) ? (string) $data['birth_date'] : null,
+            filled($data['delivery_address'] ?? null) ? (string) $data['delivery_address'] : null,
+            updateBirthDate: true,
+            updateDeliveryAddress: true,
         ));
 
         return $record->refresh();

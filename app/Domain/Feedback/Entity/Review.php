@@ -162,6 +162,21 @@ final class Review extends AggregateRoot
         $this->record(new ReviewRejected($this->id, $this->orderId, $moderatorId));
     }
 
+    public function setManagerReply(string $managerReply): void
+    {
+        if (! in_array($this->status, [ReviewStatus::PendingModeration, ReviewStatus::Published], true)) {
+            throw new DomainException('Manager reply can be set only for pending or published reviews.');
+        }
+
+        $normalized = self::normalizeText($managerReply);
+
+        if ($normalized === null) {
+            throw new DomainException('Manager reply is required.');
+        }
+
+        $this->managerReply = $normalized;
+    }
+
     public function hide(): void
     {
         $this->transitionTo(ReviewStatus::Hidden);

@@ -2,10 +2,8 @@
 
 namespace App\Filament\Order\Resources;
 
-use App\Domain\Order\VO\OrderBillingType;
-use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderStatus;
-use App\Domain\Order\VO\OrderUrgency;
 use App\Filament\Order\Resources\OrderResource\Actions\OrderMutationActions;
 use App\Filament\Order\Resources\OrderResource\Pages\CreateOrder;
 use App\Filament\Order\Resources\OrderResource\Pages\ListOrders;
@@ -20,6 +18,7 @@ use Filament\Actions\ViewAction;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -89,20 +88,30 @@ class OrderResource extends DomainResource
         return $table
             ->columns([
                 TextColumn::make('number')
-                    ->label('Номер')
+                    ->label('Номер заказа')
                     ->searchable()
+                    ->sortable()
+                    ->weight('semibold'),
+                TextColumn::make('status')
+                    ->label('Статус')
+                    ->state(fn (OrderModel $record): array => [
+                        (string) $record->status,
+                        (string) ($record->source ?? OrderSource::Admin->value),
+                    ])
+                    ->badge()
+                    ->listWithLineBreaks()
+                    ->formatStateUsing(fn (string $state): string => OrderStatus::tryLabel($state)
+                        ?? OrderSource::tryLabel($state)
+                        ?? $state)
+                    ->color(fn (string $state): string => OrderStatus::tryFrom($state) !== null
+                        ? OrderStatus::tryColor($state)
+                        : OrderSource::tryColor($state))
                     ->sortable(),
                 TextColumn::make('client_id')
                     ->label('Клиент')
-                    ->formatStateUsing(function (?int $state, OrderModel $record): string {
-                        $client = $record->client;
-
-                        if ($client === null) {
-                            return $state !== null ? '#'.$state : '—';
-                        }
-
-                        return trim(($client->name ?: 'Без имени').' · '.$client->phone);
-                    })
+                    ->formatStateUsing(fn (?int $state, OrderModel $record): string => OrderPresentation::clientListingName($record))
+                    ->description(fn (OrderModel $record): string => OrderPresentation::clientListingPhone($record))
+                    ->wrap()
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query->whereHas('client', function (Builder $client) use ($search): void {
                             $client->where('name', 'like', "%{$search}%")
@@ -110,38 +119,38 @@ class OrderResource extends DomainResource
                         });
                     })
                     ->sortable(),
-                TextColumn::make('service_type')
-                    ->label('Тип')
-                    ->formatStateUsing(fn (?string $state): string => OrderServiceType::tryLabel($state) ?? ($state ?? '—'))
-                    ->sortable(),
-                TextColumn::make('billing_type')
-                    ->label('Вид')
-                    ->formatStateUsing(fn (?string $state): string => OrderBillingType::tryLabel($state) ?? ($state ?? '—'))
-                    ->toggleable(),
-                TextColumn::make('urgency')
-                    ->label('Срочность')
-                    ->formatStateUsing(fn (?string $state): string => OrderUrgency::tryLabel($state) ?? ($state ?? '—'))
-                    ->toggleable(),
-                TextColumn::make('status')
-                    ->label('Статус')
-                    ->badge()
-                    ->formatStateUsing(fn (?string $state): string => OrderStatus::tryLabel($state) ?? ($state ?? '—'))
-                    ->color(fn (?string $state): string => OrderStatus::tryColor($state))
-                    ->sortable(),
+                TextColumn::make('type_flags')
+                    ->label('Тип / Вид / Срочность')
+                    ->state(fn (OrderModel $record): Htmlable => OrderPresentation::typeFlagsHtml($record))
+                    ->html()
+                    ->alignCenter(),
                 TextColumn::make('estimated_amount')
-                    ->label('Сумма')
+                    ->label('Стоимость')
                     ->formatStateUsing(fn (?string $state): string => $state !== null ? $state.' ₽' : '—')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignEnd(),
                 TextColumn::make('created_at')
                     ->label('Создан')
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->recordActions([
-                ViewAction::make()->label('Просмотр'),
-                ...static::orderMutationActions(),
-            ]);
+            ->recordActions(static::tableRecordActions(), RecordActionsPosition::BeforeColumns)
+            ->recordActionsColumnLabel('');
+    }
+
+    /**
+     * @return list<Action>
+     */
+    private static function tableRecordActions(): array
+    {
+        return [
+            ViewAction::make()
+                ->label('Просмотр')
+                ->icon(Heroicon::OutlinedEye)
+                ->iconButton()
+                ->tooltip('Просмотр'),
+        ];
     }
 
     /** @return list<Action> */

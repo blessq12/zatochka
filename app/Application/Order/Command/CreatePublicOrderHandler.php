@@ -9,6 +9,7 @@ use App\Application\Shared\UnitOfWork;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
 use App\Shared\Domain\DomainException;
@@ -67,6 +68,7 @@ final readonly class CreatePublicOrderHandler
                 'RUB',
                 null,
                 $clientComment,
+                OrderSource::Website->value,
             ));
 
             return [

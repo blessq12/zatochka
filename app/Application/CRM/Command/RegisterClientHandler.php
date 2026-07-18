@@ -31,6 +31,8 @@ final readonly class RegisterClientHandler
             new EntityId($command->bonusAccountId),
             $command->name,
             $command->email !== null ? new Email($command->email) : null,
+            $command->birthDate,
+            $command->deliveryAddress,
         );
 
         $this->clients->save($client);

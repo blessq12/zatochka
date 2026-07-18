@@ -23,6 +23,7 @@ final class OrderModel extends Model
         'client_id',
         'status',
         'service_type',
+        'source',
         'billing_type',
         'urgency',
         'delivery_required',

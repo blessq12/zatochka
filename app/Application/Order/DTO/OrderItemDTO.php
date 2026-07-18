@@ -16,5 +16,6 @@ final readonly class OrderItemDTO
         public string $status,
         public bool $hasReception,
         public ?int $warrantyId,
+        public ?string $equipmentTitle = null,
     ) {}
 }

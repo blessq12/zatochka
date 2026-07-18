@@ -64,6 +64,8 @@ final class RegisterClientOption
             $data['phone'],
             $data['name'],
             filled($data['email'] ?? null) ? $data['email'] : null,
+            filled($data['birth_date'] ?? null) ? (string) $data['birth_date'] : null,
+            filled($data['delivery_address'] ?? null) ? (string) $data['delivery_address'] : null,
         ));
 
         return $clientId;

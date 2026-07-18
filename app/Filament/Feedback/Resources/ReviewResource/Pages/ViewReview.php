@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Filament\CRM\Resources\ClientResource\Pages;
+namespace App\Filament\Feedback\Resources\ReviewResource\Pages;
 
-use App\Filament\CRM\Resources\ClientResource;
-use App\Filament\CRM\Resources\ClientResource\Actions\ClientMutationActions;
-use App\Filament\CRM\Resources\ClientResource\Support\ClientPresentation;
-use App\Infrastructure\CRM\Model\ClientModel;
+use App\Filament\Feedback\Resources\ReviewResource;
+use App\Filament\Feedback\Resources\ReviewResource\Actions\ReviewMutationActions;
+use App\Filament\Feedback\Resources\ReviewResource\Support\ReviewPresentation;
+use App\Infrastructure\Feedback\Model\ReviewModel;
 use Filament\Actions\Action;
-use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Actions as SchemaActions;
 use Filament\Schemas\Components\EmbeddedSchema;
@@ -16,26 +15,37 @@ use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\HtmlString;
 
-class ViewClient extends ViewRecord
+class ViewReview extends ViewRecord
 {
-    protected static string $resource = ClientResource::class;
+    protected static string $resource = ReviewResource::class;
 
     public function getTitle(): string|Htmlable
     {
-        /** @var ClientModel $record */
+        /** @var ReviewModel $record */
         $record = $this->getRecord();
 
-        return ClientPresentation::displayName($record);
+        return 'Отзыв · '.ReviewPresentation::orderNumberLabel($record);
     }
 
     public function getSubheading(): string|Htmlable|null
     {
-        /** @var ClientModel $record */
+        /** @var ReviewModel $record */
         $record = $this->getRecord();
 
-        return ClientPresentation::displayPhone($record);
+        $badge = Blade::render(
+            '<x-filament::badge :color="$color">{{ $label }}</x-filament::badge>',
+            [
+                'color' => ReviewPresentation::statusColor($record->status),
+                'label' => ReviewPresentation::statusLabel($record->status),
+            ],
+        );
+
+        return new HtmlString(
+            '<div class="flex flex-wrap items-center gap-x-3 gap-y-1">'.$badge.'</div>'
+        );
     }
 
     public function defaultInfolist(Schema $schema): Schema
@@ -54,27 +64,12 @@ class ViewClient extends ViewRecord
                         ->color('gray')
                         ->visible(fn (): bool => ! $this->hasVisibleRailActions()),
                     SchemaActions::make(fn (): array => $this->configureRailActions(
-                        ClientMutationActions::all(),
+                        ReviewMutationActions::all(),
                     ))->visible(fn (): bool => $this->hasVisibleRailActions()),
                 ]),
             EmbeddedSchema::make('infolist'),
             $this->getRelationManagersContentComponent(),
         ]);
-    }
-
-    protected function resolveRecord(int|string $key): Model
-    {
-        /** @var ClientModel $record */
-        $record = parent::resolveRecord($key);
-        $record->load([
-            'orders' => static fn ($query) => $query->orderByDesc('created_at'),
-            'equipment.components',
-            'reviews' => static fn ($query) => $query
-                ->with('order')
-                ->orderByDesc('submitted_at'),
-        ]);
-
-        return $record;
     }
 
     protected function getHeaderActions(): array
@@ -84,16 +79,13 @@ class ViewClient extends ViewRecord
                 ->label('К списку')
                 ->icon(Heroicon::OutlinedArrowLeft)
                 ->color('gray')
-                ->url(ClientResource::getUrl('index')),
-            EditAction::make()
-                ->label('Редактировать')
-                ->icon(Heroicon::OutlinedPencilSquare),
+                ->url(ReviewResource::getUrl('index')),
         ];
     }
 
     private function hasVisibleRailActions(): bool
     {
-        foreach (ClientMutationActions::all() as $action) {
+        foreach (ReviewMutationActions::all() as $action) {
             $action = $action->record($this->getRecord());
 
             if ($action->isVisible()) {
@@ -111,13 +103,7 @@ class ViewClient extends ViewRecord
     private function configureRailActions(array $actions): array
     {
         $refresh = function (): void {
-            $this->getRecord()->refresh()->load([
-                'orders' => static fn ($query) => $query->orderByDesc('created_at'),
-                'equipment.components',
-                'reviews' => static fn ($query) => $query
-                    ->with('order')
-                    ->orderByDesc('submitted_at'),
-            ]);
+            $this->getRecord()->refresh()->load(['client', 'order.items.equipment.components']);
         };
 
         return array_map(

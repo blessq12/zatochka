@@ -5,8 +5,11 @@ namespace App\Filament\Order\Resources\OrderResource\Support;
 use App\Application\Order\DTO\OrderContainerItemDTO;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Domain\Inventory\VO\MovementType;
+use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderItemStatus;
 use App\Domain\Order\VO\OrderNumber;
+use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderUrgency;
 use App\Filament\Inventory\Support\OrderMaterialWriteOffs;
 use App\Filament\Support\ClientSelectField;
 use App\Infrastructure\Inventory\Model\StockItemModel;
@@ -14,12 +17,106 @@ use App\Infrastructure\Inventory\Model\WarehouseMovementModel;
 use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use Filament\Forms\Components\Select;
+use Filament\Support\Icons\Heroicon;
+use Filament\Support\View\Concerns\CanGenerateIconButtonHtml;
+use Illuminate\Support\HtmlString;
+use Illuminate\View\ComponentAttributeBag;
 
 final class OrderPresentation
 {
     public static function orderNumber(OrderModel $record): OrderNumber
     {
         return new OrderNumber((string) $record->number);
+    }
+
+    public static function clientListingName(OrderModel $record): string
+    {
+        return filled($record->client?->name) ? (string) $record->client->name : 'Без имени';
+    }
+
+    public static function clientListingPhone(OrderModel $record): string
+    {
+        return filled($record->client?->phone) ? (string) $record->client->phone : '—';
+    }
+
+    public static function typeFlagsHtml(OrderModel $record): HtmlString
+    {
+        $service = OrderServiceType::tryFrom((string) $record->service_type);
+        $billing = OrderBillingType::tryFrom((string) $record->billing_type);
+        $urgency = OrderUrgency::tryFrom((string) $record->urgency);
+
+        $flags = [
+            [
+                'icon' => match ($service) {
+                    OrderServiceType::Repair => Heroicon::OutlinedWrenchScrewdriver,
+                    default => Heroicon::OutlinedScissors,
+                },
+                'tooltip' => $service?->label() ?? 'Тип',
+                'color' => 'primary',
+            ],
+            [
+                'icon' => match ($billing) {
+                    OrderBillingType::Warranty => Heroicon::OutlinedShieldCheck,
+                    default => Heroicon::OutlinedBanknotes,
+                },
+                'tooltip' => $billing?->label() ?? 'Вид',
+                'color' => match ($billing) {
+                    OrderBillingType::Warranty => 'info',
+                    default => 'success',
+                },
+            ],
+            [
+                'icon' => match ($urgency) {
+                    OrderUrgency::Urgent => Heroicon::OutlinedBolt,
+                    default => Heroicon::OutlinedClock,
+                },
+                'tooltip' => $urgency?->label() ?? 'Срочность',
+                'color' => match ($urgency) {
+                    OrderUrgency::Urgent => 'danger',
+                    default => 'gray',
+                },
+            ],
+        ];
+
+        $renderer = new class
+        {
+            use CanGenerateIconButtonHtml;
+
+            public function render(
+                Heroicon $icon,
+                string $tooltip,
+                string $color,
+            ): string {
+                return $this->generateIconButtonHtml(
+                    attributes: new ComponentAttributeBag([
+                        'type' => 'button',
+                        'tabindex' => '-1',
+                    ]),
+                    color: $color,
+                    hasLoadingIndicator: false,
+                    icon: $icon,
+                    label: $tooltip,
+                    tag: 'button',
+                    tooltip: $tooltip,
+                    type: 'button',
+                );
+            }
+        };
+
+        $parts = array_map(
+            static fn (array $flag): string => $renderer->render(
+                $flag['icon'],
+                $flag['tooltip'],
+                $flag['color'],
+            ),
+            $flags,
+        );
+
+        return new HtmlString(
+            '<div class="fi-ta-icon fi-align-center" style="display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:center;gap:0.375rem;padding:0;width:auto;">'
+            .implode('', $parts)
+            .'</div>'
+        );
     }
 
     public static function orderItemRepairableQuantity(OrderItemModel $item): int

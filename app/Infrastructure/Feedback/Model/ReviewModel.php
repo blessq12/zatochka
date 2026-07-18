@@ -2,7 +2,10 @@
 
 namespace App\Infrastructure\Feedback\Model;
 
+use App\Infrastructure\CRM\Model\ClientModel;
+use App\Infrastructure\Order\Model\OrderModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class ReviewModel extends Model
 {
@@ -36,5 +39,15 @@ final class ReviewModel extends Model
             'hidden_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(OrderModel::class, 'order_id');
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(ClientModel::class, 'client_id');
     }
 }

@@ -103,7 +103,15 @@ export const useOrderStore = defineStore("order", {
                 );
                 if (order) {
                     order.review_exists = true;
-                    order.review_status = response.data.data?.status;
+                    order.review_status =
+                        response.data.data?.status || "pending";
+                    order.review = {
+                        rating,
+                        comment,
+                        manager_reply: null,
+                        status: order.review_status,
+                        submitted_at: new Date().toISOString(),
+                    };
                 }
 
                 toastService.success(

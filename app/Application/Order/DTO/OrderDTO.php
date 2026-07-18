@@ -13,6 +13,7 @@ final readonly class OrderDTO
         public int $clientId,
         public string $status,
         public string $serviceType,
+        public string $source,
         public string $billingType,
         public string $urgency,
         public bool $deliveryRequired,

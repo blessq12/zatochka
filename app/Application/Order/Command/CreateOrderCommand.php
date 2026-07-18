@@ -23,5 +23,6 @@ final readonly class CreateOrderCommand
         public string $estimatedCurrency = 'RUB',
         public ?string $warrantySourceOrderId = null,
         public ?string $clientComment = null,
+        public string $source = 'admin',
     ) {}
 }

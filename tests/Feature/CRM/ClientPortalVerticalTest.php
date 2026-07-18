@@ -115,11 +115,25 @@ final class ClientPortalVerticalTest extends TestCase
         $active->assertOk();
         $this->assertCount(1, $active->json('data'));
         $this->assertSame($activeOrderId, $active->json('data.0.id'));
+        $this->assertSame('created', $active->json('data.0.status'));
+        $this->assertSame('paid', $active->json('data.0.billing_type'));
+        $this->assertSame('normal', $active->json('data.0.urgency'));
+        $this->assertCount(1, $active->json('data.0.items'));
+        $this->assertSame('Нож', $active->json('data.0.items.0.title'));
+        $this->assertSame('Кухонный нож', $active->json('data.0.items.0.tool_type_label'));
+        $this->assertSame(1, $active->json('data.0.items.0.quantity'));
+        $this->assertSame('Принят', $active->json('data.0.items.0.status_label'));
 
         $history = $this->withToken($token)->getJson('/api/client/orders/history');
         $history->assertOk();
         $this->assertCount(1, $history->json('data'));
         $this->assertSame($historyOrderId, $history->json('data.0.id'));
+        $this->assertSame('issued', $history->json('data.0.status'));
+        $this->assertCount(1, $history->json('data.0.items'));
+        $this->assertSame('Ножницы', $history->json('data.0.items.0.title'));
+        $this->assertSame('Ножницы', $history->json('data.0.items.0.tool_type_label'));
+        $this->assertFalse($history->json('data.0.review_exists'));
+        $this->assertNull($history->json('data.0.review'));
     }
 
     public function test_guest_creates_public_sharpening_order(): void
@@ -148,6 +162,7 @@ final class ClientPortalVerticalTest extends TestCase
             'id' => $response->json('data.order_id'),
             'client_id' => $response->json('data.client_id'),
             'service_type' => 'sharpening',
+            'source' => 'website',
             'client_comment' => 'нужна заточка',
             'defects' => null,
         ]);
@@ -191,6 +206,7 @@ final class ClientPortalVerticalTest extends TestCase
             'id' => $response->json('data.order_id'),
             'client_id' => $clientId,
             'service_type' => 'repair',
+            'source' => 'website',
             'urgency' => 'urgent',
             'delivery_required' => 1,
             'client_comment' => "Не включается после падения\n\nудобнее после 18:00",

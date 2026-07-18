@@ -9,6 +9,7 @@ use App\Application\Order\DTO\CreateOrderItemDTO;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
 use App\Filament\CRM\Support\RegisterClientOption;
@@ -501,6 +502,8 @@ class CreateOrder extends CreateRecord
                 $data['internal_notes'] ?? null,
                 'RUB',
                 $isWarranty ? (string) $data['warranty_source_order_id'] : null,
+                null,
+                OrderSource::Admin->value,
             ));
 
             return OrderModel::query()->findOrFail($orderId);
