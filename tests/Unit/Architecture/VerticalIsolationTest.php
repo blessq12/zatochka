@@ -17,6 +17,16 @@ final class VerticalIsolationTest extends TestCase
         $this->root = dirname(__DIR__, 3);
     }
 
+    public function test_application_crm_does_not_import_user_model(): void
+    {
+        $violations = $this->findUseViolations(
+            $this->root.'/app/Application/CRM',
+            '/^use\s+App\\\\Models\\\\User(;|\\\\)/m',
+        );
+
+        $this->assertSame([], $violations, "CRM Application must not import App\\Models\\User:\n".implode("\n", $violations));
+    }
+
     public function test_application_does_not_import_infrastructure_models(): void
     {
         $violations = $this->findUseViolations(

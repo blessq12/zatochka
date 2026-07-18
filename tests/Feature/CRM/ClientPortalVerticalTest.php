@@ -7,6 +7,7 @@ use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\DTO\CreateOrderItemDTO;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderStatus;
+use App\Infrastructure\CRM\Model\ClientModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Models\User;
 use App\Models\UserRole;
@@ -30,6 +31,15 @@ final class ClientPortalVerticalTest extends TestCase
 
         $register->assertCreated()->assertJsonStructure(['token']);
         $token = $register->json('token');
+
+        $this->assertDatabaseHas('clients', [
+            'email' => 'ivan@example.com',
+            'phone' => '+7 (999) 111-22-33',
+            'name' => 'Иван Иванов',
+        ]);
+        $this->assertDatabaseMissing('users', [
+            'email' => 'ivan@example.com',
+        ]);
 
         $profile = $this->withToken($token)->getJson('/api/client/profile');
         $profile->assertOk()
@@ -80,7 +90,7 @@ final class ClientPortalVerticalTest extends TestCase
         ])->assertCreated();
 
         $token = $register->json('token');
-        $clientId = (int) User::query()->where('email', 'orders@example.com')->value('client_id');
+        $clientId = (int) ClientModel::query()->where('email', 'orders@example.com')->value('id');
 
         $activeOrderId = OrderId::generate()->value;
         app(CreateOrderHandler::class)->handle(new CreateOrderCommand(
@@ -169,6 +179,7 @@ final class ClientPortalVerticalTest extends TestCase
         $this->assertDatabaseMissing('client_leads', [
             'client_id' => $response->json('data.client_id'),
         ]);
+        $this->assertNull(ClientModel::query()->where('phone', '+7 (999) 333-44-55')->value('password'));
     }
 
     public function test_authenticated_client_creates_public_repair_order(): void
@@ -182,7 +193,7 @@ final class ClientPortalVerticalTest extends TestCase
         ]);
         $register->assertCreated();
         $token = $register->json('token');
-        $clientId = (int) User::query()->where('email', 'repair@example.com')->value('client_id');
+        $clientId = (int) ClientModel::query()->where('email', 'repair@example.com')->value('id');
 
         $response = $this->withToken($token)->postJson('/api/public/orders', [
             'full_name' => 'Ремонт Клиент',

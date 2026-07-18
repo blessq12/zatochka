@@ -5,11 +5,14 @@ namespace App\Infrastructure\CRM\Model;
 use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
 use App\Infrastructure\Feedback\Model\ReviewModel;
 use App\Infrastructure\Order\Model\OrderModel;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
-final class ClientModel extends Model
+final class ClientModel extends Authenticatable
 {
+    use HasApiTokens;
+
     protected $table = 'clients';
 
     public $incrementing = false;
@@ -23,8 +26,13 @@ final class ClientModel extends Model
         'email',
         'birth_date',
         'delivery_address',
+        'password',
         'bonus_account_id',
         'bonus_balance',
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     protected function casts(): array
@@ -33,6 +41,11 @@ final class ClientModel extends Model
             'bonus_balance' => 'string',
             'birth_date' => 'date:Y-m-d',
         ];
+    }
+
+    public function getAuthPasswordName(): string
+    {
+        return 'password';
     }
 
     public function history(): HasMany

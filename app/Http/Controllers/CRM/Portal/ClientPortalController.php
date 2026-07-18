@@ -12,7 +12,7 @@ use App\Application\Feedback\Command\SubmitReviewCommand;
 use App\Application\Feedback\Command\SubmitReviewHandler;
 use App\Application\Shared\EntityIdGenerator;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Infrastructure\CRM\Model\ClientModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,9 +29,8 @@ final class ClientPortalController extends Controller
 
     public function profile(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
-        $profile = $this->getProfile->handle((int) $user->client_id, $user);
+        $clientId = $this->clientId($request);
+        $profile = $this->getProfile->handle($clientId);
 
         if ($profile === null) {
             return response()->json(['message' => 'Client not found.'], 404);
@@ -42,8 +41,7 @@ final class ClientPortalController extends Controller
 
     public function updateProfile(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        $clientId = $this->clientId($request);
 
         $data = $request->validate([
             'full_name' => ['nullable', 'string', 'min:2'],
@@ -53,7 +51,7 @@ final class ClientPortalController extends Controller
         ]);
 
         $this->updateClient->handle(new UpdateClientCommand(
-            clientId: (int) $user->client_id,
+            clientId: $clientId,
             name: $data['full_name'] ?? null,
             email: $data['email'] ?? null,
             birthDate: $data['birth_date'] ?? null,
@@ -62,48 +60,32 @@ final class ClientPortalController extends Controller
             updateDeliveryAddress: array_key_exists('delivery_address', $data),
         ));
 
-        if (isset($data['full_name'])) {
-            $user->name = $data['full_name'];
-            $user->save();
-        }
-
-        if (isset($data['email']) && $data['email'] !== $user->email) {
-            $user->email = $data['email'];
-            $user->save();
-        }
-
-        $user->refresh();
-
-        return $this->ok($this->getProfile->handle((int) $user->client_id, $user));
+        return $this->ok($this->getProfile->handle($clientId));
     }
 
     public function setPassword(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        $clientId = $this->clientId($request);
 
         $data = $request->validate([
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
         $this->changePassword->handle(new ChangeClientPortalPasswordCommand(
-            (int) $user->id,
+            $clientId,
             $data['password'],
         ));
 
-        $user->refresh();
-
-        return $this->ok($this->getProfile->handle((int) $user->client_id, $user));
+        return $this->ok($this->getProfile->handle($clientId));
     }
 
     public function activeOrders(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        $clientId = $this->clientId($request);
         $page = (int) $request->query('page', 1);
         $perPage = (int) $request->query('per_page', 20);
 
-        $result = $this->listOrders->handle((int) $user->client_id, 'active', $page, $perPage);
+        $result = $this->listOrders->handle($clientId, 'active', $page, $perPage);
 
         return response()->json([
             'data' => $this->serialize($result['data']),
@@ -113,12 +95,11 @@ final class ClientPortalController extends Controller
 
     public function historyOrders(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        $clientId = $this->clientId($request);
         $page = (int) $request->query('page', 1);
         $perPage = (int) $request->query('per_page', 10);
 
-        $result = $this->listOrders->handle((int) $user->client_id, 'history', $page, $perPage);
+        $result = $this->listOrders->handle($clientId, 'history', $page, $perPage);
 
         return response()->json([
             'data' => $this->serialize($result['data']),
@@ -128,8 +109,7 @@ final class ClientPortalController extends Controller
 
     public function submitReview(Request $request, string $orderId): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        $clientId = $this->clientId($request);
 
         $data = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
@@ -139,7 +119,7 @@ final class ClientPortalController extends Controller
         $this->submitReview->handle(new SubmitReviewCommand(
             $this->ids->next('review')->value,
             $orderId,
-            (int) $user->client_id,
+            $clientId,
             (int) $data['rating'],
             $data['comment'] ?? null,
         ));
@@ -149,5 +129,13 @@ final class ClientPortalController extends Controller
                 'status' => 'pending',
             ],
         ], 201);
+    }
+
+    private function clientId(Request $request): int
+    {
+        /** @var ClientModel $client */
+        $client = $request->user();
+
+        return (int) $client->id;
     }
 }

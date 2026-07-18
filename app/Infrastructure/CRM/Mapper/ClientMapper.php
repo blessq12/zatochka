@@ -45,6 +45,7 @@ final class ClientMapper
                     : (string) $model->birth_date)
                 : null,
             $model->delivery_address !== null ? (string) $model->delivery_address : null,
+            $model->password !== null ? (string) $model->password : null,
         );
     }
 
@@ -57,6 +58,7 @@ final class ClientMapper
         $model->email = $client->email()?->value;
         $model->birth_date = $client->birthDate();
         $model->delivery_address = $client->deliveryAddress();
+        $model->password = $client->passwordHash();
         $model->bonus_account_id = $client->bonusAccount()->id()->value;
         $model->bonus_balance = $client->bonusAccount()->balance();
 

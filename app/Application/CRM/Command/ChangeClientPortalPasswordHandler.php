@@ -2,23 +2,24 @@
 
 namespace App\Application\CRM\Command;
 
-use App\Models\User;
-use App\Models\UserRole;
-use App\Shared\Domain\DomainException;
+use App\Application\Shared\DomainEventPublisher;
+use App\Application\Shared\Port\PasswordHasher;
+use App\Domain\CRM\Repository\ClientRepository;
+use App\Shared\ValueObject\EntityId;
 
 final readonly class ChangeClientPortalPasswordHandler
 {
+    public function __construct(
+        private ClientRepository $clients,
+        private PasswordHasher $passwords,
+        private DomainEventPublisher $events,
+    ) {}
+
     public function handle(ChangeClientPortalPasswordCommand $command): void
     {
-        /** @var User|null $user */
-        $user = User::query()->find($command->userId);
-
-        if ($user === null || $user->role !== UserRole::Client) {
-            throw new DomainException('Client portal user not found.');
-        }
-
-        $user->password = $command->password;
-        $user->requires_password_set = false;
-        $user->save();
+        $client = $this->clients->getById(new EntityId($command->clientId));
+        $client->setPasswordHash($this->passwords->hash($command->password));
+        $this->clients->save($client);
+        $this->events->publish($client->pullDomainEvents());
     }
 }

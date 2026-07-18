@@ -2,7 +2,7 @@
 
 namespace App\Application\Identity\Command;
 
-use App\Application\Identity\Port\PasswordHasher;
+use App\Application\Shared\Port\PasswordHasher;
 use App\Domain\Identity\Entity\StaffUser;
 use App\Domain\Identity\Repository\StaffUserRepository;
 use App\Domain\Identity\VO\StaffRole;

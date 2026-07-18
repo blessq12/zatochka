@@ -2,17 +2,18 @@
 
 namespace App\Application\CRM\Command;
 
+use App\Application\CRM\Port\ClientPortalTokenIssuer;
+use App\Application\Shared\Port\PasswordHasher;
 use App\Domain\CRM\Repository\ClientRepository;
-use App\Models\User;
-use App\Models\UserRole;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\Phone;
-use Illuminate\Support\Facades\Hash;
 
 final readonly class LoginClientPortalHandler
 {
     public function __construct(
         private ClientRepository $clients,
+        private PasswordHasher $passwords,
+        private ClientPortalTokenIssuer $tokens,
     ) {}
 
     /**
@@ -22,25 +23,19 @@ final readonly class LoginClientPortalHandler
     {
         $client = $this->clients->findByPhone(new Phone($command->phone));
 
-        if ($client === null) {
+        if ($client === null || ! $client->hasPortalPassword()) {
             throw new DomainException('Invalid credentials.');
         }
 
-        /** @var User|null $user */
-        $user = User::query()
-            ->where('client_id', $client->id()->value)
-            ->where('role', UserRole::Client->value)
-            ->first();
-
-        if ($user === null || ! Hash::check($command->password, $user->password)) {
+        if (! $this->passwords->check($command->password, (string) $client->passwordHash())) {
             throw new DomainException('Invalid credentials.');
         }
 
-        $token = $user->createToken('client-portal')->plainTextToken;
+        $clientId = $client->id()->value;
 
         return [
-            'token' => $token,
-            'clientId' => $client->id()->value,
+            'token' => $this->tokens->issueToken($clientId),
+            'clientId' => $clientId,
         ];
     }
 }

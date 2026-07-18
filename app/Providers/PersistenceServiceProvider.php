@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Application\CRM\Port\ClientPortalTokenIssuer;
 use App\Application\CRM\ReadPort\ClientReadPort;
 use App\Application\Equipment\ReadPort\EquipmentOrderHistoryPort;
 use App\Application\Equipment\ReadPort\EquipmentReadPort;
@@ -10,7 +11,6 @@ use App\Application\Feedback\ReadPort\ReviewReadPort;
 use App\Application\Finance\Port\OrderSettlementPort;
 use App\Application\Finance\ReadPort\CashDeskReadPort;
 use App\Application\Finance\ReadPort\PaymentReadPort;
-use App\Application\Identity\Port\PasswordHasher;
 use App\Application\Identity\ReadPort\StaffUserReadPort;
 use App\Application\Inventory\ReadPort\OrderMaterialWriteOffReadPort;
 use App\Application\Inventory\ReadPort\StockReadPort;
@@ -18,6 +18,7 @@ use App\Application\Order\Port\MasterDirectoryPort;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Application\Order\Port\ClientIdentityPort;
 use App\Application\Order\Port\PublicRepairEquipmentPort;
+use App\Application\Shared\Port\PasswordHasher;
 use App\Application\Order\ReadPort\OrderReadPort;
 use App\Application\Pricing\Port\OrderPricingGatePort;
 use App\Application\Pricing\Port\PerformedWorkRefPort;
@@ -48,6 +49,7 @@ use App\Domain\Workshop\Event\PerformedWorkRemoved;
 use App\Domain\Workshop\Event\ProductionCompleted;
 use App\Domain\Workshop\Event\WorkStarted;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
+use App\Infrastructure\CRM\Auth\SanctumClientPortalTokenIssuer;
 use App\Infrastructure\CRM\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\CRM\Repository\EloquentClientRepository;
 use App\Infrastructure\Equipment\ReadModel\EloquentEquipmentReadModel;
@@ -65,7 +67,6 @@ use App\Infrastructure\Finance\Repository\EloquentCashOperationRepository;
 use App\Infrastructure\Finance\Repository\EloquentPaymentRepository;
 use App\Infrastructure\Identity\ReadModel\EloquentStaffUserReadModel;
 use App\Infrastructure\Identity\Repository\EloquentStaffUserRepository;
-use App\Infrastructure\Identity\Service\LaravelPasswordHasher;
 use App\Infrastructure\Inventory\ReadModel\EloquentOrderMaterialWriteOffReadModel;
 use App\Infrastructure\Inventory\ReadModel\EloquentStockReadModel;
 use App\Infrastructure\Inventory\Repository\EloquentStockItemRepository;
@@ -87,6 +88,7 @@ use App\Infrastructure\Pricing\Repository\EloquentWorkPriceRepository;
 use App\Infrastructure\Shared\Event\LaravelDomainEventPublisher;
 use App\Infrastructure\Shared\Persistence\EloquentUnitOfWork;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
+use App\Infrastructure\Shared\Service\LaravelPasswordHasher;
 use App\Infrastructure\Workshop\Listener\CancelProductionTaskOnOrderCancelled;
 use App\Infrastructure\Workshop\Listener\OpenAndAssignTasksOnOrderMasterAssigned;
 use App\Infrastructure\Workshop\Listener\OpenProductionTasksOnReceptionCompleted;
@@ -109,6 +111,7 @@ final class PersistenceServiceProvider extends ServiceProvider
 
         $this->app->bind(ClientRepository::class, EloquentClientRepository::class);
         $this->app->bind(ClientReadPort::class, EloquentClientReadModel::class);
+        $this->app->bind(ClientPortalTokenIssuer::class, SanctumClientPortalTokenIssuer::class);
 
         $this->app->bind(StaffUserRepository::class, EloquentStaffUserRepository::class);
         $this->app->bind(StaffUserReadPort::class, EloquentStaffUserReadModel::class);

@@ -6,8 +6,7 @@ use App\Application\Order\Command\CreatePublicOrderCommand;
 use App\Application\Order\Command\CreatePublicOrderHandler;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\UserRole;
+use App\Infrastructure\CRM\Model\ClientModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -33,8 +32,8 @@ final class PublicOrderController extends Controller
         $authenticatedClientId = null;
         $user = $request->user('sanctum');
 
-        if ($user instanceof User && $user->role === UserRole::Client && $user->client_id !== null) {
-            $authenticatedClientId = (int) $user->client_id;
+        if ($user instanceof ClientModel) {
+            $authenticatedClientId = (int) $user->id;
         }
 
         $result = $this->createPublicOrder->handle(new CreatePublicOrderCommand(

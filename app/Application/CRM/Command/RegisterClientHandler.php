@@ -33,6 +33,7 @@ final readonly class RegisterClientHandler
             $command->email !== null ? new Email($command->email) : null,
             $command->birthDate,
             $command->deliveryAddress,
+            $command->passwordHash,
         );
 
         $this->clients->save($client);

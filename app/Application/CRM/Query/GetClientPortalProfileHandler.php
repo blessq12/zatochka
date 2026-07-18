@@ -4,8 +4,6 @@ namespace App\Application\CRM\Query;
 
 use App\Application\CRM\DTO\ClientPortalProfileDTO;
 use App\Application\CRM\ReadPort\ClientReadPort;
-use App\Models\User;
-use App\Models\UserRole;
 
 final readonly class GetClientPortalProfileHandler
 {
@@ -13,17 +11,12 @@ final readonly class GetClientPortalProfileHandler
         private ClientReadPort $clients,
     ) {}
 
-    public function handle(int $clientId, ?User $portalUser = null): ?ClientPortalProfileDTO
+    public function handle(int $clientId): ?ClientPortalProfileDTO
     {
         $client = $this->clients->findById($clientId);
 
         if ($client === null) {
             return null;
-        }
-
-        $requiresPasswordSet = false;
-        if ($portalUser !== null && $portalUser->role === UserRole::Client) {
-            $requiresPasswordSet = (bool) $portalUser->requires_password_set;
         }
 
         return new ClientPortalProfileDTO(
@@ -34,7 +27,7 @@ final readonly class GetClientPortalProfileHandler
             $client->birthDate,
             $client->deliveryAddress,
             $client->bonusBalance,
-            $requiresPasswordSet,
+            false,
         );
     }
 }

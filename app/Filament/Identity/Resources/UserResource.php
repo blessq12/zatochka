@@ -24,6 +24,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -48,6 +49,12 @@ class UserResource extends CatalogResource
     public static function canView(Model $record): bool
     {
         return false;
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereIn('role', [UserRole::Manager->value, UserRole::Master->value]);
     }
 
     public static function form(Schema $schema): Schema
@@ -101,7 +108,6 @@ class UserResource extends CatalogResource
                     ->formatStateUsing(fn(UserRole|string $state): string => match ($state instanceof UserRole ? $state : UserRole::from((string) $state)) {
                         UserRole::Manager => 'Менеджер',
                         UserRole::Master => 'Мастер',
-                        UserRole::Client => 'Клиент',
                     })
                     ->sortable(),
                 TextColumn::make('created_at')
