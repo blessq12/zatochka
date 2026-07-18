@@ -16,16 +16,17 @@ interface SiteBootstrapReadPort
      *     contacts: array{
      *         contact_person: string,
      *         phone: string,
-     *         phone_tel: string,
      *         email: string,
-     *         address: array{main: string, details: list<string>},
+     *         address: array{main: string, directions: string},
      *         social: array{email: string, links: list<array{name: string, url: string, icon: ?string}>}
      *     },
      *     schedule: array{days: list<array<string, mixed>>},
      *     prices: list<array{
-     *         type: string,
-     *         title: string,
-     *         items: list<array{name: string, price: string, prefix: ?string, description?: ?string}>
+     *         category: string,
+     *         name: string,
+     *         price: string,
+     *         prefix: ?string,
+     *         description?: ?string
      *     }>,
      *     delivery_info: array{
      *         free_conditions: list<string>,

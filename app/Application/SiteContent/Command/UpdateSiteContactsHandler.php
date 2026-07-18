@@ -27,10 +27,9 @@ final readonly class UpdateSiteContactsHandler
         $aggregate->update(
             $command->contactPerson,
             $command->phone,
-            $command->phoneTel,
             $command->email,
             $command->addressMain,
-            $command->addressDetails,
+            $command->entranceDirections,
             $links,
         );
         $this->contacts->save($aggregate);

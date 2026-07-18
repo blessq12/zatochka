@@ -9,13 +9,10 @@ export default {
         PageHero,
     },
     computed: {
-        ...mapState(useBootstrapStore, ["deliveryInfo"]),
-        freeDeliveryConditions() {
-            return this.deliveryInfo.free_conditions || [];
-        },
-        advantages() {
-            return this.deliveryInfo.advantages || [];
-        },
+        ...mapState(useBootstrapStore, [
+            "freeDeliveryConditions",
+            "deliveryAdvantages",
+        ]),
     },
     async mounted() {
         await useBootstrapStore().fetchBootstrap();
@@ -86,7 +83,7 @@ export default {
 
                     <div class="space-y-6 mt-4">
                         <div
-                            v-for="(advantage, index) in advantages"
+                            v-for="(advantage, index) in deliveryAdvantages"
                             :key="index"
                             class="flex items-start gap-3"
                         >

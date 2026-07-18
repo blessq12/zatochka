@@ -49,7 +49,6 @@ use App\Domain\Pricing\Repository\WorkPriceRepository;
 use App\Domain\SiteContent\Repository\CompanyProfileRepository;
 use App\Domain\SiteContent\Repository\DeliveryInfoRepository;
 use App\Domain\SiteContent\Repository\FaqCatalogRepository;
-use App\Domain\SiteContent\Repository\ServicePriceListRepository;
 use App\Domain\SiteContent\Repository\SiteContactsRepository;
 use App\Domain\SiteContent\Repository\WorkScheduleRepository;
 use App\Domain\Workshop\Event\PerformedWorkRemoved;
@@ -100,7 +99,6 @@ use App\Infrastructure\SiteContent\ReadModel\EloquentSiteBootstrapReadModel;
 use App\Infrastructure\SiteContent\Repository\EloquentCompanyProfileRepository;
 use App\Infrastructure\SiteContent\Repository\EloquentDeliveryInfoRepository;
 use App\Infrastructure\SiteContent\Repository\EloquentFaqCatalogRepository;
-use App\Infrastructure\SiteContent\Repository\EloquentServicePriceListRepository;
 use App\Infrastructure\SiteContent\Repository\EloquentSiteContactsRepository;
 use App\Infrastructure\SiteContent\Repository\EloquentWorkScheduleRepository;
 use App\Infrastructure\Workshop\Listener\CancelProductionTaskOnOrderCancelled;
@@ -170,7 +168,6 @@ final class PersistenceServiceProvider extends ServiceProvider
         $this->app->bind(SiteContactsRepository::class, EloquentSiteContactsRepository::class);
         $this->app->bind(DeliveryInfoRepository::class, EloquentDeliveryInfoRepository::class);
         $this->app->bind(WorkScheduleRepository::class, EloquentWorkScheduleRepository::class);
-        $this->app->bind(ServicePriceListRepository::class, EloquentServicePriceListRepository::class);
         $this->app->bind(FaqCatalogRepository::class, EloquentFaqCatalogRepository::class);
         $this->app->bind(SiteBootstrapReadPort::class, EloquentSiteBootstrapReadModel::class);
     }

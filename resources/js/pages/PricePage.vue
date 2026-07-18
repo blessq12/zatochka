@@ -1,4 +1,5 @@
 <script>
+import { mapState } from "pinia";
 import PageHero from "../components/Layout/PageHero.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
 import { formatPriceItem } from "../utils/formatPriceItem.js";
@@ -8,28 +9,18 @@ export default {
     components: {
         PageHero,
     },
-    data() {
-        return {
-            sharpeningBlocks: [],
-            repairBlocks: [],
-            isLoading: false,
-        };
-    },
-    async mounted() {
-        await this.loadPrices();
+    computed: {
+        ...mapState(useBootstrapStore, [
+            "sharpeningPrices",
+            "repairPrices",
+            "isLoading",
+        ]),
     },
     methods: {
         formatPriceItem,
-        async loadPrices() {
-            this.isLoading = true;
-            const bootstrapStore = useBootstrapStore();
-            const result = await bootstrapStore.fetchBootstrap();
-            if (result.success) {
-                this.sharpeningBlocks = bootstrapStore.sharpeningBlocks;
-                this.repairBlocks = bootstrapStore.repairBlocks;
-            }
-            this.isLoading = false;
-        },
+    },
+    async mounted() {
+        await useBootstrapStore().fetchBootstrap();
     },
 };
 </script>
@@ -97,22 +88,14 @@ export default {
                     ПРАЙС НА ЗАТОЧКУ
                 </h2>
 
-                <!-- Блоки прайса на заточку -->
+                <!-- Позиции прайса на заточку -->
                 <div
-                    v-for="(block, index) in sharpeningBlocks"
-                    :key="'sharpening-' + index"
-                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
+                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 sm:px-10 sm:py-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
                 >
-                    <h3
-                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-dark-blue-500 text-sm sm:text-base font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] text-left leading-tight"
-                    >
-                        {{ block.title }}
-                    </h3>
-
-                    <div class="space-y-4 mt-4">
+                    <div class="space-y-4">
                         <div
-                            v-for="(item, itemIndex) in block.items"
-                            :key="itemIndex"
+                            v-for="(item, itemIndex) in sharpeningPrices"
+                            :key="'sharpening-' + itemIndex"
                             class="flex justify-between items-center"
                         >
                             <p
@@ -160,22 +143,14 @@ export default {
                         </svg>
                     </div>
                 </section>
-                <!-- Блоки прайса на ремонт -->
+                <!-- Позиции прайса на ремонт -->
                 <div
-                    v-for="(block, index) in repairBlocks"
-                    :key="'repair-' + index"
-                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
+                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 sm:px-10 sm:py-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
                 >
-                    <h3
-                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-dark-blue-500 text-sm sm:text-base font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] text-left leading-tight"
-                    >
-                        {{ block.title }}
-                    </h3>
-
-                    <div class="space-y-4 mt-4">
+                    <div class="space-y-4">
                         <div
-                            v-for="(item, itemIndex) in block.items"
-                            :key="itemIndex"
+                            v-for="(item, itemIndex) in repairPrices"
+                            :key="'repair-' + itemIndex"
                             class="flex justify-between items-center gap-2 sm:gap-4"
                         >
                             <div class="flex-1">

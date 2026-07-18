@@ -9,8 +9,8 @@ use App\Domain\SiteContent\Entity\SiteContacts;
 use App\Infrastructure\SiteContent\Model\CompanyProfileModel;
 use App\Infrastructure\SiteContent\Model\DeliveryInfoModel;
 use App\Infrastructure\SiteContent\Model\FaqItemModel;
-use App\Infrastructure\SiteContent\Model\PriceBlockModel;
 use App\Infrastructure\SiteContent\Model\ScheduleDayModel;
+use App\Infrastructure\SiteContent\Model\ServicePriceModel;
 use App\Infrastructure\SiteContent\Model\SiteContactsModel;
 use App\Shared\Domain\DomainException;
 
@@ -47,28 +47,23 @@ final class EloquentSiteBootstrapReadModel implements SiteBootstrapReadPort
             })
             ->all();
 
-        $prices = PriceBlockModel::query()
-            ->with('items')
+        $prices = ServicePriceModel::query()
+            ->orderBy('category')
             ->orderBy('sort_order')
             ->get()
-            ->map(static function (PriceBlockModel $block): array {
-                return [
-                    'type' => (string) $block->type,
-                    'title' => (string) $block->title,
-                    'items' => $block->items->map(static function ($item): array {
-                        $row = [
-                            'name' => (string) $item->name,
-                            'price' => (string) $item->price,
-                            'prefix' => $item->prefix,
-                        ];
-
-                        if ($item->description !== null && $item->description !== '') {
-                            $row['description'] = (string) $item->description;
-                        }
-
-                        return $row;
-                    })->values()->all(),
+            ->map(static function (ServicePriceModel $price): array {
+                $row = [
+                    'category' => (string) $price->category,
+                    'name' => (string) $price->name,
+                    'price' => (string) $price->price,
+                    'prefix' => $price->prefix,
                 ];
+
+                if ($price->description !== null && $price->description !== '') {
+                    $row['description'] = (string) $price->description;
+                }
+
+                return $row;
             })
             ->all();
 
@@ -95,11 +90,10 @@ final class EloquentSiteBootstrapReadModel implements SiteBootstrapReadPort
             'contacts' => [
                 'contact_person' => (string) $contacts->contact_person,
                 'phone' => (string) $contacts->phone,
-                'phone_tel' => (string) $contacts->phone_tel,
                 'email' => (string) $contacts->email,
                 'address' => [
                     'main' => (string) $contacts->address_main,
-                    'details' => array_values((array) $contacts->address_details),
+                    'directions' => (string) $contacts->entrance_directions,
                 ],
                 'social' => [
                     'email' => (string) $contacts->email,

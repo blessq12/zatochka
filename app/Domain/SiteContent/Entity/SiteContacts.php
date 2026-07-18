@@ -10,67 +10,59 @@ final class SiteContacts
     public const SINGLETON_ID = 1;
 
     /**
-     * @param  list<string>  $addressDetails
      * @param  list<SocialLink>  $socialLinks
      */
     private function __construct(
         private readonly EntityId $id,
         private string $contactPerson,
         private string $phone,
-        private string $phoneTel,
         private string $email,
         private string $addressMain,
-        private array $addressDetails,
+        private string $entranceDirections,
         private array $socialLinks,
     ) {}
 
     /**
-     * @param  list<string>  $addressDetails
      * @param  list<SocialLink>  $socialLinks
      */
     public static function create(
         string $contactPerson,
         string $phone,
-        string $phoneTel,
         string $email,
         string $addressMain,
-        array $addressDetails = [],
+        string $entranceDirections = '',
         array $socialLinks = [],
     ): self {
         return self::reconstitute(
             new EntityId(self::SINGLETON_ID),
             $contactPerson,
             $phone,
-            $phoneTel,
             $email,
             $addressMain,
-            $addressDetails,
+            $entranceDirections,
             $socialLinks,
         );
     }
 
     /**
-     * @param  list<string>  $addressDetails
      * @param  list<SocialLink>  $socialLinks
      */
     public static function reconstitute(
         EntityId $id,
         string $contactPerson,
         string $phone,
-        string $phoneTel,
         string $email,
         string $addressMain,
-        array $addressDetails,
+        string $entranceDirections,
         array $socialLinks,
     ): self {
         return new self(
             $id,
             self::requireText($contactPerson, 'Contact person'),
             self::requireText($phone, 'Phone'),
-            self::requireText($phoneTel, 'Phone tel'),
             self::requireText($email, 'Email'),
             self::requireText($addressMain, 'Address'),
-            self::normalizeDetails($addressDetails),
+            self::normalizeDirections($entranceDirections),
             array_values($socialLinks),
         );
     }
@@ -90,11 +82,6 @@ final class SiteContacts
         return $this->phone;
     }
 
-    public function phoneTel(): string
-    {
-        return $this->phoneTel;
-    }
-
     public function email(): string
     {
         return $this->email;
@@ -105,10 +92,9 @@ final class SiteContacts
         return $this->addressMain;
     }
 
-    /** @return list<string> */
-    public function addressDetails(): array
+    public function entranceDirections(): string
     {
-        return $this->addressDetails;
+        return $this->entranceDirections;
     }
 
     /** @return list<SocialLink> */
@@ -118,40 +104,27 @@ final class SiteContacts
     }
 
     /**
-     * @param  list<string>  $addressDetails
      * @param  list<SocialLink>  $socialLinks
      */
     public function update(
         string $contactPerson,
         string $phone,
-        string $phoneTel,
         string $email,
         string $addressMain,
-        array $addressDetails,
+        string $entranceDirections,
         array $socialLinks,
     ): void {
         $this->contactPerson = self::requireText($contactPerson, 'Contact person');
         $this->phone = self::requireText($phone, 'Phone');
-        $this->phoneTel = self::requireText($phoneTel, 'Phone tel');
         $this->email = self::requireText($email, 'Email');
         $this->addressMain = self::requireText($addressMain, 'Address');
-        $this->addressDetails = self::normalizeDetails($addressDetails);
+        $this->entranceDirections = self::normalizeDirections($entranceDirections);
         $this->socialLinks = array_values($socialLinks);
     }
 
-    /** @param list<string> $details */
-    private static function normalizeDetails(array $details): array
+    private static function normalizeDirections(string $directions): string
     {
-        $normalized = [];
-
-        foreach ($details as $detail) {
-            $trimmed = trim((string) $detail);
-            if ($trimmed !== '') {
-                $normalized[] = $trimmed;
-            }
-        }
-
-        return $normalized;
+        return trim($directions);
     }
 
     private static function requireText(string $value, string $label): string

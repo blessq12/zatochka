@@ -1,6 +1,24 @@
 import axios from "axios";
 import { acceptHMRUpdate, defineStore } from "pinia";
 
+function toTelHref(phone) {
+    if (!phone) {
+        return "";
+    }
+
+    const digits = String(phone).replace(/\D+/g, "");
+
+    if (!digits) {
+        return "";
+    }
+
+    return digits.startsWith("8") && digits.length === 11
+        ? `+7${digits.slice(1)}`
+        : digits.startsWith("7")
+          ? `+${digits}`
+          : `+${digits}`;
+}
+
 export const useBootstrapStore = defineStore("bootstrap", {
     state: () => ({
         data: null,
@@ -11,23 +29,39 @@ export const useBootstrapStore = defineStore("bootstrap", {
     getters: {
         isLoaded: (state) => state.data !== null,
 
-        sharpeningBlocks(state) {
-            return (state.data?.prices || [])
-                .filter((block) => block.type === "sharpening")
-                .map(({ title, items }) => ({ title, items }));
+        prices: (state) => state.data?.prices ?? [],
+
+        sharpeningPrices(state) {
+            return (state.data?.prices || []).filter(
+                (item) => item.category === "sharpening"
+            );
         },
 
-        repairBlocks(state) {
-            return (state.data?.prices || [])
-                .filter((block) => block.type === "repair")
-                .map(({ title, items }) => ({ title, items }));
+        repairPrices(state) {
+            return (state.data?.prices || []).filter(
+                (item) => item.category === "repair"
+            );
         },
 
         contacts: (state) => state.data?.contacts ?? {},
 
+        phone: (state) => state.data?.contacts?.phone ?? "",
+
+        phoneTel() {
+            return toTelHref(this.phone);
+        },
+
+        socialLinks: (state) => state.data?.contacts?.social?.links ?? [],
+
         scheduleDays: (state) => state.data?.schedule?.days ?? [],
 
         deliveryInfo: (state) => state.data?.delivery_info ?? {},
+
+        freeDeliveryConditions: (state) =>
+            state.data?.delivery_info?.free_conditions ?? [],
+
+        deliveryAdvantages: (state) =>
+            state.data?.delivery_info?.advantages ?? [],
 
         company: (state) => state.data?.company ?? {},
 

@@ -34,9 +34,8 @@ final class SiteBootstrapTest extends TestCase
                     'contacts' => [
                         'contact_person',
                         'phone',
-                        'phone_tel',
                         'email',
-                        'address' => ['main', 'details'],
+                        'address' => ['main', 'directions'],
                         'social' => ['email', 'links'],
                     ],
                     'schedule' => [
@@ -45,7 +44,7 @@ final class SiteBootstrapTest extends TestCase
                         ],
                     ],
                     'prices' => [
-                        ['type', 'title', 'items'],
+                        ['category', 'name', 'price', 'prefix'],
                     ],
                     'delivery_info' => [
                         'free_conditions',
@@ -64,14 +63,16 @@ final class SiteBootstrapTest extends TestCase
         $this->assertSame('ИП Митькин Максим Игоревич', $data['company']['owner_name']);
         $this->assertSame('701744164429', $data['company']['inn']);
         $this->assertSame('zatochka.tsk@yandex.ru', $data['contacts']['email']);
-        $this->assertSame('+79832335907', $data['contacts']['phone_tel']);
+        $this->assertSame('+7 (983) 233-59-07', $data['contacts']['phone']);
+        $this->assertArrayNotHasKey('phone_tel', $data['contacts']);
         $this->assertNotEmpty($data['contacts']['phone']);
         $this->assertIsArray($data['schedule']['days']);
         $this->assertNotEmpty($data['schedule']['days']);
-        $this->assertContains($data['prices'][0]['type'], ['sharpening', 'repair']);
-        $this->assertArrayHasKey('name', $data['prices'][0]['items'][0]);
-        $this->assertArrayHasKey('price', $data['prices'][0]['items'][0]);
-        $this->assertArrayHasKey('prefix', $data['prices'][0]['items'][0]);
+        $this->assertContains($data['prices'][0]['category'], ['sharpening', 'repair']);
+        $this->assertArrayHasKey('name', $data['prices'][0]);
+        $this->assertArrayHasKey('price', $data['prices'][0]);
+        $this->assertArrayHasKey('prefix', $data['prices'][0]);
+        $this->assertNotEmpty($data['prices']);
         $this->assertIsArray($data['delivery_info']['free_conditions']);
         $this->assertIsArray($data['faq']['items'][0]['answer_lines']);
         $this->assertCount(4, $data['contacts']['social']['links']);

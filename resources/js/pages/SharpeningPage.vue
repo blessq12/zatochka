@@ -1,35 +1,25 @@
 <script>
+import { mapState } from "pinia";
 import SharpeningForm from "../components/Forms/SharpeningForm.vue";
 import PageHero from "../components/Layout/PageHero.vue";
+import ServicePriceList from "../components/Prices/ServicePriceList.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
-import { formatPriceItem } from "../utils/formatPriceItem.js";
 
 export default {
     name: "SharpeningPage",
     components: {
         SharpeningForm,
         PageHero,
+        ServicePriceList,
     },
-    data() {
-        return {
-            priceBlocks: [],
-            isLoading: false,
-        };
+    computed: {
+        ...mapState(useBootstrapStore, {
+            prices: "sharpeningPrices",
+            isLoading: "isLoading",
+        }),
     },
     async mounted() {
-        await this.loadPrices();
-    },
-    methods: {
-        formatPriceItem,
-        async loadPrices() {
-            this.isLoading = true;
-            const bootstrapStore = useBootstrapStore();
-            const result = await bootstrapStore.fetchBootstrap();
-            if (result.success) {
-                this.priceBlocks = bootstrapStore.sharpeningBlocks;
-            }
-            this.isLoading = false;
-        },
+        await useBootstrapStore().fetchBootstrap();
     },
 };
 </script>
@@ -88,37 +78,8 @@ export default {
             <div
                 class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 space-y-10"
             >
-                <!-- Блоки прайса -->
-                <div
-                    v-for="(block, index) in priceBlocks"
-                    :key="index"
-                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
-                >
-                    <h2
-                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white dark:bg-dark-blue-500 text-sm sm:text-base font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] text-left leading-tight"
-                    >
-                        {{ block.title }}
-                    </h2>
-
-                    <div class="space-y-4 mt-4">
-                        <div
-                            v-for="(item, itemIndex) in block.items"
-                            :key="itemIndex"
-                            class="flex justify-between items-center"
-                        >
-                            <p
-                                class="text-base sm:text-lg font-jost-regular text-dark-gray-500 dark:text-white"
-                            >
-                                {{ item.name }}
-                            </p>
-                            <p
-                                class="text-lg sm:text-xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C]"
-                            >
-                                {{ formatPriceItem(item) }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <!-- Позиции прайса -->
+                <ServicePriceList :prices="prices" />
             </div>
         </section>
 

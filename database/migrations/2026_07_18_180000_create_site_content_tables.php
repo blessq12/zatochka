@@ -22,10 +22,9 @@ return new class extends Migration
             $table->unsignedBigInteger('id')->primary();
             $table->string('contact_person');
             $table->string('phone');
-            $table->string('phone_tel');
             $table->string('email');
             $table->string('address_main');
-            $table->json('address_details');
+            $table->text('entrance_directions');
             $table->json('social_links');
             $table->timestamps();
         });
@@ -48,17 +47,9 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('site_price_blocks', function (Blueprint $table) {
+        Schema::create('site_service_prices', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
-            $table->string('type');
-            $table->string('title');
-            $table->unsignedInteger('sort_order')->default(0);
-            $table->timestamps();
-        });
-
-        Schema::create('site_price_items', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
-            $table->unsignedBigInteger('price_block_id');
+            $table->string('category');
             $table->string('name');
             $table->string('price');
             $table->string('prefix')->nullable();
@@ -66,11 +57,7 @@ return new class extends Migration
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
 
-            $table->foreign('price_block_id')
-                ->references('id')
-                ->on('site_price_blocks')
-                ->cascadeOnDelete();
-            $table->index('price_block_id');
+            $table->index('category');
         });
 
         Schema::create('site_faq_items', function (Blueprint $table) {
@@ -84,9 +71,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('site_price_items');
-        Schema::dropIfExists('site_price_blocks');
         Schema::dropIfExists('site_faq_items');
+        Schema::dropIfExists('site_service_prices');
         Schema::dropIfExists('site_schedule_days');
         Schema::dropIfExists('site_delivery_infos');
         Schema::dropIfExists('site_contacts');

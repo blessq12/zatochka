@@ -1,5 +1,6 @@
 <script>
 import { mapState } from "pinia";
+import SocialNetworkIcon from "../components/Contacts/SocialNetworkIcon.vue";
 import PageHero from "../components/Layout/PageHero.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
 
@@ -7,23 +8,27 @@ export default {
     name: "ContactsPage",
     components: {
         PageHero,
+        SocialNetworkIcon,
     },
     computed: {
-        ...mapState(useBootstrapStore, ["contacts", "isLoaded"]),
+        ...mapState(useBootstrapStore, [
+            "contacts",
+            "phone",
+            "phoneTel",
+            "socialLinks",
+            "isLoaded",
+        ]),
         contactPerson() {
             return this.contacts.contact_person || "";
         },
-        phone() {
-            return this.contacts.phone || "";
-        },
         address() {
-            return this.contacts.address || { main: "", details: [] };
+            return this.contacts.address || { main: "", directions: "" };
+        },
+        entranceDirections() {
+            return this.address.directions || "";
         },
         socialEmail() {
             return this.contacts.social?.email || this.contacts.email || "";
-        },
-        socialLinks() {
-            return this.contacts.social?.links || [];
         },
     },
     async mounted() {
@@ -79,26 +84,29 @@ export default {
                     {{ address.main }}
                 </p>
 
-                <div class="space-y-2 mb-8 sm:mb-12 text-center">
+                <div
+                    v-if="entranceDirections"
+                    class="mb-8 sm:mb-12 text-center"
+                >
                     <p
-                        v-for="(detail, index) in address.details"
-                        :key="index"
-                        class="text-base sm:text-lg lg:text-xl font-jost-regular text-dark-gray-500 dark:text-gray-200"
+                        class="text-base sm:text-lg lg:text-xl font-jost-regular text-dark-gray-500 dark:text-gray-200 whitespace-pre-line"
                     >
-                        {{ detail }}
+                        {{ entranceDirections }}
                     </p>
                 </div>
 
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8"
+                >
                     <div
-                        class="relative w-full sm:w-auto min-h-[200px] overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-700 aspect-[4/3] bg-cover bg-center bg-no-repeat max-w-md"
+                        class="relative w-full min-h-[240px] sm:min-h-[280px] md:min-h-[420px] overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-700 aspect-[4/3] md:aspect-auto bg-cover bg-center bg-no-repeat"
                         :style="{
                             backgroundImage: `url('/images/entrance.png')`,
                         }"
                     ></div>
 
                     <div
-                        class="relative w-full sm:w-auto min-h-[200px] overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-700 aspect-[4/3] bg-cover bg-center bg-no-repeat max-w-md"
+                        class="relative w-full min-h-[240px] sm:min-h-[280px] md:min-h-[420px] overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-700 aspect-[4/3] md:aspect-auto bg-cover bg-center bg-no-repeat"
                         :style="{ backgroundImage: `url('/images/map.png')` }"
                     ></div>
                 </div>
@@ -126,9 +134,7 @@ export default {
                         class="w-16 h-16 sm:w-20 sm:h-20 bg-dark-blue-500 dark:bg-dark-blue-600 rounded-full flex items-center justify-center hover:bg-dark-blue-600 dark:hover:bg-dark-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl"
                         :aria-label="link.name"
                     >
-                        <span class="text-white text-xs sm:text-sm font-jost-bold">{{
-                            link.icon
-                        }}</span>
+                        <SocialNetworkIcon :url="link.url" :name="link.name" />
                     </a>
                 </div>
 

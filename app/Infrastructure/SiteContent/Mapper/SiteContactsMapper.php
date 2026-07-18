@@ -25,10 +25,9 @@ final class SiteContactsMapper
             new EntityId((int) $model->id),
             (string) $model->contact_person,
             (string) $model->phone,
-            (string) $model->phone_tel,
             (string) $model->email,
             (string) $model->address_main,
-            array_values((array) $model->address_details),
+            (string) $model->entrance_directions,
             $links,
         );
     }
@@ -40,10 +39,9 @@ final class SiteContactsMapper
             'id' => $contacts->id()->value,
             'contact_person' => $contacts->contactPerson(),
             'phone' => $contacts->phone(),
-            'phone_tel' => $contacts->phoneTel(),
             'email' => $contacts->email(),
             'address_main' => $contacts->addressMain(),
-            'address_details' => $contacts->addressDetails(),
+            'entrance_directions' => $contacts->entranceDirections(),
             'social_links' => array_map(
                 static fn (SocialLink $link): array => $link->toArray(),
                 $contacts->socialLinks(),

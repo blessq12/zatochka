@@ -16,17 +16,15 @@ final class SiteContactsModel extends Model
         'id',
         'contact_person',
         'phone',
-        'phone_tel',
         'email',
         'address_main',
-        'address_details',
+        'entrance_directions',
         'social_links',
     ];
 
     protected function casts(): array
     {
         return [
-            'address_details' => 'array',
             'social_links' => 'array',
         ];
     }

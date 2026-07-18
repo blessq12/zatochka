@@ -1,35 +1,25 @@
 <script>
+import { mapState } from "pinia";
 import PageHero from "../components/Layout/PageHero.vue";
+import ServicePriceList from "../components/Prices/ServicePriceList.vue";
 import RepairForm from "../components/Forms/RepairForm.vue";
 import { useBootstrapStore } from "../stores/bootstrapStore.js";
-import { formatPriceItem } from "../utils/formatPriceItem.js";
 
 export default {
     name: "RepairPage",
     components: {
         PageHero,
         RepairForm,
+        ServicePriceList,
     },
-    data() {
-        return {
-            priceBlocks: [],
-            isLoading: false,
-        };
+    computed: {
+        ...mapState(useBootstrapStore, {
+            prices: "repairPrices",
+            isLoading: "isLoading",
+        }),
     },
     async mounted() {
-        await this.loadPrices();
-    },
-    methods: {
-        formatPriceItem,
-        async loadPrices() {
-            this.isLoading = true;
-            const bootstrapStore = useBootstrapStore();
-            const result = await bootstrapStore.fetchBootstrap();
-            if (result.success) {
-                this.priceBlocks = bootstrapStore.repairBlocks;
-            }
-            this.isLoading = false;
-        },
+        await useBootstrapStore().fetchBootstrap();
     },
 };
 </script>
@@ -122,51 +112,8 @@ export default {
             <div
                 class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 space-y-10"
             >
-                <!-- Блоки прайса -->
-                <div
-                    v-for="(block, index) in priceBlocks"
-                    :key="index"
-                    class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 pt-10 pb-6 sm:px-10 sm:pt-12 sm:pb-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
-                >
-                    <!-- Заголовок -->
-                    <h2
-                        class="absolute top-0 left-0 -translate-y-1/2 max-w-[75%] px-3 sm:px-4 bg-white/80 dark:bg-dark-blue-500 backdrop-blur-xl"
-                    >
-                        <span
-                            class="text-sm sm:text-base font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] leading-tight"
-                        >
-                            {{ block.title }}
-                        </span>
-                    </h2>
-
-                    <div class="space-y-4 mt-4">
-                        <div
-                            v-for="(item, itemIndex) in block.items"
-                            :key="itemIndex"
-                            class="flex justify-between items-center gap-2 sm:gap-4"
-                        >
-                            <div class="flex-1">
-                                <p
-                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    {{ item.name }}
-                                </p>
-                                <p
-                                    v-if="item.description"
-                                    class="text-xs sm:text-sm font-jost-regular text-dark-gray-400 dark:text-gray-300 mt-1"
-                                >
-                                    {{ item.description }}
-                                </p>
-                            </div>
-                            <p
-                                v-if="item.price"
-                                class="text-sm sm:text-base font-jost-regular text-[#C20A6C] dark:text-[#C20A6C] flex-shrink-0"
-                            >
-                                {{ formatPriceItem(item) }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <!-- Позиции прайса -->
+                <ServicePriceList :prices="prices" />
 
                 <!-- Статичный текст -->
                 <div class="mt-10">

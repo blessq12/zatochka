@@ -5,16 +5,12 @@ import { useBootstrapStore } from "../../stores/bootstrapStore.js";
 export default {
     name: "Footer",
     computed: {
-        ...mapState(useBootstrapStore, ["contacts", "company"]),
-        phone() {
-            return this.contacts.phone || "";
-        },
-        phoneTel() {
-            return this.contacts.phone_tel || "";
-        },
-        socialLinks() {
-            return this.contacts.social?.links || [];
-        },
+        ...mapState(useBootstrapStore, [
+            "company",
+            "phone",
+            "phoneTel",
+            "socialLinks",
+        ]),
     },
     async mounted() {
         await useBootstrapStore().fetchBootstrap();
