@@ -20,4 +20,16 @@ final readonly class PerformedWork
             throw new DomainException('Performed work description cannot be empty.');
         }
     }
+
+    public function withDescription(string $description): self
+    {
+        return new self(
+            $this->id,
+            $this->orderItemId,
+            $this->masterId,
+            $description,
+            $this->equipmentComponentId,
+            $this->createdAt,
+        );
+    }
 }

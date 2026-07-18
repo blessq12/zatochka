@@ -3,6 +3,7 @@
 namespace App\Filament\Order\Resources\OrderResource\Support;
 
 use App\Domain\Order\VO\OrderBillingType;
+use App\Domain\Order\VO\OrderServiceType;
 use App\Infrastructure\Order\Model\OrderModel;
 use Filament\Forms\Components\Select;
 
@@ -67,7 +68,7 @@ final class WarrantySourceOrderSelect
             ? 'Клиент #'.$order->client_id
             : trim(($client->name ?: 'Без имени').' · '.$client->phone);
 
-        $type = OrderPresentation::serviceTypeOptions()[$order->service_type] ?? $order->service_type;
+        $type = OrderServiceType::tryLabel($order->service_type) ?? $order->service_type;
 
         return (string) OrderPresentation::orderNumber($order).' · '.$type.' · '.$clientLabel;
     }

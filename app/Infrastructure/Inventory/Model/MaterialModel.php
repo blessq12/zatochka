@@ -12,5 +12,5 @@ final class MaterialModel extends Model
 
     protected $keyType = 'int';
 
-    protected $fillable = ['id', 'sku', 'name', 'unit', 'category'];
+    protected $fillable = ['id', 'sku', 'name', 'unit', 'category', 'unit_price', 'currency'];
 }

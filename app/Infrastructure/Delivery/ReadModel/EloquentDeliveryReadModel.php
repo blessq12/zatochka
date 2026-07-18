@@ -19,4 +19,13 @@ final readonly class EloquentDeliveryReadModel implements DeliveryReadPort
 
         return $model === null ? null : $this->mapper->toDTO($model);
     }
+
+    public function findByOrderId(string $orderId): ?DeliveryRequestDTO
+    {
+        $model = DeliveryRequestModel::query()
+            ->where('order_id', $orderId)
+            ->first();
+
+        return $model === null ? null : $this->mapper->toDTO($model);
+    }
 }

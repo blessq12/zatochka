@@ -222,10 +222,6 @@ final class CashDeskDashboard extends Page
                         ->label('Сумма')
                         ->numeric()
                         ->required(),
-                    TextInput::make('currency')
-                        ->label('Валюта')
-                        ->default('RUB')
-                        ->required(),
                     TextInput::make('comment')
                         ->label('Комментарий'),
                 ])
@@ -236,7 +232,7 @@ final class CashDeskDashboard extends Page
                             $id,
                             $data['type'],
                             (string) $data['amount'],
-                            $data['currency'] ?? 'RUB',
+                            'RUB',
                             $data['comment'] ?? null,
                             paymentMethod: $data['payment_method'] ?? null,
                         ));

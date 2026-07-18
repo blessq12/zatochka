@@ -51,25 +51,25 @@ class CashOperationResource extends DomainResource
             TextEntry::make('type')
                 ->label('Тип')
                 ->badge()
-                ->formatStateUsing(fn (?string $state): string => CashOperationType::tryFrom((string) $state)?->label() ?? (string) $state),
+                ->formatStateUsing(fn(?string $state): string => CashOperationType::tryFrom((string) $state)?->label() ?? (string) $state),
             TextEntry::make('payment_method')
                 ->label('Способ оплаты')
                 ->badge()
-                ->formatStateUsing(fn (?string $state): string => PaymentMethod::tryLabel($state) ?? '—'),
+                ->formatStateUsing(fn(?string $state): string => PaymentMethod::tryLabel($state) ?? '—'),
             TextEntry::make('order_number')
                 ->label('Заказ')
-                ->state(fn (CashOperationModel $record): string => self::orderNumber($record) ?? '—')
-                ->url(fn (CashOperationModel $record): ?string => ($orderId = self::orderId($record)) !== null
+                ->state(fn(CashOperationModel $record): string => self::orderNumber($record) ?? '—')
+                ->url(fn(CashOperationModel $record): ?string => ($orderId = self::orderId($record)) !== null
                     ? OrderResource::getUrl('view', ['record' => $orderId])
                     : null)
                 ->color('primary'),
             TextEntry::make('amount')
                 ->label('Сумма')
-                ->formatStateUsing(fn ($state, CashOperationModel $record): string => PaymentPresentation::formatMoney(
+                ->formatStateUsing(fn($state, CashOperationModel $record): string => PaymentPresentation::formatMoney(
                     (string) $state,
                     (string) $record->currency,
                 )),
-            TextEntry::make('currency')->label('Валюта'),
+
             TextEntry::make('comment')->label('Комментарий')->placeholder('—'),
             TextEntry::make('payment_id')->label('Платёж')->placeholder('—'),
             TextEntry::make('refund_id')->label('Возврат')->placeholder('—'),
@@ -80,7 +80,7 @@ class CashOperationResource extends DomainResource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query
+            ->modifyQueryUsing(fn(Builder $query): Builder => $query
                 ->with([
                     'payment.order:id,number',
                     'refund.payment.order:id,number',
@@ -90,33 +90,33 @@ class CashOperationResource extends DomainResource
                 TextColumn::make('type')
                     ->label('Тип')
                     ->badge()
-                    ->color(fn (?string $state): string => match (CashOperationType::tryFrom((string) $state)) {
+                    ->color(fn(?string $state): string => match (CashOperationType::tryFrom((string) $state)) {
                         CashOperationType::In => 'success',
                         CashOperationType::Out => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (?string $state): string => CashOperationType::tryFrom((string) $state)?->label() ?? (string) $state)
+                    ->formatStateUsing(fn(?string $state): string => CashOperationType::tryFrom((string) $state)?->label() ?? (string) $state)
                     ->searchable(),
                 TextColumn::make('order_number')
                     ->label('Заказ')
-                    ->state(fn (CashOperationModel $record): string => self::orderNumber($record) ?? '—')
-                    ->url(fn (CashOperationModel $record): ?string => ($orderId = self::orderId($record)) !== null
+                    ->state(fn(CashOperationModel $record): string => self::orderNumber($record) ?? '—')
+                    ->url(fn(CashOperationModel $record): ?string => ($orderId = self::orderId($record)) !== null
                         ? OrderResource::getUrl('view', ['record' => $orderId])
                         : null)
                     ->color('primary')
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query->where(function (Builder $inner) use ($search): void {
-                            $inner->whereHas('payment.order', fn (Builder $orders): Builder => $orders->where('number', 'like', "%{$search}%"))
-                                ->orWhereHas('refund.payment.order', fn (Builder $orders): Builder => $orders->where('number', 'like', "%{$search}%"));
+                            $inner->whereHas('payment.order', fn(Builder $orders): Builder => $orders->where('number', 'like', "%{$search}%"))
+                                ->orWhereHas('refund.payment.order', fn(Builder $orders): Builder => $orders->where('number', 'like', "%{$search}%"));
                         });
                     }),
                 TextColumn::make('payment_method')
                     ->label('Способ')
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => PaymentMethod::tryLabel($state) ?? '—'),
+                    ->formatStateUsing(fn(?string $state): string => PaymentMethod::tryLabel($state) ?? '—'),
                 TextColumn::make('amount')
                     ->label('Сумма')
-                    ->formatStateUsing(fn ($state, CashOperationModel $record): string => PaymentPresentation::formatMoney(
+                    ->formatStateUsing(fn($state, CashOperationModel $record): string => PaymentPresentation::formatMoney(
                         (string) $state,
                         (string) $record->currency,
                     )),

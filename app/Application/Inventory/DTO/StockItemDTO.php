@@ -12,5 +12,7 @@ final readonly class StockItemDTO
         public string $unit,
         public string $category,
         public string $quantityOnHand,
+        public string $unitPrice = '0.00',
+        public string $currency = 'RUB',
     ) {}
 }

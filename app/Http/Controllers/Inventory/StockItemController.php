@@ -57,6 +57,8 @@ final class StockItemController extends Controller
             'unit' => ['required', 'string'],
             'category' => ['required', 'string'],
             'initialQuantity' => ['nullable', 'numeric', 'min:0'],
+            'unitPrice' => ['nullable', 'numeric', 'min:0'],
+            'currency' => ['nullable', 'string', 'size:3'],
         ]);
 
         $stockItemId = $this->ids->next('stock_item')->value;
@@ -69,6 +71,8 @@ final class StockItemController extends Controller
             $data['unit'],
             $data['category'],
             isset($data['initialQuantity']) ? (string) $data['initialQuantity'] : '0',
+            isset($data['unitPrice']) ? (string) $data['unitPrice'] : '0.00',
+            $data['currency'] ?? 'RUB',
         ));
 
         return $this->created($this->getStockItemById->handle(new GetStockItemByIdQuery($stockItemId)));
@@ -107,12 +111,20 @@ final class StockItemController extends Controller
         $data = $request->validate([
             'quantity' => ['required', 'numeric', 'gt:0'],
             'comment' => ['nullable', 'string'],
+            'orderId' => ['nullable', 'string'],
+            'orderItemId' => ['nullable', 'integer', 'min:1'],
+            'unitPrice' => ['nullable', 'numeric', 'min:0'],
+            'currency' => ['nullable', 'string', 'size:3'],
         ]);
 
         $this->writeOffMaterial->handle(new WriteOffMaterialCommand(
             $stockItemId,
             (string) $data['quantity'],
             $data['comment'] ?? null,
+            $data['orderId'] ?? null,
+            $data['orderItemId'] ?? null,
+            unitPrice: isset($data['unitPrice']) ? (string) $data['unitPrice'] : null,
+            currency: $data['currency'] ?? 'RUB',
         ));
 
         return $this->ok($this->getStockItemById->handle(new GetStockItemByIdQuery($stockItemId)));

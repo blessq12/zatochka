@@ -4,12 +4,10 @@ namespace App\Filament\Order\Resources\OrderResource\Support;
 
 use App\Application\Order\DTO\OrderContainerItemDTO;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
-use App\Domain\Order\VO\OrderBillingType;
+use App\Domain\Inventory\VO\MovementType;
 use App\Domain\Order\VO\OrderItemStatus;
 use App\Domain\Order\VO\OrderNumber;
-use App\Domain\Order\VO\OrderServiceType;
-use App\Domain\Order\VO\OrderStatus;
-use App\Domain\Order\VO\OrderUrgency;
+use App\Filament\Inventory\Support\OrderMaterialWriteOffs;
 use App\Filament\Support\ClientSelectField;
 use App\Infrastructure\Inventory\Model\StockItemModel;
 use App\Infrastructure\Inventory\Model\WarehouseMovementModel;
@@ -22,61 +20,6 @@ final class OrderPresentation
     public static function orderNumber(OrderModel $record): OrderNumber
     {
         return new OrderNumber((string) $record->number);
-    }
-
-    /** @return array<string, string> */
-    public static function statusOptions(): array
-    {
-        return [
-            OrderStatus::Created->value => 'Создан',
-            OrderStatus::MasterAssigned->value => 'Мастер назначен',
-            OrderStatus::ReceptionCompleted->value => 'Приёмка завершена',
-            OrderStatus::InProgress->value => 'В работе',
-            OrderStatus::WorksCompleted->value => 'Работы завершены',
-            OrderStatus::Ready->value => 'Готов к выдаче',
-            OrderStatus::Cancelled->value => 'Отменён',
-            OrderStatus::Closed->value => 'Закрыт',
-            OrderStatus::Issued->value => 'Выдан',
-        ];
-    }
-
-    /** @return array<string, string> */
-    public static function serviceTypeOptions(): array
-    {
-        return [
-            OrderServiceType::Sharpening->value => 'Заточка',
-            OrderServiceType::Repair->value => 'Ремонт',
-        ];
-    }
-
-    /** @return array<string, string> */
-    public static function billingTypeOptions(): array
-    {
-        return [
-            OrderBillingType::Paid->value => 'Платный',
-            OrderBillingType::Warranty->value => 'Гарантийный',
-        ];
-    }
-
-    /** @return array<string, string> */
-    public static function urgencyOptions(): array
-    {
-        return [
-            OrderUrgency::Normal->value => 'Обычный',
-            OrderUrgency::Urgent->value => 'Срочный',
-        ];
-    }
-
-    /** @return array<string, string> */
-    public static function itemStatusOptions(): array
-    {
-        return [
-            OrderItemStatus::Accepted->value => 'Принят',
-            OrderItemStatus::InProduction->value => 'В производстве',
-            OrderItemStatus::Completed->value => 'Готов',
-            OrderItemStatus::Rejected->value => 'Отклонён',
-            OrderItemStatus::Issued->value => 'Выдан',
-        ];
     }
 
     public static function orderItemRepairableQuantity(OrderItemModel $item): int
@@ -169,18 +112,35 @@ final class OrderPresentation
     }
 
     /**
-     * @return list<array{position: string, material: string, quantity: string, comment: string}>
+     * @return list<array{
+     *     position: string,
+     *     material: string,
+     *     quantity: string,
+     *     unit_price: string,
+     *     line_total: string,
+     *     comment: string,
+     * }>
      */
     public static function buildOrderMaterialsTableRows(OrderModel $order): array
     {
+        $reversedIds = array_fill_keys(
+            OrderMaterialWriteOffs::reversedWriteOffIds((string) $order->id),
+            true,
+        );
+
         $movements = WarehouseMovementModel::query()
             ->where('order_id', $order->id)
+            ->where('type', MovementType::WriteOff->value)
             ->orderBy('id')
             ->get();
 
         $rows = [];
 
         foreach ($movements as $movement) {
+            if (isset($reversedIds[(int) $movement->id])) {
+                continue;
+            }
+
             $position = 'Весь заказ';
 
             if ($movement->order_item_id !== null) {
@@ -197,10 +157,23 @@ final class OrderPresentation
             $materialName = $stockItem?->material?->name
                 ?? 'Материал #'.$movement->stock_item_id;
 
+            $unitPrice = 'не указана';
+            $lineTotal = 'не указана';
+
+            if ($movement->unit_price !== null && $movement->unit_price !== '') {
+                $currency = (string) ($movement->currency ?: 'RUB');
+                $unitAmount = (float) $movement->unit_price;
+                $lineAmount = round($unitAmount * (float) $movement->quantity, 2);
+                $unitPrice = OrderWorkPricing::formatMoney((string) $unitAmount, $currency);
+                $lineTotal = OrderWorkPricing::formatMoney((string) $lineAmount, $currency);
+            }
+
             $rows[] = [
                 'position' => $position,
                 'material' => $materialName,
                 'quantity' => (string) $movement->quantity,
+                'unit_price' => $unitPrice,
+                'line_total' => $lineTotal,
                 'comment' => filled($movement->comment) ? (string) $movement->comment : '—',
             ];
         }

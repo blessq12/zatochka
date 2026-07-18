@@ -2,7 +2,10 @@
 
 namespace App\Filament\Order\Resources;
 
+use App\Domain\Order\VO\OrderBillingType;
+use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderStatus;
+use App\Domain\Order\VO\OrderUrgency;
 use App\Filament\Order\Resources\OrderResource\Actions\OrderMutationActions;
 use App\Filament\Order\Resources\OrderResource\Pages\CreateOrder;
 use App\Filament\Order\Resources\OrderResource\Pages\ListOrders;
@@ -109,30 +112,21 @@ class OrderResource extends DomainResource
                     ->sortable(),
                 TextColumn::make('service_type')
                     ->label('Тип')
-                    ->formatStateUsing(fn (?string $state): string => OrderPresentation::serviceTypeOptions()[$state] ?? ($state ?? '—'))
+                    ->formatStateUsing(fn (?string $state): string => OrderServiceType::tryLabel($state) ?? ($state ?? '—'))
                     ->sortable(),
                 TextColumn::make('billing_type')
                     ->label('Вид')
-                    ->formatStateUsing(fn (?string $state): string => OrderPresentation::billingTypeOptions()[$state] ?? ($state ?? '—'))
+                    ->formatStateUsing(fn (?string $state): string => OrderBillingType::tryLabel($state) ?? ($state ?? '—'))
                     ->toggleable(),
                 TextColumn::make('urgency')
                     ->label('Срочность')
-                    ->formatStateUsing(fn (?string $state): string => OrderPresentation::urgencyOptions()[$state] ?? ($state ?? '—'))
+                    ->formatStateUsing(fn (?string $state): string => OrderUrgency::tryLabel($state) ?? ($state ?? '—'))
                     ->toggleable(),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => OrderPresentation::statusOptions()[$state] ?? ($state ?? '—'))
-                    ->color(fn (?string $state): string => match ($state) {
-                        OrderStatus::Cancelled->value => 'danger',
-                        OrderStatus::Issued->value, OrderStatus::Closed->value => 'success',
-                        OrderStatus::Ready->value => 'info',
-                        OrderStatus::InProgress->value,
-                        OrderStatus::WorksCompleted->value,
-                        OrderStatus::MasterAssigned->value,
-                        OrderStatus::ReceptionCompleted->value => 'warning',
-                        default => 'gray',
-                    })
+                    ->formatStateUsing(fn (?string $state): string => OrderStatus::tryLabel($state) ?? ($state ?? '—'))
+                    ->color(fn (?string $state): string => OrderStatus::tryColor($state))
                     ->sortable(),
                 TextColumn::make('estimated_amount')
                     ->label('Сумма')

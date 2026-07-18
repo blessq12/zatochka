@@ -19,9 +19,12 @@ final class WarehouseMovementModel extends Model
         'stock_item_id',
         'type',
         'quantity',
+        'unit_price',
+        'currency',
         'comment',
         'order_id',
         'order_item_id',
+        'reverses_movement_id',
         'occurred_at',
     ];
 

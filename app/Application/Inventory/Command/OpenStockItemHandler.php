@@ -12,6 +12,7 @@ use App\Domain\Inventory\VO\StockSku;
 use App\Domain\Inventory\VO\UnitOfMeasure;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
+use App\Shared\ValueObject\Money;
 
 final readonly class OpenStockItemHandler
 {
@@ -35,6 +36,7 @@ final readonly class OpenStockItemHandler
                 $command->name,
                 $unit,
                 $category,
+                new Money(number_format((float) $command->unitPrice, 2, '.', ''), $command->currency),
             ),
             new Quantity($command->initialQuantity),
         );

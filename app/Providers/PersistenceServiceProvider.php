@@ -13,6 +13,7 @@ use App\Application\Finance\ReadPort\CashDeskReadPort;
 use App\Application\Finance\ReadPort\PaymentReadPort;
 use App\Application\Identity\Port\PasswordHasher;
 use App\Application\Identity\ReadPort\StaffUserReadPort;
+use App\Application\Inventory\ReadPort\OrderMaterialWriteOffReadPort;
 use App\Application\Inventory\ReadPort\StockReadPort;
 use App\Application\Order\Port\MasterDirectoryPort;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
@@ -43,6 +44,7 @@ use App\Domain\Order\Event\OrderReturnedToMaster;
 use App\Domain\Order\Event\ReceptionCompleted;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Pricing\Repository\WorkPriceRepository;
+use App\Domain\Workshop\Event\PerformedWorkRemoved;
 use App\Domain\Workshop\Event\ProductionCompleted;
 use App\Domain\Workshop\Event\WorkStarted;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
@@ -66,6 +68,7 @@ use App\Infrastructure\Finance\Repository\EloquentPaymentRepository;
 use App\Infrastructure\Identity\ReadModel\EloquentStaffUserReadModel;
 use App\Infrastructure\Identity\Repository\EloquentStaffUserRepository;
 use App\Infrastructure\Identity\Service\LaravelPasswordHasher;
+use App\Infrastructure\Inventory\ReadModel\EloquentOrderMaterialWriteOffReadModel;
 use App\Infrastructure\Inventory\ReadModel\EloquentStockReadModel;
 use App\Infrastructure\Inventory\Repository\EloquentStockItemRepository;
 use App\Infrastructure\Order\Listener\MarkOrderInProgressOnWorkStarted;
@@ -74,6 +77,7 @@ use App\Infrastructure\Order\Port\EloquentMasterDirectoryPort;
 use App\Infrastructure\Order\ReadModel\EloquentOrderContainerReadModel;
 use App\Infrastructure\Order\ReadModel\EloquentOrderReadModel;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
+use App\Infrastructure\Pricing\Listener\ClearWorkPriceOnPerformedWorkRemoved;
 use App\Infrastructure\Pricing\Listener\ClearWorkPricesOnOrderCancelled;
 use App\Infrastructure\Pricing\Listener\ClearWorkPricesOnOrderReturnedToMaster;
 use App\Infrastructure\Pricing\Port\EloquentOrderPricingGatePort;
@@ -131,6 +135,7 @@ final class PersistenceServiceProvider extends ServiceProvider
 
         $this->app->bind(StockItemRepository::class, EloquentStockItemRepository::class);
         $this->app->bind(StockReadPort::class, EloquentStockReadModel::class);
+        $this->app->bind(OrderMaterialWriteOffReadPort::class, EloquentOrderMaterialWriteOffReadModel::class);
 
         $this->app->bind(PaymentRepository::class, EloquentPaymentRepository::class);
         $this->app->bind(CashOperationRepository::class, EloquentCashOperationRepository::class);
@@ -154,6 +159,7 @@ final class PersistenceServiceProvider extends ServiceProvider
         Event::listen(OrderCancelled::class, ClearWorkPricesOnOrderCancelled::class);
         Event::listen(OrderReturnedToMaster::class, ReopenProductionTaskOnOrderReturnedToMaster::class);
         Event::listen(OrderReturnedToMaster::class, ClearWorkPricesOnOrderReturnedToMaster::class);
+        Event::listen(PerformedWorkRemoved::class, ClearWorkPriceOnPerformedWorkRemoved::class);
         Event::listen(WorkStarted::class, MarkOrderInProgressOnWorkStarted::class);
         Event::listen(ProductionCompleted::class, MarkOrderWorksCompletedOnProductionCompleted::class);
         Event::listen(OrderIssued::class, RecordPaymentOnOrderIssued::class);

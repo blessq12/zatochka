@@ -3,7 +3,10 @@
 namespace App\Filament\Order\Resources\OrderResource\Support;
 
 use App\Application\Order\ReadPort\OrderContainerReadPort;
+use App\Domain\Inventory\VO\MovementType;
 use App\Domain\Order\VO\OrderItemStatus;
+use App\Filament\Inventory\Support\OrderMaterialWriteOffs;
+use App\Infrastructure\Inventory\Model\WarehouseMovementModel;
 use App\Infrastructure\Order\Model\OrderModel;
 
 /**
@@ -33,6 +36,93 @@ final class OrderWorkPricing
     public static function formatOrderActualTotal(OrderModel $order): string
     {
         return self::calculateOrderItemsTotal($order);
+    }
+
+    /**
+     * @return array{
+     *     works: array{total: float, currency: string}|null,
+     *     parts: array{total: float, currency: string}|null,
+     *     final: array{total: float, currency: string}|null,
+     * }
+     */
+    public static function resolveOrderPricingBreakdown(OrderModel $order): array
+    {
+        $works = self::resolveOrderItemsTotalState($order);
+        $parts = self::resolveOrderPartsTotalState($order);
+
+        $final = null;
+        if ($works !== null || $parts !== null) {
+            $final = [
+                'total' => (float) ($works['total'] ?? 0) + (float) ($parts['total'] ?? 0),
+                'currency' => $works['currency'] ?? $parts['currency'] ?? 'RUB',
+            ];
+        }
+
+        return [
+            'works' => $works,
+            'parts' => $parts,
+            'final' => $final,
+        ];
+    }
+
+    /**
+     * @return array{total: float, currency: string}|null
+     */
+    public static function resolveOrderPartsTotalState(OrderModel $order): ?array
+    {
+        $reversedIds = array_fill_keys(
+            OrderMaterialWriteOffs::reversedWriteOffIds((string) $order->id),
+            true,
+        );
+
+        $movements = WarehouseMovementModel::query()
+            ->where('order_id', $order->id)
+            ->where('type', MovementType::WriteOff->value)
+            ->whereNotNull('unit_price')
+            ->get();
+
+        if ($movements->isEmpty()) {
+            return null;
+        }
+
+        $total = 0.0;
+        $currency = (string) ($order->estimated_currency ?: 'RUB');
+        $hasPricedParts = false;
+
+        foreach ($movements as $movement) {
+            if (isset($reversedIds[(int) $movement->id])) {
+                continue;
+            }
+
+            if ($movement->unit_price === null || $movement->unit_price === '') {
+                continue;
+            }
+
+            $hasPricedParts = true;
+            $total += (float) $movement->unit_price * (float) $movement->quantity;
+            $currency = (string) ($movement->currency ?: $currency);
+        }
+
+        if (! $hasPricedParts) {
+            return null;
+        }
+
+        return [
+            'total' => round($total, 2),
+            'currency' => $currency,
+        ];
+    }
+
+    /**
+     * @param  array{total: float, currency: string}|null  $state
+     */
+    public static function formatPricingState(?array $state): string
+    {
+        if ($state === null) {
+            return 'цены не указаны';
+        }
+
+        return self::formatMoney((string) $state['total'], $state['currency']);
     }
 
     /**

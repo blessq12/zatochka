@@ -5,6 +5,7 @@ namespace App\Filament\Equipment\Resources;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\CreateEquipment;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\EditEquipment;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\ListEquipments;
+use App\Filament\Equipment\Support\RegisterEquipmentOption;
 use App\Filament\Support\ClientSelectField;
 use App\Filament\Support\DomainResource;
 use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
@@ -84,20 +85,7 @@ class EquipmentResource extends DomainResource
             static::clientSelect(),
             TextInput::make('notes')
                 ->label('Заметки'),
-            Repeater::make('parts')
-                ->label('Части оборудования')
-                ->schema([
-                    TextInput::make('name')
-                        ->label('Название')
-                        ->required()
-                        ->placeholder('Ручка / Блок управления / Блок питания'),
-                    TextInput::make('serialNumber')
-                        ->label('Серийный номер')
-                        ->placeholder('Необязательно'),
-                ])
-                ->defaultItems(0)
-                ->addActionLabel('Добавить часть')
-                ->columns(2)
+            RegisterEquipmentOption::partsRepeater()
                 ->visible(fn (string $operation): bool => $operation === 'create'),
             Repeater::make('components_display')
                 ->label('Части оборудования')

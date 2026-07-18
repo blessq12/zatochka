@@ -172,11 +172,7 @@ final class MasterProductionTaskPresenter
 
     public function serviceTypeLabel(string $serviceType): string
     {
-        return match ($serviceType) {
-            OrderServiceType::Repair->value => 'Ремонт',
-            OrderServiceType::Sharpening->value => 'Заточка',
-            default => $serviceType,
-        };
+        return OrderServiceType::tryLabel($serviceType) ?? $serviceType;
     }
 
     public function billingLabel(string $billingType): bool

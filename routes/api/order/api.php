@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Order\SharpeningToolTypeCatalogController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('sharpening-tool-types', [SharpeningToolTypeCatalogController::class, 'index']);
 
 Route::prefix('orders')->group(function (): void {
     Route::post('/', [OrderController::class, 'store']);

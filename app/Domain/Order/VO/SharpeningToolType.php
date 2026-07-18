@@ -39,7 +39,7 @@ enum SharpeningToolType: string
         };
     }
 
-    /** @return array<string, string> */
+    /** @return array<string, string> value => label */
     public static function options(): array
     {
         $options = [];
@@ -49,5 +49,23 @@ enum SharpeningToolType: string
         }
 
         return $options;
+    }
+
+    /** @return list<string> */
+    public static function values(): array
+    {
+        return array_map(
+            static fn (self $case): string => $case->value,
+            self::cases(),
+        );
+    }
+
+    public static function tryLabel(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return self::tryFrom($value)?->label();
     }
 }

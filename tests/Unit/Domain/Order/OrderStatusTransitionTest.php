@@ -49,5 +49,9 @@ final class OrderStatusTransitionTest extends TestCase
         yield 'issued → ready' => [OrderStatus::Issued, OrderStatus::Ready];
         yield 'cancelled → in_progress' => [OrderStatus::Cancelled, OrderStatus::InProgress];
         yield 'ready → works_completed' => [OrderStatus::Ready, OrderStatus::WorksCompleted];
+        yield 'master → cancelled' => [OrderStatus::MasterAssigned, OrderStatus::Cancelled];
+        yield 'in_progress → cancelled' => [OrderStatus::InProgress, OrderStatus::Cancelled];
+        yield 'works_completed → cancelled' => [OrderStatus::WorksCompleted, OrderStatus::Cancelled];
+        yield 'ready → cancelled' => [OrderStatus::Ready, OrderStatus::Cancelled];
     }
 }

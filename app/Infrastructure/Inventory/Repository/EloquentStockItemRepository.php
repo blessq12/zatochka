@@ -29,6 +29,8 @@ final readonly class EloquentStockItemRepository implements StockItemRepository
                     'name' => $material->name,
                     'unit' => $material->unit,
                     'category' => $material->category,
+                    'unit_price' => $material->unit_price,
+                    'currency' => $material->currency,
                 ],
             );
 

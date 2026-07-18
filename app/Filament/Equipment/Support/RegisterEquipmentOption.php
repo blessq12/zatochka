@@ -61,23 +61,35 @@ final class RegisterEquipmentOption
                 ->label('Заметки')
                 ->rows(2)
                 ->columnSpanFull(),
-            Repeater::make('parts')
-                ->label('Части оборудования')
-                ->schema([
-                    TextInput::make('name')
-                        ->label('Название')
-                        ->required()
-                        ->placeholder('Ручка / Блок управления / Блок питания'),
-                    TextInput::make('serialNumber')
-                        ->label('Серийный номер')
-                        ->placeholder('Необязательно'),
-                ])
-                ->defaultItems(0)
-                ->addActionLabel('Добавить часть')
-                ->columns(2)
-                ->columnSpanFull()
-                ->collapsible(),
+            self::partsRepeater(),
         ];
+    }
+
+    public static function partsRepeater(string $name = 'parts'): Repeater
+    {
+        return Repeater::make($name)
+            ->label('Части оборудования')
+            ->schema([
+                TextInput::make('name')
+                    ->label('Название')
+                    ->required()
+                    ->placeholder('Ручка / Блок управления / Блок питания'),
+                TextInput::make('serialNumber')
+                    ->label('Серийный номер')
+                    ->placeholder('Необязательно'),
+            ])
+            ->defaultItems(1)
+            ->minItems(1)
+            ->required()
+            ->helperText('Нужна хотя бы одна часть или элемент')
+            ->validationMessages([
+                'min' => 'Добавьте хотя бы одну часть или элемент оборудования.',
+                'required' => 'Добавьте хотя бы одну часть или элемент оборудования.',
+            ])
+            ->addActionLabel('Добавить часть')
+            ->columns(2)
+            ->columnSpanFull()
+            ->collapsible();
     }
 
     /** @param array<string, mixed> $data */
@@ -105,6 +117,12 @@ final class RegisterEquipmentOption
                     ? (string) $part['serialNumber']
                     : null,
             );
+        }
+
+        if ($parts === []) {
+            throw ValidationException::withMessages([
+                'data.parts' => 'Добавьте хотя бы одну часть или элемент оборудования.',
+            ]);
         }
 
         app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(

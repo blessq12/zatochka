@@ -19,4 +19,13 @@ final readonly class EloquentPaymentReadModel implements PaymentReadPort
 
         return $model === null ? null : $this->mapper->toDTO($model);
     }
+
+    public function findByOrderId(string $orderId): ?PaymentDTO
+    {
+        $model = PaymentModel::query()
+            ->where('order_id', $orderId)
+            ->first();
+
+        return $model === null ? null : $this->mapper->toDTO($model);
+    }
 }

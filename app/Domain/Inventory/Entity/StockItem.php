@@ -10,6 +10,7 @@ use App\Domain\Inventory\VO\Quantity;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
+use App\Shared\ValueObject\Money;
 
 final class StockItem extends AggregateRoot
 {
@@ -97,9 +98,20 @@ final class StockItem extends AggregateRoot
         ?string $comment = null,
         ?string $orderId = null,
         ?int $orderItemId = null,
+        ?Money $unitPrice = null,
     ): void {
         if ((float) $quantity->value <= 0) {
             throw new DomainException('Write-off quantity must be positive.');
+        }
+
+        if ($orderId !== null) {
+            if ($unitPrice === null || (float) $unitPrice->amount <= 0) {
+                throw new DomainException('Unit price is required when writing off material to an order.');
+            }
+        }
+
+        if ($unitPrice !== null && (float) $unitPrice->amount < 0) {
+            throw new DomainException('Write-off unit price cannot be negative.');
         }
 
         $this->quantityOnHand = $this->quantityOnHand->subtract($quantity);
@@ -110,9 +122,70 @@ final class StockItem extends AggregateRoot
             comment: $comment,
             orderId: $orderId,
             orderItemId: $orderItemId,
+            unitPrice: $unitPrice,
         );
         $this->record(new MaterialWrittenOff($this->id, $this->material->id(), $quantity->value));
         $this->record(new StockChanged($this->id, $this->material->id(), $this->quantityOnHand->value));
+    }
+
+    public function reverseWriteOff(
+        EntityId $reversalMovementId,
+        EntityId $writeOffMovementId,
+        ?string $comment = null,
+    ): void {
+        $writeOff = $this->findMovement($writeOffMovementId);
+
+        if ($writeOff->type !== MovementType::WriteOff) {
+            throw new DomainException('Only write-off movements can be reversed.');
+        }
+
+        if ($writeOff->orderId === null) {
+            throw new DomainException('Only order-linked write-offs can be reversed.');
+        }
+
+        if ($this->isMovementReversed($writeOffMovementId)) {
+            throw new DomainException('Write-off movement is already reversed.');
+        }
+
+        $this->quantityOnHand = $this->quantityOnHand->add($writeOff->quantity);
+        $this->movements[] = new WarehouseMovement(
+            $reversalMovementId,
+            MovementType::Reversal,
+            $writeOff->quantity,
+            comment: $comment,
+            orderId: $writeOff->orderId,
+            orderItemId: $writeOff->orderItemId,
+            unitPrice: $writeOff->unitPrice,
+            reversesMovementId: $writeOffMovementId,
+        );
+        $this->record(new MaterialReceived($this->id, $this->material->id(), $writeOff->quantity->value));
+        $this->record(new StockChanged($this->id, $this->material->id(), $this->quantityOnHand->value));
+    }
+
+    public function isMovementReversed(EntityId $movementId): bool
+    {
+        foreach ($this->movements as $movement) {
+            if (
+                $movement->type === MovementType::Reversal
+                && $movement->reversesMovementId !== null
+                && $movement->reversesMovementId->equals($movementId)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function findMovement(EntityId $movementId): WarehouseMovement
+    {
+        foreach ($this->movements as $movement) {
+            if ($movement->id->equals($movementId)) {
+                return $movement;
+            }
+        }
+
+        throw new DomainException(sprintf('Warehouse movement %d not found.', $movementId->value));
     }
 
     public function adjust(

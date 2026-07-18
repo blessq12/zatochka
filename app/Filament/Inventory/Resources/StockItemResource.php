@@ -8,6 +8,8 @@ use App\Application\Inventory\Command\OpenStockItemCommand;
 use App\Application\Inventory\Command\OpenStockItemHandler;
 use App\Application\Inventory\Command\ReceiveMaterialCommand;
 use App\Application\Inventory\Command\ReceiveMaterialHandler;
+use App\Application\Inventory\Command\SetMaterialUnitPriceCommand;
+use App\Application\Inventory\Command\SetMaterialUnitPriceHandler;
 use App\Application\Inventory\Command\WriteOffMaterialCommand;
 use App\Application\Inventory\Command\WriteOffMaterialHandler;
 use App\Domain\Inventory\VO\StockCategory;
@@ -128,6 +130,14 @@ class StockItemResource extends DomainResource
             TextEntry::make('material.unit')
                 ->label('Ед. изм.')
                 ->formatStateUsing(fn (?string $state): string => static::unitOptions()[$state] ?? ($state ?? '—')),
+            TextEntry::make('material.unit_price')
+                ->label('Цена за ед.')
+                ->formatStateUsing(function (?string $state, StockItemModel $record): string {
+                    $amount = number_format((float) ($state ?? 0), 2, '.', ' ');
+                    $currency = (string) ($record->material?->currency ?: 'RUB');
+
+                    return $amount.' '.($currency === 'RUB' ? '₽' : $currency);
+                }),
             TextEntry::make('quantity_on_hand')
                 ->label('Остаток'),
         ]);
@@ -153,6 +163,10 @@ class StockItemResource extends DomainResource
                 TextColumn::make('material.unit')
                     ->label('Ед. изм.')
                     ->formatStateUsing(fn (?string $state): string => static::unitOptions()[$state] ?? ($state ?? '—')),
+                TextColumn::make('material.unit_price')
+                    ->label('Цена за ед.')
+                    ->formatStateUsing(fn (?string $state): string => number_format((float) ($state ?? 0), 2, '.', ' ').' ₽')
+                    ->sortable(),
                 TextColumn::make('quantity_on_hand')
                     ->label('Остаток')
                     ->sortable(),
@@ -244,6 +258,33 @@ class StockItemResource extends DomainResource
                         Notification::make()->title($exception->getMessage())->danger()->send();
                     }
                 }),
+            Action::make('setUnitPrice')
+                ->label('Цена')
+                ->icon(Heroicon::OutlinedBanknotes)
+                ->form([
+                    TextInput::make('unit_price')
+                        ->label('Цена за единицу')
+                        ->numeric()
+                        ->required()
+                        ->minValue(0)
+                        ->default(fn (StockItemModel $record): string => number_format(
+                            (float) ($record->material?->unit_price ?? 0),
+                            2,
+                            '.',
+                            '',
+                        )),
+                ])
+                ->action(function (StockItemModel $record, array $data): void {
+                    try {
+                        app(SetMaterialUnitPriceHandler::class)->handle(new SetMaterialUnitPriceCommand(
+                            (int) $record->id,
+                            (string) $data['unit_price'],
+                        ));
+                        Notification::make()->title('Цена обновлена')->success()->send();
+                    } catch (DomainException $exception) {
+                        Notification::make()->title($exception->getMessage())->danger()->send();
+                    }
+                }),
         ];
     }
 
@@ -274,6 +315,12 @@ class StockItemResource extends DomainResource
                         ->required()
                         ->default('0')
                         ->minValue(0),
+                    TextInput::make('unit_price')
+                        ->label('Цена за единицу')
+                        ->numeric()
+                        ->required()
+                        ->default('0.00')
+                        ->minValue(0),
                 ])
                 ->action(function (array $data): void {
                     try {
@@ -285,6 +332,7 @@ class StockItemResource extends DomainResource
                             $data['unit'],
                             $data['category'],
                             (string) $data['initialQuantity'],
+                            (string) $data['unit_price'],
                         ));
                         Notification::make()->title('Позиция добавлена')->success()->send();
                     } catch (DomainException $exception) {

@@ -20,7 +20,11 @@ use App\Application\Order\Query\GetOrderByIdHandler;
 use App\Application\Order\Query\GetOrderByIdQuery;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Domain\Finance\VO\PaymentMethod;
+use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
+use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderUrgency;
+use App\Domain\Order\VO\SharpeningToolType;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Illuminate\Http\JsonResponse;
@@ -46,9 +50,9 @@ final class OrderController extends Controller
         $data = $request->validate([
             'clientId' => ['nullable', 'integer', 'min:1'],
             'estimatedAmount' => ['required', 'numeric'],
-            'serviceType' => ['required', Rule::in(['sharpening', 'repair'])],
-            'billingType' => ['required', Rule::in(['paid', 'warranty'])],
-            'urgency' => ['required', Rule::in(['normal', 'urgent'])],
+            'serviceType' => ['required', 'string', Rule::enum(OrderServiceType::class)],
+            'billingType' => ['required', 'string', Rule::enum(OrderBillingType::class)],
+            'urgency' => ['required', 'string', Rule::enum(OrderUrgency::class)],
             'warrantySourceOrderId' => ['nullable', 'string', 'size:32'],
             'deliveryRequired' => ['nullable', 'boolean'],
             'defects' => ['nullable', 'string'],
@@ -56,7 +60,7 @@ final class OrderController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.clientEquipmentId' => ['nullable', 'integer', 'min:1'],
             'items.*.toolName' => ['nullable', 'string'],
-            'items.*.toolType' => ['nullable', 'string'],
+            'items.*.toolType' => ['nullable', 'string', Rule::enum(SharpeningToolType::class)],
             'items.*.quantity' => ['nullable', 'integer', 'min:1'],
         ]);
 

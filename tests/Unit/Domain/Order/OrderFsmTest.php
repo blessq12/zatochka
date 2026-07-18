@@ -92,6 +92,15 @@ final class OrderFsmTest extends TestCase
         $this->assertContains(OrderCancelled::class, $types);
     }
 
+    public function test_cancel_forbidden_after_master_assigned(): void
+    {
+        $order = $this->newSharpeningOrder();
+        $order->assignMaster(new EntityId(10));
+
+        $this->expectException(DomainException::class);
+        $order->cancel('too late');
+    }
+
     private function newSharpeningOrder(): Order
     {
         return Order::create(

@@ -7,4 +7,6 @@ use App\Application\Delivery\DTO\DeliveryRequestDTO;
 interface DeliveryReadPort
 {
     public function findById(int $deliveryRequestId): ?DeliveryRequestDTO;
+
+    public function findByOrderId(string $orderId): ?DeliveryRequestDTO;
 }

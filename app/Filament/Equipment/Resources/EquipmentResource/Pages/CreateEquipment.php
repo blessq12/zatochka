@@ -10,6 +10,7 @@ use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 class CreateEquipment extends CreateRecord
 {
@@ -25,11 +26,21 @@ class CreateEquipment extends CreateRecord
         $parts = [];
 
         foreach ($data['parts'] ?? [] as $part) {
+            if (! filled($part['name'] ?? null)) {
+                continue;
+            }
+
             $parts[] = new EquipmentPartDTO(
                 $ids->next('equipment_component')->value,
                 $part['name'],
                 $part['serialNumber'] ?? null,
             );
+        }
+
+        if ($parts === []) {
+            throw ValidationException::withMessages([
+                'data.parts' => 'Добавьте хотя бы одну часть или элемент оборудования.',
+            ]);
         }
 
         app(RegisterEquipmentHandler::class)->handle(new RegisterEquipmentCommand(

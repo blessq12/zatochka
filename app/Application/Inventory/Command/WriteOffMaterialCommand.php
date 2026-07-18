@@ -11,5 +11,7 @@ final readonly class WriteOffMaterialCommand
         public ?string $orderId = null,
         public ?int $orderItemId = null,
         public ?int $movementId = null,
+        public ?string $unitPrice = null,
+        public string $currency = 'RUB',
     ) {}
 }

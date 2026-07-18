@@ -17,8 +17,9 @@ use App\Application\Order\Command\ReturnOrderToMasterHandler;
 use App\Domain\Finance\VO\PaymentMethod;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderStatus;
-use App\Filament\Inventory\Actions\WriteOffMaterialOnOrderAction;
+use App\Filament\Inventory\Actions\SyncOrderMaterialWriteOffsAction;
 use App\Filament\Pricing\Actions\SetOrderWorkPricesAction;
+use App\Filament\Workshop\Actions\SyncOrderPerformedWorksAction;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Models\User;
 use App\Models\UserRole;
@@ -33,6 +34,16 @@ final class OrderMutationActions
 {
     /** @return list<Action> */
     public static function all(): array
+    {
+        return [
+            ...self::orderLifecycle(),
+            ...self::pricing(),
+            ...self::inventory(),
+        ];
+    }
+
+    /** @return list<Action> */
+    public static function orderLifecycle(): array
     {
         return [
             Action::make('assignMaster')
@@ -63,8 +74,6 @@ final class OrderMutationActions
                         Notification::make()->title($exception->getMessage())->danger()->send();
                     }
                 }),
-            SetOrderWorkPricesAction::make(),
-            WriteOffMaterialOnOrderAction::make(),
             Action::make('markReady')
                 ->label('Готов к выдаче')
                 ->icon(Heroicon::OutlinedCheckBadge)
@@ -146,12 +155,7 @@ final class OrderMutationActions
                 ->label('Отменить')
                 ->icon(Heroicon::OutlinedXMark)
                 ->color('danger')
-                ->visible(fn (OrderModel $record): bool => ! in_array($record->status, [
-                    OrderStatus::Cancelled->value,
-                    OrderStatus::Closed->value,
-                    OrderStatus::Issued->value,
-                    OrderStatus::Ready->value,
-                ], true))
+                ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Created->value)
                 ->requiresConfirmation()
                 ->form([
                     TextInput::make('reason')
@@ -169,6 +173,24 @@ final class OrderMutationActions
                         Notification::make()->title($exception->getMessage())->danger()->send();
                     }
                 }),
+        ];
+    }
+
+    /** @return list<Action> */
+    public static function pricing(): array
+    {
+        return [
+            SyncOrderPerformedWorksAction::make(),
+            SetOrderWorkPricesAction::make()
+                ->label('Цены работ'),
+        ];
+    }
+
+    /** @return list<Action> */
+    public static function inventory(): array
+    {
+        return [
+            SyncOrderMaterialWriteOffsAction::make(),
         ];
     }
 }

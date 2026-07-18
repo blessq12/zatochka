@@ -85,10 +85,7 @@ class CreateOrder extends CreateRecord
                     ->schema([
                         ToggleButtons::make('service_type')
                             ->label('Тип заказа')
-                            ->options([
-                                OrderServiceType::Sharpening->value => 'Заточка',
-                                OrderServiceType::Repair->value => 'Ремонт',
-                            ])
+                            ->options(OrderServiceType::options())
                             ->icons([
                                 OrderServiceType::Sharpening->value => Heroicon::OutlinedScissors,
                                 OrderServiceType::Repair->value => Heroicon::OutlinedWrenchScrewdriver,
@@ -102,10 +99,7 @@ class CreateOrder extends CreateRecord
                             ->live(),
                         ToggleButtons::make('billing_type')
                             ->label('Вид заказа')
-                            ->options([
-                                OrderBillingType::Paid->value => 'Платный',
-                                OrderBillingType::Warranty->value => 'Гарантийный',
-                            ])
+                            ->options(OrderBillingType::options())
                             ->icons([
                                 OrderBillingType::Paid->value => Heroicon::OutlinedBanknotes,
                                 OrderBillingType::Warranty->value => Heroicon::OutlinedShieldCheck,
@@ -124,10 +118,7 @@ class CreateOrder extends CreateRecord
                             }),
                         ToggleButtons::make('urgency')
                             ->label('Срочность')
-                            ->options([
-                                OrderUrgency::Normal->value => 'Обычный',
-                                OrderUrgency::Urgent->value => 'Срочный',
-                            ])
+                            ->options(OrderUrgency::options())
                             ->icons([
                                 OrderUrgency::Normal->value => Heroicon::OutlinedClock,
                                 OrderUrgency::Urgent->value => Heroicon::OutlinedBolt,
@@ -364,6 +355,9 @@ class CreateOrder extends CreateRecord
 
                                 $set('client_equipment_ids', []);
                                 $set('equipment_picker', []);
+                                $set('new_equipment_parts', [
+                                    ['name' => null, 'serialNumber' => null],
+                                ]);
                             }),
                         Hidden::make('client_equipment_ids')->dehydrated(true),
                         $this->clientEquipmentSelect()
@@ -396,22 +390,9 @@ class CreateOrder extends CreateRecord
                             ->columnSpanFull()
                             ->visible(fn (Get $get): bool => $get('equipment_mode') === 'new')
                             ->dehydrated(fn (Get $get): bool => $get('equipment_mode') === 'new'),
-                        Repeater::make('new_equipment_parts')
-                            ->label('Части оборудования')
-                            ->schema([
-                                TextInput::make('name')
-                                    ->label('Название')
-                                    ->required()
-                                    ->placeholder('Ручка / Блок управления / Блок питания'),
-                                TextInput::make('serialNumber')
-                                    ->label('Серийный номер')
-                                    ->placeholder('Необязательно'),
-                            ])
-                            ->defaultItems(0)
-                            ->addActionLabel('Добавить часть')
-                            ->columns(2)
-                            ->columnSpanFull()
-                            ->collapsible()
+                        RegisterEquipmentOption::partsRepeater('new_equipment_parts')
+                            ->required(fn (Get $get): bool => $get('equipment_mode') === 'new')
+                            ->minItems(fn (Get $get): int => $get('equipment_mode') === 'new' ? 1 : 0)
                             ->visible(fn (Get $get): bool => $get('equipment_mode') === 'new')
                             ->dehydrated(fn (Get $get): bool => $get('equipment_mode') === 'new'),
                     ]),

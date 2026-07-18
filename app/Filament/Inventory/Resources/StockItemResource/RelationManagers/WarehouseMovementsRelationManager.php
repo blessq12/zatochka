@@ -44,17 +44,25 @@ class WarehouseMovementsRelationManager extends RelationManager
                         MovementType::Receipt->value => 'Приход',
                         MovementType::WriteOff->value => 'Списание',
                         MovementType::Adjustment->value => 'Корректировка',
+                        MovementType::Reversal->value => 'Сторно',
                         default => $state ?? '—',
                     })
                     ->color(fn (?string $state): string => match ($state) {
                         MovementType::Receipt->value => 'success',
                         MovementType::WriteOff->value => 'danger',
                         MovementType::Adjustment->value => 'warning',
+                        MovementType::Reversal->value => 'gray',
                         default => 'gray',
                     }),
                 TextColumn::make('quantity')
                     ->label('Количество')
                     ->sortable(),
+                TextColumn::make('unit_price')
+                    ->label('Цена за ед.')
+                    ->placeholder('—')
+                    ->formatStateUsing(fn (?string $state): string => $state === null || $state === ''
+                        ? '—'
+                        : number_format((float) $state, 2, '.', ' ').' ₽'),
                 TextColumn::make('comment')
                     ->label('Комментарий')
                     ->placeholder('—')

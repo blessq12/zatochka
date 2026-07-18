@@ -5,6 +5,7 @@ namespace App\Domain\Workshop\Entity;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Workshop\Event\DiagnosisCompleted;
 use App\Domain\Workshop\Event\MasterAssigned;
+use App\Domain\Workshop\Event\PerformedWorkRemoved;
 use App\Domain\Workshop\Event\ProductionCancelled;
 use App\Domain\Workshop\Event\ProductionCompleted;
 use App\Domain\Workshop\Event\WorkCompleted;
@@ -273,6 +274,49 @@ final class ProductionTask extends AggregateRoot
             throw new DomainException('Only the assigned master can remove performed works.');
         }
 
+        $this->removeWorkInternal($workId);
+    }
+
+    public function managerAddWork(PerformedWork $work): void
+    {
+        $this->assertManagerWorkEditable();
+
+        if ($this->masterId === null) {
+            throw new DomainException('Cannot add performed work without an assigned master.');
+        }
+
+        if (! $this->masterId->equals($work->masterId)) {
+            throw new DomainException('Performed work must be attributed to the assigned master.');
+        }
+
+        $this->works[] = $work;
+    }
+
+    public function managerRemoveWork(EntityId $workId): void
+    {
+        $this->assertManagerWorkEditable();
+        $this->removeWorkInternal($workId);
+    }
+
+    public function changeWorkDescription(EntityId $workId, string $description): void
+    {
+        $this->assertManagerWorkEditable();
+
+        foreach ($this->works as $index => $work) {
+            if (! $work->id->equals($workId)) {
+                continue;
+            }
+
+            $this->works[$index] = $work->withDescription($description);
+
+            return;
+        }
+
+        throw new DomainException('Performed work not found.');
+    }
+
+    private function removeWorkInternal(EntityId $workId): void
+    {
         $before = count($this->works);
         $this->works = array_values(array_filter(
             $this->works,
@@ -282,6 +326,8 @@ final class ProductionTask extends AggregateRoot
         if (count($this->works) === $before) {
             throw new DomainException('Performed work not found.');
         }
+
+        $this->record(new PerformedWorkRemoved($this->id, $this->orderId, $workId));
     }
 
     private function transitionTo(ProductionStatus $next): void
@@ -301,6 +347,20 @@ final class ProductionTask extends AggregateRoot
     {
         if ($this->status->isTerminal()) {
             throw new DomainException('Terminal production task cannot be modified.');
+        }
+    }
+
+    private function assertManagerWorkEditable(): void
+    {
+        if ($this->status === ProductionStatus::Rejected) {
+            throw new DomainException('Rejected production task cannot be modified.');
+        }
+
+        if (! in_array($this->status, [
+            ProductionStatus::WorkCompleted,
+            ProductionStatus::Completed,
+        ], true)) {
+            throw new DomainException('Manager can edit performed works only after work completion.');
         }
     }
 }
