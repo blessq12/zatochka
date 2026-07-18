@@ -13,10 +13,12 @@ use App\Application\Equipment\Query\GetEquipmentByIdHandler;
 use App\Application\Equipment\Query\GetEquipmentByIdQuery;
 use App\Application\Equipment\ReadPort\EquipmentOrderHistoryPort;
 use App\Application\Equipment\ReadPort\EquipmentReadPort;
+use App\Domain\Equipment\VO\EquipmentType;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 final class EquipmentController extends Controller
 {
@@ -62,6 +64,7 @@ final class EquipmentController extends Controller
             'title' => ['required', 'string'],
             'brand' => ['required', 'string'],
             'modelName' => ['required', 'string'],
+            'equipmentType' => ['required', 'string', Rule::enum(EquipmentType::class)],
             'notes' => ['nullable', 'string'],
             'parts' => ['nullable', 'array'],
             'parts.*.name' => ['required', 'string'],
@@ -85,6 +88,7 @@ final class EquipmentController extends Controller
             $data['title'],
             $data['brand'],
             $data['modelName'],
+            $data['equipmentType'],
             isset($data['clientId']) ? (int) $data['clientId'] : null,
             $data['notes'] ?? null,
             $parts,

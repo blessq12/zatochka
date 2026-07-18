@@ -16,10 +16,14 @@ use App\Application\Order\Command\ReturnOrderToMasterCommand;
 use App\Application\Order\Command\ReturnOrderToMasterHandler;
 use App\Domain\Finance\VO\PaymentMethod;
 use App\Domain\Order\VO\OrderBillingType;
+use App\Domain\Order\VO\OrderServiceType;
+use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderStatus;
+use App\Filament\Equipment\Actions\EditWebsiteOrderEquipmentAction;
 use App\Filament\Inventory\Actions\SyncOrderMaterialWriteOffsAction;
 use App\Filament\Pricing\Actions\SetOrderWorkPricesAction;
 use App\Filament\Workshop\Actions\SyncOrderPerformedWorksAction;
+use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Models\User;
 use App\Models\UserRole;
@@ -37,6 +41,7 @@ final class OrderMutationActions
     {
         return [
             ...self::orderLifecycle(),
+            ...self::equipment(),
             ...self::pricing(),
             ...self::inventory(),
         ];
@@ -52,6 +57,10 @@ final class OrderMutationActions
                 ->color('primary')
                 ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Created->value
                     && $record->assigned_master_id === null)
+                ->disabled(fn (OrderModel $record): bool => ! self::websiteRepairEquipmentReadyForMaster($record))
+                ->tooltip(fn (OrderModel $record): ?string => self::websiteRepairEquipmentReadyForMaster($record)
+                    ? null
+                    : 'Сначала добавьте к оборудованию хотя бы одну часть с серийным номером')
                 ->form([
                     Select::make('master_id')
                         ->label('Мастер')
@@ -64,6 +73,15 @@ final class OrderMutationActions
                         ->required(),
                 ])
                 ->action(function (OrderModel $record, array $data): void {
+                    if (! self::websiteRepairEquipmentReadyForMaster($record)) {
+                        Notification::make()
+                            ->title('Сначала добавьте к оборудованию хотя бы одну часть с серийным номером')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
                     try {
                         app(AssignOrderMasterHandler::class)->handle(new AssignOrderMasterCommand(
                             (string) $record->id,
@@ -177,6 +195,14 @@ final class OrderMutationActions
     }
 
     /** @return list<Action> */
+    public static function equipment(): array
+    {
+        return [
+            EditWebsiteOrderEquipmentAction::make(),
+        ];
+    }
+
+    /** @return list<Action> */
     public static function pricing(): array
     {
         return [
@@ -192,5 +218,42 @@ final class OrderMutationActions
         return [
             SyncOrderMaterialWriteOffsAction::make(),
         ];
+    }
+
+    /**
+     * Для заказов ремонта с сайта мастер назначается только после
+     * дополнения оборудования: хотя бы одна часть с серийным номером.
+     */
+    public static function websiteRepairEquipmentReadyForMaster(OrderModel $record): bool
+    {
+        if ((string) $record->source !== OrderSource::Website->value) {
+            return true;
+        }
+
+        if ((string) $record->service_type !== OrderServiceType::Repair->value) {
+            return true;
+        }
+
+        $record->loadMissing('items.equipment.components');
+
+        $equipmentItems = $record->items->filter(
+            static fn (OrderItemModel $item): bool => $item->client_equipment_id !== null,
+        );
+
+        if ($equipmentItems->isEmpty()) {
+            return false;
+        }
+
+        foreach ($equipmentItems as $item) {
+            $hasSerializedPart = $item->equipment?->components->contains(
+                static fn ($component): bool => trim((string) ($component->serial_number ?? '')) !== '',
+            ) ?? false;
+
+            if (! $hasSerializedPart) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

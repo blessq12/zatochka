@@ -14,6 +14,7 @@ final readonly class ClientEquipmentDTO
         public string $title,
         public string $brand,
         public string $modelName,
+        public string $equipmentType,
         public ?string $notes,
         public array $components,
         public array $repairHistory,

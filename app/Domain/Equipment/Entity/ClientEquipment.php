@@ -5,6 +5,7 @@ namespace App\Domain\Equipment\Entity;
 use App\Domain\Equipment\Event\ComponentAdded;
 use App\Domain\Equipment\Event\EquipmentRegistered;
 use App\Domain\Equipment\Event\SerialNumberRegistered;
+use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Equipment\VO\SerialNumber;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
@@ -24,6 +25,7 @@ final class ClientEquipment extends AggregateRoot
         private string $title,
         private string $brand,
         private string $modelName,
+        private EquipmentType $equipmentType,
         private ?string $notes = null,
     ) {
         $this->assertNonEmptyLabel($this->title, 'Equipment title cannot be empty.');
@@ -36,10 +38,11 @@ final class ClientEquipment extends AggregateRoot
         string $title,
         string $brand,
         string $modelName,
+        EquipmentType $equipmentType,
         ?EntityId $clientId = null,
         ?string $notes = null,
     ): self {
-        $equipment = new self($id, $clientId, $title, $brand, $modelName, $notes);
+        $equipment = new self($id, $clientId, $title, $brand, $modelName, $equipmentType, $notes);
         $equipment->record(new EquipmentRegistered($id, $title, $clientId));
 
         return $equipment;
@@ -54,12 +57,13 @@ final class ClientEquipment extends AggregateRoot
         string $title,
         string $brand,
         string $modelName,
+        EquipmentType $equipmentType,
         ?EntityId $clientId = null,
         ?string $notes = null,
         array $components = [],
         array $repairHistory = [],
     ): self {
-        $equipment = new self($id, $clientId, $title, $brand, $modelName, $notes);
+        $equipment = new self($id, $clientId, $title, $brand, $modelName, $equipmentType, $notes);
 
         foreach ($components as $component) {
             $equipment->components[$component->id()->value] = $component;
@@ -93,6 +97,11 @@ final class ClientEquipment extends AggregateRoot
     public function modelName(): string
     {
         return $this->modelName;
+    }
+
+    public function equipmentType(): EquipmentType
+    {
+        return $this->equipmentType;
     }
 
     public function notes(): ?string
@@ -156,6 +165,7 @@ final class ClientEquipment extends AggregateRoot
         string $title,
         string $brand,
         string $modelName,
+        EquipmentType $equipmentType,
         ?string $notes = null,
         ?EntityId $clientId = null,
     ): void {
@@ -166,6 +176,7 @@ final class ClientEquipment extends AggregateRoot
         $this->title = $title;
         $this->brand = $brand;
         $this->modelName = $modelName;
+        $this->equipmentType = $equipmentType;
         $this->notes = $notes;
         $this->clientId = $clientId;
     }

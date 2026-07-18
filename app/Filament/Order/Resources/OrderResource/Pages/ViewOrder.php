@@ -95,6 +95,7 @@ class ViewOrder extends ViewRecord
                         ->visible(fn (): bool => ! $this->hasVisibleRailActions()),
                     SchemaActions::make(fn (): array => $this->configureRailActions([
                         ...OrderMutationActions::orderLifecycle(),
+                        ...OrderMutationActions::equipment(),
                         ...OrderMutationActions::pricing(),
                         ...OrderMutationActions::inventory(),
                     ]))->visible(fn (): bool => $this->hasVisibleRailActions()),
@@ -120,6 +121,7 @@ class ViewOrder extends ViewRecord
         foreach (
             [
                 ...OrderMutationActions::orderLifecycle(),
+                ...OrderMutationActions::equipment(),
                 ...OrderMutationActions::pricing(),
                 ...OrderMutationActions::inventory(),
             ] as $action
@@ -143,6 +145,7 @@ class ViewOrder extends ViewRecord
             $this->getRecord()->refresh()->load([
                 'client',
                 'items.equipment.components',
+                'items.reception',
                 'warrantySourceOrder',
             ]);
         };

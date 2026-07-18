@@ -5,6 +5,7 @@ namespace App\Filament\CRM\Resources\ClientResource\Support;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderServiceType;
 use App\Domain\Order\VO\OrderStatus;
+use App\Domain\Equipment\VO\EquipmentType;
 use App\Filament\Feedback\Resources\ReviewResource;
 use App\Filament\Feedback\Resources\ReviewResource\Support\ReviewPresentation;
 use App\Filament\Order\Resources\OrderResource;
@@ -133,18 +134,21 @@ final class ClientInfolist
             ->columnSpanFull()
             ->table([
                 TableColumn::make('Название'),
+                TableColumn::make('Тип'),
                 TableColumn::make('Марка / модель'),
                 TableColumn::make('Компоненты'),
                 TableColumn::make('Заметки'),
             ])
             ->schema([
                 TextEntry::make('title')
-                    ->state(fn(ClientEquipmentModel $equipment): string => ClientPresentation::equipmentLabel($equipment))
+                    ->state(fn (ClientEquipmentModel $equipment): string => ClientPresentation::equipmentLabel($equipment))
                     ->weight(FontWeight::SemiBold),
+                TextEntry::make('equipment_type')
+                    ->formatStateUsing(fn (?string $state): string => EquipmentType::tryLabel($state) ?? '—'),
                 TextEntry::make('details')
-                    ->state(fn(ClientEquipmentModel $equipment): string => ClientPresentation::equipmentDetails($equipment)),
+                    ->state(fn (ClientEquipmentModel $equipment): string => ClientPresentation::equipmentDetails($equipment)),
                 TextEntry::make('components')
-                    ->state(fn(ClientEquipmentModel $equipment): string => ClientPresentation::equipmentComponentsSummary($equipment)),
+                    ->state(fn (ClientEquipmentModel $equipment): string => ClientPresentation::equipmentComponentsSummary($equipment)),
                 TextEntry::make('notes')
                     ->placeholder('—'),
             ])

@@ -6,7 +6,9 @@ use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Equipment\Entity\ClientEquipment;
 use App\Domain\Equipment\Entity\EquipmentComponent;
 use App\Domain\Equipment\Repository\ClientEquipmentRepository;
+use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Equipment\VO\SerialNumber;
+use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
 
 final readonly class RegisterEquipmentHandler
@@ -18,11 +20,15 @@ final readonly class RegisterEquipmentHandler
 
     public function handle(RegisterEquipmentCommand $command): void
     {
+        $type = EquipmentType::tryFrom($command->equipmentType)
+            ?? throw new DomainException('Unknown equipment type.');
+
         $aggregate = ClientEquipment::register(
             new EntityId($command->equipmentId),
             $command->title,
             $command->brand,
             $command->modelName,
+            $type,
             $command->clientId !== null ? new EntityId($command->clientId) : null,
             $command->notes,
         );

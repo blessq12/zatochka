@@ -13,7 +13,7 @@ final class ClientEquipmentModel extends Model
 
     protected $keyType = 'int';
 
-    protected $fillable = ['id', 'client_id', 'title', 'brand', 'model_name', 'notes'];
+    protected $fillable = ['id', 'client_id', 'title', 'brand', 'model_name', 'equipment_type', 'notes'];
 
     public function components(): HasMany
     {

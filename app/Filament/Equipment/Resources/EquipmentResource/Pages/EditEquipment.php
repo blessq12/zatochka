@@ -111,6 +111,7 @@ class EditEquipment extends EditRecord
             $data['title'],
             $data['brand'],
             $data['model_name'],
+            (string) $data['equipment_type'],
             filled($data['client_id'] ?? null) ? (int) $data['client_id'] : null,
             $data['notes'] ?? null,
         ));

@@ -19,6 +19,7 @@ use App\Application\Workshop\Command\FinishProductionTaskCommand;
 use App\Application\Workshop\Command\FinishProductionTaskHandler;
 use App\Application\Workshop\Command\StartWorkCommand;
 use App\Application\Workshop\Command\StartWorkHandler;
+use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderStatus;
 use App\Domain\Workshop\VO\ProductionStatus;
@@ -66,6 +67,7 @@ trait BuildsWorkshopFlows
         string $brand,
         string $modelName,
         array $parts = [],
+        ?string $equipmentType = null,
     ): int {
         $ids = app(EntityIdGenerator::class);
         $equipmentId = $ids->next('equipment')->value;
@@ -84,6 +86,7 @@ trait BuildsWorkshopFlows
             $title,
             $brand,
             $modelName,
+            $equipmentType ?? EquipmentType::Other->value,
             $clientId,
             null,
             $partDtos,

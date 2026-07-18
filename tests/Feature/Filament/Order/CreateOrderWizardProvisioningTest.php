@@ -82,6 +82,7 @@ final class CreateOrderWizardProvisioningTest extends TestCase
                 'client_picker' => $clientId,
                 'equipment_mode' => 'new',
                 'new_equipment_title' => 'Газонокосилка',
+                'new_equipment_type' => 'other',
                 'new_equipment_brand' => 'Honda',
                 'new_equipment_model_name' => 'HRX',
                 'new_equipment_notes' => 'тест',
@@ -106,6 +107,7 @@ final class CreateOrderWizardProvisioningTest extends TestCase
         $this->assertNotNull($equipment);
         $this->assertSame('Honda', $equipment->brand);
         $this->assertSame('HRX', $equipment->model_name);
+        $this->assertSame('other', $equipment->equipment_type);
     }
 
     public function test_repair_order_created_with_fresh_client_and_equipment(): void
@@ -122,6 +124,7 @@ final class CreateOrderWizardProvisioningTest extends TestCase
                 'new_client_phone' => '+7 (900) 111-22-33',
                 'equipment_mode' => 'new',
                 'new_equipment_title' => 'Триммер',
+                'new_equipment_type' => 'trimmer',
                 'new_equipment_brand' => 'Stihl',
                 'new_equipment_model_name' => 'FS 55',
                 'new_equipment_parts' => [

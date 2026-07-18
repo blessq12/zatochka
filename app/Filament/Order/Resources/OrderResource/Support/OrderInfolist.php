@@ -8,6 +8,7 @@ use App\Application\Finance\DTO\PaymentDTO;
 use App\Application\Finance\ReadPort\PaymentReadPort;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
 use App\Domain\Delivery\VO\DeliveryStatus;
+use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderItemStatus;
 use App\Domain\Order\VO\OrderServiceType;
@@ -311,15 +312,18 @@ final class OrderInfolist
                     ->visible(fn(OrderModel $record): bool => $record->service_type === OrderServiceType::Repair->value)
                     ->table([
                         TableColumn::make('Оборудование'),
+                        TableColumn::make('Тип'),
                         TableColumn::make('Бренд / модель'),
                         TableColumn::make('Части'),
                         TableColumn::make('Статус'),
                     ])
                     ->schema([
                         TextEntry::make('equipment.title')
-                            ->placeholder(fn(OrderItemModel $record): string => $record->client_equipment_id
-                                ? 'Оборудование #' . $record->client_equipment_id
+                            ->placeholder(fn (OrderItemModel $record): string => $record->client_equipment_id
+                                ? 'Оборудование #'.$record->client_equipment_id
                                 : '—'),
+                        TextEntry::make('equipment.equipment_type')
+                            ->formatStateUsing(fn (?string $state): string => EquipmentType::tryLabel($state) ?? '—'),
                         TextEntry::make('equipment.brand')
                             ->formatStateUsing(function (?string $state, OrderItemModel $record): string {
                                 $equipment = $record->equipment;
@@ -328,7 +332,7 @@ final class OrderInfolist
                                     return '—';
                                 }
 
-                                return trim($equipment->brand . ' ' . $equipment->model_name) ?: '—';
+                                return trim($equipment->brand.' '.$equipment->model_name) ?: '—';
                             }),
                         TextEntry::make('equipment.components')
                             ->formatStateUsing(function (mixed $state, OrderItemModel $record): string {

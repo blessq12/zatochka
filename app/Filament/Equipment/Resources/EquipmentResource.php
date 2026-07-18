@@ -2,6 +2,7 @@
 
 namespace App\Filament\Equipment\Resources;
 
+use App\Domain\Equipment\VO\EquipmentType;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\CreateEquipment;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\EditEquipment;
 use App\Filament\Equipment\Resources\EquipmentResource\Pages\ListEquipments;
@@ -74,6 +75,12 @@ class EquipmentResource extends DomainResource
                 ->label('Название')
                 ->required()
                 ->maxLength(255),
+            Select::make('equipment_type')
+                ->label('Тип оборудования')
+                ->options(EquipmentType::options())
+                ->required()
+                ->native(false)
+                ->searchable(),
             TextInput::make('brand')
                 ->label('Бренд')
                 ->required()
@@ -122,6 +129,10 @@ class EquipmentResource extends DomainResource
                 TextColumn::make('title')
                     ->label('Название')
                     ->searchable(),
+                TextColumn::make('equipment_type')
+                    ->label('Тип')
+                    ->formatStateUsing(fn (?string $state): string => EquipmentType::tryLabel($state) ?? '—')
+                    ->sortable(),
                 TextColumn::make('brand')
                     ->label('Бренд')
                     ->searchable()

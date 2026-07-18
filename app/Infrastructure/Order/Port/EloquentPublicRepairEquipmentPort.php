@@ -6,6 +6,8 @@ use App\Application\Equipment\Command\RegisterEquipmentCommand;
 use App\Application\Equipment\Command\RegisterEquipmentHandler;
 use App\Application\Order\Port\PublicRepairEquipmentPort;
 use App\Application\Shared\EntityIdGenerator;
+use App\Domain\Equipment\VO\EquipmentType;
+use App\Shared\Domain\DomainException;
 
 final readonly class EloquentPublicRepairEquipmentPort implements PublicRepairEquipmentPort
 {
@@ -20,31 +22,22 @@ final readonly class EloquentPublicRepairEquipmentPort implements PublicRepairEq
         string $equipmentType,
         ?string $problemDescription = null,
     ): int {
+        $type = EquipmentType::tryFrom($equipmentType)
+            ?? throw new DomainException('Unknown equipment type.');
+
         $equipmentId = $this->ids->next('equipment')->value;
-        $typeLabel = $this->equipmentTypeLabel($equipmentType);
 
         $this->registerEquipment->handle(new RegisterEquipmentCommand(
             $equipmentId,
             $deviceName,
-            $typeLabel,
-            $equipmentType,
+            'Не указан',
+            'Не указана',
+            $type->value,
             $clientId,
             $problemDescription,
             [],
         ));
 
         return $equipmentId;
-    }
-
-    private function equipmentTypeLabel(string $equipmentType): string
-    {
-        return match ($equipmentType) {
-            'clipper' => 'Машинка для стрижки',
-            'trimmer' => 'Триммер',
-            'shaver' => 'Бритва',
-            'dryer' => 'Фен',
-            'other' => 'Другое',
-            default => $equipmentType !== '' ? $equipmentType : 'Оборудование',
-        };
     }
 }

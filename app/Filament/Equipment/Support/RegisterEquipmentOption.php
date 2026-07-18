@@ -6,6 +6,7 @@ use App\Application\Equipment\Command\RegisterEquipmentCommand;
 use App\Application\Equipment\Command\RegisterEquipmentHandler;
 use App\Application\Equipment\DTO\EquipmentPartDTO;
 use App\Application\Shared\EntityIdGenerator;
+use App\Domain\Equipment\VO\EquipmentType;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Field;
@@ -49,6 +50,12 @@ final class RegisterEquipmentOption
                 ->label('Название')
                 ->required()
                 ->maxLength(255),
+            Select::make('equipment_type')
+                ->label('Тип оборудования')
+                ->options(EquipmentType::options())
+                ->required()
+                ->native(false)
+                ->searchable(),
             TextInput::make('brand')
                 ->label('Бренд')
                 ->required()
@@ -130,6 +137,7 @@ final class RegisterEquipmentOption
             (string) $data['title'],
             (string) $data['brand'],
             (string) $data['model_name'],
+            (string) $data['equipment_type'],
             $clientId,
             filled($data['notes'] ?? null) ? (string) $data['notes'] : null,
             $parts,

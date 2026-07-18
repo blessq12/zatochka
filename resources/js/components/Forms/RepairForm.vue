@@ -1,4 +1,5 @@
 <script>
+import axios from "axios";
 import { mapStores } from "pinia";
 import * as yup from "yup";
 import { useOrderStore } from "../../stores/orderStore.js";
@@ -22,13 +23,8 @@ export default {
                 privacy_agreement: false,
             },
             errors: {},
-            equipmentTypes: [
-                { value: "clipper", label: "Машинка для стрижки" },
-                { value: "trimmer", label: "Триммер" },
-                { value: "shaver", label: "Бритва" },
-                { value: "dryer", label: "Фен" },
-                { value: "other", label: "Другое" },
-            ],
+            equipmentTypes: [],
+            equipmentTypesLoading: false,
             schema: yup.object().shape({
                 device_name: yup
                     .string()
@@ -66,17 +62,32 @@ export default {
         ...mapStores(useOrderStore, useAuthStore),
     },
     async mounted() {
+        await this.loadEquipmentTypes();
+
         // Проверяем авторизацию и загружаем данные пользователя
         if (this.authStore.isAuthenticated && !this.authStore.user) {
             await this.authStore.checkAuth();
         }
-        
+
         // Автозаполняем форму данными пользователя, если он авторизован
         if (this.authStore.isAuthenticated && this.authStore.user) {
             this.fillUserData();
         }
     },
     methods: {
+        async loadEquipmentTypes() {
+            this.equipmentTypesLoading = true;
+            try {
+                const response = await axios.get("/api/public/equipment-types");
+                this.equipmentTypes = response.data.data || [];
+            } catch (error) {
+                this.errors.equipment_type =
+                    error.response?.data?.message ||
+                    "Не удалось загрузить типы оборудования";
+            } finally {
+                this.equipmentTypesLoading = false;
+            }
+        },
         fillUserData() {
             const user = this.authStore.user;
             if (!user) return;

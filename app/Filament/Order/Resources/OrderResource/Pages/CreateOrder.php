@@ -6,6 +6,7 @@ use App\Application\CRM\ReadPort\ClientReadPort;
 use App\Application\Order\Command\CreateOrderCommand;
 use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\DTO\CreateOrderItemDTO;
+use App\Domain\Equipment\VO\EquipmentType;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderServiceType;
@@ -279,6 +280,7 @@ class CreateOrder extends CreateRecord
 
                 $this->data['client_equipment_ids'] = [RegisterEquipmentOption::register([
                     'title' => $this->data['new_equipment_title'] ?? null,
+                    'equipment_type' => $this->data['new_equipment_type'] ?? null,
                     'brand' => $this->data['new_equipment_brand'] ?? null,
                     'model_name' => $this->data['new_equipment_model_name'] ?? null,
                     'notes' => $this->data['new_equipment_notes'] ?? null,
@@ -373,6 +375,14 @@ class CreateOrder extends CreateRecord
                             ->required(fn(Get $get): bool => $get('equipment_mode') === 'new')
                             ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
                             ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new'),
+                        Select::make('new_equipment_type')
+                            ->label('Тип оборудования')
+                            ->options(EquipmentType::options())
+                            ->required(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->visible(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->dehydrated(fn(Get $get): bool => $get('equipment_mode') === 'new')
+                            ->native(false)
+                            ->searchable(),
                         TextInput::make('new_equipment_brand')
                             ->label('Бренд')
                             ->maxLength(255)
@@ -596,6 +606,7 @@ class CreateOrder extends CreateRecord
 
         $equipmentId = RegisterEquipmentOption::register([
             'title' => $data['new_equipment_title'] ?? $this->data['new_equipment_title'] ?? null,
+            'equipment_type' => $data['new_equipment_type'] ?? $this->data['new_equipment_type'] ?? null,
             'brand' => $data['new_equipment_brand'] ?? $this->data['new_equipment_brand'] ?? null,
             'model_name' => $data['new_equipment_model_name'] ?? $this->data['new_equipment_model_name'] ?? null,
             'notes' => $data['new_equipment_notes'] ?? $this->data['new_equipment_notes'] ?? null,
@@ -651,6 +662,7 @@ class CreateOrder extends CreateRecord
     private function clearNewEquipmentFields(Set $set): void
     {
         $set('new_equipment_title', null);
+        $set('new_equipment_type', null);
         $set('new_equipment_brand', null);
         $set('new_equipment_model_name', null);
         $set('new_equipment_notes', null);

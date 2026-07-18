@@ -215,6 +215,7 @@ final class ClientPortalVerticalTest extends TestCase
         $this->assertDatabaseHas('client_equipment', [
             'client_id' => $clientId,
             'title' => 'Wahl Super',
+            'equipment_type' => 'clipper',
         ]);
         $this->assertDatabaseHas('clients', [
             'id' => $clientId,
