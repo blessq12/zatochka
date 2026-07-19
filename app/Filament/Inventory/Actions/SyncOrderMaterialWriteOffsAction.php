@@ -25,7 +25,8 @@ final class SyncOrderMaterialWriteOffsAction
     public static function make(): Action
     {
         return Action::make('syncOrderMaterialWriteOffs')
-            ->label('Редактировать материалы')
+            ->label('Материалы')
+            ->tooltip('Редактировать материалы')
             ->icon(Heroicon::OutlinedArchiveBox)
             ->color('gray')
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::WorksCompleted->value)

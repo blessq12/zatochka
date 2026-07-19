@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Application\CRM\Port\ClientPortalTokenIssuer;
 use App\Application\CRM\ReadPort\ClientReadPort;
+use App\Application\Documents\Port\CompanyDocumentReadPort;
+use App\Application\Documents\Port\OrderDocumentReadPort;
+use App\Application\Documents\Port\PdfRenderer;
 use App\Application\Equipment\ReadPort\EquipmentOrderHistoryPort;
 use App\Application\Equipment\ReadPort\EquipmentReadPort;
 use App\Application\Feedback\Port\CompletedOrderPort;
@@ -31,6 +34,8 @@ use App\Application\Workshop\Port\EquipmentComponentBelongingPort;
 use App\Application\Workshop\Port\OrderProductionContextPort;
 use App\Application\Workshop\ReadPort\ProductionTaskReadPort;
 use App\Domain\CRM\Repository\ClientRepository;
+use App\Domain\Documents\Repository\DocumentRepository;
+use App\Domain\Documents\Repository\DocumentTemplateRepository;
 use App\Domain\Equipment\Repository\ClientEquipmentRepository;
 use App\Domain\Feedback\Repository\ReviewRepository;
 use App\Domain\Finance\Event\PaymentAccepted;
@@ -91,6 +96,11 @@ use App\Infrastructure\Pricing\Port\EloquentOrderPricingGatePort;
 use App\Infrastructure\Pricing\Port\EloquentPerformedWorkRefPort;
 use App\Infrastructure\Pricing\ReadModel\EloquentWorkPriceReadModel;
 use App\Infrastructure\Pricing\Repository\EloquentWorkPriceRepository;
+use App\Infrastructure\Documents\Pdf\DompdfPdfRenderer;
+use App\Infrastructure\Documents\Read\EloquentCompanyDocumentReadModel;
+use App\Infrastructure\Documents\Read\EloquentOrderDocumentReadModel;
+use App\Infrastructure\Documents\Repository\EloquentDocumentRepository;
+use App\Infrastructure\Documents\Repository\EloquentDocumentTemplateRepository;
 use App\Infrastructure\Shared\Event\LaravelDomainEventPublisher;
 use App\Infrastructure\Shared\Persistence\EloquentUnitOfWork;
 use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
@@ -170,6 +180,12 @@ final class PersistenceServiceProvider extends ServiceProvider
         $this->app->bind(WorkScheduleRepository::class, EloquentWorkScheduleRepository::class);
         $this->app->bind(FaqCatalogRepository::class, EloquentFaqCatalogRepository::class);
         $this->app->bind(SiteBootstrapReadPort::class, EloquentSiteBootstrapReadModel::class);
+
+        $this->app->bind(DocumentRepository::class, EloquentDocumentRepository::class);
+        $this->app->bind(DocumentTemplateRepository::class, EloquentDocumentTemplateRepository::class);
+        $this->app->bind(OrderDocumentReadPort::class, EloquentOrderDocumentReadModel::class);
+        $this->app->bind(CompanyDocumentReadPort::class, EloquentCompanyDocumentReadModel::class);
+        $this->app->bind(PdfRenderer::class, DompdfPdfRenderer::class);
     }
 
     public function boot(): void

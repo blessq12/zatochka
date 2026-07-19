@@ -70,7 +70,7 @@ final class ViewOrderWireframeTest extends TestCase
             ->assertSee('Без доставки')
             ->assertSee('Материалы не списывались')
             ->assertSee('Отменить')
-            ->assertSee('Назначить мастера')
+            ->assertSee('Назначить')
             ->assertDontSee('Нет активных действий')
             ->assertDontSee('Команды по bounded contexts')
             ->assertDontSee('Material lines')
@@ -87,7 +87,7 @@ final class ViewOrderWireframeTest extends TestCase
         $flow = $this->createSharpeningOrderWithMaster($master);
 
         OrderModel::query()->whereKey($flow['orderId'])->update([
-            'status' => OrderStatus::Issued->value,
+            'status' => OrderStatus::InProgress->value,
         ]);
 
         Livewire::test(ViewOrder::class, ['record' => $flow['orderId']])

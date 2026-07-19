@@ -14,13 +14,15 @@ use App\Application\Workshop\Command\SyncOrderPerformedWorksCommand;
 use App\Application\Workshop\Command\SyncOrderPerformedWorksHandler;
 use App\Domain\Inventory\VO\UnitOfMeasure;
 use App\Domain\Order\VO\OrderStatus;
-use App\Filament\Order\Resources\OrderResource\Pages\ViewOrder;
+use App\Filament\Inventory\Actions\SyncOrderMaterialWriteOffsAction;
+use App\Filament\Pricing\Actions\SetOrderWorkPricesAction;
+use App\Filament\Workshop\Actions\SyncOrderPerformedWorksAction;
+use App\Infrastructure\Order\Model\OrderModel;
 use App\Infrastructure\Workshop\Model\PerformedWorkModel;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Livewire;
 use Tests\Support\BuildsWorkshopFlows;
 use Tests\TestCase;
 
@@ -39,19 +41,30 @@ final class ManagerWorksAndMaterialsActionsTest extends TestCase
         $this->startWork($flow['taskId']);
         $this->addSharpeningWork($flow['taskId'], $flow['masterId'], $flow['orderItemId']);
 
-        Livewire::test(ViewOrder::class, ['record' => $flow['orderId']])
-            ->assertSuccessful()
-            ->assertDontSee('Редактировать работы')
-            ->assertDontSee('Редактировать материалы');
+        $order = OrderModel::query()->findOrFail($flow['orderId']);
+
+        $works = SyncOrderPerformedWorksAction::make()->record($order);
+        $materials = SyncOrderMaterialWriteOffsAction::make()->record($order);
+        $prices = SetOrderWorkPricesAction::make()->record($order);
+
+        $this->assertFalse($works->isVisible());
+        $this->assertFalse($materials->isVisible());
+        $this->assertFalse($prices->isVisible());
 
         $this->finishTask($flow['taskId']);
         $this->assertOrderStatus($flow['orderId'], OrderStatus::WorksCompleted);
 
-        Livewire::test(ViewOrder::class, ['record' => $flow['orderId']])
-            ->assertSuccessful()
-            ->assertSee('Редактировать работы')
-            ->assertSee('Цены работ')
-            ->assertSee('Редактировать материалы');
+        $order->refresh();
+        $works->record($order);
+        $materials->record($order);
+        $prices->record($order);
+
+        $this->assertTrue($works->isVisible());
+        $this->assertTrue($materials->isVisible());
+        $this->assertTrue($prices->isVisible());
+        $this->assertSame('Работы', $works->getLabel());
+        $this->assertSame('Материалы', $materials->getLabel());
+        $this->assertSame('Цены', $prices->getLabel());
     }
 
     public function test_sync_order_performed_works_adds_updates_and_removes(): void

@@ -1,0 +1,1 @@
+import{L as o}from"./LegalDocumentPage-B_3lFQCD.js";import{_ as a,e as c,z as t,o as n}from"./app-CmTtZi12.js";const r={name:"PrivacyPolicyPage",components:{LegalDocumentPage:o}};function s(l,p,i,m,_,g){const e=c("LegalDocumentPage");return n(),t(e,{slug:"privacy-policy","fallback-title":"Политика конфиденциальности"})}const u=a(r,[["render",s]]);export{u as default};

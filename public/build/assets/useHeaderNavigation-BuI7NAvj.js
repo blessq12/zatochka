@@ -1,0 +1,1 @@
+import{I as o,H as a}from"./app-CmTtZi12.js";const t=a([]),e=a(null);function m(){const s=n=>{t.value=n||[]},u=()=>{t.value=[]},l=n=>{e.value=n},c=()=>{e.value=null},v=()=>{t.value=[],e.value=null};return{navigationItems:o(()=>t.value),customContent:o(()=>e.value),setNavigationItems:s,clearNavigationItems:u,setCustomContent:l,clearCustomContent:c,reset:v}}export{m as u};

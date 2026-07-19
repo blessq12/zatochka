@@ -74,7 +74,7 @@ final class ViewOrderCommandsTest extends TestCase
         Livewire::test(ViewOrder::class, ['record' => $orderId])
             ->assertSuccessful()
             ->assertDontSee('Завершить приёмку')
-            ->assertSee('Назначить мастера');
+            ->assertSee('Назначить');
     }
 
     public function test_edit_website_order_equipment_updates_profile_and_adds_component(): void
@@ -105,8 +105,7 @@ final class ViewOrderCommandsTest extends TestCase
         $this->assertTrue(EditWebsiteOrderEquipmentAction::isVisible($order));
 
         Livewire::test(ViewOrder::class, ['record' => $orderId])
-            ->assertSuccessful()
-            ->assertSee('Редактировать оборудование');
+            ->assertSuccessful();
 
         $ids = app(EntityIdGenerator::class);
         $clientId = (int) ClientEquipmentModel::query()->whereKey($equipmentId)->value('client_id');
@@ -208,9 +207,11 @@ final class ViewOrderCommandsTest extends TestCase
         $orderId = $this->createWebsiteSharpeningOrder();
         OrderModel::query()->whereKey($orderId)->update(['source' => 'admin']);
 
+        $order = OrderModel::query()->whereKey($orderId)->firstOrFail();
+        $this->assertFalse(EditWebsiteOrderEquipmentAction::isVisible($order));
+
         Livewire::test(ViewOrder::class, ['record' => $orderId])
-            ->assertSuccessful()
-            ->assertDontSee('Редактировать оборудование');
+            ->assertSuccessful();
     }
 
     private function createWebsiteSharpeningOrder(): string

@@ -407,9 +407,13 @@ export default {
                                 class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
                             >
                                 Я ознакомлен с
-                                <span class="underline"
-                                    >условиями доставки</span
+                                <router-link
+                                    to="/delivery"
+                                    class="underline text-[#C3006B]"
+                                    @click.stop
                                 >
+                                    условиями доставки
+                                </router-link>
                                 <span class="text-red-500">*</span>
                             </label>
                         </div>
@@ -435,9 +439,13 @@ export default {
                                 class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
                             >
                                 Даю согласие на
-                                <span class="underline"
-                                    >обработку персональных данных</span
+                                <router-link
+                                    to="/privacy-policy"
+                                    class="underline text-[#C3006B]"
+                                    @click.stop
                                 >
+                                    обработку персональных данных
+                                </router-link>
                                 <span class="text-red-500">*</span>
                             </label>
                         </div>
@@ -460,8 +468,14 @@ export default {
                                 class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
                             >
                                 Ознакомлен с
-                                <span class="underline">условиями доставки</span
-                                >. Подтверждаю, что передаю курьеру 6 и более
+                                <router-link
+                                    to="/delivery"
+                                    class="underline text-[#C3006B]"
+                                    @click.stop
+                                >
+                                    условиями доставки
+                                </router-link>
+                                . Подтверждаю, что передаю курьеру 6 и более
                                 маникюрных инструментов/3 и более
                                 парикмахерских/грумерских инструментов*
                             </label>

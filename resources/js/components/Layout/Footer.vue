@@ -52,7 +52,7 @@ export default {
             </div>
 
             <div
-                class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-6"
+                class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-6 flex-wrap"
             >
                 <router-link
                     to="/privacy-policy"
@@ -66,7 +66,18 @@ export default {
                     |
                 </span>
                 <router-link
-                    to="/terms-of-service"
+                    to="/user-agreement"
+                    class="text-sm font-jost-medium text-dark-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300"
+                >
+                    Пользовательское соглашение
+                </router-link>
+                <span
+                    class="hidden sm:inline text-dark-gray-500 dark:text-gray-400"
+                >
+                    |
+                </span>
+                <router-link
+                    to="/usage-rules"
                     class="text-sm font-jost-medium text-dark-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300"
                 >
                     Правила пользования

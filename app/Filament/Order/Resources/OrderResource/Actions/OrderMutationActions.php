@@ -14,6 +14,7 @@ use App\Application\Order\Command\MarkOrderReadyCommand;
 use App\Application\Order\Command\MarkOrderReadyHandler;
 use App\Application\Order\Command\ReturnOrderToMasterCommand;
 use App\Application\Order\Command\ReturnOrderToMasterHandler;
+use App\Domain\Documents\VO\PdfTemplateKind;
 use App\Domain\Finance\VO\PaymentMethod;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderServiceType;
@@ -44,6 +45,39 @@ final class OrderMutationActions
             ...self::equipment(),
             ...self::pricing(),
             ...self::inventory(),
+            ...self::documents(),
+        ];
+    }
+
+    /** @return list<Action> */
+    public static function documents(): array
+    {
+        return [
+            Action::make('printReceptionReceipt')
+                ->iconButton()
+                ->icon(Heroicon::OutlinedPrinter)
+                ->color('gray')
+                ->tooltip('Печать квитанции приёмки')
+                ->url(fn (OrderModel $record): string => route('documents.orders.print', [
+                    'orderId' => (string) $record->id,
+                    'kind' => PdfTemplateKind::ReceptionReceipt->value,
+                ]))
+                ->openUrlInNewTab()
+                ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Created->value),
+            Action::make('printIssueAct')
+                ->iconButton()
+                ->icon(Heroicon::OutlinedPrinter)
+                ->color('gray')
+                ->tooltip('Печать акта выдачи')
+                ->url(fn (OrderModel $record): string => route('documents.orders.print', [
+                    'orderId' => (string) $record->id,
+                    'kind' => PdfTemplateKind::IssueAct->value,
+                ]))
+                ->openUrlInNewTab()
+                ->visible(fn (OrderModel $record): bool => in_array($record->status, [
+                    OrderStatus::Ready->value,
+                    OrderStatus::Issued->value,
+                ], true)),
         ];
     }
 
@@ -52,14 +86,14 @@ final class OrderMutationActions
     {
         return [
             Action::make('assignMaster')
-                ->label('Назначить мастера')
+                ->label('Назначить')
                 ->icon(Heroicon::OutlinedUserPlus)
                 ->color('primary')
                 ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Created->value
                     && $record->assigned_master_id === null)
                 ->disabled(fn (OrderModel $record): bool => ! self::websiteRepairEquipmentReadyForMaster($record))
                 ->tooltip(fn (OrderModel $record): ?string => self::websiteRepairEquipmentReadyForMaster($record)
-                    ? null
+                    ? 'Назначить мастера'
                     : 'Сначала добавьте к оборудованию хотя бы одну часть с серийным номером')
                 ->form([
                     Select::make('master_id')
@@ -93,9 +127,10 @@ final class OrderMutationActions
                     }
                 }),
             Action::make('markReady')
-                ->label('Готов к выдаче')
+                ->label('Готов')
                 ->icon(Heroicon::OutlinedCheckBadge)
-                ->color('success')
+                ->color('primary')
+                ->tooltip('Готов к выдаче')
                 ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::WorksCompleted->value)
                 ->requiresConfirmation()
                 ->action(function (OrderModel $record): void {
@@ -107,9 +142,10 @@ final class OrderMutationActions
                     }
                 }),
             Action::make('returnToMaster')
-                ->label('Вернуть мастеру')
+                ->label('Вернуть')
                 ->icon(Heroicon::OutlinedArrowUturnLeft)
                 ->color('danger')
+                ->tooltip('Вернуть мастеру')
                 ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::WorksCompleted->value)
                 ->modalHeading('Вернуть заказ мастеру на доработку')
                 ->form([
@@ -132,6 +168,7 @@ final class OrderMutationActions
             Action::make('issue')
                 ->label('Выдать')
                 ->icon(Heroicon::OutlinedHandRaised)
+                ->color('primary')
                 ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::Ready->value)
                 ->modalHeading('Выдача заказа')
                 ->form(fn (OrderModel $record): array => $record->billing_type === OrderBillingType::Warranty->value
@@ -208,7 +245,8 @@ final class OrderMutationActions
         return [
             SyncOrderPerformedWorksAction::make(),
             SetOrderWorkPricesAction::make()
-                ->label('Цены работ'),
+                ->label('Цены')
+                ->tooltip('Цены работ'),
         ];
     }
 

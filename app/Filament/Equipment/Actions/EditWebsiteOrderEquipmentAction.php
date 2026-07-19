@@ -33,9 +33,10 @@ final class EditWebsiteOrderEquipmentAction
     public static function make(): Action
     {
         return Action::make('editWebsiteOrderEquipment')
-            ->label('Редактировать оборудование')
+            ->label('Оборудование')
+            ->tooltip('Редактировать оборудование')
             ->icon(Heroicon::OutlinedWrenchScrewdriver)
-            ->color('info')
+            ->color('gray')
             ->visible(fn (OrderModel $record): bool => self::isVisible($record))
             ->modalHeading('Редактирование оборудования')
             ->modalDescription('Заявка с сайта: укажите наименование, бренд, модель и добавьте части с серийными номерами.')

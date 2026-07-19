@@ -23,9 +23,10 @@ final class SetOrderWorkPricesAction
     public static function make(): Action
     {
         return Action::make('setOrderPrices')
-            ->label('Назначить цены')
+            ->label('Цены')
+            ->tooltip('Назначить цены')
             ->icon(Heroicon::OutlinedBanknotes)
-            ->color('warning')
+            ->color('gray')
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::WorksCompleted->value)
             ->modalHeading('Стоимость выполненных работ')
             ->modalDescription(fn (OrderModel $record): string => app(WorkPricingPolicyResolver::class)

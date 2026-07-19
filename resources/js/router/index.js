@@ -47,9 +47,18 @@ const routes = [
         component: () => import("../pages/PrivacyPolicyPage.vue"),
     },
     {
+        path: "/user-agreement",
+        name: "user-agreement",
+        component: () => import("../pages/UserAgreementPage.vue"),
+    },
+    {
         path: "/terms-of-service",
-        name: "terms-of-service",
-        component: () => import("../pages/TermsOfServicePage.vue"),
+        redirect: { name: "user-agreement" },
+    },
+    {
+        path: "/usage-rules",
+        name: "usage-rules",
+        component: () => import("../pages/UsageRulesPage.vue"),
     },
     {
         path: "/pos",

@@ -98,6 +98,7 @@ class ViewOrder extends ViewRecord
                         ...OrderMutationActions::equipment(),
                         ...OrderMutationActions::pricing(),
                         ...OrderMutationActions::inventory(),
+                        ...OrderMutationActions::documents(),
                     ]))->visible(fn (): bool => $this->hasVisibleRailActions()),
                 ]),
             EmbeddedSchema::make('infolist'),
@@ -124,6 +125,7 @@ class ViewOrder extends ViewRecord
                 ...OrderMutationActions::equipment(),
                 ...OrderMutationActions::pricing(),
                 ...OrderMutationActions::inventory(),
+                ...OrderMutationActions::documents(),
             ] as $action
         ) {
             $action = $action->record($this->getRecord());
@@ -152,10 +154,18 @@ class ViewOrder extends ViewRecord
 
         return array_map(
             function (Action $action) use ($refresh): Action {
-                return $action
+                $configured = $action
                     ->record($this->getRecord())
-                    ->after($refresh)
-                    ->button();
+                    ->after($refresh);
+
+                if (in_array($action->getName(), [
+                    'printReceptionReceipt',
+                    'printIssueAct',
+                ], true)) {
+                    return $configured->iconButton();
+                }
+
+                return $configured->button();
             },
             $actions,
         );

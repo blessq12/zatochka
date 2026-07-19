@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 9px;
+            color: #000;
+            margin: 0;
+            padding: 4mm;
+        }
+        .document-part {
+            page-break-inside: avoid;
+            margin-bottom: 6mm;
+            padding-bottom: 4mm;
+            border-bottom: 1px dashed #999;
+        }
+        .document-part:last-child {
+            border-bottom: none;
+        }
+        .document-part-header {
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 3mm;
+            letter-spacing: 0.3px;
+        }
+        .company-header {
+            margin-bottom: 2mm;
+            padding-bottom: 2mm;
+            border-bottom: 0.5px solid #000;
+            font-size: 8px;
+            line-height: 1.3;
+        }
+        .section {
+            margin-bottom: 2mm;
+        }
+        .info-row {
+            margin-bottom: 0.8mm;
+        }
+        .info-label {
+            font-size: 8px;
+            color: #444;
+        }
+        .info-value {
+            font-size: 9px;
+            font-weight: bold;
+        }
+        .items-table,
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1mm;
+            margin-bottom: 2mm;
+        }
+        .items-table th,
+        .items-table td,
+        .price-table th,
+        .price-table td {
+            border: 0.5px solid #000;
+            padding: 1mm 1.5mm;
+            font-size: 8px;
+            text-align: left;
+        }
+        .items-table th,
+        .price-table th {
+            font-weight: bold;
+            background: #f3f3f3;
+        }
+        .responsibility-section {
+            margin-top: 2mm;
+            margin-bottom: 2mm;
+            padding: 2mm;
+            border: 0.5px solid #000;
+        }
+        .responsibility-title {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 1mm;
+        }
+        .responsibility-text {
+            font-size: 8px;
+            line-height: 1.35;
+            margin-bottom: 0.5mm;
+        }
+        .signature-section {
+            margin-top: 4mm;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 2mm;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="document-part client-part">
+    <div class="document-part-header">ЭКЗЕМПЛЯР ДЛЯ КЛИЕНТА</div>
+    {{logo}}
+    <div class="company-header" style="margin-bottom: 2mm; padding-bottom: 2mm; border-bottom: 0.5px solid #000; font-size: 8px; line-height: 1.3;">{{company.header}}</div>
+    <div class="section">
+    <div style="font-size: 10px; font-weight: bold; margin-bottom: 1mm; border-bottom: 0.5px solid #000; padding-bottom: 0.5mm;">Информация</div>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 50%; vertical-align: top; padding-right: 5mm;">
+                <div class="info-row"><div class="info-label">Тип услуги:</div><div class="info-value">{{service.type_with_urgency}}</div></div>
+                {{#if company_address}}<div class="info-row"><div class="info-label">Адрес:</div><div class="info-value">{{company_address}}</div></div>{{/if}}
+                {{#if company_phone}}<div class="info-row"><div class="info-label">Телефон:</div><div class="info-value">{{company_phone}}</div></div>{{/if}}
+            </td>
+            <td style="width: 50%; vertical-align: top; padding-left: 5mm;">
+                <div class="info-row"><div class="info-label">ФИО клиента:</div><div class="info-value">{{client.name}}</div></div>
+                <div class="info-row"><div class="info-label">Телефон:</div><div class="info-value">{{client.phone}}</div></div>
+            </td>
+        </tr>
+    </table>
+</div>
+    {{items.section}}
+    {{price.section}}
+    <div class="responsibility-section">
+    <div class="responsibility-title">ВАЖНАЯ ИНФОРМАЦИЯ ДЛЯ КЛИЕНТА:</div>
+    <div class="responsibility-text">1. Сохраните документ до получения заказа.</div>
+    <div class="responsibility-text">2. При выдаче предъявите документ или удостоверение личности.</div>
+    <div class="responsibility-text">3. При утере документа выдача возможна при предъявлении удостоверения личности.</div>
+    <div class="responsibility-text">4. Стоимость может быть изменена после диагностики.</div>
+    <div class="responsibility-text">5. Срок хранения невостребованных заказов - 30 дней с момента готовности.</div>
+</div>
+    <div class="signature-section">
+    <div style="float: left; width: 48%; margin-right: 4%;">
+        <div style="text-align: center; font-size: 9px; font-weight: bold; margin-bottom: 0.8mm; letter-spacing: 0.2px;">Менеджер:</div>
+        <div style="margin-top: 5mm; text-align: center; font-size: 9px; border-top: 0.5px solid #000; padding-top: 1mm;">_________________</div>
+        <div style="text-align: center; font-size: 8px; margin-top: 0.5mm; color: #666;">{{company.owner_name}}</div>
+    </div>
+    <div style="float: left; width: 48%;">
+        <div style="text-align: center; font-size: 9px; font-weight: bold; margin-bottom: 0.8mm; letter-spacing: 0.2px;">Клиент:</div>
+        <div style="margin-top: 5mm; text-align: center; font-size: 9px; border-top: 0.5px solid #000; padding-top: 1mm;">_________________</div>
+        <div style="text-align: center; font-size: 8px; margin-top: 0.5mm; color: #666;">(подпись)</div>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+</div><div class="document-part workshop-part">
+    <div class="document-part-header">ЭКЗЕМПЛЯР ДЛЯ МАСТЕРСКОЙ | № {{order.number}} от {{order.date}}</div>
+    <div class="section">
+    <div style="font-size: 10px; font-weight: bold; margin-bottom: 1mm; border-bottom: 0.5px solid #000; padding-bottom: 0.5mm;">Информация</div>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 50%; vertical-align: top; padding-right: 5mm;">
+                <div class="info-row"><div class="info-label">Тип услуги:</div><div class="info-value">{{service.type_with_urgency}}</div></div>
+                {{#if company_address}}<div class="info-row"><div class="info-label">Адрес:</div><div class="info-value">{{company_address}}</div></div>{{/if}}
+                {{#if company_phone}}<div class="info-row"><div class="info-label">Телефон:</div><div class="info-value">{{company_phone}}</div></div>{{/if}}
+            </td>
+            <td style="width: 50%; vertical-align: top; padding-left: 5mm;">
+                <div class="info-row"><div class="info-label">ФИО клиента:</div><div class="info-value">{{client.name}}</div></div>
+                <div class="info-row"><div class="info-label">Телефон:</div><div class="info-value">{{client.phone}}</div></div>
+            </td>
+        </tr>
+    </table>
+</div>
+    {{items.section}}
+    {{price.section}}
+    <div class="signature-section">
+    <div style="float: left; width: 48%; margin-right: 4%;">
+        <div style="text-align: center; font-size: 9px; font-weight: bold; margin-bottom: 0.8mm; letter-spacing: 0.2px;">Менеджер:</div>
+        <div style="margin-top: 5mm; text-align: center; font-size: 9px; border-top: 0.5px solid #000; padding-top: 1mm;">_________________</div>
+        <div style="text-align: center; font-size: 8px; margin-top: 0.5mm; color: #666;">{{company.owner_name}}</div>
+    </div>
+    <div style="float: left; width: 48%;">
+        <div style="text-align: center; font-size: 9px; font-weight: bold; margin-bottom: 0.8mm; letter-spacing: 0.2px;">Клиент:</div>
+        <div style="margin-top: 5mm; text-align: center; font-size: 9px; border-top: 0.5px solid #000; padding-top: 1mm;">_________________</div>
+        <div style="text-align: center; font-size: 8px; margin-top: 0.5mm; color: #666;">(подпись)</div>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+</div>
+</body>
+</html>

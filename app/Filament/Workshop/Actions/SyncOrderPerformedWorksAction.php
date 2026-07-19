@@ -25,7 +25,8 @@ final class SyncOrderPerformedWorksAction
     public static function make(): Action
     {
         return Action::make('syncOrderPerformedWorks')
-            ->label('Редактировать работы')
+            ->label('Работы')
+            ->tooltip('Редактировать работы')
             ->icon(Heroicon::OutlinedWrenchScrewdriver)
             ->color('gray')
             ->visible(fn (OrderModel $record): bool => $record->status === OrderStatus::WorksCompleted->value)

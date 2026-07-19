@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
         'Finance',
         'Feedback',
         'SiteContent',
+        'Documents',
     ];
 
     public function panel(Panel $panel): Panel
@@ -52,9 +53,11 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Сотрудники'),
             ])
             ->discoverClusters(in: app_path('Filament/SiteContent/Clusters'), for: 'App\\Filament\\SiteContent\\Clusters')
+            ->discoverClusters(in: app_path('Filament/Documents/Clusters'), for: 'App\\Filament\\Documents\\Clusters')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverPages(in: app_path('Filament/Finance/Pages'), for: 'App\\Filament\\Finance\\Pages')
             ->discoverPages(in: app_path('Filament/SiteContent/Pages'), for: 'App\\Filament\\SiteContent\\Pages')
+            ->discoverPages(in: app_path('Filament/Documents/Pages'), for: 'App\\Filament\\Documents\\Pages')
             ->pages([
                 Dashboard::class,
             ])
