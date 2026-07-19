@@ -6,6 +6,7 @@ use App\Application\Workshop\DTO\MasterFunnelCountsDTO;
 use App\Application\Workshop\DTO\MasterProductionTaskCardDTO;
 use App\Application\Workshop\DTO\ProductionTaskDTO;
 use App\Application\Workshop\ReadPort\ProductionTaskReadPort;
+use App\Domain\Order\VO\OrderStatus;
 use App\Domain\Workshop\VO\ProductionStatus;
 use App\Infrastructure\Workshop\Mapper\ProductionTaskMapper;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
@@ -81,7 +82,8 @@ final readonly class EloquentProductionTaskReadModel implements ProductionTaskRe
 
     public function countsForMaster(int $masterId): MasterFunnelCountsDTO
     {
-        $base = ProductionTaskModel::query()->where('master_id', $masterId);
+        $base = $this->visibleForMasterQuery()
+            ->where('master_id', $masterId);
 
         return new MasterFunnelCountsDTO(
             (clone $base)->whereIn('status', array_map(
@@ -105,10 +107,23 @@ final readonly class EloquentProductionTaskReadModel implements ProductionTaskRe
 
     private function cardQuery()
     {
-        return ProductionTaskModel::query()->with([
-            'performedWorks',
-            'order.client',
-            'order.items.equipment.components',
-        ]);
+        return $this->visibleForMasterQuery()
+            ->with([
+                'performedWorks',
+                'order.client',
+                'order.items.equipment.components',
+            ]);
+    }
+
+    private function visibleForMasterQuery()
+    {
+        return ProductionTaskModel::query()
+            ->whereHas(
+                'order',
+                static fn ($query) => $query->whereNotIn('status', [
+                    OrderStatus::Ready->value,
+                    OrderStatus::Issued->value,
+                ]),
+            );
     }
 }

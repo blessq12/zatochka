@@ -19,10 +19,7 @@ class DocumentsSeeder extends Seeder
                 ['type' => $type->value],
                 [
                     'title' => $type->label(),
-                    'body_html' => sprintf(
-                        '<p>%s.</p><p>Текст документа редактируется в панели управления.</p>',
-                        e($type->label()),
-                    ),
+                    'body_html' => $this->loadTemplate($type->value.'.html'),
                     'updated_at' => $now,
                 ],
             );

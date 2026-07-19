@@ -61,6 +61,8 @@ final class DocumentsVerticalTest extends TestCase
             ->assertJsonStructure([
                 'data' => ['type', 'slug', 'title', 'body_html', 'updated_at'],
             ]);
+
+        $this->assertStringContainsString('персональных данных', (string) $response->json('data.body_html'));
     }
 
     public function test_public_api_maps_legacy_terms_slug_to_user_agreement(): void
