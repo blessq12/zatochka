@@ -16,6 +16,7 @@
                 :changing-to-status="changingToStatus"
                 :is-completing-order="isCompletingOrder"
                 :works-count="works.length"
+                :can-finish-without-works="canFinishWithoutWorks"
                 :in-work-button-label="inWorkButtonLabel"
                 :complete-button-title="completeButtonTitle"
                 :get-status-label="getStatusLabel"

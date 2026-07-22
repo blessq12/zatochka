@@ -39,6 +39,22 @@ final class ProductionCompletionPolicyTest extends TestCase
         $this->assertTrue(true);
     }
 
+    public function test_sharpening_passes_when_all_items_fully_rejected_without_works(): void
+    {
+        $itemId = 11;
+        $context = new OrderProductionContextDTO(
+            OrderId::generate()->value,
+            'sharpening',
+            'in_progress',
+            [new OrderProductionItemDTO($itemId, null, true)],
+        );
+        $task = ProductionTask::open(new EntityId(1), new OrderId($context->orderId));
+        $task->assignMaster(new EntityId(5));
+
+        (new SharpeningProductionCompletionPolicy())->assertReadyToFinish($context, $task);
+        $this->assertTrue(true);
+    }
+
     public function test_repair_requires_work_per_equipment_item(): void
     {
         $itemId = 21;

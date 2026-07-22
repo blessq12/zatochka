@@ -1,0 +1,1 @@
+import{L as o}from"./LegalDocumentPage-B_mqRtcg.js";import{_ as a,e as c,z as t,o as n}from"./app-DIfeIj7z.js";const r={name:"PrivacyPolicyPage",components:{LegalDocumentPage:o}};function s(l,p,i,m,_,g){const e=c("LegalDocumentPage");return n(),t(e,{slug:"privacy-policy","fallback-title":"Политика конфиденциальности"})}const u=a(r,[["render",s]]);export{u as default};

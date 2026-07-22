@@ -82,6 +82,13 @@ export function useOrderInWorkPage() {
         )
     );
 
+    /** All order items are fully rejected — finish is allowed with zero works. */
+    const canFinishWithoutWorks = computed(() => {
+        const items = order.value?.items || [];
+
+        return items.length > 0 && repairableItems.value.length === 0;
+    });
+
     const worksForComponent = (componentId) =>
         works.value.filter(
             (work) => work.equipment_component_id === componentId
@@ -394,25 +401,25 @@ export function useOrderInWorkPage() {
             return;
         }
 
-        if (works.value.length === 0) {
+        if (works.value.length === 0 && !canFinishWithoutWorks.value) {
             toastService.error(
                 "Нельзя завершить заказ без выполненных работ. Добавьте работы по позициям."
             );
             return;
         }
 
-        if (itemsWithoutWorks.length > 0) {
+        if (itemsWithoutWorks.value.length > 0) {
             toastService.error(
                 "Укажите выполненные работы по каждой позиции заказа"
             );
             return;
         }
 
-        if (
-            !confirm(
-                "Завершить работу по заказу? Заказ уйдёт менеджеру на оценку стоимости."
-            )
-        ) {
+        const confirmMessage = canFinishWithoutWorks.value
+            ? "Все позиции неремонтопригодны. Завершить заказ без работ и передать менеджеру?"
+            : "Завершить работу по заказу? Заказ уйдёт менеджеру на оценку стоимости.";
+
+        if (!confirm(confirmMessage)) {
             return;
         }
 
@@ -478,11 +485,11 @@ export function useOrderInWorkPage() {
             return "Сначала переведите заказ в работу";
         }
 
-        if (works.value.length === 0) {
+        if (works.value.length === 0 && !canFinishWithoutWorks.value) {
             return "Нельзя завершить заказ без выполненных работ";
         }
 
-        if (itemsWithoutWorks.length > 0) {
+        if (itemsWithoutWorks.value.length > 0) {
             return "Укажите работы по каждой позиции";
         }
 
@@ -507,6 +514,7 @@ export function useOrderInWorkPage() {
         works,
         workDrafts,
         repairableItems,
+        canFinishWithoutWorks,
         masterInternalComments,
         worksByItem,
         itemsWithoutWorks,

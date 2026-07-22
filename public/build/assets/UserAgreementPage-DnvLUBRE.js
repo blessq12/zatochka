@@ -1,0 +1,1 @@
+import{L as o}from"./LegalDocumentPage-B_mqRtcg.js";import{_ as t,e as a,z as n,o as r}from"./app-DIfeIj7z.js";const s={name:"UserAgreementPage",components:{LegalDocumentPage:o}};function c(m,g,p,l,_,u){const e=a("LegalDocumentPage");return r(),n(e,{slug:"user-agreement","fallback-title":"Пользовательское соглашение"})}const P=t(s,[["render",c]]);export{P as default};

@@ -1,1 +1,0 @@
-import{L as o}from"./LegalDocumentPage-B_3lFQCD.js";import{_ as a,e as s,z as t,o as n}from"./app-CmTtZi12.js";const c={name:"UsageRulesPage",components:{LegalDocumentPage:o}};function r(l,g,m,p,u,_){const e=s("LegalDocumentPage");return n(),t(e,{slug:"usage-rules","fallback-title":"Правила пользования"})}const P=a(c,[["render",r]]);export{P as default};

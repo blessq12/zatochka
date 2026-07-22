@@ -55,7 +55,7 @@
                 :disabled="
                     isCompletingOrder ||
                     order.status !== 'in_work' ||
-                    worksCount === 0
+                    (worksCount === 0 && !canFinishWithoutWorks)
                 "
                 :title="completeButtonTitle"
             >
@@ -87,6 +87,7 @@ export default {
         changingToStatus: { type: String, default: null },
         isCompletingOrder: { type: Boolean, required: true },
         worksCount: { type: Number, required: true },
+        canFinishWithoutWorks: { type: Boolean, default: false },
         inWorkButtonLabel: { type: String, required: true },
         completeButtonTitle: { type: String, default: "" },
         getStatusLabel: { type: Function, required: true },
