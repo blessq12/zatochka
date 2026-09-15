@@ -1,0 +1,61 @@
+import axios from "axios";
+import { vMaska } from "maska/vue";
+import { createPinia } from "pinia";
+import { createApp } from "vue";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
+import "./bootstrap";
+import App from "./App.vue";
+import router from "./router";
+import { usePosStore } from "./stores/posStore.js";
+import themeTogglerService from "@shared/themeTogglerService.js";
+
+themeTogglerService.init();
+
+const app = createApp(App);
+const pinia = createPinia();
+const posStore = usePosStore(pinia);
+let isHandlingPosUnauthorized = false;
+
+axios.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const status = error.response?.status;
+        const url = error.config?.url || "";
+        const isPosApiRequest =
+            url.startsWith("/api/v1/") && !url.startsWith("/api/v1/auth/login");
+
+        if (status === 401 && isPosApiRequest && !isHandlingPosUnauthorized) {
+            isHandlingPosUnauthorized = true;
+            posStore.logout();
+
+            try {
+                await router.push({ name: "pos" });
+            } finally {
+                isHandlingPosUnauthorized = false;
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+app.directive("maska", vMaska);
+app.use(pinia);
+app.use(router);
+app.use(Toast, {
+    position: "top-right",
+    timeout: 4000,
+    closeOnClick: true,
+    pauseOnFocusLoss: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+    hideProgressBar: false,
+    closeButton: "button",
+    icon: true,
+    rtl: false,
+});
+
+app.mount("#app");
