@@ -6,8 +6,6 @@ use App\Application\Order\Command\CancelOrderCommand;
 use App\Application\Order\Command\CancelOrderHandler;
 use App\Application\Order\Command\CloseOrderCommand;
 use App\Application\Order\Command\CloseOrderHandler;
-use App\Application\Order\Command\CompleteReceptionCommand;
-use App\Application\Order\Command\CompleteReceptionHandler;
 use App\Application\Order\Command\CreateOrderCommand;
 use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\Command\IssueOrderCommand;
@@ -15,7 +13,6 @@ use App\Application\Order\Command\IssueOrderHandler;
 use App\Application\Order\Command\RejectOrderItemUnitsCommand;
 use App\Application\Order\Command\RejectOrderItemUnitsHandler;
 use App\Application\Order\DTO\CreateOrderItemDTO;
-use App\Application\Order\DTO\ReceptionItemDTO;
 use App\Application\Order\Query\GetOrderByIdHandler;
 use App\Application\Order\Query\GetOrderByIdQuery;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
@@ -27,7 +24,6 @@ use App\Domain\Order\VO\OrderSource;
 use App\Domain\Order\VO\OrderUrgency;
 use App\Domain\Order\VO\SharpeningToolType;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Shared\Persistence\SequentialEntityIdGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -36,14 +32,12 @@ final class OrderController extends Controller
 {
     public function __construct(
         private CreateOrderHandler $createOrder,
-        private CompleteReceptionHandler $completeReception,
         private CancelOrderHandler $cancelOrder,
         private CloseOrderHandler $closeOrder,
         private IssueOrderHandler $issueOrder,
         private RejectOrderItemUnitsHandler $rejectOrderItemUnits,
         private GetOrderByIdHandler $getOrderById,
         private OrderContainerReadPort $orderContainer,
-        private SequentialEntityIdGenerator $ids,
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -182,34 +176,6 @@ final class OrderController extends Controller
         ));
 
         return $this->ok($this->orderContainer->findById($orderId));
-    }
-
-    public function completeReception(Request $request, string $orderId): JsonResponse
-    {
-        $data = $request->validate([
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.orderItemId' => ['required', 'integer'],
-            'items.*.conditionDescription' => ['required', 'string'],
-            'items.*.visualNotes' => ['nullable', 'string'],
-            'items.*.attachmentRefs' => ['nullable', 'array'],
-            'items.*.attachmentRefs.*' => ['string'],
-        ]);
-
-        $items = [];
-
-        foreach ($data['items'] as $item) {
-            $items[] = new ReceptionItemDTO(
-                (int) $item['orderItemId'],
-                $this->ids->next('reception')->value,
-                $item['conditionDescription'],
-                $item['visualNotes'] ?? null,
-                $item['attachmentRefs'] ?? [],
-            );
-        }
-
-        $this->completeReception->handle(new CompleteReceptionCommand($orderId, $items));
-
-        return $this->ok($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));
     }
 
     public function cancel(Request $request, string $orderId): JsonResponse

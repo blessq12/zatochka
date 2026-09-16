@@ -7,7 +7,6 @@ use App\Domain\CRM\Repository\ClientEquipmentRepository;
 use App\Infrastructure\CRM\Mapper\ClientEquipmentMapper;
 use App\Infrastructure\CRM\Model\ClientEquipmentModel;
 use App\Infrastructure\CRM\Model\EquipmentComponentModel;
-use App\Infrastructure\CRM\Model\RepairHistoryModel;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\EntityId;
 use Illuminate\Support\Facades\DB;
@@ -26,13 +25,8 @@ final readonly class EloquentClientEquipmentRepository implements ClientEquipmen
             $model->save();
 
             EquipmentComponentModel::query()->where('equipment_id', $equipment->id()->value)->delete();
-            RepairHistoryModel::query()->where('equipment_id', $equipment->id()->value)->delete();
 
             foreach ($this->mapper->componentsToPersistence($equipment) as $row) {
-                $row->save();
-            }
-
-            foreach ($this->mapper->historyToPersistence($equipment) as $row) {
                 $row->save();
             }
         });
@@ -40,7 +34,7 @@ final readonly class EloquentClientEquipmentRepository implements ClientEquipmen
 
     public function findById(EntityId $id): ?ClientEquipment
     {
-        $model = ClientEquipmentModel::query()->with(['components', 'repairHistory'])->find($id->value);
+        $model = ClientEquipmentModel::query()->with(['components'])->find($id->value);
 
         return $model === null ? null : $this->mapper->toDomain($model);
     }
@@ -54,7 +48,7 @@ final readonly class EloquentClientEquipmentRepository implements ClientEquipmen
     public function listByClientId(EntityId $clientId): array
     {
         return ClientEquipmentModel::query()
-            ->with(['components', 'repairHistory'])
+            ->with(['components'])
             ->where('client_id', $clientId->value)
             ->get()
             ->map(fn ($model) => $this->mapper->toDomain($model))

@@ -126,7 +126,7 @@
     ]
   },
   "resources/js/apps/client/components/ClientApp.vue": {
-    "file": "assets/ClientApp-Dt0Y2CHA.js",
+    "file": "assets/ClientApp-BFHjN3VW.js",
     "name": "ClientApp",
     "src": "resources/js/apps/client/components/ClientApp.vue",
     "isDynamicEntry": true,
@@ -137,7 +137,7 @@
     ]
   },
   "resources/js/apps/client/main.js": {
-    "file": "assets/main-c-SZoCrj.js",
+    "file": "assets/main-CZgh9qWe.js",
     "name": "main",
     "src": "resources/js/apps/client/main.js",
     "isEntry": true,

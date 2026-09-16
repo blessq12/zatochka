@@ -15,7 +15,7 @@ final readonly class EloquentEquipmentReadModel implements EquipmentReadPort
 
     public function findById(int $equipmentId): ?ClientEquipmentDTO
     {
-        $model = ClientEquipmentModel::query()->with(['components', 'repairHistory'])->find($equipmentId);
+        $model = ClientEquipmentModel::query()->with(['components'])->find($equipmentId);
 
         return $model === null ? null : $this->mapper->toDTO($model);
     }
@@ -23,7 +23,7 @@ final readonly class EloquentEquipmentReadModel implements EquipmentReadPort
     public function listByClientId(int $clientId): array
     {
         return ClientEquipmentModel::query()
-            ->with(['components', 'repairHistory'])
+            ->with(['components'])
             ->where('client_id', $clientId)
             ->get()
             ->map(fn ($model) => $this->mapper->toDTO($model))
@@ -35,7 +35,7 @@ final readonly class EloquentEquipmentReadModel implements EquipmentReadPort
         $page = max(1, $page);
         $perPage = max(1, min(100, $perPage));
 
-        $builder = ClientEquipmentModel::query()->with(['components', 'repairHistory']);
+        $builder = ClientEquipmentModel::query()->with(['components']);
 
         if ($query !== null && trim($query) !== '') {
             $term = '%'.trim($query).'%';

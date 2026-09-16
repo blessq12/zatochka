@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\CRM\Model;
 
-use App\Infrastructure\CRM\Model\ClientModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -25,10 +24,5 @@ final class ClientEquipmentModel extends Model
     public function components(): HasMany
     {
         return $this->hasMany(EquipmentComponentModel::class, 'equipment_id');
-    }
-
-    public function repairHistory(): HasMany
-    {
-        return $this->hasMany(RepairHistoryModel::class, 'equipment_id');
     }
 }

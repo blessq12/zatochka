@@ -12,7 +12,6 @@ Route::prefix('orders')->middleware(['auth:sanctum', 'manager'])->group(function
     Route::post('/', [OrderController::class, 'store']);
     Route::get('{orderId}', [OrderController::class, 'show']);
     Route::get('{orderId}/container', [OrderController::class, 'container']);
-    Route::post('{orderId}/reception', [OrderController::class, 'completeReception']);
     Route::post('{orderId}/cancel', [OrderController::class, 'cancel']);
     Route::post('{orderId}/close', [OrderController::class, 'close']);
     Route::post('{orderId}/issue', [OrderController::class, 'issue']);

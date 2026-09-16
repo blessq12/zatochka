@@ -17,9 +17,6 @@ final class ClientEquipment extends AggregateRoot
     /** @var array<int, EquipmentComponent> */
     private array $components = [];
 
-    /** @var list<RepairHistoryEntry> */
-    private array $repairHistory = [];
-
     private function __construct(
         private readonly EntityId $id,
         private readonly EquipmentNumber $number,
@@ -51,7 +48,6 @@ final class ClientEquipment extends AggregateRoot
 
     /**
      * @param list<EquipmentComponent> $components
-     * @param list<RepairHistoryEntry> $repairHistory
      */
     public static function reconstitute(
         EntityId $id,
@@ -62,15 +58,12 @@ final class ClientEquipment extends AggregateRoot
         EquipmentType $equipmentType,
         ?EntityId $clientId = null,
         array $components = [],
-        array $repairHistory = [],
     ): self {
         $equipment = new self($id, $number, $clientId, $title, $brand, $modelName, $equipmentType);
 
         foreach ($components as $component) {
             $equipment->components[$component->id()->value] = $component;
         }
-
-        $equipment->repairHistory = $repairHistory;
 
         return $equipment;
     }
@@ -121,12 +114,6 @@ final class ClientEquipment extends AggregateRoot
         return $this->components[$componentId->value] ?? null;
     }
 
-    /** @return list<RepairHistoryEntry> */
-    public function repairHistory(): array
-    {
-        return $this->repairHistory;
-    }
-
     public function addComponent(EquipmentComponent $component, ?SerialNumber $serialNumber = null): void
     {
         if (isset($this->components[$component->id()->value])) {
@@ -155,11 +142,6 @@ final class ClientEquipment extends AggregateRoot
 
         $component->registerSerialNumber($serialNumber);
         $this->record(new SerialNumberRegistered($this->id, $componentId, $serialNumber->value));
-    }
-
-    public function appendRepairHistory(RepairHistoryEntry $entry): void
-    {
-        $this->repairHistory[] = $entry;
     }
 
     public function updateProfile(

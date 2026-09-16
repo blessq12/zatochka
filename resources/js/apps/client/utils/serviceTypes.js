@@ -6,7 +6,6 @@ const SERVICE_TYPE_LABELS = {
 const ORDER_STATUS_LABELS = {
     created: "Создан",
     master_assigned: "Мастер назначен",
-    reception_completed: "Приёмка завершена",
     in_progress: "В работе",
     works_completed: "Работы завершены",
     ready: "Готов к выдаче",

@@ -11,7 +11,6 @@ use App\Domain\Order\Event\OrderItemAdded;
 use App\Domain\Order\Event\OrderItemUnitsRejected;
 use App\Domain\Order\Event\OrderMasterAssigned;
 use App\Domain\Order\Event\OrderReturnedToMaster;
-use App\Domain\Order\Event\ReceptionCompleted;
 use App\Domain\Order\VO\OrderBillingType;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderNumber;
@@ -378,20 +377,7 @@ final class Order extends AggregateRoot
 
     public function completeReception(): void
     {
-        $this->assertNotTerminal();
-
-        if ($this->status !== OrderStatus::Created) {
-            throw new DomainException('Reception can be completed only from Created status.');
-        }
-
-        foreach ($this->items as $item) {
-            if (! $item->hasReception()) {
-                throw new DomainException('All order items must have reception data before reception is completed.');
-            }
-        }
-
-        $this->transitionTo(OrderStatus::ReceptionCompleted);
-        $this->record(new ReceptionCompleted($this->id));
+        throw new DomainException('Reception status path is removed from Order FSM. Assign a master instead.');
     }
 
     public function markInProgress(): void

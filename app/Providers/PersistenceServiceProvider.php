@@ -47,7 +47,6 @@ use App\Domain\Order\Event\OrderCancelled;
 use App\Domain\Order\Event\OrderIssued;
 use App\Domain\Order\Event\OrderMasterAssigned;
 use App\Domain\Order\Event\OrderReturnedToMaster;
-use App\Domain\Order\Event\ReceptionCompleted;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\Repository\ReviewRepository;
 use App\Domain\SiteContent\Repository\CompanyProfileRepository;
@@ -123,7 +122,6 @@ use App\Infrastructure\SiteContent\Repository\EloquentSiteContactsRepository;
 use App\Infrastructure\SiteContent\Repository\EloquentWorkScheduleRepository;
 use App\Infrastructure\Workshop\Listener\CancelProductionTaskOnOrderCancelled;
 use App\Infrastructure\Workshop\Listener\OpenAndAssignTasksOnOrderMasterAssigned;
-use App\Infrastructure\Workshop\Listener\OpenProductionTasksOnReceptionCompleted;
 use App\Infrastructure\Workshop\Listener\ReopenProductionTaskOnOrderReturnedToMaster;
 use App\Infrastructure\Workshop\Port\EloquentEquipmentComponentBelongingPort;
 use App\Infrastructure\Workshop\Port\EloquentOrderProductionContextPort;
@@ -205,7 +203,6 @@ final class PersistenceServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Event::listen(ReceptionCompleted::class, OpenProductionTasksOnReceptionCompleted::class);
         Event::listen(OrderMasterAssigned::class, OpenAndAssignTasksOnOrderMasterAssigned::class);
         Event::listen(OrderCancelled::class, CancelProductionTaskOnOrderCancelled::class);
         Event::listen(OrderCancelled::class, ClearWorkPricesOnOrderCancelled::class);

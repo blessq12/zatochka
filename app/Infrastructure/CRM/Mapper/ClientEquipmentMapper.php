@@ -5,15 +5,12 @@ namespace App\Infrastructure\CRM\Mapper;
 use App\Application\CRM\DTO\ClientEquipmentDTO;
 use App\Domain\CRM\Entity\ClientEquipment;
 use App\Domain\CRM\Entity\EquipmentComponent;
-use App\Domain\CRM\Entity\RepairHistoryEntry;
 use App\Domain\CRM\VO\EquipmentNumber;
 use App\Domain\CRM\VO\EquipmentType;
 use App\Domain\CRM\VO\SerialNumber;
 use App\Infrastructure\CRM\Model\ClientEquipmentModel;
 use App\Infrastructure\CRM\Model\EquipmentComponentModel;
-use App\Infrastructure\CRM\Model\RepairHistoryModel;
 use App\Shared\ValueObject\EntityId;
-use DateTimeImmutable;
 
 final class ClientEquipmentMapper
 {
@@ -29,17 +26,6 @@ final class ClientEquipmentMapper
             );
         }
 
-        $history = [];
-
-        foreach ($model->repairHistory as $row) {
-            $history[] = new RepairHistoryEntry(
-                new EntityId((int) $row->id),
-                new EntityId((int) $row->order_item_id),
-                (string) $row->summary,
-                DateTimeImmutable::createFromInterface($row->recorded_at),
-            );
-        }
-
         return ClientEquipment::reconstitute(
             new EntityId((int) $model->id),
             new EquipmentNumber((string) $model->number),
@@ -50,7 +36,6 @@ final class ClientEquipmentMapper
                 ?? EquipmentType::Other,
             $model->client_id !== null ? new EntityId((int) $model->client_id) : null,
             $components,
-            $history,
         );
     }
 
@@ -85,24 +70,6 @@ final class ClientEquipmentMapper
         return $rows;
     }
 
-    /** @return list<RepairHistoryModel> */
-    public function historyToPersistence(ClientEquipment $equipment): array
-    {
-        $rows = [];
-
-        foreach ($equipment->repairHistory() as $entry) {
-            $row = new RepairHistoryModel();
-            $row->id = $entry->id->value;
-            $row->equipment_id = $equipment->id()->value;
-            $row->order_item_id = $entry->orderItemId->value;
-            $row->summary = $entry->summary;
-            $row->recorded_at = $entry->recordedAt;
-            $rows[] = $row;
-        }
-
-        return $rows;
-    }
-
     public function toDTO(ClientEquipmentModel $model): ClientEquipmentDTO
     {
         $components = [];
@@ -115,17 +82,6 @@ final class ClientEquipmentMapper
             ];
         }
 
-        $history = [];
-
-        foreach ($model->repairHistory as $row) {
-            $history[] = [
-                'id' => (int) $row->id,
-                'orderItemId' => (int) $row->order_item_id,
-                'summary' => (string) $row->summary,
-                'recordedAt' => $row->recorded_at->toIso8601String(),
-            ];
-        }
-
         return new ClientEquipmentDTO(
             (int) $model->id,
             (string) $model->number,
@@ -135,7 +91,6 @@ final class ClientEquipmentMapper
             (string) $model->model_name,
             (string) ($model->equipment_type ?: EquipmentType::Other->value),
             $components,
-            $history,
         );
     }
 }
