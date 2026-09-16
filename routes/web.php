@@ -33,13 +33,13 @@ Route::view('/client/{any?}', 'apps.client', ['title' => 'Личный каби�
     ->where('any', '.*')
     ->name('app.client');
 
-Route::view('/pos/{any?}', 'apps.master', ['title' => 'POS — Заточка.ТСК'])
-    ->where('any', '.*')
-    ->name('app.master');
-
 Route::view('/manager/{any?}', 'apps.manager', ['title' => 'Менеджер — Заточка.ТСК'])
     ->where('any', '.*')
     ->name('app.manager');
+
+Route::view('/master/{any?}', 'apps.master', ['title' => 'Мастер — Заточка.ТСК'])
+    ->where('any', '.*')
+    ->name('app.master');
 
 Route::get('/{any}', [PublicSiteController::class, 'notFound'])
     ->where('any', '.*')

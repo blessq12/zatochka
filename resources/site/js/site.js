@@ -5,8 +5,8 @@ import { createPinia } from "pinia";
 import { createApp } from "vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-import SharpeningForm from "./components/Forms/SharpeningForm.vue";
 import RepairForm from "./components/Forms/RepairForm.vue";
+import SharpeningForm from "./components/Forms/SharpeningForm.vue";
 import MobileMenuIsland from "./components/Layout/MobileMenuIsland.vue";
 
 window.axios = axios;
@@ -91,7 +91,9 @@ document.querySelectorAll("[data-faq-list]").forEach((list) => {
             const willOpen = panel?.classList.contains("hidden");
 
             list.querySelectorAll("[data-faq-item]").forEach((other) => {
-                other.querySelector("[data-faq-panel]")?.classList.add("hidden");
+                other
+                    .querySelector("[data-faq-panel]")
+                    ?.classList.add("hidden");
                 const otherToggle = other.querySelector("[data-faq-toggle]");
                 const otherIcon = other.querySelector("[data-faq-icon]");
                 otherToggle?.setAttribute("aria-expanded", "false");

@@ -35,6 +35,27 @@ export default {
         <!-- Секция авторизации -->
         <section class="bg-white dark:bg-dark-blue-500 py-12 sm:py-16 lg:py-20">
             <div class="max-w-2xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20">
+                <a
+                    href="/"
+                    class="inline-flex items-center gap-2 mb-8 sm:mb-10 text-dark-gray-500 dark:text-gray-200 hover:text-[#C3006B] dark:hover:text-[#C3006B] font-jost-medium transition-colors duration-300"
+                >
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        />
+                    </svg>
+                    На сайт
+                </a>
+
                 <!-- Табы -->
                 <div
                     class="flex gap-4 mb-8 sm:mb-12 bg-white/60 backdrop-blur-md p-2 border border-white/20 dark:bg-gray-800/60 dark:border-gray-700/20"
