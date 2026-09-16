@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Documents\PrintOrderDocumentController;
+use App\Http\Controllers\SiteContent\PublicSiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function (): void {
@@ -13,22 +14,18 @@ Route::middleware('auth')->group(function (): void {
         ->name('documents.orders.print.pdf');
 });
 
-$publicPages = [
-    '/' => ['page' => 'home', 'title' => 'Заточка.ТСК'],
-    '/sharpening' => ['page' => 'sharpening', 'title' => 'Заточка'],
-    '/repair' => ['page' => 'repair', 'title' => 'Ремонт'],
-    '/delivery' => ['page' => 'delivery', 'title' => 'Доставка'],
-    '/contacts' => ['page' => 'contacts', 'title' => 'Контакты'],
-    '/work-schedule' => ['page' => 'work-schedule', 'title' => 'График работы'],
-    '/prices' => ['page' => 'prices', 'title' => 'Прайс'],
-    '/privacy-policy' => ['page' => 'privacy-policy', 'title' => 'Политика конфиденциальности'],
-    '/user-agreement' => ['page' => 'user-agreement', 'title' => 'Пользовательское соглашение'],
-    '/usage-rules' => ['page' => 'usage-rules', 'title' => 'Правила использования'],
-];
-
-foreach ($publicPages as $uri => $data) {
-    Route::view($uri, 'layouts.site', $data)->name('public.'.$data['page']);
-}
+Route::controller(PublicSiteController::class)->group(function (): void {
+    Route::get('/', 'home')->name('public.home');
+    Route::get('/sharpening', 'sharpening')->name('public.sharpening');
+    Route::get('/repair', 'repair')->name('public.repair');
+    Route::get('/delivery', 'delivery')->name('public.delivery');
+    Route::get('/contacts', 'contacts')->name('public.contacts');
+    Route::get('/work-schedule', 'workSchedule')->name('public.work-schedule');
+    Route::get('/prices', 'prices')->name('public.prices');
+    Route::get('/privacy-policy', 'privacyPolicy')->name('public.privacy-policy');
+    Route::get('/user-agreement', 'userAgreement')->name('public.user-agreement');
+    Route::get('/usage-rules', 'usageRules')->name('public.usage-rules');
+});
 
 Route::redirect('/terms-of-service', '/user-agreement');
 
@@ -44,6 +41,6 @@ Route::view('/manager/{any?}', 'apps.manager', ['title' => 'Менеджер —
     ->where('any', '.*')
     ->name('app.manager');
 
-Route::view('/{any}', 'layouts.site', ['page' => 'not-found', 'title' => 'Страница не найдена'])
+Route::get('/{any}', [PublicSiteController::class, 'notFound'])
     ->where('any', '.*')
     ->name('public.not-found');

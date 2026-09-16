@@ -1,17 +1,22 @@
 @php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
+    $layout = $layout ?? 'stack';
+    $sharpeningLabel = $sharpeningLabel ?? 'Заказать заточку';
+    $repairLabel = $repairLabel ?? 'Заказать ремонт';
+    $withDeliveryHint = $withDeliveryHint ?? false;
+    $wrapClass = $layout === 'row'
+        ? 'flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center'
+        : 'flex flex-col gap-3';
+    $btn = 'bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-8 py-4 sm:py-5 font-jost-bold text-base sm:text-lg transition-all duration-300 shadow-lg hover:shadow-xl text-center';
+    $btn2 = 'bg-dark-blue-500 hover:bg-dark-blue-600 dark:bg-dark-blue-600 dark:hover:bg-dark-blue-700 text-white px-8 py-4 sm:py-5 font-jost-bold text-base sm:text-lg transition-all duration-300 shadow-lg hover:shadow-xl text-center';
 @endphp
-<section class="bg-white dark:bg-dark-blue-500 py-8">
-    <div class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20">
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{{ url('/sharpening#order') }}"
-               class="bg-dark-blue-500 hover:bg-dark-blue-600 text-white text-center px-8 py-4 font-jost-bold text-lg">
-                ЗАКАЗАТЬ ЗАТОЧКУ
-            </a>
-            <a href="{{ url('/repair#order') }}"
-               class="bg-pink-500 hover:bg-pink-600 text-white text-center px-8 py-4 font-jost-bold text-lg">
-                ЗАКАЗАТЬ РЕМОНТ
-            </a>
-        </div>
+<div>
+    @if($withDeliveryHint)
+        <p class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300 text-center mb-4">
+            Курьер заберёт заказ у вас и вернёт обратно после работы.
+        </p>
+    @endif
+    <div class="{{ $wrapClass }}">
+        <a href="{{ url('/sharpening#order') }}" class="{{ $btn }}">{{ $sharpeningLabel }}</a>
+        <a href="{{ url('/repair#order') }}" class="{{ $btn2 }}">{{ $repairLabel }}</a>
     </div>
-</section>
+</div>

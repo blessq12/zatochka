@@ -2,28 +2,22 @@
     /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
     /** @var list<array<string, mixed>> $prices */
 @endphp
-<div class="space-y-4">
-    @forelse($prices as $item)
-        <div class="border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-4 sm:px-6 py-4 bg-white/80 dark:bg-transparent">
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                <div>
-                    <h3 class="text-base sm:text-lg font-jost-bold text-dark-blue-500 dark:text-dark-blue-300">
-                        {{ $item['name'] ?? '' }}
-                    </h3>
+<div class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 sm:px-10 sm:py-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl">
+    <div class="space-y-4">
+        @forelse($prices as $item)
+            <div class="flex justify-between items-center gap-2 sm:gap-4">
+                <div class="flex-1 min-w-0">
+                    <p class="text-base sm:text-lg font-jost-regular text-dark-gray-500 dark:text-white">{{ $item['name'] ?? '' }}</p>
                     @if(!empty($item['description']))
-                        <p class="mt-1 text-sm font-jost-regular text-dark-gray-500 dark:text-gray-300">
-                            {{ $item['description'] }}
-                        </p>
+                        <p class="text-xs sm:text-sm font-jost-regular text-dark-gray-400 dark:text-gray-300 mt-1">{{ $item['description'] }}</p>
                     @endif
                 </div>
-                <p class="text-base sm:text-lg font-jost-bold text-[#C3006B] whitespace-nowrap">
-                    {{ $site->formatPrice($item) }}
-                </p>
+                @if(!empty($item['price']))
+                    <p class="text-lg sm:text-xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] flex-shrink-0">{{ $site->formatPrice($item) }}</p>
+                @endif
             </div>
-        </div>
-    @empty
-        <p class="text-center text-dark-gray-500 dark:text-gray-300 font-jost-regular">
-            Прайс временно недоступен.
-        </p>
-    @endforelse
+        @empty
+            <p class="text-center text-dark-gray-500 dark:text-gray-300 font-jost-regular">Прайс временно недоступен.</p>
+        @endforelse
+    </div>
 </div>
