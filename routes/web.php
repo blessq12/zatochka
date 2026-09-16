@@ -29,6 +29,8 @@ Route::controller(PublicSiteController::class)->group(function (): void {
 
 Route::redirect('/terms-of-service', '/user-agreement');
 
+Route::redirect('/admin/{any?}', '/manager')->where('any', '.*');
+
 Route::view('/client/{any?}', 'apps.client', ['title' => 'Личный кабинет — Заточка.ТСК'])
     ->where('any', '.*')
     ->name('app.client');

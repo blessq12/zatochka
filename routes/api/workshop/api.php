@@ -24,5 +24,6 @@ Route::prefix('workshop/production-tasks')->group(function (): void {
         Route::delete('{productionTaskId}/works/{workId}', [ProductionTaskController::class, 'removeWork']);
     });
 
-    Route::post('{productionTaskId}/assign-master', [ProductionTaskController::class, 'assignMaster']);
+    Route::post('{productionTaskId}/assign-master', [ProductionTaskController::class, 'assignMaster'])
+        ->middleware(['auth:sanctum', 'manager']);
 });

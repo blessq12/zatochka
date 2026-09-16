@@ -16,6 +16,66 @@ final class CashOperationController extends Controller
         private SequentialEntityIdGenerator $ids,
     ) {}
 
+    public function index(Request $request): JsonResponse
+    {
+        $type = $request->query('type');
+
+        $query = \App\Infrastructure\Finance\Model\CashOperationModel::query()
+            ->orderByDesc('registered_at')
+            ->orderByDesc('id');
+
+        if (is_string($type) && in_array($type, ['in', 'out'], true)) {
+            $query->where('type', $type);
+        }
+
+        $items = $query->limit(200)->get()->map(fn ($op): array => [
+            'id' => $op->id,
+            'type' => $op->type,
+            'paymentMethod' => $op->payment_method,
+            'amount' => $op->amount,
+            'currency' => $op->currency,
+            'comment' => $op->comment,
+            'paymentId' => $op->payment_id,
+            'registeredAt' => $op->registered_at?->toIso8601String(),
+        ]);
+
+        $inSum = (string) \App\Infrastructure\Finance\Model\CashOperationModel::query()
+            ->where('type', 'in')
+            ->sum('amount');
+        $outSum = (string) \App\Infrastructure\Finance\Model\CashOperationModel::query()
+            ->where('type', 'out')
+            ->sum('amount');
+
+        return $this->ok([
+            'items' => $items,
+            'summary' => [
+                'in' => $inSum,
+                'out' => $outSum,
+                'balance' => (string) ((float) $inSum - (float) $outSum),
+            ],
+        ]);
+    }
+
+    public function show(int $cashOperationId): JsonResponse
+    {
+        $op = \App\Infrastructure\Finance\Model\CashOperationModel::query()->find($cashOperationId);
+
+        if ($op === null) {
+            return response()->json(['message' => 'Операция не найдена.'], 404);
+        }
+
+        return $this->ok([
+            'id' => $op->id,
+            'type' => $op->type,
+            'paymentMethod' => $op->payment_method,
+            'amount' => $op->amount,
+            'currency' => $op->currency,
+            'comment' => $op->comment,
+            'paymentId' => $op->payment_id,
+            'registeredAt' => $op->registered_at?->toIso8601String(),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([

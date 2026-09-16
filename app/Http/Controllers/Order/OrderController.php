@@ -98,6 +98,53 @@ final class OrderController extends Controller
         return $this->created($this->getOrderById->handle(new GetOrderByIdQuery($orderId)));
     }
 
+    public function index(Request $request): JsonResponse
+    {
+        $status = $request->query('status');
+        $search = trim((string) $request->query('search', ''));
+
+        $query = \App\Infrastructure\Order\Model\OrderModel::query()
+            ->with(['client'])
+            ->orderByDesc('created_at');
+
+        if (is_string($status) && $status !== '') {
+            $query->where('status', $status);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search): void {
+                $q->where('number', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%")
+                    ->orWhereHas('client', function ($cq) use ($search): void {
+                        $cq->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $items = $query->limit(200)->get()->map(function ($order): array {
+            $client = $order->client;
+
+            return [
+                'id' => $order->id,
+                'number' => $order->number,
+                'status' => $order->status,
+                'serviceType' => $order->service_type,
+                'urgency' => $order->urgency,
+                'estimatedAmount' => $order->estimated_amount,
+                'estimatedCurrency' => $order->estimated_currency,
+                'createdAt' => $order->created_at?->toIso8601String(),
+                'client' => $client === null ? null : [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'phone' => $client->phone,
+                ],
+            ];
+        });
+
+        return $this->ok(['items' => $items]);
+    }
+
     public function show(string $orderId): JsonResponse
     {
         $order = $this->getOrderById->handle(new GetOrderByIdQuery($orderId));

@@ -25,6 +25,33 @@ final class ClientController extends Controller
         private SequentialEntityIdGenerator $ids,
     ) {}
 
+    public function index(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('search', ''));
+
+        $query = \App\Infrastructure\CRM\Model\ClientModel::query()->orderByDesc('id');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search): void {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $items = $query->limit(200)->get()->map(fn ($client): array => [
+            'id' => $client->id,
+            'phone' => $client->phone,
+            'name' => $client->name,
+            'email' => $client->email,
+            'bonusBalance' => $client->bonus_balance,
+            'birthDate' => $client->birth_date?->format('Y-m-d'),
+            'deliveryAddress' => $client->delivery_address,
+        ]);
+
+        return $this->ok(['items' => $items]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([

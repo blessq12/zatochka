@@ -14,6 +14,41 @@ final class AuthController extends Controller
 {
     public function login(Request $request): JsonResponse
     {
+        return $this->issueToken($request, UserRole::Master, 'pos', 'master', 'Only masters can access POS.');
+    }
+
+    public function managerLogin(Request $request): JsonResponse
+    {
+        return $this->issueToken($request, UserRole::Manager, 'manager', 'manager', 'Only managers can access the manager panel.');
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()?->currentAccessToken()?->delete();
+
+        return response()->json(['message' => 'Logged out.']);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        return $this->ok([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role->value,
+        ]);
+    }
+
+    private function issueToken(
+        Request $request,
+        UserRole $requiredRole,
+        string $tokenName,
+        string $payloadKey,
+        string $forbiddenMessage,
+    ): JsonResponse {
         $data = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
@@ -24,30 +59,24 @@ final class AuthController extends Controller
 
         if ($user === null || ! Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Invalid credentials.'],
+                'email' => ['Неверный email или пароль.'],
             ]);
         }
 
-        if ($user->role !== UserRole::Master) {
-            return response()->json(['message' => 'Only masters can access POS.'], 403);
+        if ($user->role !== $requiredRole) {
+            return response()->json(['message' => $forbiddenMessage], 403);
         }
 
-        $token = $user->createToken('pos')->plainTextToken;
+        $token = $user->createToken($tokenName)->plainTextToken;
 
         return response()->json([
             'token' => $token,
-            'master' => [
+            $payloadKey => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $user->role->value,
             ],
         ]);
-    }
-
-    public function logout(Request $request): JsonResponse
-    {
-        $request->user()?->currentAccessToken()?->delete();
-
-        return response()->json(['message' => 'Logged out.']);
     }
 }

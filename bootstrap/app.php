@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'master' => \App\Http\Middleware\EnsureUserIsMaster::class,
+            'manager' => \App\Http\Middleware\EnsureUserIsManager::class,
+            'staff' => \App\Http\Middleware\EnsureUserIsStaff::class,
             'client' => \App\Http\Middleware\EnsureUserIsClient::class,
         ]);
     })

@@ -1,0 +1,1 @@
+import{Q as o}from"./_plugin-vue_export-helper-BsAEWGlw.js";const n={success:(r,s="")=>o().success(r,{title:s}),error:(r,s="")=>o().error(r,{title:s}),info:(r,s="")=>o().info(r,{title:s}),warning:(r,s="")=>o().warning(r,{title:s})};export{n as t};
