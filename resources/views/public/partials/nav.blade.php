@@ -8,7 +8,7 @@
             >
                 <!-- Логотип -->
                 <a href="{{ url('/') }}"
-                    class="flex items-center space-x-2 sm:space-x-3 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] rounded-xl -m-2 flex-shrink-0"
+                    class="flex items-center gap-2 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] flex-shrink-0 max-h-12"
                     data-site-logo-link
                 >
                     <!-- Иконка логотипа -->
@@ -18,7 +18,7 @@
                         viewBox="0 0 36 25"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        class="w-12 h-8 sm:w-14 sm:h-10 flex-shrink-0 group-hover:scale-105 transition-all duration-300"
+                        class="w-8 h-5 sm:w-9 sm:h-6 flex-shrink-0 group-hover:scale-105 transition-all duration-300"
                         data-site-logo-icon
                     >
                         <path
@@ -36,19 +36,19 @@
                     </svg>
 
                     <!-- Текст логотипа -->
-                    <div class="flex flex-col">
+                    <div class="flex flex-col justify-center leading-none gap-0.5">
                         <span
-                            class="text-[10px] font-jost-regular text-white leading-tight"
+                            class="text-[9px] font-jost-regular text-white"
                         >
                             ОСНОВАНО 2020
                         </span>
                         <span
-                            class="text-lg sm:text-xl font-jost-bold text-white leading-tight"
+                            class="text-sm sm:text-base font-jost-bold text-white"
                         >
                             ЗАТОЧКА<span data-site-logo-dot class="text-[#003859]">.</span>ТСК
                         </span>
                         <span
-                            class="text-[10px] sm:text-xs font-jost-regular text-white leading-tight"
+                            class="text-[9px] font-jost-regular text-white"
                         >
                             ПОРА ЗАТОЧИТЬ ИНСТРУМЕНТЫ
                         </span>
@@ -60,37 +60,37 @@
                     class="hidden lg:flex items-center space-x-1 xl:space-x-2 flex-1 justify-center mx-8"
                 >
                     <a href="{{ url('/') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/') ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ГЛАВНАЯ
                     </a>
                     <a href="{{ url('/sharpening') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/sharpening') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/sharpening') ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ЗАТОЧКА
                     </a>
                     <a href="{{ url('/repair') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/repair') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/repair') ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         РЕМОНТ
                     </a>
                     <a href="{{ url('/delivery') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/delivery') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/delivery') ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ДОСТАВКА
                     </a>
                     <a href="{{ url('/prices') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/prices') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/prices') ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ПРАЙС
                     </a>
                     <a href="{{ url('/work-schedule') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/work-schedule') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/work-schedule') ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ГРАФИК
                     </a>
                     <a href="{{ url('/contacts') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/contacts') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/contacts') ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         КОНТАКТЫ
                     </a>
@@ -110,7 +110,7 @@
                 <!-- Правая часть - мобильный -->
                 <div class="flex lg:hidden items-center space-x-3">
                     <button type="button" data-mobile-menu-toggle
-                        class="relative w-10 h-10 shrink-0 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg z-[110]"
+                        class="relative w-10 h-10 shrink-0 focus:outline-none focus:ring-2 focus:ring-white/50 z-[110]"
                         aria-label="Меню"
                         aria-expanded="false"
                     >

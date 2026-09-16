@@ -42,7 +42,7 @@
                             type="number"
                             min="1"
                             placeholder="Введите количество"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                            
                         />
                         <p
@@ -62,7 +62,7 @@
                         </label>
                         <select
                             name="tool_type"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 appearance-none bg-no-repeat bg-right pr-12"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 appearance-none bg-no-repeat bg-right pr-12"
                            
                            
                             style="
@@ -90,7 +90,7 @@
                             name="needs_delivery"
                             type="checkbox" checked
                             id="needs_delivery"
-                            class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B]"
+                            class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B]"
                         />
                         <label
                             for="needs_delivery"
@@ -122,7 +122,7 @@
                             name="delivery_address"
                             type="text"
                             placeholder="Введите адрес"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                         />
                     </div>
 
@@ -137,7 +137,7 @@
                             name="name"
                             type="text"
                             placeholder="Введите ваше имя"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                            
                         />
                         <p
@@ -161,7 +161,7 @@
                             data-maska="+7 (###) ###-##-##"
                             type="tel"
                             placeholder="+7 (___) ___-__-__"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
                            
                         />
                         <p
@@ -183,7 +183,7 @@
                             name="comment"
                             rows="4"
                             placeholder="Дополнительная информация"
-                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 resize-none"
+                            class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20 resize-none"
                         ></textarea>
                     </div>
 
@@ -194,7 +194,7 @@
                                 name="delivery_agreement"
                                 type="checkbox"
                                 id="delivery_agreement"
-                                class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
                                
                             />
                             <label
@@ -223,7 +223,7 @@
                                 name="privacy_agreement"
                                 type="checkbox"
                                 id="privacy_agreement"
-                                class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
                                
                             />
                             <label
@@ -252,7 +252,7 @@
                                 name="delivery_conditions_agreement"
                                 type="checkbox"
                                 id="delivery_conditions_agreement"
-                                class="w-5 h-5 rounded border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
                             />
                             <label
                                 for="delivery_conditions_agreement"
@@ -277,7 +277,7 @@
                         <button
                             type="submit"
                            
-                            class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            class="w-full bg-dark-blue-500 hover:bg-dark-blue-600 text-white px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
                             <span
                                 >Отправка...</span

@@ -32,7 +32,7 @@ export default {
         },
         navLinkClass(path) {
             const base =
-                "text-white text-xl sm:text-2xl font-jost-bold transition-all duration-300 px-4 py-2 rounded-xl";
+                "text-white text-xl sm:text-2xl font-jost-bold transition-all duration-300 px-4 py-2";
             return this.isActive(path) ? `${base} bg-white/20` : base;
         },
     },
@@ -102,7 +102,7 @@ export default {
                 <a
                     href="/client/dashboard"
                     @click="closeMenu"
-                    class="mt-4 bg-[#C20A6C] hover:bg-[#a0085a] text-white px-6 py-2.5 rounded-xl font-jost-bold text-sm transition-all duration-300"
+                    class="mt-4 bg-[#C20A6C] hover:bg-[#a0085a] text-white px-6 py-2.5 font-jost-bold text-sm transition-all duration-300"
                 >
                     ВОЙТИ
                 </a>

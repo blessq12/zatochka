@@ -26,7 +26,7 @@
                 К сожалению, запрашиваемая страница не существует
             </p>
             <a href="{{ url('/') }}"
-                class="inline-block bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-10 py-5 rounded-2xl font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                class="inline-block bg-[#C3006B] hover:bg-[#C3006B]/90 text-white px-10 py-5 font-jost-bold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
             >
                 Вернуться на главную
             </a>
