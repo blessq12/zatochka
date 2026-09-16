@@ -4,7 +4,6 @@
 
 @section('content')
 @php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
 @endphp
 <div class="min-h-screen bg-white dark:bg-dark-blue-500">
         <!-- Секция заголовка ПРАЙС РЕМОНТ АППАРАТОВ -->
@@ -94,7 +93,7 @@
                 class="max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 space-y-10"
             >
                 <!-- Позиции прайса -->
-                @include('public.partials.price-list', ['prices' => $site->repairPrices()])
+                @include('public.partials.price-list', ['prices' => $repair_prices])
 
                 <!-- Статичный текст -->
                 <div class="mt-10">
@@ -150,8 +149,8 @@
         <section id="order" class="bg-white dark:bg-dark-blue-500 scroll-mt-24">
             <div
                 id="repair-form-island"
-                data-phone-tel="{{ $site->phoneTel() }}"
-                data-write-href="{{ $site->messengerWriteUrl() }}"
+                data-phone-tel="{{ ($contacts['phone_tel'] ?? '') }}"
+                data-write-href="{{ ($contacts['messenger_write_url'] ?? '') }}"
             ></div>
         </section>
     </div>

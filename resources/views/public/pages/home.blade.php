@@ -3,9 +3,6 @@
 @section('meta_description', 'Профессиональная заточка маникюрных, парикмахерских и грумерских инструментов и ремонт оборудования в Томске.')
 
 @section('content')
-@php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
-@endphp
 <div
         class="bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
     >

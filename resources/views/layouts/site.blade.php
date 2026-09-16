@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $site->title ?? ($title ?? 'Заточка.ТСК') }}</title>
+    <title>{{ $title ?? 'Заточка.ТСК' }}</title>
     <meta name="description" content="@yield('meta_description', 'Профессиональная заточка инструментов в Томске. Заточка.ТСК.')">
     @stack('head')
     @vite(['resources/site/css/site.css', 'resources/site/js/site.js'])

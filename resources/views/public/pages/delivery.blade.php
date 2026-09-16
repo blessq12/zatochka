@@ -4,7 +4,6 @@
 
 @section('content')
 @php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
 @endphp
 <div class="min-h-screen bg-white dark:bg-dark-blue-500">
         <x-public.page-hero title="ДОСТАВКА" />
@@ -47,7 +46,7 @@
                     </div>
 
                                         <div class="space-y-3">
-                        @foreach(($site->deliveryInfo()['free_conditions'] ?? []) as $condition)
+                        @foreach(($delivery_info['free_conditions'] ?? []) as $condition)
                             <p class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200 text-start">
                                 {{ $condition }}
                             </p>
@@ -73,7 +72,7 @@
                     </h2>
 
                                         <div class="space-y-6 mt-4">
-                        @foreach(($site->deliveryInfo()['advantages'] ?? []) as $advantage)
+                        @foreach(($delivery_info['advantages'] ?? []) as $advantage)
                             <div class="flex items-start gap-3">
                                 <div>
                                     <p class="text-sm sm:text-base font-jost-bold text-dark-gray-500 dark:text-gray-200">

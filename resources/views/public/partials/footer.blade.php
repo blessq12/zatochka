@@ -1,7 +1,3 @@
-@php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
-    $company = $site->company();
-@endphp
 <footer
         class="bg-white/85 backdrop-blur-2xl border-t border-white/25 dark:bg-gray-800/85 dark:backdrop-blur-2xl dark:border-gray-700/25 mt-auto"
     >
@@ -10,35 +6,31 @@
         >
             <div class="flex justify-center mb-6">
                 <a
-                   
-                    href="{{ $site->phoneTel() }}"
+                    href="tel:{{ ($contacts['phone_tel'] ?? '') }}"
                     class="text-xl sm:text-2xl font-jost-bold text-dark-blue-500 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-300"
                 >
-                    {{ $site->phone() }}
+                    {{ ($contacts['phone'] ?? '') }}
                 </a>
             </div>
 
-            <div
-               
-                class="flex justify-center items-center gap-4 mb-6 flex-wrap"
-            >
-                <a
-                   
-                   
-                    href="{{ $link['url'] ?? '#' }}"
-                    target="_blank"
-                    rel="noopener"
-                    class="text-sm font-jost-medium text-dark-blue-500 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-300"
-                >
-                    {{ $link['name'] ?? '' }}
-                </a>
+            <div class="flex justify-center items-center gap-4 mb-6 flex-wrap">
+                @foreach(($contacts['social']['links'] ?? []) as $link)
+                    <a
+                        href="{{ $link['url'] ?? '#' }}"
+                        target="_blank"
+                        rel="noopener"
+                        class="text-sm font-jost-medium text-dark-blue-500 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-300"
+                    >
+                        {{ $link['name'] ?? '' }}
+                    </a>
+                @endforeach
             </div>
 
             <div
                 class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-6 flex-wrap"
             >
                 <a href="{{ url('/privacy-policy') }}"
-                    class="text-sm font-jost-medium text-dark-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300{{ $site->isActive('/privacy-policy') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    class="text-sm font-jost-medium text-dark-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/privacy-policy', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                 >
                     Политика конфиденциальности
                 </a>
@@ -48,7 +40,7 @@
                     |
                 </span>
                 <a href="{{ url('/user-agreement') }}"
-                    class="text-sm font-jost-medium text-dark-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300{{ $site->isActive('/user-agreement') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    class="text-sm font-jost-medium text-dark-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/user-agreement', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                 >
                     Пользовательское соглашение
                 </a>
@@ -58,21 +50,20 @@
                     |
                 </span>
                 <a href="{{ url('/usage-rules') }}"
-                    class="text-sm font-jost-medium text-dark-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300{{ $site->isActive('/usage-rules') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    class="text-sm font-jost-medium text-dark-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/usage-rules', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                 >
                     Правила пользования
                 </a>
             </div>
 
             <div
-               
                 class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm font-jost-regular text-gray-500 dark:text-gray-400 mb-4"
             >
-                <p>{{ $company['owner_name'] }}</p>
+                <p>{{ $company['owner_name'] ?? '' }}</p>
                 <span class="hidden sm:inline">•</span>
-                <p>ИНН: {{ $company['inn'] }}</p>
+                <p>ИНН: {{ $company['inn'] ?? '' }}</p>
                 <span class="hidden sm:inline">•</span>
-                <p>ОГРН: {{ $company['ogrn'] }}</p>
+                <p>ОГРН: {{ $company['ogrn'] ?? '' }}</p>
             </div>
 
             <div

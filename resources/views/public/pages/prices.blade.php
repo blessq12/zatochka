@@ -4,7 +4,6 @@
 
 @section('content')
 @php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
 @endphp
 <div class="min-h-screen bg-white dark:bg-dark-blue-500">
     <x-public.page-hero title="ПРАЙС НА УСЛУГИ">
@@ -52,13 +51,13 @@
             </h2>
                 <div class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 sm:px-10 sm:py-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl">
                     <div class="space-y-4">
-                        @forelse($site->sharpeningPrices() as $item)
+                        @forelse($sharpening_prices as $item)
                             <div class="flex justify-between items-center">
                                 <p class="text-base sm:text-lg font-jost-regular text-dark-gray-500 dark:text-white">
                                     {{ $item['name'] ?? '' }}
                                 </p>
                                 <p class="text-lg sm:text-xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C]">
-                                    {{ $site->formatPrice($item) }}
+                                    {{ ($item['display_price'] ?? '') }}
                                 </p>
                             </div>
                         @empty
@@ -98,13 +97,13 @@
 
                 <div class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 sm:px-10 sm:py-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl">
                     <div class="space-y-4">
-                        @forelse($site->repairPrices() as $item)
+                        @forelse($repair_prices as $item)
                             <div class="flex justify-between items-center">
                                 <p class="text-base sm:text-lg font-jost-regular text-dark-gray-500 dark:text-white">
                                     {{ $item['name'] ?? '' }}
                                 </p>
                                 <p class="text-lg sm:text-xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C]">
-                                    {{ $site->formatPrice($item) }}
+                                    {{ ($item['display_price'] ?? '') }}
                                 </p>
                             </div>
                         @empty

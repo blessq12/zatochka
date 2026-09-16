@@ -4,8 +4,6 @@
 
 @section('content')
 @php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
-    $contacts = $site->contacts();
     $address = $contacts['address'] ?? [];
     $contactPerson = (string) ($contacts['contact_person'] ?? '');
     $socialEmail = (string) (($contacts['social']['email'] ?? null) ?: ($contacts['email'] ?? ''));
@@ -19,16 +17,16 @@
                     {{ $contactPerson }}
                 </p>
             @endif
-            @if($site->phoneTel() !== '')
+            @if(($contacts['phone_tel'] ?? '') !== '')
                 <a
-                    href="tel:{{ $site->phoneTel() }}"
+                    href="tel:{{ ($contacts['phone_tel'] ?? '') }}"
                     class="inline-block text-xl sm:text-2xl lg:text-3xl font-jost-regular text-white dark:text-white underline decoration-white/40 hover:decoration-white"
                 >
-                    {{ $site->phone() }}
+                    {{ ($contacts['phone'] ?? '') }}
                 </a>
-            @elseif($site->phone() !== '')
+            @elseif(($contacts['phone'] ?? '') !== '')
                 <p class="text-xl sm:text-2xl lg:text-3xl font-jost-regular text-white dark:text-white">
-                    {{ $site->phone() }}
+                    {{ ($contacts['phone'] ?? '') }}
                 </p>
             @endif
         </div>
@@ -78,9 +76,9 @@
                 МЫ В СОЦИАЛЬНЫХ СЕТЯХ
             </h2>
 
-            @if(count($site->socialLinks()) > 0)
+            @if(count(($contacts['social']['links'] ?? [])) > 0)
                 <div class="flex justify-center items-center space-x-6 sm:space-x-8 mb-8 sm:mb-12">
-                    @foreach($site->socialLinks() as $link)
+                    @foreach(($contacts['social']['links'] ?? []) as $link)
                         <a
                             href="{{ $link['url'] ?? '#' }}"
                             target="_blank"

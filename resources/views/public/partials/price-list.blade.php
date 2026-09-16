@@ -1,6 +1,5 @@
 @php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
-    /** @var list<array<string, mixed>> $prices */
+/** @var list<array<string, mixed>> $prices */
 @endphp
 <div
     class="relative border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 sm:px-10 sm:py-8 bg-white/80 backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
@@ -20,7 +19,7 @@
                 </div>
                 @if(!empty($item['price']))
                     <p class="text-lg sm:text-xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] flex-shrink-0">
-                        {{ $site->formatPrice($item) }}
+                        {{ ($item['display_price'] ?? '') }}
                     </p>
                 @endif
             </div>

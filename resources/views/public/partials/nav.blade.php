@@ -1,5 +1,4 @@
 @php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
 @endphp
 <nav data-site-header class="bg-[#C20A6C] sticky top-0 z-[110] transition-colors duration-300">
         <div class="container mx-auto">
@@ -60,37 +59,37 @@
                     class="hidden lg:flex items-center space-x-1 xl:space-x-2 flex-1 justify-center mx-8"
                 >
                     <a href="{{ url('/') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ГЛАВНАЯ
                     </a>
                     <a href="{{ url('/sharpening') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/sharpening') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/sharpening', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ЗАТОЧКА
                     </a>
                     <a href="{{ url('/repair') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/repair') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/repair', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         РЕМОНТ
                     </a>
                     <a href="{{ url('/delivery') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/delivery') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/delivery', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ДОСТАВКА
                     </a>
                     <a href="{{ url('/prices') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/prices') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/prices', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ПРАЙС
                     </a>
                     <a href="{{ url('/work-schedule') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/work-schedule') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/work-schedule', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         ГРАФИК
                     </a>
                     <a href="{{ url('/contacts') }}"
-                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/contacts') ? ' bg-white/30 font-jost-bold' : '' }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ ((rtrim($current_path ?? '/', '/') ?: '/') === (rtrim('/contacts', '/') ?: '/')) ? ' bg-white/30 font-jost-bold' : '' }}"
                     >
                         КОНТАКТЫ
                     </a>
@@ -124,7 +123,7 @@
             <!-- Мобильное меню (Vue island) -->
             <div
                 id="mobile-menu-island"
-                data-social-links='@json($site->socialLinks())'
+                data-social-links='@json(($contacts['social']['links'] ?? []))'
             ></div>
         </div>
     </nav>

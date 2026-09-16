@@ -4,7 +4,6 @@
 
 @section('content')
 @php
-    /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
 @endphp
 <div
         class="min-h-screen bg-white dark:bg-dark-blue-500 flex items-center justify-center"
