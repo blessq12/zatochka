@@ -1,14 +1,15 @@
 @php
     /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
 @endphp
-<nav class="bg-[#C20A6C] sticky top-0 z-50">
+<nav data-site-header class="bg-[#C20A6C] sticky top-0 z-[110] transition-colors duration-300">
         <div class="container mx-auto">
             <div
                 class="flex justify-between items-center py-4 h-20 px-6 sm:px-8 lg:px-12"
             >
                 <!-- Логотип -->
                 <a href="{{ url('/') }}"
-                    class="flex items-center space-x-2 sm:space-x-3 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] rounded-xl -m-2 flex-shrink-0{{ $site->isActive('/') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    class="flex items-center space-x-2 sm:space-x-3 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] rounded-xl -m-2 flex-shrink-0"
+                    data-site-logo-link
                 >
                     <!-- Иконка логотипа -->
                     <svg
@@ -18,6 +19,7 @@
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                         class="w-12 h-8 sm:w-14 sm:h-10 flex-shrink-0 group-hover:scale-105 transition-all duration-300"
+                        data-site-logo-icon
                     >
                         <path
                             d="M25.3397 12.1789C25.3397 11.6708 24.9268 11.2578 24.4186 11.2578C23.9105 11.2578 23.4976 11.6708 23.4976 12.1789C23.4976 12.687 23.9105 13.1 24.4186 13.1C24.9268 13.1 25.3397 12.6889 25.3397 12.1789Z"
@@ -43,7 +45,7 @@
                         <span
                             class="text-lg sm:text-xl font-jost-bold text-white leading-tight"
                         >
-                            ЗАТОЧКА<span class="text-[#003859]">.</span>ТСК
+                            ЗАТОЧКА<span data-site-logo-dot class="text-[#003859]">.</span>ТСК
                         </span>
                         <span
                             class="text-[10px] sm:text-xs font-jost-regular text-white leading-tight"
@@ -108,26 +110,21 @@
                 <!-- Правая часть - мобильный -->
                 <div class="flex lg:hidden items-center space-x-3">
                     <button type="button" data-mobile-menu-toggle
-                        class="w-10 h-10 flex flex-col justify-center items-center space-y-1.5 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg"
+                        class="relative w-10 h-10 shrink-0 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg z-[110]"
                         aria-label="Меню"
+                        aria-expanded="false"
                     >
-                        <span
-                            class="block w-6 h-0.5 bg-black transition-all duration-300"
-                           
-                        ></span>
-                        <span
-                            class="block w-6 h-0.5 bg-black transition-all duration-300"
-                           
-                        ></span>
-                        <span
-                            class="block w-6 h-0.5 bg-black transition-all duration-300"
-                           
-                        ></span>
+                        <span class="absolute left-1/2 top-1/2 block w-6 h-0.5 bg-black transition-all duration-300 -translate-x-1/2 -translate-y-[7px]"></span>
+                        <span class="absolute left-1/2 top-1/2 block w-6 h-0.5 bg-black transition-all duration-300 -translate-x-1/2 -translate-y-1/2"></span>
+                        <span class="absolute left-1/2 top-1/2 block w-6 h-0.5 bg-black transition-all duration-300 -translate-x-1/2 translate-y-[5px]"></span>
                     </button>
                 </div>
             </div>
 
-            <!-- Мобильное меню -->
-            @include('public.partials.mobile-menu')
+            <!-- Мобильное меню (Vue island) -->
+            <div
+                id="mobile-menu-island"
+                data-social-links='@json($site->socialLinks())'
+            ></div>
         </div>
     </nav>

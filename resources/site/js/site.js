@@ -1,5 +1,13 @@
 import themeTogglerService from "@shared/themeTogglerService.js";
 import axios from "axios";
+import { vMaska } from "maska/vue";
+import { createPinia } from "pinia";
+import { createApp } from "vue";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
+import SharpeningForm from "./components/Forms/SharpeningForm.vue";
+import RepairForm from "./components/Forms/RepairForm.vue";
+import MobileMenuIsland from "./components/Layout/MobileMenuIsland.vue";
 
 window.axios = axios;
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
@@ -7,127 +15,71 @@ window.axios.defaults.withCredentials = true;
 
 themeTogglerService.init();
 
-const toggleButtons = document.querySelectorAll("[data-mobile-menu-toggle]");
-const menu = document.querySelector("[data-mobile-menu]");
+const toastOptions = {
+    position: "top-right",
+    timeout: 4000,
+    closeOnClick: true,
+    pauseOnFocusLoss: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+    hideProgressBar: false,
+    closeButton: "button",
+    icon: true,
+    rtl: false,
+};
 
-if (menu && toggleButtons.length) {
-    toggleButtons.forEach((toggle) => {
-        toggle.addEventListener("click", () => {
-            const isHidden = menu.classList.contains("hidden");
-            menu.classList.toggle("hidden", !isHidden);
-            menu.classList.toggle("flex", isHidden);
-            menu.classList.toggle("flex-col", isHidden);
-            toggleButtons.forEach((btn) =>
-                btn.setAttribute("aria-expanded", isHidden ? "true" : "false")
-            );
-        });
+function mountIsland(selector, component, props = {}) {
+    const el = document.querySelector(selector);
+    if (!el) {
+        return null;
+    }
+
+    const app = createApp(component, props);
+    app.use(createPinia());
+    app.directive("maska", vMaska);
+    app.use(Toast, toastOptions);
+    app.mount(el);
+
+    return app;
+}
+
+function readJsonAttr(el, name, fallback) {
+    const raw = el?.getAttribute(name);
+    if (!raw) {
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return fallback;
+    }
+}
+
+const sharpeningRoot = document.getElementById("sharpening-form-island");
+if (sharpeningRoot) {
+    mountIsland("#sharpening-form-island", SharpeningForm, {
+        phoneTel: sharpeningRoot.dataset.phoneTel || "",
+        writeHref: sharpeningRoot.dataset.writeHref || "",
     });
 }
 
-const csrfToken = document
-    .querySelector('meta[name="csrf-token"]')
-    ?.getAttribute("content");
-
-function buildSharpeningPayload(form) {
-    const formData = new FormData(form);
-    return {
-        full_name: formData.get("name") || "",
-        phone: formData.get("phone") || "",
-        service_type: "sharpening",
-        comment: formData.get("comment")?.toString().trim() || null,
-        intake_data: {
-            tool_type: formData.get("tool_type") || null,
-            tools_count: formData.get("tools_count")
-                ? Number(formData.get("tools_count"))
-                : null,
-            extra_comment: formData.get("comment")?.toString().trim() || null,
-        },
-        needs_delivery: formData.get("needs_delivery") === "on",
-        delivery_address:
-            formData.get("needs_delivery") === "on"
-                ? formData.get("delivery_address")?.toString() || null
-                : null,
-    };
-}
-
-function buildRepairPayload(form) {
-    const formData = new FormData(form);
-    return {
-        full_name: formData.get("name") || "",
-        phone: formData.get("phone") || "",
-        service_type: "repair",
-        comment: formData.get("comment")?.toString().trim() || null,
-        intake_data: {
-            equipment_type: formData.get("equipment_type") || null,
-            device_name: formData.get("device_name")?.toString().trim() || null,
-            problem_description:
-                formData.get("problem_description")?.toString().trim() || null,
-            urgency_type: formData.get("urgency_type") || "standard",
-        },
-        needs_delivery: formData.get("needs_delivery") === "on",
-        delivery_address:
-            formData.get("needs_delivery") === "on"
-                ? formData.get("delivery_address")?.toString().trim() || null
-                : null,
-    };
-}
-
-function wireDeliveryToggle(form) {
-    const checkbox = form.querySelector('[name="needs_delivery"]');
-    const addressBlock = form.querySelector("[data-delivery-address]");
-    if (!checkbox || !addressBlock) return;
-    const sync = () => addressBlock.classList.toggle("hidden", !checkbox.checked);
-    checkbox.addEventListener("change", sync);
-    sync();
-}
-
-function wirePublicOrderForm(form) {
-    const serviceType = form.dataset.serviceType;
-    const statusEl = form.querySelector("[data-form-status]");
-    const errorEl = form.querySelector("[data-form-error]");
-    const submitButton = form.querySelector('[type="submit"]');
-    wireDeliveryToggle(form);
-
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (errorEl) {
-            errorEl.textContent = "";
-            errorEl.classList.add("hidden");
-        }
-        if (submitButton) submitButton.disabled = true;
-        try {
-            const payload =
-                serviceType === "repair"
-                    ? buildRepairPayload(form)
-                    : buildSharpeningPayload(form);
-            const response = await axios.post("/api/public/orders", payload, {
-                headers: csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {},
-            });
-            if (statusEl) {
-                statusEl.textContent =
-                    response.data?.data?.message ||
-                    "Заказ создан. Менеджер свяжется с вами.";
-                statusEl.classList.remove("hidden");
-            }
-            form.reset();
-            wireDeliveryToggle(form);
-        } catch (error) {
-            const message =
-                error.response?.data?.message || "Ошибка создания заказа";
-            if (errorEl) {
-                errorEl.textContent = message;
-                errorEl.classList.remove("hidden");
-            }
-        } finally {
-            if (submitButton) submitButton.disabled = false;
-        }
+const repairRoot = document.getElementById("repair-form-island");
+if (repairRoot) {
+    mountIsland("#repair-form-island", RepairForm, {
+        phoneTel: repairRoot.dataset.phoneTel || "",
+        writeHref: repairRoot.dataset.writeHref || "",
     });
 }
 
-document
-    .querySelectorAll("[data-public-order-form]")
-    .forEach((form) => wirePublicOrderForm(form));
-
+const mobileRoot = document.getElementById("mobile-menu-island");
+if (mobileRoot) {
+    mountIsland("#mobile-menu-island", MobileMenuIsland, {
+        socialLinks: readJsonAttr(mobileRoot, "data-social-links", []),
+    });
+}
 
 document.querySelectorAll("[data-faq-list]").forEach((list) => {
     list.querySelectorAll("[data-faq-toggle]").forEach((toggle) => {

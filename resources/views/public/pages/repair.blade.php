@@ -148,7 +148,11 @@
             </div>
         </section>
         <section id="order" class="bg-white dark:bg-dark-blue-500 scroll-mt-24">
-            @include('public.partials.forms.repair-order', ['equipmentTypes' => $equipmentTypes])
+            <div
+                id="repair-form-island"
+                data-phone-tel="{{ $site->phoneTel() }}"
+                data-write-href="{{ $site->messengerWriteUrl() }}"
+            ></div>
         </section>
     </div>
 @endsection
