@@ -7,7 +7,9 @@
                 class="flex justify-between items-center py-4 h-20 px-6 sm:px-8 lg:px-12"
             >
                 <!-- Логотип -->
-                <a href="{{ url('/') }}" class="flex items-center space-x-2 sm:space-x-3 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] rounded-xl -m-2 flex-shrink-0{{ $site->isActive('/') ? ' bg-white/30 font-jost-bold' : '' }}">
+                <a href="{{ url('/') }}"
+                    class="flex items-center space-x-2 sm:space-x-3 group focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#C20A6C] rounded-xl -m-2 flex-shrink-0{{ $site->isActive('/') ? ' bg-white/30 font-jost-bold' : '' }}"
+                >
                     <!-- Иконка логотипа -->
                     <svg
                         width="36"
@@ -55,25 +57,39 @@
                 <nav
                     class="hidden lg:flex items-center space-x-1 xl:space-x-2 flex-1 justify-center mx-8"
                 >
-                    <a href="{{ url('/') }}" class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/') ? ' bg-white/30 font-jost-bold' : '' }}">
+                    <a href="{{ url('/') }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    >
                         ГЛАВНАЯ
                     </a>
-                    <a href="{{ url('/sharpening') }}" class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/sharpening') ? ' bg-white/30 font-jost-bold' : '' }}">
+                    <a href="{{ url('/sharpening') }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/sharpening') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    >
                         ЗАТОЧКА
                     </a>
-                    <a href="{{ url('/repair') }}" class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/repair') ? ' bg-white/30 font-jost-bold' : '' }}">
+                    <a href="{{ url('/repair') }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/repair') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    >
                         РЕМОНТ
                     </a>
-                    <a href="{{ url('/delivery') }}" class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/delivery') ? ' bg-white/30 font-jost-bold' : '' }}">
+                    <a href="{{ url('/delivery') }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/delivery') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    >
                         ДОСТАВКА
                     </a>
-                    <a href="{{ url('/prices') }}" class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/prices') ? ' bg-white/30 font-jost-bold' : '' }}">
+                    <a href="{{ url('/prices') }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/prices') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    >
                         ПРАЙС
                     </a>
-                    <a href="{{ url('/work-schedule') }}" class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/work-schedule') ? ' bg-white/30 font-jost-bold' : '' }}">
+                    <a href="{{ url('/work-schedule') }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/work-schedule') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    >
                         ГРАФИК
                     </a>
-                    <a href="{{ url('/contacts') }}" class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/contacts') ? ' bg-white/30 font-jost-bold' : '' }}">
+                    <a href="{{ url('/contacts') }}"
+                        class="text-white text-xs xl:text-sm font-jost-medium px-3 xl:px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap{{ $site->isActive('/contacts') ? ' bg-white/30 font-jost-bold' : '' }}"
+                    >
                         КОНТАКТЫ
                     </a>
                 </nav>
@@ -81,23 +97,32 @@
                 <div
                     class="hidden lg:flex items-center space-x-3 flex-shrink-0"
                 >
-                    <a href="{{ url('/client/dashboard') }}" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap">
+                    <a
+                        href="{{ url('/client/dashboard') }}"
+                        class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 font-jost-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                    >
                         ВОЙТИ
                     </a>
                 </div>
 
                 <!-- Правая часть - мобильный -->
                 <div class="flex lg:hidden items-center space-x-3">
-                    <button
-                        type="button"
-                        data-mobile-menu-toggle
+                    <button type="button" data-mobile-menu-toggle
                         class="w-10 h-10 flex flex-col justify-center items-center space-y-1.5 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg"
                         aria-label="Меню"
-                        aria-expanded="false"
                     >
-                        <span class="block w-6 h-0.5 bg-black transition-all duration-300"></span>
-                        <span class="block w-6 h-0.5 bg-black transition-all duration-300"></span>
-                        <span class="block w-6 h-0.5 bg-black transition-all duration-300"></span>
+                        <span
+                            class="block w-6 h-0.5 bg-black transition-all duration-300"
+                           
+                        ></span>
+                        <span
+                            class="block w-6 h-0.5 bg-black transition-all duration-300"
+                           
+                        ></span>
+                        <span
+                            class="block w-6 h-0.5 bg-black transition-all duration-300"
+                           
+                        ></span>
                     </button>
                 </div>
             </div>

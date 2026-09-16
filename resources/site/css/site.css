@@ -2,6 +2,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;900&display=swap");
 @import "tailwindcss";
 
+@source "../../views";
+@source "../js";
+
 @theme {
     --font-family-jost: "Jost", "sans-serif";
 
@@ -106,3 +109,35 @@
 
 /* site-bundle-marker */
 .site-root { --site-bundle: 1; }
+
+.head-text {
+    font-size: 12px;
+    max-width: 100% !important;
+}
+
+@media (min-width: 768px) {
+    .head-text {
+        font-size: 18px;
+        max-width: 80% !important;
+    }
+}
+
+#high {
+    animation: pulseHigh infinite ease-in-out 2s;
+}
+
+#low {
+    animation: pulseLow infinite ease-in-out 2.5s;
+}
+
+@keyframes pulseHigh {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.02); filter: brightness(1.15); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+@keyframes pulseLow {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.02); filter: brightness(1.1); }
+    100% { transform: scale(1); filter: brightness(1); }
+}

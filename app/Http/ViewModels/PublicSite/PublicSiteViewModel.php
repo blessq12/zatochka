@@ -120,4 +120,27 @@ final readonly class PublicSiteViewModel
 
         return $current === $target;
     }
+
+    public function messengerWriteUrl(): string
+    {
+        $links = $this->socialLinks();
+
+        foreach ($links as $link) {
+            $url = (string) ($link['url'] ?? '');
+            if ($url !== '' && preg_match('/whatsapp|wa\.me/i', $url) === 1) {
+                return $url;
+            }
+        }
+
+        foreach ($links as $link) {
+            $url = (string) ($link['url'] ?? '');
+            if ($url !== '' && preg_match('/t\.me|telegram/i', $url) === 1) {
+                return $url;
+            }
+        }
+
+        $first = $links[0]['url'] ?? '';
+
+        return is_string($first) ? $first : '';
+    }
 }

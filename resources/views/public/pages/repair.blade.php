@@ -8,9 +8,8 @@
 @endphp
 <div class="min-h-screen bg-white dark:bg-dark-blue-500">
         <!-- Секция заголовка ПРАЙС РЕМОНТ АППАРАТОВ -->
-        @include('public.partials.page-hero', ['title' => 'ПРАЙС РЕМОНТ АППАРАТОВ'])
-
-            <div class="flex justify-center items-center mb-8">
+        <x-public.page-hero title="ПРАЙС РЕМОНТ АППАРАТОВ">
+<div class="flex justify-center items-center mb-8">
                 <svg
                     width="74"
                     height="45"
@@ -45,7 +44,7 @@
                     />
                 </svg>
             </div>
-        
+</x-public.page-hero>
 
         <!-- Секция контента -->
         <section class="bg-white dark:bg-dark-blue-500 py-12 sm:py-16 lg:py-20">
