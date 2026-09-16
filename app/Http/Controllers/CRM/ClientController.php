@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\CRM;
 
-use App\Application\CRM\Command\AccrueBonusCommand;
-use App\Application\CRM\Command\AccrueBonusHandler;
 use App\Application\CRM\Command\RegisterClientCommand;
 use App\Application\CRM\Command\RegisterClientHandler;
 use App\Application\CRM\Command\UpdateClientCommand;
@@ -20,7 +18,6 @@ final class ClientController extends Controller
     public function __construct(
         private RegisterClientHandler $registerClient,
         private UpdateClientHandler $updateClient,
-        private AccrueBonusHandler $accrueBonus,
         private GetClientByIdHandler $getClientById,
         private SequentialEntityIdGenerator $ids,
     ) {}
@@ -44,7 +41,6 @@ final class ClientController extends Controller
             'phone' => $client->phone,
             'name' => $client->name,
             'email' => $client->email,
-            'bonusBalance' => $client->bonus_balance,
             'birthDate' => $client->birth_date?->format('Y-m-d'),
             'deliveryAddress' => $client->delivery_address,
         ]);
@@ -61,11 +57,9 @@ final class ClientController extends Controller
         ]);
 
         $clientId = $this->ids->next('client')->value;
-        $bonusAccountId = $this->ids->next('bonus_account')->value;
 
         $this->registerClient->handle(new RegisterClientCommand(
             $clientId,
-            $bonusAccountId,
             $data['phone'],
             $data['name'] ?? null,
             $data['email'] ?? null,
@@ -99,17 +93,6 @@ final class ClientController extends Controller
             $data['phone'] ?? null,
             $data['email'] ?? null,
         ));
-
-        return $this->ok($this->getClientById->handle(new GetClientByIdQuery($clientId)));
-    }
-
-    public function accrueBonus(Request $request, int $clientId): JsonResponse
-    {
-        $data = $request->validate([
-            'amount' => ['required', 'numeric', 'gt:0'],
-        ]);
-
-        $this->accrueBonus->handle(new AccrueBonusCommand($clientId, (string) $data['amount']));
 
         return $this->ok($this->getClientById->handle(new GetClientByIdQuery($clientId)));
     }

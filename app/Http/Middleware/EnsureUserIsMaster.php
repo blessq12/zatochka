@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Infrastructure\Identity\Model\MasterModel;
+use App\Infrastructure\Identity\Model\MasterAccountModel;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +13,7 @@ final class EnsureUserIsMaster
     {
         $user = $request->user();
 
-        if (! $user instanceof MasterModel) {
+        if (! $user instanceof MasterAccountModel) {
             return response()->json(['message' => 'Forbidden. Master role required.'], 403);
         }
 

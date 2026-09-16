@@ -3,14 +3,16 @@
 namespace App\Application\Identity\Command;
 
 use App\Application\Identity\Port\MasterTokenIssuer;
+use App\Application\Identity\Port\StaffPersonReadPort;
 use App\Application\Shared\Port\PasswordHasher;
-use App\Domain\Identity\Repository\MasterRepository;
+use App\Domain\Identity\Repository\MasterAccountRepository;
 use App\Shared\Domain\DomainException;
 
 final readonly class LoginMasterHandler
 {
     public function __construct(
-        private MasterRepository $masters,
+        private MasterAccountRepository $accounts,
+        private StaffPersonReadPort $people,
         private PasswordHasher $passwords,
         private MasterTokenIssuer $tokens,
     ) {}
@@ -20,18 +22,24 @@ final readonly class LoginMasterHandler
      */
     public function handle(LoginMasterCommand $command): array
     {
-        $master = $this->masters->findByEmail($command->email);
+        $account = $this->accounts->findByEmail($command->email);
 
-        if ($master === null || ! $this->passwords->check($command->plainPassword, $master->passwordHash())) {
+        if ($account === null || ! $this->passwords->check($command->plainPassword, $account->passwordHash())) {
+            throw new DomainException('Неверный email или пароль.');
+        }
+
+        $person = $this->people->findMaster($account->id()->value);
+
+        if ($person === null) {
             throw new DomainException('Неверный email или пароль.');
         }
 
         return [
-            'token' => $this->tokens->issueToken($master->id()->value),
+            'token' => $this->tokens->issueToken($account->id()->value),
             'master' => [
-                'id' => $master->id()->value,
-                'name' => $master->name(),
-                'email' => $master->email(),
+                'id' => $account->id()->value,
+                'name' => $person['name'],
+                'email' => $person['email'],
                 'role' => 'master',
             ],
         ];

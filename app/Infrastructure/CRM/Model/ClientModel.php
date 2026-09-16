@@ -23,21 +23,13 @@ final class ClientModel extends Model
         'email',
         'birth_date',
         'delivery_address',
-        'bonus_account_id',
-        'bonus_balance',
     ];
 
     protected function casts(): array
     {
         return [
-            'bonus_balance' => 'string',
             'birth_date' => 'date:Y-m-d',
         ];
-    }
-
-    public function history(): HasMany
-    {
-        return $this->hasMany(ClientHistoryModel::class, 'client_id');
     }
 
     public function orders(): HasMany

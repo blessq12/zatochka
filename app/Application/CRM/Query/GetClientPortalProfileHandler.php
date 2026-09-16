@@ -26,7 +26,6 @@ final readonly class GetClientPortalProfileHandler
             $client->email,
             $client->birthDate,
             $client->deliveryAddress,
-            $client->bonusBalance,
             false,
         );
     }

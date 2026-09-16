@@ -52,14 +52,12 @@ final readonly class EloquentClientIdentityPort implements ClientIdentityPort
         $clientId = $this->ids->next('client')->value;
         $this->registerClient->handle(new RegisterClientCommand(
             $clientId,
-            $this->ids->next('bonus_account')->value,
             $phone,
             $this->nullableString($fullName),
             null,
+            null,
+            $this->nullableString($deliveryAddress),
         ));
-
-        $created = $this->clients->getById(new EntityId($clientId));
-        $this->maybeUpdateDeliveryAddress($created, $deliveryAddress);
 
         return $clientId;
     }

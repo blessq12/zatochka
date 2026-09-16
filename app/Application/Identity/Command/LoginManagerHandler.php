@@ -3,14 +3,16 @@
 namespace App\Application\Identity\Command;
 
 use App\Application\Identity\Port\ManagerTokenIssuer;
+use App\Application\Identity\Port\StaffPersonReadPort;
 use App\Application\Shared\Port\PasswordHasher;
-use App\Domain\Identity\Repository\ManagerRepository;
+use App\Domain\Identity\Repository\ManagerAccountRepository;
 use App\Shared\Domain\DomainException;
 
 final readonly class LoginManagerHandler
 {
     public function __construct(
-        private ManagerRepository $managers,
+        private ManagerAccountRepository $accounts,
+        private StaffPersonReadPort $people,
         private PasswordHasher $passwords,
         private ManagerTokenIssuer $tokens,
     ) {}
@@ -20,18 +22,24 @@ final readonly class LoginManagerHandler
      */
     public function handle(LoginManagerCommand $command): array
     {
-        $manager = $this->managers->findByEmail($command->email);
+        $account = $this->accounts->findByEmail($command->email);
 
-        if ($manager === null || ! $this->passwords->check($command->plainPassword, $manager->passwordHash())) {
+        if ($account === null || ! $this->passwords->check($command->plainPassword, $account->passwordHash())) {
+            throw new DomainException('Неверный email или пароль.');
+        }
+
+        $person = $this->people->findManager($account->id()->value);
+
+        if ($person === null) {
             throw new DomainException('Неверный email или пароль.');
         }
 
         return [
-            'token' => $this->tokens->issueToken($manager->id()->value),
+            'token' => $this->tokens->issueToken($account->id()->value),
             'manager' => [
-                'id' => $manager->id()->value,
-                'name' => $manager->name(),
-                'email' => $manager->email(),
+                'id' => $account->id()->value,
+                'name' => $person['name'],
+                'email' => $person['email'],
                 'role' => 'manager',
             ],
         ];

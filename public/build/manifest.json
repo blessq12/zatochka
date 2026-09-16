@@ -150,7 +150,7 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-uqySdQi5.js",
+    "file": "assets/ManagerShell-TOcSb8Sn.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
@@ -163,7 +163,7 @@
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-DvH1ii-w.js",
+    "file": "assets/LoginForm-8Y2P7Ywt.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -175,7 +175,7 @@
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-C7k5oTJM.js",
+    "file": "assets/main-vK1NAo6a.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
@@ -397,7 +397,7 @@
     ]
   },
   "resources/js/apps/manager/pages/Users/UserFormPage.vue": {
-    "file": "assets/UserFormPage-BczXuSga.js",
+    "file": "assets/UserFormPage-Cg5ZVb1R.js",
     "name": "UserFormPage",
     "src": "resources/js/apps/manager/pages/Users/UserFormPage.vue",
     "isDynamicEntry": true,

@@ -2,9 +2,9 @@
 
 namespace App\Domain\CRM\Entity;
 
-use App\Domain\CRM\Event\BonusAccrued;
 use App\Domain\CRM\Event\ClientRegistered;
 use App\Domain\CRM\Event\ClientUpdated;
+use App\Domain\CRM\ValueObject\AdditionalData;
 use App\Shared\Domain\AggregateRoot;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\Email;
@@ -16,70 +16,47 @@ final class Client extends AggregateRoot
     private Phone $phone;
     private ?string $name;
     private ?Email $email;
-    private ?string $birthDate;
-    private ?string $deliveryAddress;
-    private BonusAccount $bonusAccount;
-
-    /** @var list<ClientHistoryEntry> */
-    private array $history = [];
+    private AdditionalData $additionalData;
 
     private function __construct(
         private readonly EntityId $id,
         Phone $phone,
-        BonusAccount $bonusAccount,
         ?string $name = null,
         ?Email $email = null,
-        ?string $birthDate = null,
-        ?string $deliveryAddress = null,
+        ?AdditionalData $additionalData = null,
     ) {
         $this->phone = $phone;
-        $this->bonusAccount = $bonusAccount;
         $this->name = $name;
         $this->email = $email;
-        $this->birthDate = $birthDate;
-        $this->deliveryAddress = $deliveryAddress;
+        $this->additionalData = $additionalData ?? AdditionalData::empty();
     }
 
     public static function register(
         EntityId $id,
         Phone $phone,
-        EntityId $bonusAccountId,
         ?string $name = null,
         ?Email $email = null,
         ?string $birthDate = null,
         ?string $deliveryAddress = null,
     ): self {
-        $client = new self(
-            $id,
-            $phone,
-            new BonusAccount($bonusAccountId),
-            $name,
-            $email,
-            $birthDate,
-            $deliveryAddress,
-        );
+        $additionalData = AdditionalData::empty()
+            ->withBirthDate($birthDate)
+            ->withDeliveryAddress($deliveryAddress);
+
+        $client = new self($id, $phone, $name, $email, $additionalData);
         $client->record(new ClientRegistered($id, $phone->value));
 
         return $client;
     }
 
-    /**
-     * @param list<ClientHistoryEntry> $history
-     */
     public static function reconstitute(
         EntityId $id,
         Phone $phone,
-        BonusAccount $bonusAccount,
         ?string $name,
         ?Email $email,
-        array $history = [],
-        ?string $birthDate = null,
-        ?string $deliveryAddress = null,
+        AdditionalData $additionalData,
     ): self {
-        $client = new self($id, $phone, $bonusAccount, $name, $email, $birthDate, $deliveryAddress);
-        $client->history = $history;
-
-        return $client;
+        return new self($id, $phone, $name, $email, $additionalData);
     }
 
     public function id(): EntityId
@@ -102,25 +79,19 @@ final class Client extends AggregateRoot
         return $this->email;
     }
 
+    public function additionalData(): AdditionalData
+    {
+        return $this->additionalData;
+    }
+
     public function birthDate(): ?string
     {
-        return $this->birthDate;
+        return $this->additionalData->birthDate();
     }
 
     public function deliveryAddress(): ?string
     {
-        return $this->deliveryAddress;
-    }
-
-    public function bonusAccount(): BonusAccount
-    {
-        return $this->bonusAccount;
-    }
-
-    /** @return list<ClientHistoryEntry> */
-    public function history(): array
-    {
-        return $this->history;
+        return $this->additionalData->deliveryAddress();
     }
 
     public function updateProfile(
@@ -149,25 +120,13 @@ final class Client extends AggregateRoot
         }
 
         if ($updateBirthDate) {
-            $this->birthDate = $birthDate !== null && trim($birthDate) !== '' ? trim($birthDate) : null;
+            $this->additionalData = $this->additionalData->withBirthDate($birthDate);
         }
 
         if ($updateDeliveryAddress) {
-            $normalized = $deliveryAddress !== null ? trim($deliveryAddress) : null;
-            $this->deliveryAddress = $normalized !== '' ? $normalized : null;
+            $this->additionalData = $this->additionalData->withDeliveryAddress($deliveryAddress);
         }
 
         $this->record(new ClientUpdated($this->id));
-    }
-
-    public function accrueBonus(string $amount): void
-    {
-        $this->bonusAccount->accrue($amount);
-        $this->record(new BonusAccrued($this->id, $this->bonusAccount->id(), $amount));
-    }
-
-    public function appendHistory(ClientHistoryEntry $entry): void
-    {
-        $this->history[] = $entry;
     }
 }

@@ -30,9 +30,17 @@ export default {
             this.error = null;
             try {
                 if (this.isEdit) {
-                    const payload = { name: this.form.name, email: this.form.email, role: this.form.role };
-                    if (this.form.password) payload.password = this.form.password;
-                    await staffUserService.update(this.$route.params.id, payload);
+                    await staffUserService.update(this.$route.params.id, {
+                        name: this.form.name,
+                        email: this.form.email,
+                        role: this.form.role,
+                    });
+                    if (this.form.password) {
+                        await staffUserService.changePassword(
+                            this.$route.params.id,
+                            this.form.password,
+                        );
+                    }
                 } else {
                     await staffUserService.create(this.form);
                 }

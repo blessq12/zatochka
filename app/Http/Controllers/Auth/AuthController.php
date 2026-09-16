@@ -7,8 +7,10 @@ use App\Application\Identity\Command\LoginManagerHandler;
 use App\Application\Identity\Command\LoginMasterCommand;
 use App\Application\Identity\Command\LoginMasterHandler;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Identity\Model\ManagerModel;
-use App\Infrastructure\Identity\Model\MasterModel;
+use App\Infrastructure\CRM\Model\ManagerModel;
+use App\Infrastructure\CRM\Model\MasterModel;
+use App\Infrastructure\Identity\Model\ManagerAccountModel;
+use App\Infrastructure\Identity\Model\MasterAccountModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -73,20 +75,24 @@ final class AuthController extends Controller
     {
         $user = $request->user();
 
-        if ($user instanceof ManagerModel) {
+        if ($user instanceof ManagerAccountModel) {
+            $person = ManagerModel::query()->find($user->id);
+
             return $this->ok([
                 'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
+                'name' => $person?->name ?? '',
+                'email' => $person?->email ?? $user->email,
                 'role' => 'manager',
             ]);
         }
 
-        if ($user instanceof MasterModel) {
+        if ($user instanceof MasterAccountModel) {
+            $person = MasterModel::query()->find($user->id);
+
             return $this->ok([
                 'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
+                'name' => $person?->name ?? '',
+                'email' => $person?->email ?? $user->email,
                 'role' => 'master',
             ]);
         }

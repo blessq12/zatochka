@@ -28,7 +28,6 @@ final readonly class RegisterClientHandler
         $client = Client::register(
             new EntityId($command->clientId),
             $phone,
-            new EntityId($command->bonusAccountId),
             $command->name,
             $command->email !== null ? new Email($command->email) : null,
             $command->birthDate,

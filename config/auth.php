@@ -17,7 +17,7 @@ return [
         'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Infrastructure\Identity\Model\ManagerModel::class,
+            'model' => App\Infrastructure\Identity\Model\ManagerAccountModel::class,
         ],
     ],
 

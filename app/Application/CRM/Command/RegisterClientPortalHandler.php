@@ -44,11 +44,9 @@ final readonly class RegisterClientPortalHandler
             }
 
             $clientId = $this->ids->next('client')->value;
-            $bonusAccountId = $this->ids->next('bonus_account')->value;
 
             $this->registerClient->handle(new RegisterClientCommand(
                 $clientId,
-                $bonusAccountId,
                 $command->phone,
                 $command->fullName,
                 $command->email,

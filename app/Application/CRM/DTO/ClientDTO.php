@@ -9,7 +9,6 @@ final readonly class ClientDTO
         public string $phone,
         public ?string $name,
         public ?string $email,
-        public string $bonusBalance,
         public ?string $birthDate = null,
         public ?string $deliveryAddress = null,
     ) {}

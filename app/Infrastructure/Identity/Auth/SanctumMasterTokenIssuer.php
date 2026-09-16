@@ -3,19 +3,19 @@
 namespace App\Infrastructure\Identity\Auth;
 
 use App\Application\Identity\Port\MasterTokenIssuer;
-use App\Infrastructure\Identity\Model\MasterModel;
+use App\Infrastructure\Identity\Model\MasterAccountModel;
 use App\Shared\Domain\DomainException;
 
 final class SanctumMasterTokenIssuer implements MasterTokenIssuer
 {
     public function issueToken(int $masterId, string $tokenName = 'pos'): string
     {
-        $master = MasterModel::query()->find($masterId);
+        $account = MasterAccountModel::query()->find($masterId);
 
-        if ($master === null) {
-            throw new DomainException('Master not found.');
+        if ($account === null) {
+            throw new DomainException('Master account not found.');
         }
 
-        return $master->createToken($tokenName)->plainTextToken;
+        return $account->createToken($tokenName)->plainTextToken;
     }
 }

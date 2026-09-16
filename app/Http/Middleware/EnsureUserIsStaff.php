@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Infrastructure\Identity\Model\ManagerModel;
-use App\Infrastructure\Identity\Model\MasterModel;
+use App\Infrastructure\Identity\Model\ManagerAccountModel;
+use App\Infrastructure\Identity\Model\MasterAccountModel;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +15,7 @@ final class EnsureUserIsStaff
     {
         $user = $request->user();
 
-        if (! $user instanceof ManagerModel && ! $user instanceof MasterModel) {
+        if (! $user instanceof ManagerAccountModel && ! $user instanceof MasterAccountModel) {
             return response()->json(['message' => 'Forbidden. Staff role required.'], 403);
         }
 

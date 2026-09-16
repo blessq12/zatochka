@@ -11,7 +11,6 @@ final readonly class ClientPortalProfileDTO
         public ?string $email,
         public ?string $birth_date,
         public ?string $delivery_address,
-        public string $bonus_balance,
         public bool $requires_password_set = false,
     ) {}
 }
