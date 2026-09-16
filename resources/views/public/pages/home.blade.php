@@ -603,8 +603,6 @@
         </section>
 
         <!-- Отзывы клиентов -->
-        @include('public.partials.home.reviews')
-
         <!-- FAQ -->
         @include('public.partials.home.faq')
 

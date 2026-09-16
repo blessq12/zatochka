@@ -122,18 +122,6 @@ const routes = [
                 meta: { title: "Операции кассы" },
             },
             {
-                path: "reviews",
-                name: "manager.reviews",
-                component: () => import("../pages/Reviews/ReviewsListPage.vue"),
-                meta: { title: "Отзывы" },
-            },
-            {
-                path: "reviews/:id",
-                name: "manager.reviews.view",
-                component: () => import("../pages/Reviews/ReviewViewPage.vue"),
-                meta: { title: "Отзыв" },
-            },
-            {
                 path: "site",
                 name: "manager.site",
                 component: () => import("../pages/Site/SiteContentPage.vue"),

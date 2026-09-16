@@ -24,15 +24,6 @@ const URGENCY_LABELS = {
     urgent: "Срочный",
 };
 
-const REVIEW_STATUS_LABELS = {
-    pending: "На модерации",
-    pending_moderation: "На модерации",
-    published: "Опубликован",
-    rejected: "Отклонён",
-    hidden: "Скрыт",
-    deleted: "Удалён",
-};
-
 export function formatServiceTypes(serviceTypes) {
     if (!Array.isArray(serviceTypes) || serviceTypes.length === 0) {
         return "—";
@@ -65,17 +56,4 @@ export function formatUrgency(urgency) {
     }
 
     return URGENCY_LABELS[urgency] || "—";
-}
-
-export function formatReviewStatus(status) {
-    if (!status) {
-        return "—";
-    }
-
-    return REVIEW_STATUS_LABELS[status] || "Статус отзыва неизвестен";
-}
-
-export function formatStars(rating) {
-    const value = Math.max(0, Math.min(5, Number(rating) || 0));
-    return "★".repeat(value) + "☆".repeat(5 - value);
 }

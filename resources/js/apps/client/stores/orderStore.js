@@ -62,41 +62,6 @@ export const useOrderStore = defineStore("order", {
                 this.isLoadingHistory = false;
             }
         },
-
-        async createReview(orderId, rating, comment) {
-            try {
-                const response = await axios.post(
-                    `/api/client/orders/${orderId}/review`,
-                    { rating, comment }
-                );
-
-                const order = this.historyOrders.find(
-                    (item) => item.id === orderId
-                );
-                if (order) {
-                    order.review_exists = true;
-                    order.review_status =
-                        response.data.data?.status || "pending";
-                    order.review = {
-                        rating,
-                        comment,
-                        manager_reply: null,
-                        status: order.review_status,
-                        submitted_at: new Date().toISOString(),
-                    };
-                }
-
-                toastService.success(
-                    "Отзыв отправлен и ожидает модерации!"
-                );
-                return { success: true, data: response.data };
-            } catch (error) {
-                const message =
-                    error.response?.data?.message || "Ошибка создания отзыва";
-                toastService.error(message);
-                return { success: false, error: message };
-            }
-        },
     },
 });
 

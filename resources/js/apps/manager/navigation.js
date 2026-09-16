@@ -1,6 +1,5 @@
 export const navigationItems = [
     { name: "manager.clients", label: "Клиенты", to: "/clients" },
-    { name: "manager.reviews", label: "Отзывы", to: "/reviews" },
     { name: "manager.orders", label: "Заказы", to: "/orders" },
     { name: "manager.equipment", label: "Оборудование", to: "/equipment" },
     { name: "manager.stock", label: "Склад", to: "/stock-items" },

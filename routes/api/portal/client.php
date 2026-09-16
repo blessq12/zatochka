@@ -9,5 +9,4 @@ Route::prefix('client')->middleware(['auth:sanctum', 'client'])->group(function 
     Route::post('password', [ClientPortalController::class, 'setPassword']);
     Route::get('orders/active', [ClientPortalController::class, 'activeOrders']);
     Route::get('orders/history', [ClientPortalController::class, 'historyOrders']);
-    Route::post('orders/{orderId}/review', [ClientPortalController::class, 'submitReview']);
 });

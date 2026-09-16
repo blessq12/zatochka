@@ -6,14 +6,12 @@ final readonly class PublicSiteViewModel
 {
     /**
      * @param  array<string, mixed>  $bootstrap
-     * @param  array{average_rating: ?string, items: list<array<string, mixed>>}|null  $reviews
      * @param  array{type: string, slug: string, title: string, body_html: string, updated_at: string}|null  $document
      */
     public function __construct(
         public array $bootstrap,
         public string $title,
         public string $currentPath,
-        public ?array $reviews = null,
         public ?array $document = null,
     ) {}
 

@@ -48,13 +48,6 @@
       "__plugin-vue_export-helper-BsN3X5A5.js"
     ]
   },
-  "_ReviewService-DqbI_Q-a.js": {
-    "file": "assets/ReviewService-DqbI_Q-a.js",
-    "name": "ReviewService",
-    "imports": [
-      "__plugin-vue_export-helper-BsN3X5A5.js"
-    ]
-  },
   "_StaffUserService-clo3SWpG.js": {
     "file": "assets/StaffUserService-clo3SWpG.js",
     "name": "StaffUserService",
@@ -88,8 +81,8 @@
       "_toastService-O0YDeXJw.js"
     ]
   },
-  "_navigation-D4KhDqWi.js": {
-    "file": "assets/navigation-D4KhDqWi.js",
+  "_navigation-Dgl1RUeA.js": {
+    "file": "assets/navigation-Dgl1RUeA.js",
     "name": "navigation"
   },
   "_toastService-O0YDeXJw.js": {
@@ -118,7 +111,7 @@
     ]
   },
   "resources/css/apps.css": {
-    "file": "assets/apps-Dszt7AUv.css",
+    "file": "assets/apps-DCvn9oof.css",
     "src": "resources/css/apps.css",
     "isEntry": true,
     "names": [
@@ -126,7 +119,7 @@
     ]
   },
   "resources/js/apps/client/components/ClientApp.vue": {
-    "file": "assets/ClientApp-BFHjN3VW.js",
+    "file": "assets/ClientApp-LMyj8ggi.js",
     "name": "ClientApp",
     "src": "resources/js/apps/client/components/ClientApp.vue",
     "isDynamicEntry": true,
@@ -137,7 +130,7 @@
     ]
   },
   "resources/js/apps/client/main.js": {
-    "file": "assets/main-CZgh9qWe.js",
+    "file": "assets/main-Cj1BBJ_M.js",
     "name": "main",
     "src": "resources/js/apps/client/main.js",
     "isEntry": true,
@@ -150,20 +143,20 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-TOcSb8Sn.js",
+    "file": "assets/ManagerShell-Jew3oK8F.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
     "imports": [
       "_AppShell-DgbYX9Ub.js",
       "__plugin-vue_export-helper-BsN3X5A5.js",
-      "_navigation-D4KhDqWi.js",
+      "_navigation-Dgl1RUeA.js",
       "resources/js/apps/manager/main.js",
       "_vue-router-syuYCkS0.js"
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-8Y2P7Ywt.js",
+    "file": "assets/LoginForm-CpAEi7Kz.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -175,7 +168,7 @@
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-vK1NAo6a.js",
+    "file": "assets/main-BnN-eKBU.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
@@ -204,8 +197,6 @@
       "resources/js/apps/manager/pages/Stock/StockViewPage.vue",
       "resources/js/apps/manager/pages/Finance/CashDeskPage.vue",
       "resources/js/apps/manager/pages/Finance/CashOperationsListPage.vue",
-      "resources/js/apps/manager/pages/Reviews/ReviewsListPage.vue",
-      "resources/js/apps/manager/pages/Reviews/ReviewViewPage.vue",
       "resources/js/apps/manager/pages/Site/SiteContentPage.vue",
       "resources/js/apps/manager/pages/Documents/DocumentsPage.vue"
     ]
@@ -242,12 +233,12 @@
     ]
   },
   "resources/js/apps/manager/pages/DashboardPage.vue": {
-    "file": "assets/DashboardPage-BbpgZFmB.js",
+    "file": "assets/DashboardPage-DrDp3gI6.js",
     "name": "DashboardPage",
     "src": "resources/js/apps/manager/pages/DashboardPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_navigation-D4KhDqWi.js",
+      "_navigation-Dgl1RUeA.js",
       "__plugin-vue_export-helper-BsN3X5A5.js"
     ]
   },
@@ -342,27 +333,6 @@
     "imports": [
       "_DataTable-DN5we2m_.js",
       "_OrderService-BWKV6_7A.js",
-      "__plugin-vue_export-helper-BsN3X5A5.js"
-    ]
-  },
-  "resources/js/apps/manager/pages/Reviews/ReviewViewPage.vue": {
-    "file": "assets/ReviewViewPage-CPP3Iz7F.js",
-    "name": "ReviewViewPage",
-    "src": "resources/js/apps/manager/pages/Reviews/ReviewViewPage.vue",
-    "isDynamicEntry": true,
-    "imports": [
-      "_ReviewService-DqbI_Q-a.js",
-      "__plugin-vue_export-helper-BsN3X5A5.js"
-    ]
-  },
-  "resources/js/apps/manager/pages/Reviews/ReviewsListPage.vue": {
-    "file": "assets/ReviewsListPage-Cy1_B-RE.js",
-    "name": "ReviewsListPage",
-    "src": "resources/js/apps/manager/pages/Reviews/ReviewsListPage.vue",
-    "isDynamicEntry": true,
-    "imports": [
-      "_DataTable-DN5we2m_.js",
-      "_ReviewService-DqbI_Q-a.js",
       "__plugin-vue_export-helper-BsN3X5A5.js"
     ]
   },
@@ -531,7 +501,7 @@
     ]
   },
   "resources/site/css/site.css": {
-    "file": "assets/site-CpT-3Jn3.css",
+    "file": "assets/site-DtR_ZGUF.css",
     "src": "resources/site/css/site.css",
     "isEntry": true,
     "names": [

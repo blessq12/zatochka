@@ -13,7 +13,6 @@ foreach ([
     __DIR__.'/api/portal/client.php',
     __DIR__.'/api/portal/public_orders.php',
     __DIR__.'/api/site_content/public.php',
-    __DIR__.'/api/order/public.php',
 ] as $portalRouteFile) {
     require $portalRouteFile;
 }

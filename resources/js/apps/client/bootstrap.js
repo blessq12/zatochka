@@ -15,7 +15,6 @@ axios.interceptors.request.use((config) => {
         "/api/auth/login",
         "/api/auth/register",
         "/api/bootstrap",
-        "/api/reviews",
     ];
     const isPublic = publicPaths.some((path) => url.startsWith(path));
 
