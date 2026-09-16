@@ -8,7 +8,7 @@ use App\Domain\Order\Service\OrderItemRejectionPolicy;
 use App\Domain\Order\VO\OrderItemStatus;
 use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Order\Model\OrderModel;
-use App\Infrastructure\Pricing\Model\WorkPriceModel;
+use App\Infrastructure\Finance\Model\WorkPriceModel;
 use App\Infrastructure\Workshop\Model\PerformedWorkModel;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
 use App\Shared\Domain\DomainException;

@@ -6,7 +6,7 @@ use App\Domain\Order\VO\OrderItemStatus;
 
 /**
  * Единая формула «сколько единиц позиции осталось к выдаче» и «отклонена ли позиция целиком».
- * Используется ACL-портами Workshop/Pricing и презентерами вместо копий формулы.
+ * Используется ACL-портами Workshop/Finance и презентерами вместо копий формулы.
  */
 final class OrderItemRejectionPolicy
 {

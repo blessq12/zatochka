@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Documents\VO\DocumentType;
-use App\Domain\Documents\VO\PdfTemplateKind;
+use App\Domain\Order\VO\PdfTemplateKind;
+use App\Domain\SiteContent\VO\DocumentType;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

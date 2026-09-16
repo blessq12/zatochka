@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Domain\Order\Repository;
+
+use App\Domain\Order\Entity\Review;
+use App\Domain\Order\VO\OrderId;
+use App\Shared\ValueObject\EntityId;
+
+interface ReviewRepository
+{
+    public function save(Review $review): void;
+
+    public function findById(EntityId $id): ?Review;
+
+    public function getById(EntityId $id): Review;
+
+    public function findByOrderId(OrderId $orderId): ?Review;
+}

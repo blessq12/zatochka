@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\SiteContent;
 
-use App\Application\Documents\Query\GetLegalDocumentHandler;
-use App\Application\Feedback\Query\ListPublishedReviewsHandler;
+use App\Application\SiteContent\Query\GetLegalDocumentHandler;
+use App\Application\Order\Query\ListPublishedReviewsHandler;
 use App\Application\SiteContent\Query\GetSiteBootstrapHandler;
-use App\Domain\Equipment\VO\EquipmentType;
+use App\Domain\CRM\VO\EquipmentType;
 use App\Domain\Order\VO\SharpeningToolType;
 use App\Http\Controllers\Controller;
 use App\Http\ViewModels\PublicSite\PublicSiteViewModel;

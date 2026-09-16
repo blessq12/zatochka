@@ -5,7 +5,7 @@ namespace App\Infrastructure\Order\ReadModel;
 use App\Application\Order\DTO\OrderContainerDTO;
 use App\Application\Order\DTO\OrderContainerItemDTO;
 use App\Application\Order\ReadPort\OrderContainerReadPort;
-use App\Application\Pricing\ReadPort\WorkPriceReadPort;
+use App\Application\Finance\ReadPort\WorkPriceReadPort;
 use App\Infrastructure\Inventory\Model\WarehouseMovementModel;
 use App\Infrastructure\Order\Mapper\OrderMapper;
 use App\Infrastructure\Order\Model\OrderModel;

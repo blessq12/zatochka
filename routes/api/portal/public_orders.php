@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Equipment\EquipmentTypeCatalogController;
+use App\Http\Controllers\CRM\EquipmentTypeCatalogController;
 use App\Http\Controllers\Order\PublicOrderController;
 use App\Http\Controllers\Order\SharpeningToolTypeCatalogController;
 use Illuminate\Support\Facades\Route;

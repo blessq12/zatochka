@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Application\CRM\Command;
+
+use App\Application\Shared\DomainEventPublisher;
+use App\Domain\CRM\Repository\ClientEquipmentRepository;
+use App\Domain\CRM\VO\EquipmentType;
+use App\Shared\Domain\DomainException;
+use App\Shared\ValueObject\EntityId;
+
+final readonly class UpdateEquipmentHandler
+{
+    public function __construct(
+        private ClientEquipmentRepository $equipment,
+        private DomainEventPublisher $events,
+    ) {}
+
+    public function handle(UpdateEquipmentCommand $command): void
+    {
+        $type = EquipmentType::tryFrom($command->equipmentType)
+            ?? throw new DomainException('Unknown equipment type.');
+
+        $aggregate = $this->equipment->getById(new EntityId($command->equipmentId));
+        $aggregate->updateProfile(
+            $command->title,
+            $command->brand,
+            $command->modelName,
+            $type,
+            $command->clientId !== null ? new EntityId($command->clientId) : null,
+        );
+        $this->equipment->save($aggregate);
+        $this->events->publish($aggregate->pullDomainEvents());
+    }
+}

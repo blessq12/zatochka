@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Order\Port;
 
-use App\Application\Equipment\Command\RegisterEquipmentCommand;
-use App\Application\Equipment\Command\RegisterEquipmentHandler;
+use App\Application\CRM\Command\RegisterEquipmentCommand;
+use App\Application\CRM\Command\RegisterEquipmentHandler;
 use App\Application\Order\Port\PublicRepairEquipmentPort;
 use App\Application\Shared\EntityIdGenerator;
-use App\Domain\Equipment\VO\EquipmentType;
+use App\Domain\CRM\VO\EquipmentType;
 use App\Shared\Domain\DomainException;
 
 final readonly class EloquentPublicRepairEquipmentPort implements PublicRepairEquipmentPort

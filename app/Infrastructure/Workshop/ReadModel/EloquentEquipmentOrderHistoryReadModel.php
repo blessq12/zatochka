@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Workshop\ReadModel;
 
-use App\Application\Equipment\ReadPort\EquipmentOrderHistoryPort;
+use App\Application\CRM\ReadPort\EquipmentOrderHistoryPort;
 use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
 use App\Infrastructure\Workshop\Presenter\MasterProductionTaskPresenter;

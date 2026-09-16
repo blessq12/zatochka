@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\CRM\Model;
 
-use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
-use App\Infrastructure\Feedback\Model\ReviewModel;
+use App\Infrastructure\CRM\Model\ClientEquipmentModel;
+use App\Infrastructure\Order\Model\ReviewModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;

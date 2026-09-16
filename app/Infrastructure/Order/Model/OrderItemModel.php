@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Order\Model;
 
-use App\Infrastructure\Equipment\Model\ClientEquipmentModel;
+use App\Infrastructure\CRM\Model\ClientEquipmentModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;

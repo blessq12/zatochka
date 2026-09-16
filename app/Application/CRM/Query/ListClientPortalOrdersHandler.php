@@ -8,12 +8,12 @@ use App\Application\CRM\DTO\ClientPortalReviewDTO;
 use App\Application\Order\DTO\OrderDTO;
 use App\Application\Order\DTO\OrderItemDTO;
 use App\Application\Order\ReadPort\OrderReadPort;
-use App\Domain\Feedback\Entity\Review;
-use App\Domain\Feedback\Repository\ReviewRepository;
-use App\Domain\Feedback\VO\ReviewStatus;
+use App\Domain\Order\Entity\Review;
+use App\Domain\Order\Repository\ReviewRepository;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderItemStatus;
 use App\Domain\Order\VO\OrderStatus;
+use App\Domain\Order\VO\ReviewStatus;
 use App\Domain\Order\VO\SharpeningToolType;
 
 final readonly class ListClientPortalOrdersHandler

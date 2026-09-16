@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Documents\PrintOrderDocumentController;
+use App\Http\Controllers\Order\PrintOrderDocumentController;
 use App\Http\Controllers\SiteContent\PublicSiteController;
 use Illuminate\Support\Facades\Route;
 
