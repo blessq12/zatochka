@@ -4,17 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $site->title }}</title>
-    <meta name="description" content="@yield('meta_description', 'Профессиональная заточка маникюрных, парикмахерских и грумерских инструментов в Томске. Заточка.ТСК.')">
+    <title>{{ $title ?? 'Заточка.ТСК' }}</title>
     @stack('head')
-    @vite(['resources/css/app.css', 'resources/js/public/site.js'])
-    @stack('vite')
+    @vite(['resources/site/css/site.css', 'resources/site/js/main.js'])
 </head>
-<body class="min-h-screen bg-gray-50 dark:bg-dark-blue-500 flex flex-col">
-    @include('public.partials.nav')
-    <main class="container mx-auto flex-1">
-        @yield('content')
-    </main>
-    @include('public.partials.footer')
+<body data-page="{{ $page ?? 'home' }}">
+    <div id="app"></div>
 </body>
 </html>

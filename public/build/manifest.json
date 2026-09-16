@@ -66,12 +66,12 @@
       "__plugin-vue_export-helper-BQqSTPED.js"
     ]
   },
-  "resources/css/app.css": {
-    "file": "assets/app-Bx7ONItg.css",
-    "src": "resources/css/app.css",
+  "resources/css/apps.css": {
+    "file": "assets/apps-w8LT-z8l.css",
+    "src": "resources/css/apps.css",
     "isEntry": true,
     "names": [
-      "app.css"
+      "apps.css"
     ]
   },
   "resources/js/apps/client/components/ClientApp.vue": {
@@ -254,10 +254,18 @@
       "assets/PosPage-DH60lb3i.css"
     ]
   },
-  "resources/js/public.js": {
-    "file": "assets/public-C_o7cEpS.js",
-    "name": "public",
-    "src": "resources/js/public.js",
+  "resources/site/css/site.css": {
+    "file": "assets/site-BvANEtWW.css",
+    "src": "resources/site/css/site.css",
+    "isEntry": true,
+    "names": [
+      "site.css"
+    ]
+  },
+  "resources/site/js/main.js": {
+    "file": "assets/main-XS3xZLgQ.js",
+    "name": "main",
+    "src": "resources/site/js/main.js",
     "isEntry": true,
     "imports": [
       "_themeTogglerService-DX8fJ0Bq.js",
@@ -267,7 +275,7 @@
       "_toastService-D8BzKp21.js"
     ],
     "css": [
-      "assets/public-CiBajkyX.css"
+      "assets/main-PrSaxgPm.css"
     ]
   }
 }

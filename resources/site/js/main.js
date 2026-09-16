@@ -3,9 +3,9 @@ import { createPinia } from "pinia";
 import { createApp } from "vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-import "./public/bootstrap.js";
-import App from "./public/App.vue";
-import SiteLink from "./public/components/Layout/SiteLink.vue";
+import "./bootstrap.js";
+import App from "./App.vue";
+import SiteLink from "./components/Layout/SiteLink.vue";
 import themeTogglerService from "@shared/themeTogglerService.js";
 
 themeTogglerService.init();

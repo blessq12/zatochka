@@ -27,7 +27,7 @@ $publicPages = [
 ];
 
 foreach ($publicPages as $uri => $data) {
-    Route::view($uri, 'layouts.public', $data)->name('public.'.$data['page']);
+    Route::view($uri, 'layouts.site', $data)->name('public.'.$data['page']);
 }
 
 Route::redirect('/terms-of-service', '/user-agreement');
@@ -44,6 +44,6 @@ Route::view('/manager/{any?}', 'apps.manager', ['title' => 'Менеджер —
     ->where('any', '.*')
     ->name('app.manager');
 
-Route::view('/{any}', 'layouts.public', ['page' => 'not-found', 'title' => 'Страница не найдена'])
+Route::view('/{any}', 'layouts.site', ['page' => 'not-found', 'title' => 'Страница не найдена'])
     ->where('any', '.*')
     ->name('public.not-found');

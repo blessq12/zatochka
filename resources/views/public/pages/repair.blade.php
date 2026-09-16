@@ -2,10 +2,6 @@
 
 @section('meta_description', 'Прайс и заказ ремонта beauty-оборудования. Заточка.ТСК, Томск.')
 
-@section('vite')
-    @vite(['resources/js/islands/repair-form.js'])
-@endsection
-
 @section('content')
 @php
     /** @var \App\Http\ViewModels\PublicSite\PublicSiteViewModel $site */
@@ -25,8 +21,8 @@
         </div>
     </section>
 
-    <section id="order" class="bg-white dark:bg-dark-blue-500 scroll-mt-24">
-        <div id="repair-form-island"></div>
+    <section id="order" class="scroll-mt-24">
+        @include('public.partials.forms.repair-order', ['equipmentTypes' => $equipmentTypes])
     </section>
 </div>
 @endsection

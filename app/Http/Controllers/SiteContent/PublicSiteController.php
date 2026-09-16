@@ -5,6 +5,8 @@ namespace App\Http\Controllers\SiteContent;
 use App\Application\Documents\Query\GetLegalDocumentHandler;
 use App\Application\Feedback\Query\ListPublishedReviewsHandler;
 use App\Application\SiteContent\Query\GetSiteBootstrapHandler;
+use App\Domain\Equipment\VO\EquipmentType;
+use App\Domain\Order\VO\SharpeningToolType;
 use App\Http\Controllers\Controller;
 use App\Http\ViewModels\PublicSite\PublicSiteViewModel;
 use App\Shared\Domain\DomainException;
@@ -27,12 +29,24 @@ final class PublicSiteController extends Controller
 
     public function sharpening(Request $request): View
     {
-        return $this->page($request, 'public.pages.sharpening', 'Заточка инструментов — Заточка.ТСК');
+        return view('public.pages.sharpening', [
+            'site' => $this->makeSiteViewModel(
+                $request,
+                'Заточка инструментов — Заточка.ТСК',
+            ),
+            'toolTypes' => $this->sharpeningToolTypeOptions(),
+        ]);
     }
 
     public function repair(Request $request): View
     {
-        return $this->page($request, 'public.pages.repair', 'Ремонт оборудования — Заточка.ТСК');
+        return view('public.pages.repair', [
+            'site' => $this->makeSiteViewModel(
+                $request,
+                'Ремонт оборудования — Заточка.ТСК',
+            ),
+            'equipmentTypes' => $this->equipmentTypeOptions(),
+        ]);
     }
 
     public function delivery(Request $request): View
@@ -87,14 +101,52 @@ final class PublicSiteController extends Controller
         string $title,
         bool $withReviews = false,
     ): View {
-        $site = new PublicSiteViewModel(
+        return view($view, [
+            'site' => $this->makeSiteViewModel($request, $title, $withReviews),
+        ]);
+    }
+
+    private function makeSiteViewModel(
+        Request $request,
+        string $title,
+        bool $withReviews = false,
+    ): PublicSiteViewModel {
+        return new PublicSiteViewModel(
             bootstrap: $this->getBootstrap->handle(),
             title: $title,
             currentPath: '/'.ltrim($request->path(), '/'),
             reviews: $withReviews ? $this->listPublishedReviews->handle() : null,
         );
+    }
 
-        return view($view, ['site' => $site]);
+    /** @return list<array{value: string, label: string}> */
+    private function sharpeningToolTypeOptions(): array
+    {
+        $items = [];
+
+        foreach (SharpeningToolType::cases() as $type) {
+            $items[] = [
+                'value' => $type->value,
+                'label' => $type->label(),
+            ];
+        }
+
+        return $items;
+    }
+
+    /** @return list<array{value: string, label: string}> */
+    private function equipmentTypeOptions(): array
+    {
+        $items = [];
+
+        foreach (EquipmentType::cases() as $type) {
+            $items[] = [
+                'value' => $type->value,
+                'label' => $type->label(),
+            ];
+        }
+
+        return $items;
     }
 
     private function legal(Request $request, string $slug, string $fallbackTitle): View

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'POS — Заточка.ТСК' }}</title>
-    @vite(['resources/css/app.css', 'resources/js/apps/master/main.js'])
+    @vite(['resources/css/apps.css', 'resources/js/apps/master/main.js'])
 </head>
 <body>
     <div id="app"></div>
