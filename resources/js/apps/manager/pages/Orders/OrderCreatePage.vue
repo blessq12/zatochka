@@ -1,12 +1,10 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { orderService } from "../../services/OrderService.js";
 import { clientService } from "../../services/ClientService.js";
 
 export default {
     name: "OrderCreatePage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return {
             clients: [],
             loading: false,
@@ -58,9 +56,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Новый заказ</template>
-        <div class="max-w-2xl bg-white border border-slate-200 p-6">
+    <div class="max-w-2xl bg-white border border-slate-200 p-6">
             <h1 class="text-xl font-jost-bold text-dark-blue-500 mb-6">Новый заказ</h1>
             <div v-if="error" class="mb-4 bg-red-50 text-red-700 px-4 py-3 text-sm">{{ error }}</div>
             <form class="space-y-4" @submit.prevent="submit">
@@ -119,5 +115,4 @@ export default {
                 </div>
             </form>
         </div>
-    </ManagerLayout>
 </template>

@@ -1,5 +1,4 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import PageHeader from "../../components/Ui/PageHeader.vue";
 import DataTable from "../../components/Ui/DataTable.vue";
 import { staffUserService } from "../../services/StaffUserService.js";
@@ -8,7 +7,7 @@ const roleLabel = { manager: "Менеджер", master: "Мастер" };
 
 export default {
     name: "UsersListPage",
-    components: { ManagerLayout, PageHeader, DataTable },
+    components: { PageHeader, DataTable },
     data() {
         return {
             loading: true,
@@ -46,9 +45,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Сотрудники</template>
-        <PageHeader title="Сотрудники" action-label="Добавить" :action-to="{ name: 'manager.users.create' }" />
+    <PageHeader title="Сотрудники" action-label="Добавить" :action-to="{ name: 'manager.users.create' }" />
         <div class="mb-4 flex gap-3">
             <input
                 v-model="search"
@@ -68,5 +65,4 @@ export default {
                 <button type="button" class="text-red-500" title="Удалить" @click="remove(row)">✕</button>
             </template>
         </DataTable>
-    </ManagerLayout>
 </template>

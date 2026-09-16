@@ -2,26 +2,37 @@
 
 namespace App\Http\Controllers\Identity;
 
-use App\Application\Identity\Command\ChangeStaffPasswordCommand;
-use App\Application\Identity\Command\ChangeStaffPasswordHandler;
-use App\Application\Identity\Command\RegisterStaffUserCommand;
-use App\Application\Identity\Command\RegisterStaffUserHandler;
-use App\Application\Identity\Command\UpdateStaffUserCommand;
-use App\Application\Identity\Command\UpdateStaffUserHandler;
+use App\Application\Identity\Command\ChangeManagerPasswordCommand;
+use App\Application\Identity\Command\ChangeManagerPasswordHandler;
+use App\Application\Identity\Command\ChangeMasterPasswordCommand;
+use App\Application\Identity\Command\ChangeMasterPasswordHandler;
+use App\Application\Identity\Command\RegisterManagerCommand;
+use App\Application\Identity\Command\RegisterManagerHandler;
+use App\Application\Identity\Command\RegisterMasterCommand;
+use App\Application\Identity\Command\RegisterMasterHandler;
+use App\Application\Identity\Command\UpdateManagerCommand;
+use App\Application\Identity\Command\UpdateManagerHandler;
+use App\Application\Identity\Command\UpdateMasterCommand;
+use App\Application\Identity\Command\UpdateMasterHandler;
 use App\Application\Shared\EntityIdGenerator;
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\UserRole;
+use App\Infrastructure\Identity\Model\ManagerModel;
+use App\Infrastructure\Identity\Model\MasterModel;
+use App\Shared\Domain\DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 
 final class StaffUserController extends Controller
 {
     public function __construct(
-        private RegisterStaffUserHandler $registerStaffUser,
-        private UpdateStaffUserHandler $updateStaffUser,
-        private ChangeStaffPasswordHandler $changeStaffPassword,
+        private RegisterManagerHandler $registerManager,
+        private RegisterMasterHandler $registerMaster,
+        private UpdateManagerHandler $updateManager,
+        private UpdateMasterHandler $updateMaster,
+        private ChangeManagerPasswordHandler $changeManagerPassword,
+        private ChangeMasterPasswordHandler $changeMasterPassword,
         private EntityIdGenerator $ids,
     ) {}
 
@@ -29,33 +40,35 @@ final class StaffUserController extends Controller
     {
         $search = trim((string) $request->query('search', ''));
 
-        $query = User::query()
-            ->whereIn('role', [UserRole::Manager->value, UserRole::Master->value])
-            ->orderBy('id');
+        $managers = ManagerModel::query()->orderBy('id')->get()
+            ->map(fn (ManagerModel $m): array => $this->serializeStaff($m->id, $m->name, $m->email, 'manager', $m->created_at?->toIso8601String()));
+
+        $masters = MasterModel::query()->orderBy('id')->get()
+            ->map(fn (MasterModel $m): array => $this->serializeStaff($m->id, $m->name, $m->email, 'master', $m->created_at?->toIso8601String()));
+
+        /** @var Collection<int, array<string, mixed>> $items */
+        $items = $managers->concat($masters)->sortBy('id')->values();
 
         if ($search !== '') {
-            $query->where(function ($q) use ($search): void {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
+            $needle = mb_strtolower($search);
+            $items = $items->filter(function (array $row) use ($needle): bool {
+                return str_contains(mb_strtolower((string) $row['name']), $needle)
+                    || str_contains(mb_strtolower((string) $row['email']), $needle);
+            })->values();
         }
 
-        $items = $query->get()->map(fn (User $user): array => $this->serializeUser($user));
-
-        return $this->ok(['items' => $items]);
+        return $this->ok(['items' => $items->all()]);
     }
 
     public function show(int $userId): JsonResponse
     {
-        $user = User::query()
-            ->whereIn('role', [UserRole::Manager->value, UserRole::Master->value])
-            ->find($userId);
+        $staff = $this->findStaff($userId);
 
-        if ($user === null) {
+        if ($staff === null) {
             return response()->json(['message' => 'Сотрудник не найден.'], 404);
         }
 
-        return $this->ok($this->serializeUser($user));
+        return $this->ok($staff);
     }
 
     public function store(Request $request): JsonResponse
@@ -63,21 +76,29 @@ final class StaffUserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'role' => ['required', 'string', Rule::enum(UserRole::class)],
+            'role' => ['required', 'string', Rule::in(['manager', 'master'])],
             'password' => ['required', 'string', 'min:8'],
         ]);
 
-        $userId = $this->ids->next('user')->value;
+        $staffId = $this->ids->next('staff')->value;
 
-        $this->registerStaffUser->handle(new RegisterStaffUserCommand(
-            $userId,
-            $data['name'],
-            $data['email'],
-            $data['role'],
-            $data['password'],
-        ));
+        if ($data['role'] === 'manager') {
+            $this->registerManager->handle(new RegisterManagerCommand(
+                $staffId,
+                $data['name'],
+                $data['email'],
+                $data['password'],
+            ));
+        } else {
+            $this->registerMaster->handle(new RegisterMasterCommand(
+                $staffId,
+                $data['name'],
+                $data['email'],
+                $data['password'],
+            ));
+        }
 
-        return $this->created($this->serializeUser(User::query()->findOrFail($userId)));
+        return $this->created($this->findStaff($staffId));
     }
 
     public function update(Request $request, int $userId): JsonResponse
@@ -85,19 +106,37 @@ final class StaffUserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'role' => ['required', 'string', Rule::enum(UserRole::class)],
+            'role' => ['required', 'string', Rule::in(['manager', 'master'])],
             'password' => ['nullable', 'string', 'min:8'],
         ]);
 
-        $this->updateStaffUser->handle(new UpdateStaffUserCommand(
-            $userId,
-            $data['name'],
-            $data['email'],
-            $data['role'],
-            $data['password'] ?? null,
-        ));
+        $current = $this->findStaff($userId);
 
-        return $this->ok($this->serializeUser(User::query()->findOrFail($userId)));
+        if ($current === null) {
+            return response()->json(['message' => 'Сотрудник не найден.'], 404);
+        }
+
+        if ($current['role'] !== $data['role']) {
+            throw new DomainException('Смена роли сотрудника не поддерживается. Создайте новую учётку.');
+        }
+
+        if ($data['role'] === 'manager') {
+            $this->updateManager->handle(new UpdateManagerCommand(
+                $userId,
+                $data['name'],
+                $data['email'],
+                $data['password'] ?? null,
+            ));
+        } else {
+            $this->updateMaster->handle(new UpdateMasterCommand(
+                $userId,
+                $data['name'],
+                $data['email'],
+                $data['password'] ?? null,
+            ));
+        }
+
+        return $this->ok($this->findStaff($userId));
     }
 
     public function changePassword(Request $request, int $userId): JsonResponse
@@ -106,38 +145,79 @@ final class StaffUserController extends Controller
             'password' => ['required', 'string', 'min:8'],
         ]);
 
-        $this->changeStaffPassword->handle(new ChangeStaffPasswordCommand(
-            $userId,
-            $data['password'],
-        ));
+        $current = $this->findStaff($userId);
 
-        return $this->ok($this->serializeUser(User::query()->findOrFail($userId)));
+        if ($current === null) {
+            return response()->json(['message' => 'Сотрудник не найден.'], 404);
+        }
+
+        if ($current['role'] === 'manager') {
+            $this->changeManagerPassword->handle(new ChangeManagerPasswordCommand($userId, $data['password']));
+        } else {
+            $this->changeMasterPassword->handle(new ChangeMasterPasswordCommand($userId, $data['password']));
+        }
+
+        return $this->ok($this->findStaff($userId));
     }
 
     public function destroy(int $userId): JsonResponse
     {
-        $user = User::query()
-            ->whereIn('role', [UserRole::Manager->value, UserRole::Master->value])
-            ->find($userId);
+        $manager = ManagerModel::query()->find($userId);
+        if ($manager !== null) {
+            $manager->tokens()->delete();
+            $manager->delete();
 
-        if ($user === null) {
-            return response()->json(['message' => 'Сотрудник не найден.'], 404);
+            return $this->noContent();
         }
 
-        $user->delete();
+        $master = MasterModel::query()->find($userId);
+        if ($master !== null) {
+            $master->tokens()->delete();
+            $master->delete();
 
-        return $this->noContent();
+            return $this->noContent();
+        }
+
+        return response()->json(['message' => 'Сотрудник не найден.'], 404);
+    }
+
+    /** @return array<string, mixed>|null */
+    private function findStaff(int $id): ?array
+    {
+        $manager = ManagerModel::query()->find($id);
+        if ($manager !== null) {
+            return $this->serializeStaff(
+                $manager->id,
+                $manager->name,
+                $manager->email,
+                'manager',
+                $manager->created_at?->toIso8601String(),
+            );
+        }
+
+        $master = MasterModel::query()->find($id);
+        if ($master !== null) {
+            return $this->serializeStaff(
+                $master->id,
+                $master->name,
+                $master->email,
+                'master',
+                $master->created_at?->toIso8601String(),
+            );
+        }
+
+        return null;
     }
 
     /** @return array<string, mixed> */
-    private function serializeUser(User $user): array
+    private function serializeStaff(int $id, string $name, string $email, string $role, ?string $createdAt): array
     {
         return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role->value,
-            'created_at' => $user->created_at?->toIso8601String(),
+            'id' => $id,
+            'name' => $name,
+            'email' => $email,
+            'role' => $role,
+            'created_at' => $createdAt,
         ];
     }
 }

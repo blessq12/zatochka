@@ -1,11 +1,9 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { clientService } from "../../services/ClientService.js";
 
 export default {
     name: "ClientViewPage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return { client: null };
     },
     async mounted() {
@@ -15,9 +13,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Клиент</template>
-        <div v-if="client" class="max-w-2xl bg-white border border-slate-200 p-6 space-y-4">
+    <div v-if="client" class="max-w-2xl bg-white border border-slate-200 p-6 space-y-4">
             <div class="flex justify-between items-start">
                 <div>
                     <h1 class="text-2xl font-jost-bold text-dark-blue-500">{{ client.name || "Без имени" }}</h1>
@@ -32,5 +28,4 @@ export default {
                 <div><dt class="text-slate-500">Адрес доставки</dt><dd>{{ client.deliveryAddress || "—" }}</dd></div>
             </dl>
         </div>
-    </ManagerLayout>
 </template>

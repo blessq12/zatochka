@@ -12,7 +12,7 @@ use App\Domain\Documents\VO\PdfTemplateKind;
 use App\Domain\Order\VO\OrderStatus;
 use App\Infrastructure\Documents\Model\LegalDocumentModel;
 use App\Infrastructure\Order\Model\OrderModel;
-use App\Models\User;
+use App\Infrastructure\Identity\Model\ManagerModel;
 use App\Shared\Domain\DomainException;
 use Database\Seeders\DocumentsSeeder;
 use Database\Seeders\SiteContentSeeder;
@@ -156,7 +156,7 @@ final class DocumentsVerticalTest extends TestCase
     public function test_print_pdf_returns_inline_pdf_for_authenticated_user(): void
     {
         $orderId = $this->createOrder(OrderStatus::Created);
-        $user = User::factory()->create();
+        $user = ManagerModel::factory()->create();
 
         $response = $this->actingAs($user)->get(route('documents.orders.print.pdf', [
             'orderId' => $orderId,
@@ -171,7 +171,7 @@ final class DocumentsVerticalTest extends TestCase
     public function test_print_page_renders_for_authenticated_user(): void
     {
         $orderId = $this->createOrder(OrderStatus::Created);
-        $user = User::factory()->create();
+        $user = ManagerModel::factory()->create();
 
         $this->actingAs($user)->get(route('documents.orders.print', [
             'orderId' => $orderId,
@@ -197,7 +197,6 @@ final class DocumentsVerticalTest extends TestCase
             'email' => null,
             'birth_date' => null,
             'delivery_address' => null,
-            'password' => null,
             'bonus_account_id' => $clientId,
             'bonus_balance' => 0,
             'created_at' => $now,

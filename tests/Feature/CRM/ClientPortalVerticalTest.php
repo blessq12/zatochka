@@ -8,10 +8,10 @@ use App\Application\Order\DTO\CreateOrderItemDTO;
 use App\Domain\Order\VO\OrderId;
 use App\Domain\Order\VO\OrderStatus;
 use App\Infrastructure\CRM\Model\ClientModel;
+use App\Infrastructure\Identity\Model\MasterModel;
 use App\Infrastructure\Order\Model\OrderModel;
-use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -37,7 +37,13 @@ final class ClientPortalVerticalTest extends TestCase
             'phone' => '+7 (999) 111-22-33',
             'name' => 'Иван Иванов',
         ]);
-        $this->assertDatabaseMissing('users', [
+        $this->assertDatabaseHas('client_accounts', [
+            'phone' => '+7 (999) 111-22-33',
+        ]);
+        $this->assertDatabaseMissing('managers', [
+            'email' => 'ivan@example.com',
+        ]);
+        $this->assertDatabaseMissing('masters', [
             'email' => 'ivan@example.com',
         ]);
 
@@ -67,11 +73,11 @@ final class ClientPortalVerticalTest extends TestCase
 
     public function test_master_cannot_access_client_portal(): void
     {
-        $master = User::query()->create([
+        $master = MasterModel::query()->create([
+            'id' => 9001,
             'name' => 'Master',
             'email' => 'master-portal@test.local',
-            'password' => 'password',
-            'role' => UserRole::Master,
+            'password' => Hash::make('password'),
         ]);
 
         Sanctum::actingAs($master);
@@ -179,7 +185,9 @@ final class ClientPortalVerticalTest extends TestCase
         $this->assertDatabaseMissing('client_leads', [
             'client_id' => $response->json('data.client_id'),
         ]);
-        $this->assertNull(ClientModel::query()->where('phone', '+7 (999) 333-44-55')->value('password'));
+        $this->assertDatabaseMissing('client_accounts', [
+            'phone' => '+7 (999) 333-44-55',
+        ]);
     }
 
     public function test_authenticated_client_creates_public_repair_order(): void

@@ -1,11 +1,9 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { reviewService } from "../../services/ReviewService.js";
 
 export default {
     name: "ReviewViewPage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return { review: null, reply: "", error: null };
     },
     async mounted() {
@@ -31,9 +29,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Отзыв</template>
-        <div v-if="review" class="max-w-2xl bg-white border border-slate-200 p-6 space-y-4">
+    <div v-if="review" class="max-w-2xl bg-white border border-slate-200 p-6 space-y-4">
             <h1 class="text-xl font-jost-bold text-dark-blue-500">Отзыв #{{ review.id }}</h1>
             <p>Оценка: {{ review.rating }}/5</p>
             <p class="text-slate-700">{{ review.comment }}</p>
@@ -45,5 +41,4 @@ export default {
                 <button type="button" class="bg-red-600 text-white px-4 py-2 text-sm" @click="reject">Отклонить</button>
             </div>
         </div>
-    </ManagerLayout>
 </template>

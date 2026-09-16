@@ -1,12 +1,10 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { equipmentService } from "../../services/EquipmentService.js";
 import { clientService } from "../../services/ClientService.js";
 
 export default {
     name: "EquipmentCreatePage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return {
             clients: [],
             loading: false,
@@ -48,9 +46,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Новое оборудование</template>
-        <div class="max-w-xl bg-white border border-slate-200 p-6">
+    <div class="max-w-xl bg-white border border-slate-200 p-6">
             <h1 class="text-xl font-jost-bold text-dark-blue-500 mb-6">Новое оборудование</h1>
             <div v-if="error" class="mb-4 bg-red-50 text-red-700 px-4 py-3 text-sm">{{ error }}</div>
             <form class="space-y-4" @submit.prevent="submit">
@@ -84,5 +80,4 @@ export default {
                 <button type="submit" class="bg-pink-500 text-white px-4 py-2 font-jost-bold text-sm" :disabled="loading">Создать</button>
             </form>
         </div>
-    </ManagerLayout>
 </template>

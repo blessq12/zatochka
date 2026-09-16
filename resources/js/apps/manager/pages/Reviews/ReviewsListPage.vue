@@ -1,12 +1,11 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import PageHeader from "../../components/Ui/PageHeader.vue";
 import DataTable from "../../components/Ui/DataTable.vue";
 import { reviewService } from "../../services/ReviewService.js";
 
 export default {
     name: "ReviewsListPage",
-    components: { ManagerLayout, PageHeader, DataTable },
+    components: { PageHeader, DataTable },
     data() {
         return {
             loading: true,
@@ -45,9 +44,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Отзывы</template>
-        <PageHeader title="Отзывы" />
+    <PageHeader title="Отзывы" />
         <div class="mb-4">
             <select v-model="status" class="border border-slate-300 px-3 py-2 text-sm" @change="load">
                 <option value="pending">На модерации</option>
@@ -61,5 +58,4 @@ export default {
                 <button type="button" class="text-red-500" title="Отклонить" @click="reject(row)">✕</button>
             </template>
         </DataTable>
-    </ManagerLayout>
 </template>

@@ -1,12 +1,11 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import PageHeader from "../../components/Ui/PageHeader.vue";
 import DataTable from "../../components/Ui/DataTable.vue";
 import { orderService } from "../../services/OrderService.js";
 
 export default {
     name: "OrdersListPage",
-    components: { ManagerLayout, PageHeader, DataTable },
+    components: { PageHeader, DataTable },
     data() {
         return {
             loading: true,
@@ -41,9 +40,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Заказы</template>
-        <PageHeader title="Заказы" action-label="Новый заказ" :action-to="{ name: 'manager.orders.create' }" />
+    <PageHeader title="Заказы" action-label="Новый заказ" :action-to="{ name: 'manager.orders.create' }" />
         <div class="mb-4 flex flex-wrap gap-3">
             <input v-model="search" type="search" placeholder="Номер / клиент..." class="border border-slate-300 px-3 py-2 text-sm w-72" @keyup.enter="load" />
             <select v-model="status" class="border border-slate-300 px-3 py-2 text-sm" @change="load">
@@ -70,5 +67,4 @@ export default {
                 <router-link :to="{ name: 'manager.orders.view', params: { id: row.id } }" class="text-pink-500" title="Открыть">👁</router-link>
             </template>
         </DataTable>
-    </ManagerLayout>
 </template>

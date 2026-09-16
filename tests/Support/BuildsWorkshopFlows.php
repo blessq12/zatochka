@@ -27,19 +27,18 @@ use App\Infrastructure\Equipment\Model\EquipmentComponentModel;
 use App\Infrastructure\Order\Model\OrderItemModel;
 use App\Infrastructure\Order\Model\OrderModel;
 use App\Infrastructure\Workshop\Model\ProductionTaskModel;
-use App\Models\User;
-use App\Models\UserRole;
+use App\Infrastructure\Identity\Model\MasterModel;
 use Illuminate\Support\Facades\Hash;
 
 trait BuildsWorkshopFlows
 {
-    protected function createMaster(string $email = 'master@test.local'): User
+    protected function createMaster(string $email = 'master@test.local'): MasterModel
     {
-        return User::query()->create([
+        return MasterModel::query()->create([
+            'id' => app(\App\Application\Shared\EntityIdGenerator::class)->next('staff')->value,
             'name' => 'Test Master',
             'email' => $email,
             'password' => Hash::make('password'),
-            'role' => UserRole::Master,
         ]);
     }
 
@@ -88,7 +87,6 @@ trait BuildsWorkshopFlows
             $modelName,
             $equipmentType ?? EquipmentType::Other->value,
             $clientId,
-            null,
             $partDtos,
         ));
 
@@ -98,7 +96,7 @@ trait BuildsWorkshopFlows
     /**
      * @return array{orderId: string, masterId: int, taskId: int, orderItemId: int}
      */
-    protected function createSharpeningOrderWithMaster(User $master): array
+    protected function createSharpeningOrderWithMaster(MasterModel $master): array
     {
         $orderId = OrderId::generate()->value;
         $clientId = $this->registerClient('Smoke Client', '+79990001122');
@@ -138,7 +136,7 @@ trait BuildsWorkshopFlows
     /**
      * @return array{orderId: string, masterId: int, taskId: int, orderItemId: int, componentId: int}
      */
-    protected function createRepairOrderWithMaster(User $master): array
+    protected function createRepairOrderWithMaster(MasterModel $master): array
     {
         $orderId = OrderId::generate()->value;
         $clientId = $this->registerClient('Repair Client', '+79990003344');

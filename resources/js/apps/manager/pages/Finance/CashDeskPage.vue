@@ -1,11 +1,9 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { financeService } from "../../services/FinanceService.js";
 
 export default {
     name: "CashDeskPage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return {
             summary: { in: "0", out: "0", balance: "0" },
             form: { type: "in", amount: "", comment: "" },
@@ -38,9 +36,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Касса</template>
-        <div class="grid lg:grid-cols-2 gap-6 max-w-4xl">
+    <div class="grid lg:grid-cols-2 gap-6 max-w-4xl">
             <div class="bg-white border border-slate-200 p-6 space-y-3">
                 <h1 class="text-xl font-jost-bold text-dark-blue-500">Сводка</h1>
                 <div class="text-sm">Приход: <strong>{{ summary.in }}</strong></div>
@@ -62,5 +58,4 @@ export default {
                 </form>
             </div>
         </div>
-    </ManagerLayout>
 </template>

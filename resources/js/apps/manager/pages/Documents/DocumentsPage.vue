@@ -1,11 +1,9 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { documentService } from "../../services/DocumentService.js";
 
 export default {
     name: "DocumentsPage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return { items: [], selected: null, loading: false, error: null, saved: false };
     },
     async mounted() {
@@ -45,9 +43,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Документы</template>
-        <div class="grid lg:grid-cols-[240px_1fr] gap-6">
+    <div class="grid lg:grid-cols-[240px_1fr] gap-6">
             <div class="bg-white border border-slate-200 p-3 space-y-1">
                 <button
                     v-for="item in items"
@@ -70,5 +66,4 @@ export default {
                 </button>
             </div>
         </div>
-    </ManagerLayout>
 </template>

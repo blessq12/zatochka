@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\UserRole;
+use App\Infrastructure\Identity\Model\ManagerModel;
+use App\Infrastructure\Identity\Model\MasterModel;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 final class DemoUsersSeeder extends Seeder
 {
@@ -15,37 +16,22 @@ final class DemoUsersSeeder extends Seeder
      */
     public function run(): void
     {
-        foreach ($this->accounts() as $account) {
-            User::query()->updateOrCreate(
-                ['email' => $account['email']],
-                [
-                    'name' => $account['name'],
-                    'role' => $account['role'],
-                    'password' => $account['password'],
-                    'email_verified_at' => now(),
-                ],
-            );
-        }
-    }
-
-    /**
-     * @return list<array{name: string, email: string, role: UserRole, password: string}>
-     */
-    private function accounts(): array
-    {
-        return [
+        ManagerModel::query()->updateOrCreate(
+            ['email' => 'manager@demo.local'],
             [
+                'id' => 1,
                 'name' => 'Demo Manager',
-                'email' => 'manager@demo.local',
-                'role' => UserRole::Manager,
-                'password' => 'password',
+                'password' => Hash::make('password'),
             ],
+        );
+
+        MasterModel::query()->updateOrCreate(
+            ['email' => 'master@demo.local'],
             [
+                'id' => 2,
                 'name' => 'Demo Master',
-                'email' => 'master@demo.local',
-                'role' => UserRole::Master,
-                'password' => 'password',
+                'password' => Hash::make('password'),
             ],
-        ];
+        );
     }
 }

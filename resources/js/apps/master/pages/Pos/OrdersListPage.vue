@@ -1,5 +1,6 @@
 <template>
     <div class="pos-page-content">
+        <OrderStats class="orders-tabs" />
         <div class="page-body">
             <div v-if="isLoading && orders.length === 0" class="loading">
                 Загрузка...
@@ -51,12 +52,11 @@
 </template>
 
 <script>
-import { computed, reactive, ref, watch, onMounted, onUnmounted } from "vue";
+import { computed, reactive, ref, watch, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { orderService } from "../../services/OrderService.js";
 import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
 import { usePosStore } from "../../stores/posStore.js";
-import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
 import {
     POS_ORDER_TABS,
     resolvePosOrderTabKey,
@@ -85,7 +85,6 @@ export default {
         const page = ref(1);
         const listMeta = ref({ total: 0, page: 1, per_page: 20 });
         const posStore = usePosStore();
-        const { setCustomContent, reset } = useHeaderNavigation();
 
         const tabKey = computed(() => resolvePosOrderTabKey(route));
         const tabConfig = computed(() =>
@@ -221,15 +220,7 @@ export default {
         useAutoRefresh(() => resetAndFetch(true), 20000, true);
 
         onMounted(() => {
-            setCustomContent({
-                component: OrderStats,
-                props: {},
-            });
             resetAndFetch();
-        });
-
-        onUnmounted(() => {
-            reset();
         });
 
         return {
@@ -261,6 +252,10 @@ export default {
     padding: 1.5rem;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     font-family: "Jost", sans-serif;
+}
+
+.orders-tabs {
+    margin-bottom: 1.25rem;
 }
 
 .loading,

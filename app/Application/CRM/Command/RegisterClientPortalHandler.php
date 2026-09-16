@@ -3,12 +3,15 @@
 namespace App\Application\CRM\Command;
 
 use App\Application\CRM\Port\ClientPortalTokenIssuer;
+use App\Application\Shared\DomainEventPublisher;
 use App\Application\Shared\EntityIdGenerator;
 use App\Application\Shared\Port\PasswordHasher;
 use App\Application\Shared\UnitOfWork;
+use App\Domain\CRM\Event\ClientPortalSignUpRequested;
 use App\Domain\CRM\Repository\ClientRepository;
 use App\Shared\Domain\DomainException;
 use App\Shared\ValueObject\Email;
+use App\Shared\ValueObject\EntityId;
 use App\Shared\ValueObject\Phone;
 
 final readonly class RegisterClientPortalHandler
@@ -19,6 +22,7 @@ final readonly class RegisterClientPortalHandler
         private EntityIdGenerator $ids,
         private PasswordHasher $passwords,
         private ClientPortalTokenIssuer $tokens,
+        private DomainEventPublisher $events,
         private UnitOfWork $unitOfWork,
     ) {}
 
@@ -48,8 +52,15 @@ final readonly class RegisterClientPortalHandler
                 $command->phone,
                 $command->fullName,
                 $command->email,
-                passwordHash: $this->passwords->hash($command->password),
             ));
+
+            $this->events->publish([
+                new ClientPortalSignUpRequested(
+                    new EntityId($clientId),
+                    $phone->value,
+                    $this->passwords->hash($command->password),
+                ),
+            ]);
 
             return [
                 'token' => $this->tokens->issueToken($clientId),

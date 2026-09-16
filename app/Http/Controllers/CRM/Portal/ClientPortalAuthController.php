@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\CRM\Portal;
 
-use App\Application\CRM\Command\LoginClientPortalCommand;
-use App\Application\CRM\Command\LoginClientPortalHandler;
 use App\Application\CRM\Command\RegisterClientPortalCommand;
 use App\Application\CRM\Command\RegisterClientPortalHandler;
+use App\Application\Identity\Command\LoginClientPortalCommand;
+use App\Application\Identity\Command\LoginClientPortalHandler;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

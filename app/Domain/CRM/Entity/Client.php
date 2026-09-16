@@ -18,7 +18,6 @@ final class Client extends AggregateRoot
     private ?Email $email;
     private ?string $birthDate;
     private ?string $deliveryAddress;
-    private ?string $passwordHash;
     private BonusAccount $bonusAccount;
 
     /** @var list<ClientHistoryEntry> */
@@ -32,7 +31,6 @@ final class Client extends AggregateRoot
         ?Email $email = null,
         ?string $birthDate = null,
         ?string $deliveryAddress = null,
-        ?string $passwordHash = null,
     ) {
         $this->phone = $phone;
         $this->bonusAccount = $bonusAccount;
@@ -40,7 +38,6 @@ final class Client extends AggregateRoot
         $this->email = $email;
         $this->birthDate = $birthDate;
         $this->deliveryAddress = $deliveryAddress;
-        $this->passwordHash = $passwordHash;
     }
 
     public static function register(
@@ -51,7 +48,6 @@ final class Client extends AggregateRoot
         ?Email $email = null,
         ?string $birthDate = null,
         ?string $deliveryAddress = null,
-        ?string $passwordHash = null,
     ): self {
         $client = new self(
             $id,
@@ -61,7 +57,6 @@ final class Client extends AggregateRoot
             $email,
             $birthDate,
             $deliveryAddress,
-            $passwordHash,
         );
         $client->record(new ClientRegistered($id, $phone->value));
 
@@ -80,9 +75,8 @@ final class Client extends AggregateRoot
         array $history = [],
         ?string $birthDate = null,
         ?string $deliveryAddress = null,
-        ?string $passwordHash = null,
     ): self {
-        $client = new self($id, $phone, $bonusAccount, $name, $email, $birthDate, $deliveryAddress, $passwordHash);
+        $client = new self($id, $phone, $bonusAccount, $name, $email, $birthDate, $deliveryAddress);
         $client->history = $history;
 
         return $client;
@@ -116,16 +110,6 @@ final class Client extends AggregateRoot
     public function deliveryAddress(): ?string
     {
         return $this->deliveryAddress;
-    }
-
-    public function passwordHash(): ?string
-    {
-        return $this->passwordHash;
-    }
-
-    public function hasPortalPassword(): bool
-    {
-        return $this->passwordHash !== null && $this->passwordHash !== '';
     }
 
     public function bonusAccount(): BonusAccount
@@ -173,16 +157,6 @@ final class Client extends AggregateRoot
             $this->deliveryAddress = $normalized !== '' ? $normalized : null;
         }
 
-        $this->record(new ClientUpdated($this->id));
-    }
-
-    public function setPasswordHash(string $passwordHash): void
-    {
-        if (trim($passwordHash) === '') {
-            throw new DomainException('Password hash cannot be empty.');
-        }
-
-        $this->passwordHash = $passwordHash;
         $this->record(new ClientUpdated($this->id));
     }
 

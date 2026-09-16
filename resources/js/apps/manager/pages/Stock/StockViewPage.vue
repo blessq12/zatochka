@@ -1,11 +1,9 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { stockService } from "../../services/StockService.js";
 
 export default {
     name: "StockViewPage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return { item: null, qty: 1, comment: "", busy: false, error: null };
     },
     async mounted() {
@@ -39,9 +37,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Позиция склада</template>
-        <div v-if="item" class="max-w-2xl space-y-4">
+    <div v-if="item" class="max-w-2xl space-y-4">
             <div class="bg-white border border-slate-200 p-6">
                 <h1 class="text-2xl font-jost-bold text-dark-blue-500">{{ item.name || item.title || ("#" + item.id) }}</h1>
                 <pre class="mt-4 text-xs bg-slate-50 p-4 overflow-auto">{{ item }}</pre>
@@ -57,5 +53,4 @@ export default {
                 </div>
             </div>
         </div>
-    </ManagerLayout>
 </template>

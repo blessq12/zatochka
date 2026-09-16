@@ -1,11 +1,9 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { orderService } from "../../services/OrderService.js";
 
 export default {
     name: "OrderViewPage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return { order: null, busy: false, error: null };
     },
     async mounted() {
@@ -40,9 +38,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Заказ</template>
-        <div v-if="order" class="space-y-4 max-w-3xl">
+    <div v-if="order" class="space-y-4 max-w-3xl">
             <div class="bg-white border border-slate-200 p-6">
                 <div class="flex justify-between gap-4">
                     <div>
@@ -60,5 +56,4 @@ export default {
             </div>
             <router-link :to="{ name: 'manager.orders' }" class="text-sm text-pink-500">← К списку</router-link>
         </div>
-    </ManagerLayout>
 </template>

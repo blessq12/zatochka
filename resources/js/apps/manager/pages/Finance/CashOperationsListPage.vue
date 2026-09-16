@@ -1,12 +1,11 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import PageHeader from "../../components/Ui/PageHeader.vue";
 import DataTable from "../../components/Ui/DataTable.vue";
 import { financeService } from "../../services/FinanceService.js";
 
 export default {
     name: "CashOperationsListPage",
-    components: { ManagerLayout, PageHeader, DataTable },
+    components: { PageHeader, DataTable },
     data() {
         return {
             loading: true,
@@ -33,9 +32,6 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Кассовые операции</template>
-        <PageHeader title="Кассовые операции" action-label="Касса" :action-to="{ name: 'manager.cash-desk' }" />
+    <PageHeader title="Кассовые операции" action-label="Касса" :action-to="{ name: 'manager.cash-desk' }" />
         <DataTable :columns="columns" :rows="rows" :loading="loading" />
-    </ManagerLayout>
 </template>

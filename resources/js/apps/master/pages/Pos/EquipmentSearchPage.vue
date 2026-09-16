@@ -142,18 +142,13 @@
 </template>
 
 <script>
-import { onMounted, onUnmounted, ref } from "vue";
-import { useRoute } from "vue-router";
-import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
+import { onUnmounted, ref } from "vue";
 import { equipmentService } from "../../services/EquipmentService.js";
 import { orderService } from "../../services/OrderService.js";
 
 export default {
     name: "EquipmentSearchPage",
     setup() {
-        const route = useRoute();
-        const { setNavigationItems, reset } = useHeaderNavigation();
-
         const searchQuery = ref("");
         const matches = ref([]);
         const isSearching = ref(false);
@@ -239,19 +234,7 @@ export default {
             }
         };
 
-        onMounted(() => {
-            setNavigationItems([
-                {
-                    name: "equipment-search",
-                    label: "Поиск оборудования",
-                    to: { name: "pos.equipment.search" },
-                    active: route.name === "pos.equipment.search",
-                },
-            ]);
-        });
-
         onUnmounted(() => {
-            reset();
             if (debounceTimer) {
                 clearTimeout(debounceTimer);
             }

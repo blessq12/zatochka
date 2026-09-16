@@ -1,61 +1,33 @@
-<template>
-    <div class="pos-page">
-        <!-- Экран загрузки -->
-        <div v-if="isCheckingAuth" class="pos-loading-screen">
-            <div class="pos-loader">
-                <div class="loader-spinner"></div>
-                <p class="loader-text">Загрузка...</p>
-            </div>
-        </div>
-
-        <!-- Экран авторизации -->
-        <div v-else-if="!isAuthenticated" class="pos-login-screen">
-            <div class="pos-login-container">
-                <PosLoginForm @login-success="handleLoginSuccess" />
-            </div>
-        </div>
-
-        <!-- Основное приложение -->
-        <div v-else class="pos-app">
-            <!-- Overlay для мобильного меню -->
-            <div 
-                v-if="isMobileMenuOpen" 
-                class="mobile-menu-overlay"
-                @click="closeMobileMenu"
-            ></div>
-            
-            <PosSidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" />
-            <div class="pos-main-content">
-                <PosHeader @toggle-mobile-menu="toggleMobileMenu" />
-                <router-view />
-            </div>
-        </div>
-    </div>
-</template>
-
 <script>
+import AppLoginScreen from "@shared/layout/AppLoginScreen.vue";
+import AppShell from "@shared/layout/AppShell.vue";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import PosHeader from "../components/Pos/Header.vue";
-import PosLoginForm from "../components/Pos/LoginForm.vue";
-import PosSidebar from "../components/Pos/Sidebar.vue";
+import { navigationItems } from "../navigation.js";
 import { usePosStore } from "../stores/posStore.js";
 
 export default {
     name: "PosPage",
     components: {
-        PosLoginForm,
-        PosSidebar,
-        PosHeader,
+        AppLoginScreen,
+        AppShell,
     },
     setup() {
         const router = useRouter();
         const posStore = usePosStore();
 
         const isAuthenticated = computed(() => posStore.isAuthenticated);
-        const user = computed(() => posStore.user);
         const isCheckingAuth = ref(true);
-        const isMobileMenuOpen = ref(false);
+        const loginForm = ref({ email: "", password: "" });
+
+        const userName = computed(() => {
+            const user = posStore.user;
+            if (!user) return "";
+            const parts = [user.surname, user.name].filter(Boolean);
+            return parts.length > 0 ? parts.join(" ") : user.name || "";
+        });
+
+        const userEmail = computed(() => posStore.user?.email || "");
 
         const checkAuth = () => {
             isCheckingAuth.value = true;
@@ -66,21 +38,25 @@ export default {
             }
         };
 
-        const handleLoginSuccess = () => {
-            router.push({ name: "pos.orders.new" });
+        const submitLogin = async () => {
+            const result = await posStore.login(loginForm.value);
+            if (result.success) {
+                router.push({ name: "pos.orders.new" });
+            }
         };
 
-        const toggleMobileMenu = () => {
-            isMobileMenuOpen.value = !isMobileMenuOpen.value;
+        const logout = async () => {
+            await posStore.logout();
+            router.push({ name: "pos" });
         };
 
-        const closeMobileMenu = () => {
-            isMobileMenuOpen.value = false;
-        };
-
-        // Закрываем меню при смене роута
-        router.afterEach(() => {
-            closeMobileMenu();
+        const pageTitle = computed(() => {
+            const name = String(router.currentRoute.value.name || "");
+            if (name.includes("warehouse")) return "Склад";
+            if (name.includes("equipment")) return "Оборудование";
+            if (name.includes("orders")) return "Заказы";
+            if (name.includes("dashboard")) return "Дашборд";
+            return "POS";
         });
 
         onMounted(() => {
@@ -89,122 +65,57 @@ export default {
 
         return {
             isAuthenticated,
-            user,
             isCheckingAuth,
-            isMobileMenuOpen,
-            handleLoginSuccess,
-            toggleMobileMenu,
-            closeMobileMenu,
+            loginForm,
+            userName,
+            userEmail,
+            navigationItems,
+            pageTitle,
+            posStore,
+            submitLogin,
+            logout,
         };
     },
 };
 </script>
 
-<style scoped>
-.pos-page {
-    min-height: 100vh;
-    width: 100%;
-}
+<template>
+    <div class="min-h-screen w-full">
+        <div
+            v-if="isCheckingAuth"
+            class="flex min-h-screen items-center justify-center bg-gradient-to-br from-dark-blue-500 via-blue-500 to-pink-500"
+        >
+            <div class="text-center text-white">
+                <div
+                    class="mx-auto mb-4 h-14 w-14 animate-spin border-4 border-white/30 border-t-white"
+                />
+                <p class="font-jost-medium">Загрузка...</p>
+            </div>
+        </div>
 
-.pos-login-screen {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #003859 0%, #046490 50%, #c3006b 100%);
-    padding: 2rem;
-}
+        <AppLoginScreen
+            v-else-if="!isAuthenticated"
+            title="Вход мастера"
+            subtitle="POS Заточка.ТСК"
+            :email="loginForm.email"
+            :password="loginForm.password"
+            :loading="posStore.isLoading"
+            :error="posStore.error || ''"
+            @update:email="loginForm.email = $event"
+            @update:password="loginForm.password = $event"
+            @submit="submitLogin"
+        />
 
-.pos-login-container {
-    width: 100%;
-    max-width: 500px;
-}
-
-.pos-app {
-    display: flex;
-    min-height: 100vh;
-    background: #f9fafb; /* gray-50, как MainLayout на сайте */
-}
-
-.pos-main-content {
-    flex: 1;
-    margin-left: 280px;
-    min-height: 100vh;
-    padding: 2rem;
-    transition: margin-left 0.3s ease;
-    width: 0;
-    min-width: 0;
-    overflow-x: hidden;
-    box-sizing: border-box;
-}
-
-.mobile-menu-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 998;
-}
-
-/* Мобильная адаптация */
-@media (max-width: 768px) {
-    .pos-login-screen {
-        padding: 1rem;
-    }
-
-    .pos-login-container {
-        max-width: 100%;
-    }
-
-    .pos-main-content {
-        margin-left: 0;
-        padding: 0.75rem;
-        width: 100%;
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
-
-    .mobile-menu-overlay {
-        display: block;
-    }
-}
-
-.pos-loading-screen {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #003859 0%, #046490 50%, #c3006b 100%);
-}
-
-.pos-loader {
-    text-align: center;
-    color: white;
-}
-
-.loader-spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 0;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1.5rem;
-}
-
-.loader-text {
-    font-size: 1.125rem;
-    font-weight: 500;
-    font-family: "Jost", sans-serif;
-    margin: 0;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-</style>
+        <AppShell
+            v-else
+            tagline="POS"
+            :items="navigationItems"
+            :user-name="userName"
+            :user-email="userEmail"
+            @logout="logout"
+        >
+            <template #title>{{ pageTitle }}</template>
+            <router-view />
+        </AppShell>
+    </div>
+</template>

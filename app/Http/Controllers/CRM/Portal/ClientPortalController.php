@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\CRM\Portal;
 
-use App\Application\CRM\Command\ChangeClientPortalPasswordCommand;
-use App\Application\CRM\Command\ChangeClientPortalPasswordHandler;
 use App\Application\CRM\Command\UpdateClientCommand;
 use App\Application\CRM\Command\UpdateClientHandler;
 use App\Application\CRM\Query\GetClientPortalProfileHandler;
 use App\Application\CRM\Query\ListClientPortalOrdersHandler;
 use App\Application\Feedback\Command\SubmitReviewCommand;
 use App\Application\Feedback\Command\SubmitReviewHandler;
+use App\Application\Identity\Command\ChangeClientPortalPasswordCommand;
+use App\Application\Identity\Command\ChangeClientPortalPasswordHandler;
 use App\Application\Shared\EntityIdGenerator;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\CRM\Model\ClientModel;
+use App\Infrastructure\Identity\Model\ClientAccountModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -133,9 +133,9 @@ final class ClientPortalController extends Controller
 
     private function clientId(Request $request): int
     {
-        /** @var ClientModel $client */
-        $client = $request->user();
+        /** @var ClientAccountModel $account */
+        $account = $request->user();
 
-        return (int) $client->id;
+        return (int) $account->client_id;
     }
 }

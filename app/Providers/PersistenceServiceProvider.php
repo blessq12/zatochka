@@ -14,6 +14,8 @@ use App\Application\Feedback\ReadPort\ReviewReadPort;
 use App\Application\Finance\Port\OrderSettlementPort;
 use App\Application\Finance\ReadPort\CashDeskReadPort;
 use App\Application\Finance\ReadPort\PaymentReadPort;
+use App\Application\Identity\Port\ManagerTokenIssuer;
+use App\Application\Identity\Port\MasterTokenIssuer;
 use App\Application\Identity\ReadPort\StaffUserReadPort;
 use App\Application\Inventory\ReadPort\OrderMaterialWriteOffReadPort;
 use App\Application\Inventory\ReadPort\StockReadPort;
@@ -42,7 +44,10 @@ use App\Domain\Finance\Event\PaymentAccepted;
 use App\Domain\Finance\Event\RefundCreated;
 use App\Domain\Finance\Repository\CashOperationRepository;
 use App\Domain\Finance\Repository\PaymentRepository;
-use App\Domain\Identity\Repository\StaffUserRepository;
+use App\Domain\CRM\Event\ClientPortalSignUpRequested;
+use App\Domain\Identity\Repository\ClientAccountRepository;
+use App\Domain\Identity\Repository\ManagerRepository;
+use App\Domain\Identity\Repository\MasterRepository;
 use App\Domain\Inventory\Repository\StockItemRepository;
 use App\Domain\Order\Event\OrderCancelled;
 use App\Domain\Order\Event\OrderIssued;
@@ -60,7 +65,9 @@ use App\Domain\Workshop\Event\PerformedWorkRemoved;
 use App\Domain\Workshop\Event\ProductionCompleted;
 use App\Domain\Workshop\Event\WorkStarted;
 use App\Domain\Workshop\Repository\ProductionTaskRepository;
-use App\Infrastructure\CRM\Auth\SanctumClientPortalTokenIssuer;
+use App\Infrastructure\Identity\Auth\SanctumClientPortalTokenIssuer;
+use App\Infrastructure\Identity\Auth\SanctumManagerTokenIssuer;
+use App\Infrastructure\Identity\Auth\SanctumMasterTokenIssuer;
 use App\Infrastructure\CRM\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\CRM\Repository\EloquentClientRepository;
 use App\Infrastructure\Equipment\ReadModel\EloquentEquipmentReadModel;
@@ -76,8 +83,11 @@ use App\Infrastructure\Finance\ReadModel\EloquentCashDeskReadModel;
 use App\Infrastructure\Finance\ReadModel\EloquentPaymentReadModel;
 use App\Infrastructure\Finance\Repository\EloquentCashOperationRepository;
 use App\Infrastructure\Finance\Repository\EloquentPaymentRepository;
+use App\Infrastructure\Identity\Listener\ProvisionClientAccountOnPortalSignUp;
 use App\Infrastructure\Identity\ReadModel\EloquentStaffUserReadModel;
-use App\Infrastructure\Identity\Repository\EloquentStaffUserRepository;
+use App\Infrastructure\Identity\Repository\EloquentClientAccountRepository;
+use App\Infrastructure\Identity\Repository\EloquentManagerRepository;
+use App\Infrastructure\Identity\Repository\EloquentMasterRepository;
 use App\Infrastructure\Inventory\ReadModel\EloquentOrderMaterialWriteOffReadModel;
 use App\Infrastructure\Inventory\ReadModel\EloquentStockReadModel;
 use App\Infrastructure\Inventory\Repository\EloquentStockItemRepository;
@@ -135,7 +145,11 @@ final class PersistenceServiceProvider extends ServiceProvider
         $this->app->bind(ClientReadPort::class, EloquentClientReadModel::class);
         $this->app->bind(ClientPortalTokenIssuer::class, SanctumClientPortalTokenIssuer::class);
 
-        $this->app->bind(StaffUserRepository::class, EloquentStaffUserRepository::class);
+        $this->app->bind(ManagerRepository::class, EloquentManagerRepository::class);
+        $this->app->bind(MasterRepository::class, EloquentMasterRepository::class);
+        $this->app->bind(ClientAccountRepository::class, EloquentClientAccountRepository::class);
+        $this->app->bind(ManagerTokenIssuer::class, SanctumManagerTokenIssuer::class);
+        $this->app->bind(MasterTokenIssuer::class, SanctumMasterTokenIssuer::class);
         $this->app->bind(StaffUserReadPort::class, EloquentStaffUserReadModel::class);
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
 
@@ -202,5 +216,6 @@ final class PersistenceServiceProvider extends ServiceProvider
         Event::listen(OrderIssued::class, RecordPaymentOnOrderIssued::class);
         Event::listen(PaymentAccepted::class, RegisterCashInOnPaymentAccepted::class);
         Event::listen(RefundCreated::class, RegisterCashOutOnRefundCreated::class);
+        Event::listen(ClientPortalSignUpRequested::class, ProvisionClientAccountOnPortalSignUp::class);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Infrastructure\CRM\Model\ClientModel;
+use App\Infrastructure\Identity\Model\ClientAccountModel;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +13,7 @@ final class EnsureUserIsClient
     {
         $user = $request->user();
 
-        if (! $user instanceof ClientModel) {
+        if (! $user instanceof ClientAccountModel) {
             return response()->json(['message' => 'Forbidden. Client portal access required.'], 403);
         }
 

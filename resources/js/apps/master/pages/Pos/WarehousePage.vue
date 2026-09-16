@@ -137,23 +137,19 @@
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { computed, onMounted, ref } from "vue";
 import { useAutoRefresh } from "../../composables/useAutoRefresh.js";
-import { useHeaderNavigation } from "../../composables/useHeaderNavigation.js";
 import { warehouseService } from "../../services/WarehouseService.js";
 
 export default {
     name: "WarehousePage",
     setup() {
-        const route = useRoute();
         const items = ref([]);
         const pagination = ref(null);
         const isLoading = ref(false);
         const searchQuery = ref("");
         const currentPage = ref(1);
         const perPage = ref(20);
-        const { setNavigationItems, reset } = useHeaderNavigation();
 
         // Вычисляемые страницы для пагинации
         const visiblePages = computed(() => {
@@ -253,22 +249,8 @@ export default {
             true
         );
 
-        // Регистрация элементов навигации в Header
         onMounted(() => {
-            setNavigationItems([
-                {
-                    name: "warehouse",
-                    label: "Склад",
-                    to: { name: "pos.warehouse.index" },
-                    active: route.name === "pos.warehouse.index",
-                },
-            ]);
-
             fetchItems();
-        });
-
-        onUnmounted(() => {
-            reset();
         });
 
         return {

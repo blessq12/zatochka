@@ -12,6 +12,5 @@ final readonly class RegisterClientCommand
         public ?string $email = null,
         public ?string $birthDate = null,
         public ?string $deliveryAddress = null,
-        public ?string $passwordHash = null,
     ) {}
 }

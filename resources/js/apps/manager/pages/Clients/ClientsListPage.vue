@@ -1,12 +1,11 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import PageHeader from "../../components/Ui/PageHeader.vue";
 import DataTable from "../../components/Ui/DataTable.vue";
 import { clientService } from "../../services/ClientService.js";
 
 export default {
     name: "ClientsListPage",
-    components: { ManagerLayout, PageHeader, DataTable },
+    components: { PageHeader, DataTable },
     data() {
         return {
             loading: true,
@@ -36,9 +35,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Клиенты</template>
-        <PageHeader title="Клиенты" action-label="Добавить" :action-to="{ name: 'manager.clients.create' }" />
+    <PageHeader title="Клиенты" action-label="Добавить" :action-to="{ name: 'manager.clients.create' }" />
         <div class="mb-4 flex gap-3">
             <input v-model="search" type="search" placeholder="ФИО / телефон..." class="border border-slate-300 px-3 py-2 text-sm w-72" @keyup.enter="load" />
             <button type="button" class="px-4 py-2 bg-dark-blue-500 text-white text-sm font-jost-bold" @click="load">Найти</button>
@@ -53,5 +50,4 @@ export default {
                 <router-link :to="{ name: 'manager.clients.edit', params: { id: row.id } }" class="text-pink-500" title="Редактировать">✎</router-link>
             </template>
         </DataTable>
-    </ManagerLayout>
 </template>

@@ -1,11 +1,9 @@
 <script>
-import ManagerLayout from "../../components/Layout/ManagerLayout.vue";
 import { siteContentService } from "../../services/SiteContentService.js";
 
 export default {
     name: "SiteContentPage",
-    components: { ManagerLayout },
-    data() {
+        data() {
         return {
             form: null,
             loading: false,
@@ -35,9 +33,7 @@ export default {
 </script>
 
 <template>
-    <ManagerLayout>
-        <template #title>Контент сайта</template>
-        <div v-if="form" class="max-w-3xl bg-white border border-slate-200 p-6 space-y-6">
+    <div v-if="form" class="max-w-3xl bg-white border border-slate-200 p-6 space-y-6">
             <h1 class="text-xl font-jost-bold text-dark-blue-500">Контент сайта</h1>
             <div v-if="error" class="bg-red-50 text-red-700 px-4 py-3 text-sm">{{ error }}</div>
             <div v-if="saved" class="bg-green-50 text-green-700 px-4 py-3 text-sm">Сохранено</div>
@@ -64,5 +60,4 @@ export default {
                 Сохранить
             </button>
         </div>
-    </ManagerLayout>
 </template>
