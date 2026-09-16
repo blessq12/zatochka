@@ -13,13 +13,13 @@ alwaysApply: true
 
 ## Vertical isolation
 
-Each BC is a vertical: `Domain → Application → Infrastructure` (+ own HTTP/Filament adapter if needed).
+Each BC is a vertical: `Domain → Application → Infrastructure` (+ own HTTP / Vue SPA adapter if needed).
 
 **Forbidden**
 
 - Application handler of BC-A calling Repository / Handler / Eloquent of BC-B
 - Application importing `App\Infrastructure\*\Model` (use ports / repositories only)
-- UI (Filament / Vue API controller) calling handlers of **two** BCs in one action as an orchestrator
+- UI (Vue SPA / API controller) calling handlers of **two** BCs in one action as an orchestrator
 - Cross-BC “convenience” sync method calls instead of domain events
 
 **Allowed**

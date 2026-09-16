@@ -16,9 +16,8 @@ alwaysApply: true
 | Application layer | [rules/application.mdc](./rules/application.mdc) | `app/Application/**/*` |
 | Infrastructure layer | [rules/infrastructure.mdc](./rules/infrastructure.mdc) | `app/Infrastructure/**/*` |
 | HTTP / API layer | [rules/http.mdc](./rules/http.mdc) | `app/Http/**/*`, `routes/api.php` |
-| Filament admin | [rules/filament.mdc](./rules/filament.mdc) | `app/Filament/**/*` |
 
-Код: `app/Application` · `app/Domain` · `app/Infrastructure` · `app/Http` · `app/Filament` · `app/Shared`.
+Код: `app/Application` · `app/Domain` · `app/Infrastructure` · `app/Http` · `app/Shared` · Vue SPA (`resources/js/apps/*`).
 
 ---
 
@@ -29,14 +28,15 @@ alwaysApply: true
 ### Forbidden
 
 1. **Читать историю git** ради восстановления логики: `git log`, `git show`, `git blame`, `git checkout`/`restore` старых путей из `main`/прошлых коммитов, просмотр удалённых файлов через git.
-2. **Восстанавливать и копировать старые реализации**: бывшие BC (`OrderFulfillment`, `ClientPortal`, …), Filament-админку as-was, старые API/handlers/models/migrations/тесты «как было».
+2. **Восстанавливать и копировать старые реализации**: бывшие BC (`OrderFulfillment`, `ClientPortal`, …), Filament-админку, старые API/handlers/models/migrations/тесты «как было».
 3. **Тащить старые подходы**: god-aggregate заказа, гостевой заказ без Client, статусы/поля «потому что так было», старые ADR/flows/contexts как источник истины.
 4. **Додумывать домен из памяти старого кода** — проектируем заново по текущему ТЗ пользователя.
 5. **Naming** — см. [rules/naming.mdc](./rules/naming.mdc): English only, без русского и транслита в идентификаторах.
 6. **Прямые вызовы между BC** — контекст не вызывает use case другого контекста; межконтекстные мутации — **только через domain events**.
+7. **Filament** — пакет и слой `app/Filament` удалены; менеджерский UI только Vue SPA `/manager`.
 
 ### Allowed
 
 - Работать с **текущим** деревом ветки рефактора.
-- Смотреть фронт (публичный сайт, POS) только как контракт UI, не как оправдание старого домена.
+- Смотреть фронт (публичный сайт, `/manager`, `/master`, `/client`) только как контракт UI, не как оправдание старого домена.
 - Спрашивать уточнения, если граница нового контекста неясна.
