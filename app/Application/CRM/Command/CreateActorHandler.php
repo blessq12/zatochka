@@ -21,18 +21,19 @@ final readonly class CreateActorHandler
 
     public function handle(
         ActorType $type,
+        ?string $email = null,
         ?string $name = null,
         ?string $phone = null,
         ?string $birthday = null,
         ?string $deliveryAddress = null,
     ): ActorResponse {
-        return DB::transaction(function () use ($type, $name, $phone, $birthday, $deliveryAddress): ActorResponse {
+        return DB::transaction(function () use ($type, $email, $name, $phone, $birthday, $deliveryAddress): ActorResponse {
             $birthdayDate = $birthday !== null && $birthday !== ''
                 ? new DateTimeImmutable($birthday)
                 : null;
 
             $profile = $this->profiles->save(
-                ProfileAdditional::create($name, $phone, $birthdayDate, $deliveryAddress)
+                ProfileAdditional::create($email, $name, $phone, $birthdayDate, $deliveryAddress)
             );
 
             $actor = $this->actors->createActor($type, (int) $profile->id());

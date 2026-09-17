@@ -129,6 +129,52 @@ final class EquipmentApiTest extends TestCase
         ])->assertForbidden();
     }
 
+    public function test_master_lists_equipment_without_clients(): void
+    {
+        $managerToken = $this->tokenAsManager('eq-master-mgr@example.com');
+        $clientId = $this->createClient($managerToken, 'eq-master-client@example.com', 'Клиент EQ');
+        $this->withToken($managerToken)->postJson('/api/actors/masters', [
+            'email' => 'eq-master@example.com',
+            'password' => 'password123',
+            'name' => 'Мастер',
+        ])->assertCreated();
+
+        $this->withToken($managerToken)->postJson('/api/equipments', [
+            'client_id' => $clientId,
+            'name' => 'Фрезер',
+            'brand' => 'Strong',
+            'type' => 'Аппарат',
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'BLK-9'],
+            ],
+        ])->assertCreated();
+
+        $masterToken = $this->postJson('/api/identity/login', [
+            'email' => 'eq-master@example.com',
+            'password' => 'password123',
+            'expected_actor_type' => 'masters',
+        ])->assertOk()->json('token');
+
+        $list = $this->withToken($masterToken)->getJson('/api/equipments')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Фрезер')
+            ->assertJsonPath('data.0.brand', 'Strong')
+            ->assertJsonMissingPath('data.0.client_id')
+            ->assertJsonMissingPath('data.0.client_name')
+            ->json('data');
+
+        $this->assertArrayNotHasKey('client_id', $list[0]);
+        $this->assertArrayNotHasKey('client_name', $list[0]);
+
+        $this->withToken($masterToken)->postJson('/api/equipments', [
+            'client_id' => $clientId,
+            'name' => 'X',
+            'brand' => 'Y',
+            'type' => 'Z',
+        ])->assertForbidden();
+    }
+
     public function test_unknown_client_rejected(): void
     {
         $token = $this->tokenAsManager('eq-bad-client@example.com');

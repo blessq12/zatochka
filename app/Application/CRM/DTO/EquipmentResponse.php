@@ -40,4 +40,24 @@ final readonly class EquipmentResponse
             'modules' => $this->modules,
         ];
     }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     name: string,
+     *     brand: string,
+     *     type: string,
+     *     modules: list<array{id: int|null, name: string, serial_number: string}>
+     * }
+     */
+    public function toCatalogArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'brand' => $this->brand,
+            'type' => $this->type,
+            'modules' => $this->modules,
+        ];
+    }
 }

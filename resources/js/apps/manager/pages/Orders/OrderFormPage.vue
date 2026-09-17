@@ -368,7 +368,7 @@ export default {
 </script>
 
 <template>
-    <div class="mx-auto max-w-2xl space-y-6">
+    <div class="w-full space-y-4 sm:space-y-6">
         <div class="space-y-2">
             <h1 class="text-2xl font-jost-bold text-dark-blue-500">
                 Новый заказ

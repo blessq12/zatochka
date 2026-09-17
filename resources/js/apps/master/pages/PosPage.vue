@@ -36,7 +36,7 @@ export default {
         const submitLogin = async () => {
             const result = await posStore.login(loginForm.value);
             if (result.success) {
-                router.push({ name: "pos.dashboard" });
+                router.push({ name: "pos.orders" });
             }
         };
 
@@ -47,6 +47,9 @@ export default {
 
         const pageTitle = computed(() => {
             const name = String(router.currentRoute.value.name || "");
+            if (name === "pos.orders") return "Заказы";
+            if (name === "pos.job") return "Задание";
+            if (name === "pos.equipment") return "Оборудование";
             if (name.includes("dashboard")) return "Дашборд";
             return "POS";
         });

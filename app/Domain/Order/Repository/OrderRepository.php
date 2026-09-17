@@ -13,5 +13,5 @@ interface OrderRepository
     /**
      * @return list<Order>
      */
-    public function all(?int $clientId = null, ?string $status = null): array;
+    public function all(?int $clientId = null, ?string $status = null, ?int $masterId = null): array;
 }

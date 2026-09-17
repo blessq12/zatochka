@@ -127,7 +127,7 @@ export default {
 </script>
 
 <template>
-    <div class="mx-auto max-w-xl space-y-6">
+    <div class="w-full space-y-4 sm:space-y-6">
         <h1 class="text-2xl font-jost-bold text-dark-blue-500">{{ title }}</h1>
 
         <p v-if="loading" class="text-sm text-slate-500">Загрузка…</p>

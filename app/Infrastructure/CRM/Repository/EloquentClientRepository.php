@@ -5,7 +5,6 @@ namespace App\Infrastructure\Crm\Repository;
 use App\Domain\Crm\Aggregate\Client;
 use App\Domain\Crm\Repository\ClientRepository;
 use App\Infrastructure\Crm\Eloquent\ClientModel;
-use Illuminate\Database\Eloquent\Builder;
 
 final class EloquentClientRepository extends EloquentActorRepository implements ClientRepository
 {
@@ -28,20 +27,34 @@ final class EloquentClientRepository extends EloquentActorRepository implements 
             return [];
         }
 
+        $termLower = mb_strtolower($term, 'UTF-8');
         $digits = preg_replace('/\D+/', '', $term) ?? '';
 
-        $builder = ClientModel::query()
-            ->whereHas('profileAdditional', function (Builder $q) use ($term, $digits): void {
-                $q->where('name', 'like', '%'.$term.'%');
-                if ($digits !== '') {
-                    $q->orWhere('phone', 'like', '%'.$digits.'%');
-                }
-            })
+        return ClientModel::query()
+            ->with('profileAdditional')
             ->orderByDesc('updated_at')
-            ->limit($limit);
-
-        return $builder
+            ->limit(500)
             ->get()
+            ->filter(function (ClientModel $model) use ($termLower, $digits): bool {
+                $profile = $model->profileAdditional;
+                if ($profile === null) {
+                    return false;
+                }
+
+                $name = mb_strtolower((string) ($profile->name ?? ''), 'UTF-8');
+                if ($termLower !== '' && mb_strpos($name, $termLower) !== false) {
+                    return true;
+                }
+
+                if ($digits !== '') {
+                    $phoneDigits = preg_replace('/\D+/', '', (string) ($profile->phone ?? '')) ?? '';
+
+                    return str_contains($phoneDigits, $digits);
+                }
+
+                return false;
+            })
+            ->take($limit)
             ->map(fn (ClientModel $model): Client => new Client(
                 (int) $model->id,
                 (int) $model->profile_additional_id,

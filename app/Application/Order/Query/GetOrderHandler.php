@@ -14,14 +14,21 @@ final readonly class GetOrderHandler
         private OrderResponseAssembler $assembler,
     ) {}
 
-    public function handle(int $id, ?int $asClientId = null): ?OrderResponse
-    {
+    public function handle(
+        int $id,
+        ?int $asClientId = null,
+        ?int $asMasterId = null,
+    ): ?OrderResponse {
         $order = $this->orders->findById($id);
         if ($order === null) {
             return null;
         }
 
         if ($asClientId !== null && $order->clientId() !== $asClientId) {
+            throw new ForbiddenException('Forbidden.');
+        }
+
+        if ($asMasterId !== null && $order->masterId() !== $asMasterId) {
             throw new ForbiddenException('Forbidden.');
         }
 

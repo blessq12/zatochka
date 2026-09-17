@@ -56,6 +56,15 @@ final class WalkInClientApiTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.name', 'Анна Петрова');
 
+        $this->withToken($token)->getJson('/api/actors/clients?'.http_build_query(['q' => 'анна']))
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Анна Петрова');
+
+        $this->withToken($token)->getJson('/api/actors/clients?'.http_build_query(['q' => 'ПЕТРОВА']))
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
         $this->withToken($token)->getJson('/api/actors/clients?'.http_build_query(['q' => '9990001122']))
             ->assertOk()
             ->assertJsonCount(1, 'data');

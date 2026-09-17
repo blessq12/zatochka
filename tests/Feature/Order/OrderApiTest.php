@@ -75,7 +75,27 @@ final class OrderApiTest extends TestCase
 
         $this->withToken($token)->postJson("/api/orders/{$orderId}/transition", [
             'status' => 'in_progress',
-        ])->assertOk()->assertJson(['status' => 'in_progress']);
+        ])->assertStatus(422);
+
+        $order = $this->withToken($token)->getJson("/api/orders/{$orderId}")
+            ->assertOk()
+            ->json();
+        $itemIds = array_map(static fn (array $item): int => (int) $item['id'], $order['items']);
+
+        $masterToken = $this->postJson('/api/identity/login', [
+            'email' => 'ord-master@example.com',
+            'password' => 'password123',
+            'expected_actor_type' => 'masters',
+        ])->assertOk()->json('token');
+
+        $this->withToken($masterToken)->postJson('/api/workshop/jobs/accept', [
+            'order_id' => $orderId,
+            'order_item_ids' => $itemIds,
+        ])->assertCreated();
+
+        $this->withToken($token)->getJson("/api/orders/{$orderId}")
+            ->assertOk()
+            ->assertJson(['status' => 'in_progress']);
 
         $this->withToken($token)->postJson("/api/orders/{$orderId}/transition", [
             'status' => 'waiting_parts',
@@ -84,14 +104,6 @@ final class OrderApiTest extends TestCase
         $this->withToken($token)->postJson("/api/orders/{$orderId}/transition", [
             'status' => 'in_progress',
         ])->assertOk();
-
-        $this->withToken($token)->postJson("/api/orders/{$orderId}/transition", [
-            'status' => 'ready',
-        ])->assertOk();
-
-        $this->withToken($token)->postJson("/api/orders/{$orderId}/transition", [
-            'status' => 'issued',
-        ])->assertOk()->assertJson(['status' => 'issued']);
     }
 
     public function test_cancel_only_from_early_statuses(): void
@@ -225,11 +237,32 @@ final class OrderApiTest extends TestCase
             'master_id' => $masterId,
         ])->assertOk();
 
-        foreach (['in_progress', 'ready', 'issued'] as $status) {
-            $this->withToken($managerToken)->postJson("/api/orders/{$orderId}/transition", [
-                'status' => $status,
-            ])->assertOk();
-        }
+        $order = $this->withToken($managerToken)->getJson("/api/orders/{$orderId}")
+            ->assertOk()
+            ->json();
+        $itemIds = array_map(static fn (array $item): int => (int) $item['id'], $order['items']);
+
+        $masterToken = $this->postJson('/api/identity/login', [
+            'email' => 'ord-rev-master@example.com',
+            'password' => 'password123',
+            'expected_actor_type' => 'masters',
+        ])->assertOk()->json('token');
+
+        $jobId = $this->withToken($masterToken)->postJson('/api/workshop/jobs/accept', [
+            'order_id' => $orderId,
+            'order_item_ids' => $itemIds,
+        ])->assertCreated()->json('id');
+
+        $this->withToken($masterToken)->postJson("/api/workshop/jobs/{$jobId}/complete")
+            ->assertOk();
+
+        $this->withToken($managerToken)->postJson("/api/orders/{$orderId}/transition", [
+            'status' => 'ready',
+        ])->assertOk();
+
+        $this->withToken($managerToken)->postJson("/api/orders/{$orderId}/transition", [
+            'status' => 'issued',
+        ])->assertOk();
 
         return (int) $orderId;
     }

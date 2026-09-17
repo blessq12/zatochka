@@ -20,6 +20,7 @@ final readonly class CreateActorOnRegistrationRequested
         $actorType = ActorType::fromRoute($event->actorType);
         $actor = $this->createActor->handle(
             $actorType,
+            $event->email,
             $event->name,
             $event->phone,
             $event->birthday,

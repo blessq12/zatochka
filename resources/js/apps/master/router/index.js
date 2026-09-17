@@ -12,14 +12,29 @@ const routes = [
                 component: () => import("../pages/Pos/DashboardPage.vue"),
             },
             {
+                path: "orders",
+                name: "pos.orders",
+                component: () => import("../pages/Pos/OrdersPage.vue"),
+            },
+            {
+                path: "orders/jobs/:id",
+                name: "pos.job",
+                component: () => import("../pages/Pos/JobPage.vue"),
+            },
+            {
+                path: "equipment",
+                name: "pos.equipment",
+                component: () => import("../pages/Pos/EquipmentListPage.vue"),
+            },
+            {
                 path: "",
-                redirect: { name: "pos.dashboard" },
+                redirect: { name: "pos.orders" },
             },
         ],
     },
     {
         path: "/:pathMatch(.*)*",
-        redirect: { name: "pos.dashboard" },
+        redirect: { name: "pos.orders" },
     },
 ];
 

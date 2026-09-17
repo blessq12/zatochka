@@ -24,8 +24,9 @@ final readonly class CreateWalkInClientHandler
 
         return $this->createActor->handle(
             ActorType::Client,
-            $name,
-            $phone,
+            email: null,
+            name: $name,
+            phone: $phone,
         );
     }
 }

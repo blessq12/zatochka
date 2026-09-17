@@ -1,10 +1,12 @@
 <script>
+import AppBottomNav from "./AppBottomNav.vue";
+import AppMobileDrawer from "./AppMobileDrawer.vue";
 import AppSidebar from "./AppSidebar.vue";
 import AppTopbar from "./AppTopbar.vue";
 
 export default {
     name: "AppShell",
-    components: { AppSidebar, AppTopbar },
+    components: { AppBottomNav, AppMobileDrawer, AppSidebar, AppTopbar },
     props: {
         tagline: { type: String, default: "" },
         items: { type: Array, default: () => [] },
@@ -32,21 +34,19 @@ export default {
 </script>
 
 <template>
-    <div class="flex min-h-screen bg-slate-50 font-jost-regular">
-        <div
-            v-if="mobileOpen"
-            class="fixed inset-0 z-[998] bg-black/50 lg:hidden"
-            @click="closeMobile"
-        />
+    <div class="flex min-h-dvh w-full bg-slate-50 font-jost-regular">
+        <div class="hidden shrink-0 lg:block">
+            <AppSidebar :tagline="tagline" :items="items" />
+        </div>
 
-        <AppSidebar
+        <AppMobileDrawer
             :tagline="tagline"
             :items="items"
-            :mobile-open="mobileOpen"
+            :open="mobileOpen"
             @close="closeMobile"
         />
 
-        <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+        <div class="flex min-h-dvh min-w-0 flex-1 flex-col">
             <AppTopbar
                 :user-name="userName"
                 :user-email="userEmail"
@@ -58,9 +58,15 @@ export default {
                 </template>
             </AppTopbar>
 
-            <main class="min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-                <slot />
+            <main
+                class="min-w-0 w-full flex-1 overflow-auto px-3 pb-[calc(3.75rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-6 lg:pt-5"
+            >
+                <div class="mx-auto w-full max-w-none">
+                    <slot />
+                </div>
             </main>
+
+            <AppBottomNav :items="items" />
         </div>
     </div>
 </template>

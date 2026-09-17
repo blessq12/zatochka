@@ -8,6 +8,7 @@ enum OrderStatus: string
     case MasterAssigned = 'master_assigned';
     case InProgress = 'in_progress';
     case WaitingParts = 'waiting_parts';
+    case WorksCompleted = 'works_completed';
     case Ready = 'ready';
     case Issued = 'issued';
     case Cancelled = 'cancelled';
@@ -20,8 +21,9 @@ enum OrderStatus: string
         return match ($this) {
             self::Created => [self::MasterAssigned, self::Cancelled],
             self::MasterAssigned => [self::InProgress, self::Cancelled],
-            self::InProgress => [self::WaitingParts, self::Ready],
+            self::InProgress => [self::WaitingParts, self::WorksCompleted],
             self::WaitingParts => [self::InProgress],
+            self::WorksCompleted => [self::Ready],
             self::Ready => [self::Issued],
             self::Issued, self::Cancelled => [],
         };

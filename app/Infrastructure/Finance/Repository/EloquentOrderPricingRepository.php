@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Infrastructure\Finance\Repository;
+
+use App\Domain\Finance\Aggregate\OrderPricing;
+use App\Domain\Finance\Entity\PricingLine;
+use App\Domain\Finance\OrderPricingStatus;
+use App\Domain\Finance\Repository\OrderPricingRepository;
+use App\Infrastructure\Finance\Eloquent\OrderPricingLineModel;
+use App\Infrastructure\Finance\Eloquent\OrderPricingModel;
+use Illuminate\Support\Facades\DB;
+
+final class EloquentOrderPricingRepository implements OrderPricingRepository
+{
+    public function save(OrderPricing $pricing): OrderPricing
+    {
+        return DB::transaction(function () use ($pricing): OrderPricing {
+            /** @var OrderPricingModel $model */
+            $model = $pricing->id() === null
+                ? new OrderPricingModel()
+                : OrderPricingModel::query()->findOrFail($pricing->id());
+
+            $model->order_id = $pricing->orderId();
+            $model->status = $pricing->status()->value;
+            $model->save();
+
+            if ($pricing->id() === null) {
+                $pricing->assignId((int) $model->id);
+            }
+
+            OrderPricingLineModel::query()->where('pricing_id', $model->id)->delete();
+
+            foreach ($pricing->lines() as $line) {
+                $lineModel = new OrderPricingLineModel([
+                    'pricing_id' => $model->id,
+                    'order_item_id' => $line->orderItemId(),
+                    'amount' => $line->amount(),
+                ]);
+                $lineModel->save();
+                $line->assignId((int) $lineModel->id);
+            }
+
+            return $pricing;
+        });
+    }
+
+    public function findByOrderId(int $orderId): ?OrderPricing
+    {
+        /** @var OrderPricingModel|null $model */
+        $model = OrderPricingModel::query()
+            ->with('lines')
+            ->where('order_id', $orderId)
+            ->first();
+
+        return $model === null ? null : $this->toDomain($model);
+    }
+
+    private function toDomain(OrderPricingModel $model): OrderPricing
+    {
+        $lines = $model->lines
+            ->map(static fn (OrderPricingLineModel $line): PricingLine => new PricingLine(
+                (int) $line->id,
+                (int) $line->order_item_id,
+                (string) $line->amount,
+            ))
+            ->values()
+            ->all();
+
+        return new OrderPricing(
+            (int) $model->id,
+            (int) $model->order_id,
+            OrderPricingStatus::from((string) $model->status),
+            $lines,
+        );
+    }
+}

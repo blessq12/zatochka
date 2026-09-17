@@ -31,8 +31,20 @@ final class OrderController extends Controller
         $clientId = $clientId !== null && $clientId !== '' ? (int) $clientId : null;
         $status = $request->query('status');
         $status = is_string($status) && $status !== '' ? $status : null;
+        $masterId = $request->query('master_id');
+        $masterId = $masterId !== null && $masterId !== '' ? (int) $masterId : null;
 
-        $items = $this->listOrders->handle($clientId, $status);
+        $items = $this->listOrders->handle($clientId, $status, $masterId);
+
+        return response()->json([
+            'data' => array_map(static fn ($item) => $item->toArray(), $items),
+        ]);
+    }
+
+    public function assigned(Request $request): JsonResponse
+    {
+        $masterId = (int) $request->attributes->get('actor_id');
+        $items = $this->listOrders->handle(null, 'master_assigned', $masterId);
 
         return response()->json([
             'data' => array_map(static fn ($item) => $item->toArray(), $items),
@@ -41,11 +53,15 @@ final class OrderController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $asClientId = $request->attributes->get('actor_type') === 'clients'
+        $actorType = (string) $request->attributes->get('actor_type');
+        $asClientId = $actorType === 'clients'
+            ? (int) $request->attributes->get('actor_id')
+            : null;
+        $asMasterId = $actorType === 'masters'
             ? (int) $request->attributes->get('actor_id')
             : null;
 
-        $item = $this->getOrder->handle($id, $asClientId);
+        $item = $this->getOrder->handle($id, $asClientId, $asMasterId);
         if ($item === null) {
             return response()->json(['message' => 'Not found.'], 404);
         }

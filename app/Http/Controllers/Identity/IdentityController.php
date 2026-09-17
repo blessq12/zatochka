@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Identity;
 
-use App\Application\Crm\Query\GetActorHandler;
 use App\Application\Identity\Command\LoginIdentityHandler;
 use App\Application\Identity\Command\LogoutIdentityHandler;
 use App\Application\Identity\Command\RegisterActorWithIdentityHandler;
 use App\Application\Identity\Query\GetMeHandler;
-use App\Domain\Crm\ActorType;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Identity\Eloquent\IdentityModel;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +19,6 @@ final class IdentityController extends Controller
         private LoginIdentityHandler $login,
         private LogoutIdentityHandler $logout,
         private GetMeHandler $me,
-        private GetActorHandler $getActor,
     ) {}
 
     public function register(Request $request): JsonResponse
@@ -48,34 +45,6 @@ final class IdentityController extends Controller
         );
 
         return response()->json($result->toArray(), 201);
-    }
-
-    public function provisionActor(Request $request, string $type): JsonResponse
-    {
-        $data = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string', 'min:8'],
-            'name' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:32'],
-            'birthday' => ['nullable', 'date'],
-            'delivery_address' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $result = $this->register->handle(
-            $type,
-            $data['email'],
-            $data['password'],
-            issueToken: false,
-            name: $data['name'] ?? null,
-            phone: $data['phone'] ?? null,
-            birthday: isset($data['birthday']) ? (string) $data['birthday'] : null,
-            deliveryAddress: $data['delivery_address'] ?? null,
-        );
-
-        $actorType = ActorType::fromRoute($type);
-        $actor = $this->getActor->handle($actorType, $result->actor->id);
-
-        return response()->json($actor?->toArray() ?? ['id' => $result->actor->id], 201);
     }
 
     public function login(Request $request): JsonResponse

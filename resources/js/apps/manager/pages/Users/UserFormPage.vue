@@ -191,8 +191,7 @@ export default {
 
 <template>
     <div
-        class="mx-auto space-y-6"
-        :class="showTabs ? 'max-w-2xl' : 'max-w-xl'"
+        class="w-full space-y-4 sm:space-y-6"
     >
         <h1 class="text-2xl font-jost-bold text-dark-blue-500">{{ title }}</h1>
 

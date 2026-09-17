@@ -57,12 +57,12 @@ export default {
 
 <template>
     <header
-        class="flex h-16 shrink-0 items-center gap-3 border-b border-slate-200/80 bg-white/95 px-3 backdrop-blur-sm sm:px-6"
+        class="sticky top-0 z-[800] flex h-12 shrink-0 items-center gap-2 border-b border-slate-200/80 bg-white/95 px-3 pt-[env(safe-area-inset-top)] backdrop-blur-sm sm:h-14 sm:gap-3 sm:px-4 lg:px-6"
     >
         <button
             type="button"
-            class="rounded p-2 text-dark-blue-500 hover:bg-slate-100 lg:hidden"
-            aria-label="Меню"
+            class="shrink-0 rounded p-2 text-dark-blue-500 hover:bg-slate-100 lg:hidden"
+            aria-label="Открыть меню"
             @click="$emit('toggle-mobile')"
         >
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,24 +75,24 @@ export default {
             </svg>
         </button>
 
-        <div class="min-w-0 flex-1 truncate text-base font-jost-medium text-dark-blue-500">
+        <div class="min-w-0 flex-1 truncate text-sm font-jost-medium text-dark-blue-500 sm:text-base">
             <slot name="title" />
         </div>
 
         <div ref="menuRoot" class="relative shrink-0">
             <button
                 type="button"
-                class="flex items-center gap-2 rounded-sm border border-slate-200 bg-white px-2 py-1.5 transition hover:border-pink-300 hover:bg-pink-50/60"
+                class="flex items-center gap-2 border border-slate-200 bg-white px-1.5 py-1 transition hover:border-pink-300 hover:bg-pink-50/60 sm:px-2 sm:py-1.5"
                 :aria-expanded="menuOpen ? 'true' : 'false'"
                 aria-haspopup="menu"
                 @click="toggleMenu"
             >
                 <span
-                    class="flex h-9 w-9 items-center justify-center bg-pink-500 text-xs font-jost-bold text-white"
+                    class="flex h-8 w-8 items-center justify-center bg-pink-500 text-xs font-jost-bold text-white sm:h-9 sm:w-9"
                 >
                     {{ initials }}
                 </span>
-                <span class="hidden min-w-0 text-left sm:block">
+                <span class="hidden min-w-0 text-left md:block">
                     <span
                         class="block max-w-[11rem] truncate text-sm font-jost-medium text-slate-700"
                     >
@@ -106,7 +106,7 @@ export default {
                     </span>
                 </span>
                 <svg
-                    class="hidden h-4 w-4 text-slate-400 transition sm:block"
+                    class="hidden h-4 w-4 text-slate-400 transition md:block"
                     :class="menuOpen ? 'rotate-180' : ''"
                     fill="none"
                     stroke="currentColor"
@@ -124,7 +124,7 @@ export default {
 
             <div
                 v-if="menuOpen"
-                class="absolute right-0 z-50 mt-2 w-64 border border-slate-200 bg-white py-2 shadow-lg"
+                class="absolute right-0 z-50 mt-2 w-[min(16rem,calc(100vw-1.5rem))] border border-slate-200 bg-white py-2 shadow-lg"
                 role="menu"
             >
                 <div class="border-b border-slate-100 px-4 py-3">

@@ -47,6 +47,7 @@ final class ActorApiTest extends TestCase
         $this->assertDatabaseHas('identities', ['email' => 'client@example.com']);
         $this->assertDatabaseHas('profile_additionals', [
             'id' => $client->profile_additional_id,
+            'email' => 'client@example.com',
             'name' => 'Иван Клиент',
             'phone' => '+79990001122',
             'delivery_address' => 'ул. Тестовая, 1',

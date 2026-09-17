@@ -15,6 +15,7 @@ final class EloquentProfileAdditionalRepository implements ProfileAdditionalRepo
             ? new ProfileAdditionalModel()
             : ProfileAdditionalModel::withTrashed()->findOrFail($profile->id());
 
+        $model->email = $profile->email();
         $model->name = $profile->name();
         $model->phone = $profile->phone();
         $model->birthday = $profile->birthday()?->format('Y-m-d');
@@ -57,6 +58,7 @@ final class EloquentProfileAdditionalRepository implements ProfileAdditionalRepo
 
         return new ProfileAdditional(
             (int) $model->id,
+            $model->email !== null ? (string) $model->email : null,
             $model->name !== null ? (string) $model->name : null,
             $model->phone !== null ? (string) $model->phone : null,
             $birthday,

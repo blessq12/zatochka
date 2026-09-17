@@ -134,6 +134,7 @@ export default {
                             'master_assigned',
                             'in_progress',
                             'waiting_parts',
+                            'works_completed',
                             'ready',
                             'issued',
                             'cancelled',

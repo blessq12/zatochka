@@ -37,21 +37,23 @@ final class EloquentOrderRepository implements OrderRepository
                 $order->assignId((int) $model->id);
             }
 
-            OrderItemModel::query()->where('order_id', $model->id)->delete();
+            if ($this->shouldSyncItems($order)) {
+                OrderItemModel::query()->where('order_id', $model->id)->delete();
 
-            foreach ($order->items() as $index => $item) {
-                $itemModel = new OrderItemModel([
-                    'order_id' => $model->id,
-                    'kind' => $item->kind()->value,
-                    'title' => $item->title(),
-                    'quantity' => $item->quantity(),
-                    'comment' => null,
-                    'equipment_id' => $item->equipmentId(),
-                    'problem' => $item->problem(),
-                    'position' => $item->position() ?: $index,
-                ]);
-                $itemModel->save();
-                $item->assignId((int) $itemModel->id);
+                foreach ($order->items() as $index => $item) {
+                    $itemModel = new OrderItemModel([
+                        'order_id' => $model->id,
+                        'kind' => $item->kind()->value,
+                        'title' => $item->title(),
+                        'quantity' => $item->quantity(),
+                        'comment' => null,
+                        'equipment_id' => $item->equipmentId(),
+                        'problem' => $item->problem(),
+                        'position' => $item->position() ?: $index,
+                    ]);
+                    $itemModel->save();
+                    $item->assignId((int) $itemModel->id);
+                }
             }
 
             return $order;
@@ -66,7 +68,7 @@ final class EloquentOrderRepository implements OrderRepository
         return $model === null ? null : $this->toDomain($model);
     }
 
-    public function all(?int $clientId = null, ?string $status = null): array
+    public function all(?int $clientId = null, ?string $status = null, ?int $masterId = null): array
     {
         $query = OrderModel::query()->with('items')->orderByDesc('id');
 
@@ -76,12 +78,26 @@ final class EloquentOrderRepository implements OrderRepository
         if ($status !== null && $status !== '') {
             $query->where('status', $status);
         }
+        if ($masterId !== null) {
+            $query->where('master_id', $masterId);
+        }
 
         return $query
             ->get()
             ->map(fn (OrderModel $model): Order => $this->toDomain($model))
             ->values()
             ->all();
+    }
+
+    private function shouldSyncItems(Order $order): bool
+    {
+        foreach ($order->items() as $item) {
+            if ($item->id() === null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function toDomain(OrderModel $model): Order

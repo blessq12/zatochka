@@ -54,6 +54,7 @@ final readonly class RegisterActorWithIdentityHandler
             $this->events->publish(new ActorRegistrationRequested(
                 (int) $identity->id(),
                 $actorType,
+                $email,
                 $name,
                 $phone,
                 $birthday,

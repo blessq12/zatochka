@@ -5,6 +5,7 @@ export const STATUS_LABELS = {
     master_assigned: "Мастер назначен",
     in_progress: "В работе",
     waiting_parts: "Ожидает запчасти",
+    works_completed: "Работы выполнены",
     ready: "Готов",
     issued: "Выдан",
     cancelled: "Отменён",
@@ -34,11 +35,13 @@ export function allowedTransitions(status) {
         case "created":
             return ["cancelled"];
         case "master_assigned":
-            return ["in_progress", "cancelled"];
+            return ["cancelled"];
         case "in_progress":
-            return ["waiting_parts", "ready"];
+            return ["waiting_parts"];
         case "waiting_parts":
             return ["in_progress"];
+        case "works_completed":
+            return ["ready"];
         case "ready":
             return ["issued"];
         default:

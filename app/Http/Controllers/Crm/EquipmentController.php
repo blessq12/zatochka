@@ -26,12 +26,17 @@ final class EquipmentController extends Controller
     {
         $clientId = $request->query('client_id');
         $clientId = $clientId !== null && $clientId !== '' ? (int) $clientId : null;
+        $asMaster = $request->attributes->get('actor_type') === 'masters';
+
+        if ($asMaster) {
+            $clientId = null;
+        }
 
         $items = $this->listEquipment->handle($clientId);
 
         return response()->json([
             'data' => array_map(
-                static fn ($item) => $item->toArray(),
+                static fn ($item) => $asMaster ? $item->toCatalogArray() : $item->toArray(),
                 $items,
             ),
         ]);

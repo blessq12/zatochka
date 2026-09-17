@@ -153,6 +153,14 @@ final class Order
             throw new DomainException('Use assign master to move to master_assigned.');
         }
 
+        if ($target === OrderStatus::WorksCompleted) {
+            throw new DomainException('This status is set by integration events.');
+        }
+
+        if ($target === OrderStatus::InProgress && $this->status !== OrderStatus::WaitingParts) {
+            throw new DomainException('Cannot set in_progress from this status via transition.');
+        }
+
         if (! $this->status->canTransitionTo($target)) {
             throw new DomainException(sprintf(
                 'Cannot transition from %s to %s.',
@@ -162,6 +170,27 @@ final class Order
         }
 
         $this->status = $target;
+    }
+
+    public function markAcceptedIntoWork(int $masterId): void
+    {
+        if ($this->status !== OrderStatus::MasterAssigned) {
+            throw new DomainException('Order can be accepted into work only from master_assigned.');
+        }
+        if ($this->masterId !== $masterId) {
+            throw new DomainException('Order is assigned to another master.');
+        }
+
+        $this->status = OrderStatus::InProgress;
+    }
+
+    public function markWorksCompleted(): void
+    {
+        if ($this->status !== OrderStatus::InProgress) {
+            throw new DomainException('Works can be completed only from in_progress.');
+        }
+
+        $this->status = OrderStatus::WorksCompleted;
     }
 
     private function assertEstimatedCost(string $estimatedCost): void

@@ -16,11 +16,14 @@ final readonly class ListOrdersHandler
     /**
      * @return list<OrderResponse>
      */
-    public function handle(?int $clientId = null, ?string $status = null): array
-    {
+    public function handle(
+        ?int $clientId = null,
+        ?string $status = null,
+        ?int $masterId = null,
+    ): array {
         return array_map(
             fn ($order): OrderResponse => $this->assembler->assemble($order),
-            $this->orders->all($clientId, $status),
+            $this->orders->all($clientId, $status, $masterId),
         );
     }
 }
