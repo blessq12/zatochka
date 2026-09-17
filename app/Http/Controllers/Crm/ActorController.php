@@ -5,18 +5,34 @@ namespace App\Http\Controllers\Crm;
 use App\Application\Crm\Command\DeleteActorHandler;
 use App\Application\Crm\Command\UpdateActorHandler;
 use App\Application\Crm\Query\GetActorHandler;
+use App\Application\Crm\Query\ListActorsHandler;
 use App\Domain\Crm\ActorType;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 final class ActorController extends Controller
 {
     public function __construct(
+        private ListActorsHandler $listActors,
         private GetActorHandler $getActor,
         private UpdateActorHandler $updateActor,
         private DeleteActorHandler $deleteActor,
     ) {}
+
+    public function index(string $type): JsonResponse
+    {
+        $actorType = ActorType::fromRoute($type);
+        $actors = $this->listActors->handle($actorType);
+
+        return response()->json([
+            'data' => array_map(
+                static fn ($actor) => $actor->toArray(),
+                $actors,
+            ),
+        ]);
+    }
 
     public function show(string $type, int $id): JsonResponse
     {
@@ -30,10 +46,23 @@ final class ActorController extends Controller
         return response()->json($actor->toArray());
     }
 
-    public function update(string $type, int $id): JsonResponse
+    public function update(Request $request, string $type, int $id): JsonResponse
     {
+        $data = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:32'],
+            'birthday' => ['nullable', 'date'],
+        ]);
+
+        $attributes = [];
+        foreach (['name', 'phone', 'birthday'] as $field) {
+            if ($request->exists($field)) {
+                $attributes[$field] = $data[$field] ?? null;
+            }
+        }
+
         $actorType = ActorType::fromRoute($type);
-        $actor = $this->updateActor->handle($actorType, $id);
+        $actor = $this->updateActor->handle($actorType, $id, $attributes);
 
         if ($actor === null) {
             return response()->json(['message' => 'Not found.'], 404);

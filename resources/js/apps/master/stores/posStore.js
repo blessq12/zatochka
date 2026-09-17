@@ -1,6 +1,5 @@
 import axios from "axios";
 import { defineStore } from "pinia";
-import { toastService } from "@shared/toastService.js";
 
 const POS_TOKEN_KEY = "pos_token";
 const POS_USER_KEY = "pos_user";
@@ -70,7 +69,6 @@ export const usePosStore = defineStore("pos", {
 
                 this.assertMasterRole(response.data.actor?.type);
                 this.applySession(response.data);
-                toastService.success("Добро пожаловать!");
 
                 return { success: true, data: response.data };
             } catch (error) {

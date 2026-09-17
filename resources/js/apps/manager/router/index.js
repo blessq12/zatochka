@@ -19,6 +19,24 @@ const routes = [
                 component: () => import("../pages/DashboardPage.vue"),
                 meta: { title: "Дашборд" },
             },
+            {
+                path: "users",
+                name: "manager.users",
+                component: () => import("../pages/Users/UsersListPage.vue"),
+                meta: { title: "Пользователи" },
+            },
+            {
+                path: "users/create",
+                name: "manager.users.create",
+                component: () => import("../pages/Users/UserFormPage.vue"),
+                meta: { title: "Новый пользователь" },
+            },
+            {
+                path: "users/:type/:id/edit",
+                name: "manager.users.edit",
+                component: () => import("../pages/Users/UserFormPage.vue"),
+                meta: { title: "Редактирование пользователя" },
+            },
         ],
     },
     {

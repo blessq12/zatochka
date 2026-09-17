@@ -22,10 +22,19 @@ final class ActorApiTest extends TestCase
         $response = $this->withToken($token)->postJson('/api/actors/clients', [
             'email' => 'client@example.com',
             'password' => 'password123',
+            'name' => 'Иван Клиент',
+            'phone' => '+79990001122',
+            'birthday' => '1990-05-15',
         ]);
 
         $response->assertCreated()
-            ->assertJsonStructure(['id']);
+            ->assertJson([
+                'email' => 'client@example.com',
+                'type' => 'clients',
+                'name' => 'Иван Клиент',
+                'phone' => '+79990001122',
+                'birthday' => '1990-05-15',
+            ]);
 
         $client = ClientModel::query()->findOrFail($response->json('id'));
 
@@ -34,32 +43,54 @@ final class ActorApiTest extends TestCase
         $this->assertDatabaseCount('profile_additionals', 2);
         $this->assertNotNull($client->profile_additional_id);
         $this->assertDatabaseHas('identities', ['email' => 'client@example.com']);
+        $this->assertDatabaseHas('profile_additionals', [
+            'id' => $client->profile_additional_id,
+            'name' => 'Иван Клиент',
+            'phone' => '+79990001122',
+        ]);
     }
 
-    public function test_get_update_delete_client_flow(): void
+    public function test_list_get_update_delete_client_flow(): void
     {
         $token = $this->tokenAsManager('manager@example.com');
 
         $created = $this->withToken($token)->postJson('/api/actors/clients', [
             'email' => 'client@example.com',
             'password' => 'password123',
+            'name' => 'Клиент',
+            'phone' => '+70001112233',
         ])->assertCreated();
 
         $id = $created->json('id');
         $profileId = (int) ClientModel::query()->findOrFail($id)->profile_additional_id;
 
+        $this->withToken($token)->getJson('/api/actors/clients')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $id)
+            ->assertJsonPath('data.0.email', 'client@example.com')
+            ->assertJsonPath('data.0.name', 'Клиент');
+
         $this->withToken($token)->getJson("/api/actors/clients/{$id}")
             ->assertOk()
             ->assertJson([
                 'id' => $id,
+                'type' => 'clients',
+                'email' => 'client@example.com',
                 'profile_additional_id' => $profileId,
+                'name' => 'Клиент',
+                'phone' => '+70001112233',
             ]);
 
-        $this->withToken($token)->patchJson("/api/actors/clients/{$id}", [])
+        $this->withToken($token)->patchJson("/api/actors/clients/{$id}", [
+            'name' => 'Клиент Обновлён',
+            'birthday' => '1988-01-02',
+        ])
             ->assertOk()
             ->assertJson([
                 'id' => $id,
-                'profile_additional_id' => $profileId,
+                'name' => 'Клиент Обновлён',
+                'phone' => '+70001112233',
+                'birthday' => '1988-01-02',
             ]);
 
         $this->withToken($token)->deleteJson("/api/actors/clients/{$id}")
@@ -89,16 +120,18 @@ final class ActorApiTest extends TestCase
         $this->withToken($token)->postJson('/api/actors/managers', [
             'email' => 'manager2@example.com',
             'password' => 'password123',
+            'name' => 'Менеджер Два',
         ])
             ->assertCreated()
-            ->assertJsonStructure(['id']);
+            ->assertJsonStructure(['id', 'email', 'name', 'type']);
 
         $this->withToken($token)->postJson('/api/actors/masters', [
             'email' => 'master@example.com',
             'password' => 'password123',
+            'name' => 'Мастер',
         ])
             ->assertCreated()
-            ->assertJsonStructure(['id']);
+            ->assertJsonStructure(['id', 'email', 'name', 'type']);
 
         $this->assertDatabaseCount('managers', 2);
         $this->assertDatabaseCount('masters', 1);
@@ -149,6 +182,7 @@ final class ActorApiTest extends TestCase
             $email,
             'password123',
             issueToken: true,
+            name: 'Тест Менеджер',
         );
 
         return (string) $registered->token;

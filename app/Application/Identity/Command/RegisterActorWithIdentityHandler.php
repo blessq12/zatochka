@@ -23,13 +23,28 @@ final readonly class RegisterActorWithIdentityHandler
         private TokenIssuer $tokens,
     ) {}
 
-    public function handle(string $actorType, string $email, string $password, bool $issueToken = false): IdentityResponse
-    {
+    public function handle(
+        string $actorType,
+        string $email,
+        string $password,
+        bool $issueToken = false,
+        ?string $name = null,
+        ?string $phone = null,
+        ?string $birthday = null,
+    ): IdentityResponse {
         if ($this->identities->findByEmail($email) !== null) {
             throw new DomainException('Email already taken.');
         }
 
-        return DB::transaction(function () use ($actorType, $email, $password, $issueToken): IdentityResponse {
+        return DB::transaction(function () use (
+            $actorType,
+            $email,
+            $password,
+            $issueToken,
+            $name,
+            $phone,
+            $birthday,
+        ): IdentityResponse {
             $identity = $this->identities->save(
                 Identity::create($email, Hash::make($password))
             );
@@ -37,6 +52,9 @@ final readonly class RegisterActorWithIdentityHandler
             $this->events->publish(new ActorRegistrationRequested(
                 (int) $identity->id(),
                 $actorType,
+                $name,
+                $phone,
+                $birthday,
             ));
 
             $link = $this->links->findByIdentityId((int) $identity->id());

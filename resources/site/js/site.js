@@ -3,8 +3,6 @@ import axios from "axios";
 import { vMaska } from "maska/vue";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
-import Toast from "vue-toastification";
-import "vue-toastification/dist/index.css";
 import RepairForm from "./components/Forms/RepairForm.vue";
 import SharpeningForm from "./components/Forms/SharpeningForm.vue";
 import MobileMenuIsland from "./components/Layout/MobileMenuIsland.vue";
@@ -15,21 +13,6 @@ window.axios.defaults.withCredentials = true;
 
 themeTogglerService.init();
 
-const toastOptions = {
-    position: "top-right",
-    timeout: 4000,
-    closeOnClick: true,
-    pauseOnFocusLoss: true,
-    pauseOnHover: true,
-    draggable: true,
-    draggablePercent: 0.6,
-    showCloseButtonOnHover: false,
-    hideProgressBar: false,
-    closeButton: "button",
-    icon: true,
-    rtl: false,
-};
-
 function mountIsland(selector, component, props = {}) {
     const el = document.querySelector(selector);
     if (!el) {
@@ -39,7 +22,6 @@ function mountIsland(selector, component, props = {}) {
     const app = createApp(component, props);
     app.use(createPinia());
     app.directive("maska", vMaska);
-    app.use(Toast, toastOptions);
     app.mount(el);
 
     return app;

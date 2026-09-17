@@ -1,6 +1,5 @@
 import axios from "axios";
 import { acceptHMRUpdate, defineStore } from "pinia";
-import { toastService } from "@shared/toastService.js";
 
 export const useOrderStore = defineStore("order", {
     state: () => ({

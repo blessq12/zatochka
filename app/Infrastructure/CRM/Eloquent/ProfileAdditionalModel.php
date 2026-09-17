@@ -12,4 +12,11 @@ final class ProfileAdditionalModel extends Model
     protected $table = 'profile_additionals';
 
     protected $guarded = [];
+
+    protected function casts(): array
+    {
+        return [
+            'birthday' => 'date',
+        ];
+    }
 }

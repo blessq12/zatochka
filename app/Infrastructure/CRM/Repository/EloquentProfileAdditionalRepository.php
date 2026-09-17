@@ -5,6 +5,7 @@ namespace App\Infrastructure\Crm\Repository;
 use App\Domain\Crm\Aggregate\ProfileAdditional;
 use App\Domain\Crm\Repository\ProfileAdditionalRepository;
 use App\Infrastructure\Crm\Eloquent\ProfileAdditionalModel;
+use DateTimeImmutable;
 
 final class EloquentProfileAdditionalRepository implements ProfileAdditionalRepository
 {
@@ -14,6 +15,9 @@ final class EloquentProfileAdditionalRepository implements ProfileAdditionalRepo
             ? new ProfileAdditionalModel()
             : ProfileAdditionalModel::withTrashed()->findOrFail($profile->id());
 
+        $model->name = $profile->name();
+        $model->phone = $profile->phone();
+        $model->birthday = $profile->birthday()?->format('Y-m-d');
         $model->save();
 
         if ($profile->id() === null) {
@@ -35,12 +39,27 @@ final class EloquentProfileAdditionalRepository implements ProfileAdditionalRepo
             return null;
         }
 
-        return new ProfileAdditional((int) $model->id, false);
+        return $this->toDomain($model);
     }
 
     public function delete(ProfileAdditional $profile): void
     {
         $profile->markDeleted();
         $this->save($profile);
+    }
+
+    private function toDomain(ProfileAdditionalModel $model): ProfileAdditional
+    {
+        $birthday = $model->birthday !== null
+            ? new DateTimeImmutable((string) $model->birthday->format('Y-m-d'))
+            : null;
+
+        return new ProfileAdditional(
+            (int) $model->id,
+            $model->name !== null ? (string) $model->name : null,
+            $model->phone !== null ? (string) $model->phone : null,
+            $birthday,
+            false,
+        );
     }
 }

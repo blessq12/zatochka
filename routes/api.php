@@ -12,6 +12,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/identity/me', [IdentityController::class, 'me']);
 
     Route::middleware('actor:managers')->group(function (): void {
+        Route::get('/actors/{type}', [ActorController::class, 'index']);
         Route::post('/actors/{type}', [IdentityController::class, 'provisionActor']);
         Route::match(['put', 'patch'], '/actors/{type}/{id}', [ActorController::class, 'update']);
         Route::delete('/actors/{type}/{id}', [ActorController::class, 'destroy']);

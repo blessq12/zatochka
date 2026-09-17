@@ -51,6 +51,16 @@ abstract class EloquentActorRepository implements ActorRepository
         return ($this->toDomain)($model);
     }
 
+    public function all(): array
+    {
+        return $this->modelClass::query()
+            ->orderBy('id')
+            ->get()
+            ->map(fn (ActorModel $model): Actor => ($this->toDomain)($model))
+            ->values()
+            ->all();
+    }
+
     public function delete(Actor $actor): void
     {
         $actor->markDeleted();

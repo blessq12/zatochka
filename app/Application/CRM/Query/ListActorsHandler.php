@@ -7,21 +7,24 @@ use App\Application\Crm\DTO\ActorResponse;
 use App\Domain\Crm\ActorType;
 use App\Domain\Crm\Repository\ActorRepositoryResolver;
 
-final readonly class GetActorHandler
+final readonly class ListActorsHandler
 {
     public function __construct(
         private ActorRepositoryResolver $actors,
         private ActorResponseAssembler $assembler,
     ) {}
 
-    public function handle(ActorType $type, int $id): ?ActorResponse
+    /**
+     * @return list<ActorResponse>
+     */
+    public function handle(ActorType $type): array
     {
-        $actor = $this->actors->for($type)->findById($id);
+        $items = [];
 
-        if ($actor === null) {
-            return null;
+        foreach ($this->actors->for($type)->all() as $actor) {
+            $items[] = $this->assembler->assemble($type, $actor);
         }
 
-        return $this->assembler->assemble($type, $actor);
+        return $items;
     }
 }

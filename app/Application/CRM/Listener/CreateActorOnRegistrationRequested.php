@@ -18,7 +18,12 @@ final readonly class CreateActorOnRegistrationRequested
     public function handle(ActorRegistrationRequested $event): void
     {
         $actorType = ActorType::fromRoute($event->actorType);
-        $actor = $this->createActor->handle($actorType);
+        $actor = $this->createActor->handle(
+            $actorType,
+            $event->name,
+            $event->phone,
+            $event->birthday,
+        );
 
         $this->events->publish(new ActorCreated(
             $event->identityId,

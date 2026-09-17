@@ -10,5 +10,10 @@ interface ActorRepository
 
     public function findById(int $id): ?Actor;
 
+    /**
+     * @return list<Actor>
+     */
+    public function all(): array;
+
     public function delete(Actor $actor): void;
 }

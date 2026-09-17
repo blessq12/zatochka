@@ -2,7 +2,6 @@ import axios from "axios";
 import { defineStore } from "pinia";
 import createLoginRequestDto from "../dto/auth/loginRequestDto.js";
 import createRegisterRequestDto from "../dto/auth/registerRequestDto.js";
-import { toastService } from "@shared/toastService.js";
 
 const TOKEN_KEY = "auth_token";
 const EXPECTED_ACTOR_TYPE = "clients";
@@ -50,7 +49,6 @@ export const useAuthStore = defineStore("auth", {
 
                 this.assertClientRole(response.data.actor?.type);
                 this.applySession(response.data);
-                toastService.success("Добро пожаловать!");
 
                 return { success: true, data: response.data };
             } catch (error) {
@@ -80,7 +78,6 @@ export const useAuthStore = defineStore("auth", {
 
                 this.assertClientRole(response.data.actor?.type);
                 this.applySession(response.data);
-                toastService.success("Регистрация успешна!");
 
                 return { success: true, data: response.data };
             } catch (error) {
@@ -140,12 +137,10 @@ export const useAuthStore = defineStore("auth", {
         },
 
         async updateClient() {
-            toastService.error("Обновление профиля пока недоступно");
             return { success: false, error: "Обновление профиля пока недоступно" };
         },
 
         async setPassword() {
-            toastService.error("Смена пароля пока недоступна");
             return { success: false, error: "Смена пароля пока недоступна" };
         },
     },
