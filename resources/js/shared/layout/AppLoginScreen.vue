@@ -26,45 +26,45 @@ export default {
                 <h1 class="text-2xl font-jost-bold text-dark-blue-500 sm:text-3xl">
                     {{ title }}
                 </h1>
-                <p v-if="subtitle" class="mt-2 text-sm text-slate-600">
+                <p v-if="subtitle" class="mt-2 text-base text-slate-600">
                     {{ subtitle }}
                 </p>
             </div>
 
             <div
                 v-if="error"
-                class="bg-red-50 px-4 py-3 text-sm text-red-700"
+                class="bg-red-50 px-4 py-3 text-base text-red-700"
             >
                 {{ error }}
             </div>
 
             <div>
-                <label class="mb-2 block text-sm font-jost-medium text-slate-700">Email</label>
+                <label class="mb-2 block text-base font-jost-medium text-slate-700">Email</label>
                 <input
                     :value="email"
                     type="email"
                     required
                     autocomplete="username"
-                    class="w-full border border-slate-400 px-3 py-3 text-dark-blue-500 outline-none focus:border-pink-500"
+                    class="w-full border border-slate-400 px-3 py-3 text-base text-dark-blue-500 outline-none focus:border-pink-500"
                     @input="$emit('update:email', $event.target.value)"
                 />
             </div>
 
             <div>
-                <label class="mb-2 block text-sm font-jost-medium text-slate-700">Пароль</label>
+                <label class="mb-2 block text-base font-jost-medium text-slate-700">Пароль</label>
                 <input
                     :value="password"
                     type="password"
                     required
                     autocomplete="current-password"
-                    class="w-full border border-slate-400 px-3 py-3 text-dark-blue-500 outline-none focus:border-pink-500"
+                    class="w-full border border-slate-400 px-3 py-3 text-base text-dark-blue-500 outline-none focus:border-pink-500"
                     @input="$emit('update:password', $event.target.value)"
                 />
             </div>
 
             <button
                 type="submit"
-                class="w-full bg-pink-500 py-3 font-jost-bold text-white hover:bg-pink-600 disabled:opacity-50"
+                class="w-full bg-pink-500 py-3 text-base font-jost-bold text-white hover:bg-pink-600 disabled:opacity-50"
                 :disabled="loading"
             >
                 {{ loading ? "Вход…" : submitLabel }}

@@ -83,6 +83,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* iOS: инпуты ≥16px, иначе Safari зумит при фокусе (manager/master/client SPA) */
+:where(input):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+:where(select),
+:where(textarea) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
 /* Jost Font Classes */
 .font-jost-black {
     font-family: "Jost", sans-serif;
@@ -119,6 +127,29 @@
 .apps-shell {
     color: var(--color-apps-ink);
     background-color: var(--color-apps-canvas);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Минимум 16px: iOS не зумит инпуты; выравниваем manager/master */
+.apps-shell :where(.text-xs),
+.apps-shell :where(.text-sm) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.apps-shell :where(.text-base) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.apps-shell :where(input),
+.apps-shell :where(select),
+.apps-shell :where(textarea) {
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
 .apps-shell :where(.text-slate-400) {
@@ -180,29 +211,29 @@
     }
 
     .app-btn-primary {
-        @apply inline-flex min-h-11 items-center justify-center bg-pink-500 px-4 py-2.5 text-sm text-white hover:bg-pink-600 disabled:opacity-60 sm:min-h-0 sm:py-2;
+        @apply inline-flex min-h-11 items-center justify-center bg-pink-500 px-4 py-2.5 text-base text-white hover:bg-pink-600 disabled:opacity-60;
         font-family: "Jost", sans-serif;
         font-weight: 500;
     }
 
     .app-btn-secondary {
-        @apply inline-flex min-h-11 items-center justify-center border border-pink-600 px-3 py-2.5 text-sm text-pink-700 hover:bg-pink-50 disabled:opacity-60 sm:min-h-0 sm:py-1.5;
+        @apply inline-flex min-h-11 items-center justify-center border border-pink-600 px-3 py-2.5 text-base text-pink-700 hover:bg-pink-50 disabled:opacity-60;
         font-family: "Jost", sans-serif;
         font-weight: 500;
     }
 
     .app-btn-ghost {
-        @apply inline-flex min-h-11 items-center justify-center border border-slate-300 px-4 py-2.5 text-sm text-slate-700 hover:bg-white sm:min-h-0 sm:py-2;
+        @apply inline-flex min-h-11 items-center justify-center border border-slate-300 px-4 py-2.5 text-base text-slate-700 hover:bg-white;
     }
 
     .app-btn-warning {
-        @apply inline-flex min-h-11 items-center justify-center border border-amber-600 bg-amber-50 px-3 py-2.5 text-sm text-amber-900 hover:bg-amber-100 disabled:opacity-60 sm:min-h-0 sm:py-1.5;
+        @apply inline-flex min-h-11 items-center justify-center border border-amber-600 bg-amber-50 px-3 py-2.5 text-base text-amber-900 hover:bg-amber-100 disabled:opacity-60;
         font-family: "Jost", sans-serif;
         font-weight: 500;
     }
 
     .app-btn-danger {
-        @apply inline-flex min-h-11 items-center justify-center border border-red-600 bg-red-50 px-3 py-2.5 text-sm text-red-800 hover:bg-red-100 disabled:opacity-60 sm:min-h-0 sm:py-1.5;
+        @apply inline-flex min-h-11 items-center justify-center border border-red-600 bg-red-50 px-3 py-2.5 text-base text-red-800 hover:bg-red-100 disabled:opacity-60;
         font-family: "Jost", sans-serif;
         font-weight: 500;
     }
@@ -212,17 +243,19 @@
     }
 
     .app-action-btn-title {
-        @apply text-sm;
+        @apply text-base;
         font-family: "Jost", sans-serif;
         font-weight: 500;
     }
 
     .app-action-btn-hint {
-        @apply text-xs opacity-80;
+        @apply text-base opacity-80;
     }
 
     .app-field {
-        @apply w-full border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-800 sm:py-2 sm:text-sm;
+        @apply w-full border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-800;
+        font-size: 1rem;
+        line-height: 1.5;
     }
 
     .app-field::placeholder {
@@ -238,7 +271,7 @@
     }
 
     .app-tab {
-        @apply shrink-0 border px-3 py-2 text-sm;
+        @apply shrink-0 border px-3 py-2 text-base;
         font-family: "Jost", sans-serif;
         font-weight: 500;
     }

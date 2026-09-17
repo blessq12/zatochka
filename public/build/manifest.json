@@ -6,8 +6,8 @@
       "__plugin-vue_export-helper-BMlgpdBR.js"
     ]
   },
-  "_AppLoginScreen-Wp5GE5_9.js": {
-    "file": "assets/AppLoginScreen-Wp5GE5_9.js",
+  "_AppLoginScreen-CkwilXEh.js": {
+    "file": "assets/AppLoginScreen-CkwilXEh.js",
     "name": "AppLoginScreen",
     "imports": [
       "__plugin-vue_export-helper-BMlgpdBR.js"
@@ -20,8 +20,8 @@
       "__plugin-vue_export-helper-BMlgpdBR.js"
     ]
   },
-  "_AppShell-DSEiTolM.js": {
-    "file": "assets/AppShell-DSEiTolM.js",
+  "_AppShell-DK2VEBE-.js": {
+    "file": "assets/AppShell-DK2VEBE-.js",
     "name": "AppShell",
     "imports": [
       "_AppNavIcon-F6zSV61Z.js",
@@ -82,7 +82,7 @@
     ]
   },
   "resources/css/apps.css": {
-    "file": "assets/apps-ByEmMFAI.css",
+    "file": "assets/apps-BgyJuqF-.css",
     "src": "resources/css/apps.css",
     "isEntry": true,
     "names": [
@@ -113,12 +113,12 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-CtVNzYxv.js",
+    "file": "assets/ManagerShell-CF6gPfMz.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AppShell-DSEiTolM.js",
+      "_AppShell-DK2VEBE-.js",
       "__plugin-vue_export-helper-BMlgpdBR.js",
       "resources/js/apps/manager/main.js",
       "_AppNavIcon-F6zSV61Z.js",
@@ -126,19 +126,19 @@
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-DK1K3mz8.js",
+    "file": "assets/LoginForm-Sbo1QfI-.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AppLoginScreen-Wp5GE5_9.js",
+      "_AppLoginScreen-CkwilXEh.js",
       "__plugin-vue_export-helper-BMlgpdBR.js",
       "resources/js/apps/manager/main.js",
       "_vue-router-CaDSZbsy.js"
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-Bon3I3SO.js",
+    "file": "assets/main-tqPWNJ5d.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
@@ -285,7 +285,7 @@
     ]
   },
   "resources/js/apps/master/main.js": {
-    "file": "assets/main-uSoHdcwi.js",
+    "file": "assets/main-bidgFqNZ.js",
     "name": "main",
     "src": "resources/js/apps/master/main.js",
     "isEntry": true,
@@ -351,13 +351,13 @@
     ]
   },
   "resources/js/apps/master/pages/PosPage.vue": {
-    "file": "assets/PosPage-Ee48hxZk.js",
+    "file": "assets/PosPage-CqdJfiGR.js",
     "name": "PosPage",
     "src": "resources/js/apps/master/pages/PosPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AppLoginScreen-Wp5GE5_9.js",
-      "_AppShell-DSEiTolM.js",
+      "_AppLoginScreen-CkwilXEh.js",
+      "_AppShell-DK2VEBE-.js",
       "__plugin-vue_export-helper-BMlgpdBR.js",
       "_vue-router-CaDSZbsy.js",
       "resources/js/apps/master/main.js",

@@ -65,7 +65,12 @@ export default {
             aria-label="Открыть меню"
             @click="$emit('toggle-mobile')"
         >
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+                class="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -75,14 +80,16 @@ export default {
             </svg>
         </button>
 
-        <div class="min-w-0 flex-1 truncate text-sm font-jost-medium text-dark-blue-500 sm:text-base">
+        <div
+            class="min-w-0 flex-1 truncate text-sm font-jost-medium text-dark-blue-500 sm:text-base"
+        >
             <slot name="title" />
         </div>
 
         <div ref="menuRoot" class="relative shrink-0">
             <button
                 type="button"
-                class="flex items-center gap-2 border border-slate-300 bg-white px-1.5 py-1 transition hover:border-pink-400 hover:bg-pink-50 sm:px-2 sm:py-1.5"
+                class="flex items-center gap-2 bg-white px-1.5 py-1 sm:px-2 sm:py-1.5"
                 :aria-expanded="menuOpen ? 'true' : 'false'"
                 aria-haspopup="menu"
                 @click="toggleMenu"
@@ -124,14 +131,18 @@ export default {
 
             <div
                 v-if="menuOpen"
-                class="absolute right-0 z-50 mt-2 w-[min(16rem,calc(100vw-1.5rem))] border border-slate-300 bg-white py-2 shadow-lg"
+                class="absolute right-0 z-50 mt-2 w-[min(16rem,calc(100vw-1.5rem))] bg-white py-2 shadow-lg"
                 role="menu"
             >
                 <div class="border-b border-slate-100 px-4 py-3">
-                    <p class="text-xs font-jost-medium uppercase tracking-wide text-slate-500">
+                    <p
+                        class="text-xs font-jost-medium uppercase tracking-wide text-slate-500"
+                    >
                         Профиль
                     </p>
-                    <p class="mt-1 truncate text-sm font-jost-medium text-dark-blue-500">
+                    <p
+                        class="mt-1 truncate text-sm font-jost-medium text-dark-blue-500"
+                    >
                         {{ displayName }}
                     </p>
                     <p
