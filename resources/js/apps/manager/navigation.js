@@ -41,6 +41,12 @@ export const navigationItems = [
         icon: "site",
         to: { name: "manager.site" },
     },
+    {
+        name: "manager.documents",
+        label: "Документы",
+        icon: "site",
+        to: { name: "manager.documents" },
+    },
 ];
 
 /** Primary tabs for mobile bottom bar only. */

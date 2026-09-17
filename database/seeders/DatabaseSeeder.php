@@ -15,6 +15,7 @@ final class DatabaseSeeder extends Seeder
             WarehouseSeeder::class,
             EquipmentSeeder::class,
             DemoOrdersSeeder::class,
+            DocumentTemplateSeeder::class,
         ]);
     }
 }

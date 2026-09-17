@@ -1,4 +1,5 @@
 <script>
+import { documentService } from "../../services/DocumentService.js";
 import { actorService } from "../../services/ActorService.js";
 import { equipmentService } from "../../services/EquipmentService.js";
 import { financeService } from "../../services/FinanceService.js";
@@ -47,6 +48,8 @@ export default {
             savingPricing: false,
             savingMaterials: false,
             error: null,
+            documentError: null,
+            openingDocument: false,
             statusLabel,
             BILLING_LABELS,
             URGENCY_LABELS,
@@ -59,6 +62,12 @@ export default {
         },
         canAssignMaster() {
             return this.order?.status === "created";
+        },
+        canPrintReceipt() {
+            return this.order && this.order.status !== "cancelled";
+        },
+        canPrintHandoverAct() {
+            return ["ready", "issued"].includes(this.order?.status);
         },
         isWorksCompleted() {
             return this.order?.status === "works_completed";
@@ -458,6 +467,26 @@ export default {
                 this.savingMaterials = false;
             }
         },
+        async openDocument(type) {
+            this.documentError = null;
+            this.openingDocument = true;
+            // open sync — иначе Safari/Chrome режут попап после await
+            const previewWindow = window.open("about:blank", "_blank");
+            try {
+                await documentService.openOrderDocument(
+                    this.order.id,
+                    type,
+                    previewWindow,
+                );
+            } catch (e) {
+                this.documentError =
+                    e.response?.data?.message ||
+                    e.message ||
+                    "Не удалось открыть документ";
+            } finally {
+                this.openingDocument = false;
+            }
+        },
         async transition(status) {
             if (status === "ready" && !this.pricingComplete) {
                 this.error = "Сначала укажите цены по всем работам";
@@ -635,6 +664,51 @@ export default {
                         >
                             Назначить
                         </button>
+                    </section>
+
+                    <section
+                        v-if="canPrintReceipt || canPrintHandoverAct"
+                        class="space-y-2 border border-slate-200 bg-white p-3 lg:p-4"
+                    >
+                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
+                            Печать
+                        </h2>
+                        <p
+                            v-if="documentError"
+                            class="text-xs text-red-600"
+                        >
+                            {{ documentError }}
+                        </p>
+                        <div class="flex flex-col gap-2">
+                            <button
+                                v-if="canPrintReceipt"
+                                type="button"
+                                class="app-btn-secondary app-action-btn"
+                                :disabled="openingDocument"
+                                @click="openDocument('receipt')"
+                            >
+                                <span class="app-action-btn-title">
+                                    Квитанция о приёме
+                                </span>
+                                <span class="app-action-btn-hint">
+                                    PDF для печати при приёме
+                                </span>
+                            </button>
+                            <button
+                                v-if="canPrintHandoverAct"
+                                type="button"
+                                class="app-btn-secondary app-action-btn"
+                                :disabled="openingDocument"
+                                @click="openDocument('handover_act')"
+                            >
+                                <span class="app-action-btn-title">
+                                    Акт выдачи
+                                </span>
+                                <span class="app-action-btn-hint">
+                                    PDF для печати при выдаче
+                                </span>
+                            </button>
+                        </div>
                     </section>
 
                     <section

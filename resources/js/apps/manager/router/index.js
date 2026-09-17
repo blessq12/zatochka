@@ -44,6 +44,13 @@ const routes = [
                 meta: { title: "Контент сайта" },
             },
             {
+                path: "documents",
+                name: "manager.documents",
+                component: () =>
+                    import("../pages/Documents/DocumentTemplatesPage.vue"),
+                meta: { title: "Документы" },
+            },
+            {
                 path: "equipment",
                 name: "manager.equipment",
                 component: () =>

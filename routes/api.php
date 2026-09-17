@@ -8,7 +8,9 @@ use App\Http\Controllers\Finance\CashEntryController;
 use App\Http\Controllers\Finance\EarningsGoalController;
 use App\Http\Controllers\Finance\OrderPricingController;
 use App\Http\Controllers\Identity\IdentityController;
+use App\Http\Controllers\Order\DocumentTemplateController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Order\OrderDocumentController;
 use App\Http\Controllers\ProvisionActorController;
 use App\Http\Controllers\SiteContent\SiteContentController;
 use App\Http\Controllers\Warehouse\OrderIssueController;
@@ -46,6 +48,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::put('/orders/{id}/items', [OrderController::class, 'updateItems']);
         Route::post('/orders/{id}/assign-master', [OrderController::class, 'assignMaster']);
         Route::post('/orders/{id}/transition', [OrderController::class, 'transition']);
+        Route::get('/orders/{id}/documents/{type}', OrderDocumentController::class)
+            ->whereIn('type', ['receipt', 'handover_act']);
+
+        Route::get('/order-document-templates', [DocumentTemplateController::class, 'index']);
+        Route::put('/order-document-templates/{type}', [DocumentTemplateController::class, 'update'])
+            ->whereIn('type', ['receipt', 'handover_act']);
+        Route::post('/order-document-templates/{type}/preview', [DocumentTemplateController::class, 'preview'])
+            ->whereIn('type', ['receipt', 'handover_act']);
 
         Route::get('/finance/pricings/by-order/{orderId}', [OrderPricingController::class, 'byOrder']);
         Route::put('/finance/pricings/by-order/{orderId}', [OrderPricingController::class, 'upsertByOrder']);

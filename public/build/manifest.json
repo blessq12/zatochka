@@ -28,6 +28,13 @@
       "__plugin-vue_export-helper-BMlgpdBR.js"
     ]
   },
+  "_DocumentService-CNnapuPx.js": {
+    "file": "assets/DocumentService-CNnapuPx.js",
+    "name": "DocumentService",
+    "imports": [
+      "__plugin-vue_export-helper-BMlgpdBR.js"
+    ]
+  },
   "_EquipmentService-DvKEg4AR.js": {
     "file": "assets/EquipmentService-DvKEg4AR.js",
     "name": "EquipmentService",
@@ -82,7 +89,7 @@
     ]
   },
   "resources/css/apps.css": {
-    "file": "assets/apps-BgyJuqF-.css",
+    "file": "assets/apps-CewXN0s6.css",
     "src": "resources/css/apps.css",
     "isEntry": true,
     "names": [
@@ -113,7 +120,7 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-CF6gPfMz.js",
+    "file": "assets/ManagerShell-BQRSExRs.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
@@ -126,7 +133,7 @@
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-Sbo1QfI-.js",
+    "file": "assets/LoginForm-C2IwNcES.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -138,7 +145,7 @@
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-tqPWNJ5d.js",
+    "file": "assets/main-BpM8ET6g.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
@@ -154,6 +161,7 @@
       "resources/js/apps/manager/pages/Users/UserFormPage.vue",
       "resources/js/apps/manager/pages/Users/UserFormPage.vue",
       "resources/js/apps/manager/pages/Site/SiteContentPage.vue",
+      "resources/js/apps/manager/pages/Documents/DocumentTemplatesPage.vue",
       "resources/js/apps/manager/pages/Equipment/EquipmentListPage.vue",
       "resources/js/apps/manager/pages/Equipment/EquipmentFormPage.vue",
       "resources/js/apps/manager/pages/Equipment/EquipmentFormPage.vue",
@@ -171,6 +179,16 @@
     "isDynamicEntry": true,
     "imports": [
       "_AppNavIcon-F6zSV61Z.js",
+      "__plugin-vue_export-helper-BMlgpdBR.js"
+    ]
+  },
+  "resources/js/apps/manager/pages/Documents/DocumentTemplatesPage.vue": {
+    "file": "assets/DocumentTemplatesPage-CsXmtiSn.js",
+    "name": "DocumentTemplatesPage",
+    "src": "resources/js/apps/manager/pages/Documents/DocumentTemplatesPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_DocumentService-CNnapuPx.js",
       "__plugin-vue_export-helper-BMlgpdBR.js"
     ]
   },
@@ -230,11 +248,12 @@
     ]
   },
   "resources/js/apps/manager/pages/Orders/OrderShowPage.vue": {
-    "file": "assets/OrderShowPage-BpTWD2yo.js",
+    "file": "assets/OrderShowPage-9TNPRFwH.js",
     "name": "OrderShowPage",
     "src": "resources/js/apps/manager/pages/Orders/OrderShowPage.vue",
     "isDynamicEntry": true,
     "imports": [
+      "_DocumentService-CNnapuPx.js",
       "_ActorService-DZY6W1Iy.js",
       "_EquipmentService-DvKEg4AR.js",
       "_FinanceService-CqS3I-BY.js",
@@ -365,7 +384,7 @@
     ]
   },
   "resources/site/css/site.css": {
-    "file": "assets/site-LZfBTzj8.css",
+    "file": "assets/site-B2AeBdar.css",
     "src": "resources/site/css/site.css",
     "isEntry": true,
     "names": [
