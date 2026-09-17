@@ -26,13 +26,15 @@ final class EquipmentController extends Controller
     {
         $clientId = $request->query('client_id');
         $clientId = $clientId !== null && $clientId !== '' ? (int) $clientId : null;
+        $q = $request->query('q');
+        $q = is_string($q) && trim($q) !== '' ? trim($q) : null;
         $asMaster = $request->attributes->get('actor_type') === 'masters';
 
         if ($asMaster) {
             $clientId = null;
         }
 
-        $items = $this->listEquipment->handle($clientId);
+        $items = $this->listEquipment->handle($clientId, $q);
 
         return response()->json([
             'data' => array_map(

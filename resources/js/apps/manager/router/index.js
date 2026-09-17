@@ -65,6 +65,13 @@ const routes = [
                 meta: { title: "Редактирование оборудования" },
             },
             {
+                path: "warehouse",
+                name: "manager.warehouse",
+                component: () =>
+                    import("../pages/Warehouse/WarehouseListPage.vue"),
+                meta: { title: "Склад" },
+            },
+            {
                 path: "orders",
                 name: "manager.orders",
                 component: () => import("../pages/Orders/OrderListPage.vue"),

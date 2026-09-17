@@ -368,17 +368,17 @@ export default {
 </script>
 
 <template>
-    <div class="w-full space-y-4 sm:space-y-6">
+    <div class="app-page">
         <div class="space-y-2">
-            <h1 class="text-2xl font-jost-bold text-dark-blue-500">
+            <h1 class="app-page-title">
                 Новый заказ
             </h1>
-            <div class="flex flex-wrap gap-2">
+            <div class="app-tabs">
                 <button
                     v-for="n in 3"
                     :key="n"
                     type="button"
-                    class="border px-3 py-1.5 text-sm font-jost-medium"
+                    class="app-tab"
                     :class="
                         step === n
                             ? 'border-pink-500 bg-pink-50 text-pink-600'

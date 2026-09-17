@@ -12,6 +12,12 @@ export const navigationItems = [
         match: "equipment",
     },
     {
+        label: "Склад",
+        icon: "warehouse",
+        to: { name: "pos.warehouse" },
+        match: "warehouse",
+    },
+    {
         label: "Дашборд",
         icon: "dashboard",
         to: { name: "pos.dashboard" },

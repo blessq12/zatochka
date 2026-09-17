@@ -24,9 +24,21 @@ export default {
             return !!this.$route.params.id;
         },
         title() {
-            return this.isEdit
-                ? "Редактирование оборудования"
-                : "Новое оборудование";
+            if (!this.isEdit) {
+                return "Новое оборудование";
+            }
+            return this.form.name
+                ? this.form.name
+                : `Оборудование #${this.$route.params.id}`;
+        },
+        clientLabel() {
+            if (!this.form.client_id) {
+                return "—";
+            }
+            const client = this.clients.find(
+                (c) => Number(c.id) === Number(this.form.client_id),
+            );
+            return client?.name || client?.email || `#${this.form.client_id}`;
         },
     },
     async mounted() {
@@ -122,134 +134,232 @@ export default {
                     : {},
             });
         },
+        goClient() {
+            if (!this.form.client_id) {
+                return;
+            }
+            this.$router.push({
+                name: "manager.users.edit",
+                params: { type: "clients", id: String(this.form.client_id) },
+                query: { tab: "equipment" },
+            });
+        },
     },
 };
 </script>
 
 <template>
-    <div class="w-full space-y-4 sm:space-y-6">
-        <h1 class="text-2xl font-jost-bold text-dark-blue-500">{{ title }}</h1>
+    <div class="app-page">
+        <div class="app-page-header">
+            <h1 class="app-page-title">{{ title }}</h1>
+            <button
+                type="button"
+                class="app-btn-ghost w-full sm:w-auto"
+                @click="cancel"
+            >
+                К списку
+            </button>
+        </div>
 
         <p v-if="loading" class="text-sm text-slate-500">Загрузка…</p>
         <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
 
-        <form v-if="!loading" class="space-y-4" @submit.prevent="submit">
-            <label class="block space-y-1">
-                <span class="text-sm text-slate-600">Клиент</span>
-                <select
-                    v-model="form.client_id"
-                    class="w-full border border-slate-300 px-3 py-2"
-                    :disabled="isEdit"
-                    required
+        <form
+            v-if="!loading"
+            class="grid gap-4 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] lg:items-start lg:gap-6"
+            @submit.prevent="submit"
+        >
+            <aside class="space-y-3 lg:sticky lg:top-4">
+                <div
+                    class="space-y-2 border border-slate-300 bg-white p-3 text-sm shadow-sm lg:p-4"
                 >
-                    <option value="" disabled>Выберите клиента</option>
-                    <option
-                        v-for="client in clients"
-                        :key="client.id"
-                        :value="String(client.id)"
+                    <p class="font-jost-medium text-dark-blue-500">
+                        {{ form.name || "Без названия" }}
+                    </p>
+                    <dl class="space-y-1.5">
+                        <div class="flex justify-between gap-2">
+                            <dt class="text-slate-500">Клиент</dt>
+                            <dd class="text-right text-slate-800">
+                                {{ clientLabel }}
+                            </dd>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <dt class="text-slate-500">Бренд</dt>
+                            <dd class="text-right text-slate-800">
+                                {{ form.brand || "—" }}
+                            </dd>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <dt class="text-slate-500">Тип</dt>
+                            <dd class="text-right text-slate-800">
+                                {{ form.type || "—" }}
+                            </dd>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <dt class="text-slate-500">Модули</dt>
+                            <dd class="text-right text-slate-800">
+                                {{ form.modules.length }}
+                            </dd>
+                        </div>
+                    </dl>
+                    <p
+                        v-if="isEdit"
+                        class="border-t border-slate-100 pt-2 text-xs text-slate-500"
                     >
-                        {{ client.name || client.email || `#${client.id}` }}
-                    </option>
-                </select>
-            </label>
+                        #{{ $route.params.id }}
+                    </p>
+                </div>
 
-            <label class="block space-y-1">
-                <span class="text-sm text-slate-600">Название</span>
-                <input
-                    v-model="form.name"
-                    type="text"
-                    required
-                    class="w-full border border-slate-300 px-3 py-2"
-                />
-            </label>
+                <section
+                    class="space-y-3 border border-slate-300 bg-white p-3 shadow-sm lg:p-4"
+                >
+                    <h2 class="text-sm font-jost-bold text-dark-blue-500">
+                        Сводка
+                    </h2>
 
-            <label class="block space-y-1">
-                <span class="text-sm text-slate-600">Бренд</span>
-                <input
-                    v-model="form.brand"
-                    type="text"
-                    required
-                    class="w-full border border-slate-300 px-3 py-2"
-                />
-            </label>
+                    <label class="block space-y-1">
+                        <span class="text-sm text-slate-600">Клиент</span>
+                        <select
+                            v-model="form.client_id"
+                            class="app-field"
+                            :disabled="isEdit"
+                            required
+                        >
+                            <option value="" disabled>Выберите клиента</option>
+                            <option
+                                v-for="client in clients"
+                                :key="client.id"
+                                :value="String(client.id)"
+                            >
+                                {{
+                                    client.name ||
+                                    client.email ||
+                                    `#${client.id}`
+                                }}
+                            </option>
+                        </select>
+                    </label>
 
-            <label class="block space-y-1">
-                <span class="text-sm text-slate-600">Тип</span>
-                <input
-                    v-model="form.type"
-                    type="text"
-                    required
-                    class="w-full border border-slate-300 px-3 py-2"
-                />
-            </label>
+                    <label class="block space-y-1">
+                        <span class="text-sm text-slate-600">Название</span>
+                        <input
+                            v-model="form.name"
+                            type="text"
+                            required
+                            class="app-field"
+                        />
+                    </label>
 
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">Модули</span>
+                    <label class="block space-y-1">
+                        <span class="text-sm text-slate-600">Бренд</span>
+                        <input
+                            v-model="form.brand"
+                            type="text"
+                            required
+                            class="app-field"
+                        />
+                    </label>
+
+                    <label class="block space-y-1">
+                        <span class="text-sm text-slate-600">Тип</span>
+                        <input
+                            v-model="form.type"
+                            type="text"
+                            required
+                            class="app-field"
+                        />
+                    </label>
+
+                    <div class="flex flex-col gap-2 pt-1">
+                        <button
+                            type="submit"
+                            class="app-btn-primary w-full"
+                            :disabled="saving"
+                        >
+                            {{ saving ? "Сохранение…" : "Сохранить" }}
+                        </button>
+                        <button
+                            v-if="isEdit && form.client_id"
+                            type="button"
+                            class="app-btn-secondary w-full"
+                            @click="goClient"
+                        >
+                            К клиенту
+                        </button>
+                        <button
+                            type="button"
+                            class="app-btn-ghost w-full"
+                            @click="cancel"
+                        >
+                            Отмена
+                        </button>
+                    </div>
+                </section>
+            </aside>
+
+            <div class="min-w-0 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h2
+                        class="text-base font-jost-bold text-dark-blue-500 lg:text-lg"
+                    >
+                        Модули
+                    </h2>
                     <button
                         type="button"
-                        class="text-sm text-pink-600 hover:underline"
+                        class="text-sm text-pink-700 hover:underline"
                         @click="addModule"
                     >
                         + модуль
                     </button>
                 </div>
 
+                <p
+                    v-if="form.modules.length === 0"
+                    class="border border-slate-300 bg-white px-3 py-4 text-sm text-slate-500 shadow-sm"
+                >
+                    Модулей пока нет — можно сохранить без них
+                </p>
+
                 <div
                     v-for="(module, index) in form.modules"
                     :key="index"
-                    class="flex flex-col gap-2 border border-slate-200 p-3 sm:flex-row sm:items-end"
+                    class="space-y-2 border border-slate-300 bg-white p-3 shadow-sm"
                 >
-                    <label class="block flex-1 space-y-1">
-                        <span class="text-xs text-slate-500">Название</span>
-                        <input
-                            v-model="module.name"
-                            type="text"
-                            required
-                            class="w-full border border-slate-300 px-3 py-2"
-                        />
-                    </label>
-                    <label class="block flex-1 space-y-1">
-                        <span class="text-xs text-slate-500">Серийный номер</span>
-                        <input
-                            v-model="module.serial_number"
-                            type="text"
-                            required
-                            class="w-full border border-slate-300 px-3 py-2"
-                        />
-                    </label>
-                    <button
-                        type="button"
-                        class="text-sm text-red-600 hover:underline sm:mb-2"
-                        @click="removeModule(index)"
-                    >
-                        Убрать
-                    </button>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-sm font-jost-medium text-dark-blue-500">
+                            Модуль {{ index + 1 }}
+                        </span>
+                        <button
+                            type="button"
+                            class="text-sm text-red-700 hover:underline"
+                            @click="removeModule(index)"
+                        >
+                            Убрать
+                        </button>
+                    </div>
+                    <div class="grid gap-2 sm:grid-cols-2">
+                        <label class="block space-y-1">
+                            <span class="text-xs text-slate-500">Название</span>
+                            <input
+                                v-model="module.name"
+                                type="text"
+                                required
+                                class="app-field"
+                            />
+                        </label>
+                        <label class="block space-y-1">
+                            <span class="text-xs text-slate-500"
+                                >Серийный номер</span
+                            >
+                            <input
+                                v-model="module.serial_number"
+                                type="text"
+                                required
+                                class="app-field"
+                            />
+                        </label>
+                    </div>
                 </div>
-
-                <p
-                    v-if="form.modules.length === 0"
-                    class="text-xs text-slate-500"
-                >
-                    Можно без модулей
-                </p>
-            </div>
-
-            <div class="flex gap-3 pt-2">
-                <button
-                    type="submit"
-                    class="bg-pink-500 px-4 py-2 text-sm font-jost-medium text-white hover:bg-pink-600 disabled:opacity-60"
-                    :disabled="saving"
-                >
-                    {{ saving ? "Сохранение…" : "Сохранить" }}
-                </button>
-                <button
-                    type="button"
-                    class="border border-slate-300 px-4 py-2 text-sm text-slate-600"
-                    @click="cancel"
-                >
-                    Отмена
-                </button>
             </div>
         </form>
     </div>

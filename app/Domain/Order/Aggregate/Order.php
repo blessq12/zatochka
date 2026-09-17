@@ -157,7 +157,9 @@ final class Order
             throw new DomainException('This status is set by integration events.');
         }
 
-        if ($target === OrderStatus::InProgress && $this->status !== OrderStatus::WaitingParts) {
+        if ($target === OrderStatus::InProgress
+            && ! in_array($this->status, [OrderStatus::WaitingParts, OrderStatus::WorksCompleted], true)
+        ) {
             throw new DomainException('Cannot set in_progress from this status via transition.');
         }
 

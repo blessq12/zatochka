@@ -125,4 +125,13 @@ final class WorkshopJob
         $this->assertOpen();
         $this->status = WorkshopJobStatus::Completed;
     }
+
+    public function reopen(): void
+    {
+        if ($this->status !== WorkshopJobStatus::Completed) {
+            throw new DomainException('Workshop job can be reopened only from completed.');
+        }
+
+        $this->status = WorkshopJobStatus::Open;
+    }
 }

@@ -20,10 +20,11 @@ final readonly class ListOrdersHandler
         ?int $clientId = null,
         ?string $status = null,
         ?int $masterId = null,
+        ?int $equipmentId = null,
     ): array {
         return array_map(
             fn ($order): OrderResponse => $this->assembler->assemble($order),
-            $this->orders->all($clientId, $status, $masterId),
+            $this->orders->all($clientId, $status, $masterId, $equipmentId),
         );
     }
 }

@@ -25,7 +25,7 @@ export default {
 
 <template>
     <nav
-        class="fixed inset-x-0 bottom-0 z-[900] border-t border-slate-200/90 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.06)] backdrop-blur-sm lg:hidden"
+        class="fixed inset-x-0 bottom-0 z-[900] border-t border-slate-300 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.1)] lg:hidden"
         aria-label="Основная навигация"
     >
         <ul
@@ -38,8 +38,8 @@ export default {
                     class="relative flex h-full flex-col items-center justify-center gap-1 transition-colors"
                     :class="
                         isActive(item)
-                            ? 'text-pink-600'
-                            : 'text-slate-400 active:bg-slate-50 active:text-slate-600'
+                            ? 'text-pink-700'
+                            : 'text-slate-500 active:bg-slate-50 active:text-slate-700'
                     "
                     :aria-label="item.label"
                     :aria-current="isActive(item) ? 'page' : undefined"
@@ -51,7 +51,7 @@ export default {
                     />
                     <span
                         class="flex h-9 w-9 items-center justify-center rounded-full transition-colors"
-                        :class="isActive(item) ? 'bg-pink-50' : 'bg-transparent'"
+                        :class="isActive(item) ? 'bg-pink-100' : 'bg-transparent'"
                     >
                         <AppNavIcon
                             :name="iconName(item)"

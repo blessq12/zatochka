@@ -27,6 +27,11 @@ const routes = [
                 component: () => import("../pages/Pos/EquipmentListPage.vue"),
             },
             {
+                path: "warehouse",
+                name: "pos.warehouse",
+                component: () => import("../pages/Pos/WarehouseCatalogPage.vue"),
+            },
+            {
                 path: "",
                 redirect: { name: "pos.orders" },
             },

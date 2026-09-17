@@ -5,9 +5,9 @@ export default {
 </script>
 
 <template>
-    <div class="space-y-4">
-        <h1 class="text-2xl font-jost-bold text-dark-blue-500">Дашборд</h1>
-        <p class="text-slate-600">
+    <div class="app-page">
+        <h1 class="app-page-title">Дашборд</h1>
+        <p class="text-sm text-slate-600 sm:text-base">
             MVP / раздел в разработке. Доступны только вход и оболочка POS мастера.
         </p>
     </div>

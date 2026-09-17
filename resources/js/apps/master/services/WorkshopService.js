@@ -19,6 +19,13 @@ export const workshopService = {
         return data;
     },
 
+    async getByOrder(orderId) {
+        const { data } = await axios.get(
+            `/api/workshop/jobs/by-order/${orderId}`,
+        );
+        return data;
+    },
+
     async updateItem(jobId, orderItemId, payload) {
         const { data } = await axios.put(
             `/api/workshop/jobs/${jobId}/items/${orderItemId}`,

@@ -67,7 +67,7 @@ export default {
                     :class="
                         isActive(item)
                             ? 'bg-white/20 text-white'
-                            : 'text-white/90 hover:bg-white/10'
+                            : 'text-white hover:bg-white/15'
                     "
                     @click="onNavigate"
                 >

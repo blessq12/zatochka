@@ -16,11 +16,11 @@ final readonly class ListEquipmentHandler
     /**
      * @return list<EquipmentResponse>
      */
-    public function handle(?int $clientId = null): array
+    public function handle(?int $clientId = null, ?string $query = null): array
     {
         return array_map(
             fn ($equipment): EquipmentResponse => $this->assembler->assemble($equipment),
-            $this->equipments->all($clientId),
+            $this->equipments->all($clientId, $query),
         );
     }
 }

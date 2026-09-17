@@ -216,14 +216,14 @@ export default {
 </script>
 
 <template>
-    <div class="w-full space-y-4 sm:space-y-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <h1 class="text-2xl font-jost-bold text-dark-blue-500">
+    <div class="app-page">
+        <div class="app-page-header">
+            <h1 class="app-page-title">
                 Заказ #{{ order?.id || "…" }}
             </h1>
             <button
                 type="button"
-                class="border border-slate-300 px-4 py-2 text-sm text-slate-600"
+                class="app-btn-ghost w-full sm:w-auto"
                 @click="backToJobs"
             >
                 К списку
@@ -234,149 +234,245 @@ export default {
         <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
 
         <template v-if="job && order && !loading">
-            <section class="space-y-1 border border-slate-200 bg-white p-4 text-sm">
-                <p>
-                    <span class="text-slate-500">Статус:</span>
-                    {{ statusLabel(order.status) }}
-                </p>
-                <p>
-                    <span class="text-slate-500">Срочность:</span>
-                    {{ URGENCY_LABELS[order.urgency] || order.urgency }}
-                </p>
-                <p v-if="saving" class="text-xs text-slate-400">Сохраняю…</p>
-            </section>
-
-            <section class="space-y-4">
-                <h2 class="text-lg font-jost-bold text-dark-blue-500">
-                    Производство
-                </h2>
-
-                <div
-                    v-for="jobItem in jobItems"
-                    :key="jobItem.order_item_id"
-                    class="space-y-3 border border-slate-200 bg-white p-4"
-                >
-                    <div class="space-y-1">
-                        <div class="text-sm font-jost-medium text-dark-blue-500">
-                            {{
-                                KIND_LABELS[orderItem(jobItem.order_item_id)?.kind] ||
-                                "Позиция"
-                            }}
-                        </div>
-
-                        <template
-                            v-if="orderItem(jobItem.order_item_id)?.kind === 'sharpening'"
+            <div
+                class="grid gap-4 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] lg:items-start lg:gap-6"
+            >
+                <aside class="space-y-3 lg:sticky lg:top-4">
+                    <div
+                        class="space-y-2 border border-slate-300 bg-white p-3 text-sm shadow-sm lg:p-4"
+                    >
+                        <p class="font-jost-medium text-dark-blue-500">
+                            {{ statusLabel(order.status) }}
+                        </p>
+                        <dl class="space-y-1.5">
+                            <div class="flex justify-between gap-2">
+                                <dt class="text-slate-500">Срочность</dt>
+                                <dd class="text-right text-slate-800">
+                                    {{
+                                        URGENCY_LABELS[order.urgency] ||
+                                        order.urgency
+                                    }}
+                                </dd>
+                            </div>
+                            <div class="flex justify-between gap-2">
+                                <dt class="text-slate-500">Задание</dt>
+                                <dd class="text-right text-slate-800">
+                                    {{
+                                        isOpen ? "В работе" : "Завершено"
+                                    }}
+                                </dd>
+                            </div>
+                            <div class="flex justify-between gap-2">
+                                <dt class="text-slate-500">Позиций</dt>
+                                <dd class="text-right text-slate-800">
+                                    {{ jobItems.length }}
+                                </dd>
+                            </div>
+                        </dl>
+                        <p
+                            v-if="saving"
+                            class="border-t border-slate-100 pt-2 text-xs text-slate-500"
                         >
-                            <p class="text-sm text-slate-600">
-                                {{ orderItem(jobItem.order_item_id)?.title || "—" }}
-                            </p>
-                            <p class="text-sm text-slate-600">
-                                Заявлено:
-                                {{ orderItem(jobItem.order_item_id)?.quantity ?? "—" }}
-                            </p>
-                        </template>
-
-                        <template
-                            v-else-if="orderItem(jobItem.order_item_id)?.kind === 'repair'"
-                        >
-                            <p class="text-sm text-slate-600">
-                                Оборудование:
-                                {{
-                                    orderItem(jobItem.order_item_id)?.equipment_id
-                                        ? `#${orderItem(jobItem.order_item_id).equipment_id}`
-                                        : "—"
-                                }}
-                            </p>
-                            <p
-                                v-if="orderItem(jobItem.order_item_id)?.problem"
-                                class="text-sm text-slate-600"
-                            >
-                                Проблема:
-                                {{ orderItem(jobItem.order_item_id).problem }}
-                            </p>
-                        </template>
+                            Сохраняю…
+                        </p>
                     </div>
 
-                    <label
-                        v-if="orderItem(jobItem.order_item_id)?.kind === 'sharpening'"
-                        class="block space-y-1"
+                    <section
+                        v-if="isOpen"
+                        class="space-y-2 border border-slate-300 bg-white p-3 shadow-sm lg:p-4"
                     >
-                        <span class="text-sm text-slate-600">
-                            Заточено
-                            <span
-                                v-if="orderItem(jobItem.order_item_id)?.quantity != null"
-                            >
-                                (0…{{ orderItem(jobItem.order_item_id).quantity }})
-                            </span>
-                        </span>
-                        <input
-                            v-model="drafts[draftKey(jobItem.order_item_id)].completed_qty"
-                            type="number"
-                            min="0"
-                            :max="orderItem(jobItem.order_item_id)?.quantity ?? undefined"
-                            class="w-full border border-slate-300 px-3 py-2"
-                            :disabled="!isOpen"
-                            @blur="onQtyBlur(jobItem.order_item_id)"
-                        />
-                    </label>
-
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-jost-medium text-slate-700">
-                                Работы
-                            </span>
-                            <button
-                                v-if="isOpen"
-                                type="button"
-                                class="text-sm text-pink-600 hover:underline"
-                                @click="addWork(jobItem.order_item_id)"
-                            >
-                                + работа
-                            </button>
-                        </div>
-                        <div
-                            v-for="(work, index) in drafts[draftKey(jobItem.order_item_id)]
-                                .works"
-                            :key="index"
-                            class="flex gap-2"
+                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
+                            Действие
+                        </h2>
+                        <button
+                            type="button"
+                            class="app-btn-primary w-full"
+                            :disabled="completing || saving"
+                            @click="complete"
                         >
-                            <input
-                                v-model="work.title"
-                                type="text"
-                                placeholder="Что сделано"
-                                class="flex-1 border border-slate-300 px-3 py-2"
-                                :disabled="!isOpen"
-                                @blur="onWorkBlur(jobItem.order_item_id)"
-                            />
-                            <button
-                                v-if="isOpen"
-                                type="button"
-                                class="text-sm text-red-600 hover:underline"
-                                @click="removeWork(jobItem.order_item_id, index)"
+                            {{
+                                completing
+                                    ? "Завершаю…"
+                                    : "Работы выполнены"
+                            }}
+                        </button>
+                    </section>
+
+                    <p
+                        v-else
+                        class="border border-slate-300 bg-slate-50 px-3 py-3 text-sm text-slate-700 shadow-sm lg:px-4"
+                    >
+                        Работы по этому заказу завершены.
+                    </p>
+                </aside>
+
+                <div class="min-w-0 space-y-3">
+                    <h2
+                        class="text-base font-jost-bold text-dark-blue-500 lg:text-lg"
+                    >
+                        Производство
+                    </h2>
+
+                    <div
+                        v-for="jobItem in jobItems"
+                        :key="jobItem.order_item_id"
+                        class="space-y-3 border border-slate-300 bg-white p-3 shadow-sm"
+                    >
+                        <div
+                            class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"
+                        >
+                            <div class="min-w-0 space-y-1">
+                                <div
+                                    class="text-sm font-jost-medium text-dark-blue-500"
+                                >
+                                    {{
+                                        KIND_LABELS[
+                                            orderItem(jobItem.order_item_id)
+                                                ?.kind
+                                        ] || "Позиция"
+                                    }}
+                                </div>
+
+                                <template
+                                    v-if="
+                                        orderItem(jobItem.order_item_id)
+                                            ?.kind === 'sharpening'
+                                    "
+                                >
+                                    <p class="text-sm text-slate-700">
+                                        {{
+                                            orderItem(jobItem.order_item_id)
+                                                ?.title || "—"
+                                        }}
+                                    </p>
+                                    <p class="text-xs text-slate-500">
+                                        Заявлено:
+                                        {{
+                                            orderItem(jobItem.order_item_id)
+                                                ?.quantity ?? "—"
+                                        }}
+                                    </p>
+                                </template>
+
+                                <template
+                                    v-else-if="
+                                        orderItem(jobItem.order_item_id)
+                                            ?.kind === 'repair'
+                                    "
+                                >
+                                    <p class="text-sm text-slate-700">
+                                        Оборудование:
+                                        {{
+                                            orderItem(jobItem.order_item_id)
+                                                ?.equipment_id
+                                                ? `#${orderItem(jobItem.order_item_id).equipment_id}`
+                                                : "—"
+                                        }}
+                                    </p>
+                                    <p
+                                        v-if="
+                                            orderItem(jobItem.order_item_id)
+                                                ?.problem
+                                        "
+                                        class="text-xs text-slate-500"
+                                    >
+                                        {{
+                                            orderItem(jobItem.order_item_id)
+                                                .problem
+                                        }}
+                                    </p>
+                                </template>
+                            </div>
+
+                            <label
+                                v-if="
+                                    orderItem(jobItem.order_item_id)?.kind ===
+                                    'sharpening'
+                                "
+                                class="block w-full shrink-0 space-y-1 sm:w-36"
                             >
-                                Убрать
-                            </button>
+                                <span class="text-xs text-slate-500">
+                                    Заточено
+                                    <template
+                                        v-if="
+                                            orderItem(jobItem.order_item_id)
+                                                ?.quantity != null
+                                        "
+                                    >
+                                        (0…{{
+                                            orderItem(jobItem.order_item_id)
+                                                .quantity
+                                        }})
+                                    </template>
+                                </span>
+                                <input
+                                    v-model="
+                                        drafts[
+                                            draftKey(jobItem.order_item_id)
+                                        ].completed_qty
+                                    "
+                                    type="number"
+                                    min="0"
+                                    :max="
+                                        orderItem(jobItem.order_item_id)
+                                            ?.quantity ?? undefined
+                                    "
+                                    class="app-field"
+                                    :disabled="!isOpen"
+                                    @blur="onQtyBlur(jobItem.order_item_id)"
+                                />
+                            </label>
+                        </div>
+
+                        <div class="space-y-2 border-t border-slate-100 pt-2">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-sm font-jost-medium text-slate-700"
+                                >
+                                    Работы
+                                </span>
+                                <button
+                                    v-if="isOpen"
+                                    type="button"
+                                    class="text-sm text-pink-700 hover:underline"
+                                    @click="addWork(jobItem.order_item_id)"
+                                >
+                                    + работа
+                                </button>
+                            </div>
+                            <div
+                                v-for="(work, index) in drafts[
+                                    draftKey(jobItem.order_item_id)
+                                ].works"
+                                :key="index"
+                                class="flex gap-2"
+                            >
+                                <input
+                                    v-model="work.title"
+                                    type="text"
+                                    placeholder="Что сделано"
+                                    class="app-field flex-1"
+                                    :disabled="!isOpen"
+                                    @blur="onWorkBlur(jobItem.order_item_id)"
+                                />
+                                <button
+                                    v-if="isOpen"
+                                    type="button"
+                                    class="shrink-0 text-sm text-red-600 hover:underline"
+                                    @click="
+                                        removeWork(
+                                            jobItem.order_item_id,
+                                            index,
+                                        )
+                                    "
+                                >
+                                    Убрать
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </section>
-
-            <button
-                v-if="isOpen"
-                type="button"
-                class="w-full bg-pink-500 px-4 py-3 text-sm font-jost-medium text-white hover:bg-pink-600 disabled:opacity-60"
-                :disabled="completing || saving"
-                @click="complete"
-            >
-                {{ completing ? "Завершаю…" : "Работы выполнены" }}
-            </button>
-
-            <p
-                v-else
-                class="border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"
-            >
-                Работы по этому заказу завершены.
-            </p>
+            </div>
         </template>
     </div>
 </template>

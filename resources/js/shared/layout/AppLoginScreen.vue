@@ -19,14 +19,14 @@ export default {
         class="flex min-h-screen items-center justify-center bg-gradient-to-br from-dark-blue-500 via-blue-500 to-pink-500 px-4 py-8"
     >
         <form
-            class="w-full max-w-md space-y-5 border border-white/25 bg-white/90 p-8 shadow-2xl backdrop-blur-xl sm:p-10"
+            class="w-full max-w-md space-y-5 border border-white/40 bg-white p-8 shadow-2xl sm:p-10"
             @submit.prevent="$emit('submit')"
         >
             <div>
                 <h1 class="text-2xl font-jost-bold text-dark-blue-500 sm:text-3xl">
                     {{ title }}
                 </h1>
-                <p v-if="subtitle" class="mt-2 text-sm text-slate-500">
+                <p v-if="subtitle" class="mt-2 text-sm text-slate-600">
                     {{ subtitle }}
                 </p>
             </div>
@@ -45,7 +45,7 @@ export default {
                     type="email"
                     required
                     autocomplete="username"
-                    class="w-full border border-slate-300 px-3 py-3 text-dark-blue-500 outline-none focus:border-pink-500"
+                    class="w-full border border-slate-400 px-3 py-3 text-dark-blue-500 outline-none focus:border-pink-500"
                     @input="$emit('update:email', $event.target.value)"
                 />
             </div>
@@ -57,7 +57,7 @@ export default {
                     type="password"
                     required
                     autocomplete="current-password"
-                    class="w-full border border-slate-300 px-3 py-3 text-dark-blue-500 outline-none focus:border-pink-500"
+                    class="w-full border border-slate-400 px-3 py-3 text-dark-blue-500 outline-none focus:border-pink-500"
                     @input="$emit('update:password', $event.target.value)"
                 />
             </div>

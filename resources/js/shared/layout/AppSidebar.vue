@@ -41,7 +41,7 @@ export default {
                 :class="
                     isActive(item)
                         ? 'bg-white/20 text-white'
-                        : 'text-white/85 hover:bg-white/10'
+                        : 'text-white hover:bg-white/15'
                 "
             >
                 {{ item.label }}

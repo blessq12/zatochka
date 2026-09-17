@@ -18,11 +18,11 @@ return new class extends Migration
         Schema::create('order_pricing_lines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pricing_id')->constrained('order_pricings')->cascadeOnDelete();
-            $table->unsignedBigInteger('order_item_id');
+            $table->unsignedBigInteger('work_entry_id');
             $table->decimal('amount', 12, 2);
             $table->timestamps();
 
-            $table->unique(['pricing_id', 'order_item_id']);
+            $table->unique(['pricing_id', 'work_entry_id']);
         });
     }
 

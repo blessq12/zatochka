@@ -27,17 +27,16 @@ final class FinanceApiTest extends TestCase
             ],
         ])->assertCreated()->json('id');
 
-        $order = $this->withToken($managerToken)->getJson("/api/orders/{$orderId}")->json();
-        $itemA = (int) $order['items'][0]['id'];
-        $itemB = (int) $order['items'][1]['id'];
+        $workA = 101;
+        $workB = 202;
 
         $this->withToken($managerToken)->getJson("/api/finance/pricings/by-order/{$orderId}")
             ->assertNotFound();
 
         $pricing = $this->withToken($managerToken)->putJson("/api/finance/pricings/by-order/{$orderId}", [
             'lines' => [
-                ['order_item_id' => $itemA, 'amount' => '100.50'],
-                ['order_item_id' => $itemB, 'amount' => '200.00'],
+                ['work_entry_id' => $workA, 'amount' => '100.50'],
+                ['work_entry_id' => $workB, 'amount' => '200.00'],
             ],
         ])->assertOk()
             ->assertJson([
@@ -48,7 +47,7 @@ final class FinanceApiTest extends TestCase
             ->assertJsonCount(2, 'lines')
             ->json();
 
-        $this->assertSame($itemA, $pricing['lines'][0]['order_item_id']);
+        $this->assertSame($workA, $pricing['lines'][0]['work_entry_id']);
         $this->assertSame('100.50', $pricing['lines'][0]['amount']);
 
         $this->withToken($managerToken)->getJson("/api/finance/pricings/by-order/{$orderId}")
@@ -60,7 +59,7 @@ final class FinanceApiTest extends TestCase
 
         $this->withToken($managerToken)->putJson("/api/finance/pricings/by-order/{$orderId}", [
             'lines' => [
-                ['order_item_id' => $itemA, 'amount' => '50'],
+                ['work_entry_id' => $workA, 'amount' => '50'],
             ],
         ])->assertOk()
             ->assertJson([
@@ -89,7 +88,7 @@ final class FinanceApiTest extends TestCase
 
         $this->withToken($masterToken)->putJson('/api/finance/pricings/by-order/1', [
             'lines' => [
-                ['order_item_id' => 1, 'amount' => '10'],
+                ['work_entry_id' => 1, 'amount' => '10'],
             ],
         ])->assertForbidden();
     }

@@ -23,7 +23,7 @@ enum OrderStatus: string
             self::MasterAssigned => [self::InProgress, self::Cancelled],
             self::InProgress => [self::WaitingParts, self::WorksCompleted],
             self::WaitingParts => [self::InProgress],
-            self::WorksCompleted => [self::Ready],
+            self::WorksCompleted => [self::Ready, self::InProgress],
             self::Ready => [self::Issued],
             self::Issued, self::Cancelled => [],
         };

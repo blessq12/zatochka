@@ -27,14 +27,28 @@ final class OrderController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $asMaster = $request->attributes->get('actor_type') === 'masters';
+
         $clientId = $request->query('client_id');
         $clientId = $clientId !== null && $clientId !== '' ? (int) $clientId : null;
         $status = $request->query('status');
         $status = is_string($status) && $status !== '' ? $status : null;
         $masterId = $request->query('master_id');
         $masterId = $masterId !== null && $masterId !== '' ? (int) $masterId : null;
+        $equipmentId = $request->query('equipment_id');
+        $equipmentId = $equipmentId !== null && $equipmentId !== '' ? (int) $equipmentId : null;
 
-        $items = $this->listOrders->handle($clientId, $status, $masterId);
+        if ($asMaster) {
+            if ($equipmentId === null || $equipmentId < 1) {
+                return response()->json([
+                    'message' => 'equipment_id is required.',
+                ], 422);
+            }
+            $clientId = null;
+            $masterId = null;
+        }
+
+        $items = $this->listOrders->handle($clientId, $status, $masterId, $equipmentId);
 
         return response()->json([
             'data' => array_map(static fn ($item) => $item->toArray(), $items),

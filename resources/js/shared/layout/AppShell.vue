@@ -34,7 +34,7 @@ export default {
 </script>
 
 <template>
-    <div class="flex min-h-dvh w-full bg-slate-50 font-jost-regular">
+    <div class="apps-shell flex min-h-dvh w-full font-jost-regular">
         <div class="hidden shrink-0 lg:block">
             <AppSidebar :tagline="tagline" :items="items" />
         </div>
@@ -59,9 +59,9 @@ export default {
             </AppTopbar>
 
             <main
-                class="min-w-0 w-full flex-1 overflow-auto px-3 pb-[calc(3.75rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-6 lg:pt-5"
+                class="min-w-0 w-full flex-1 overflow-auto px-3 pb-[calc(4.25rem+env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6"
             >
-                <div class="mx-auto w-full max-w-none">
+                <div class="mx-auto w-full max-w-[90rem]">
                     <slot />
                 </div>
             </main>

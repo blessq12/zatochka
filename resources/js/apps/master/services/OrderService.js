@@ -31,6 +31,21 @@ export function statusLabel(status) {
 }
 
 export const orderService = {
+    async list({ clientId = null, status = null, equipmentId = null } = {}) {
+        const params = {};
+        if (clientId != null && clientId !== "") {
+            params.client_id = clientId;
+        }
+        if (status) {
+            params.status = status;
+        }
+        if (equipmentId != null && equipmentId !== "") {
+            params.equipment_id = equipmentId;
+        }
+        const { data } = await axios.get("/api/orders", { params });
+        return data.data || [];
+    },
+
     async listAssigned() {
         const { data } = await axios.get("/api/orders/assigned");
         return data.data || [];

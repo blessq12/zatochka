@@ -66,15 +66,29 @@ final class EloquentEquipmentRepository implements EquipmentRepository
         return $this->toDomain($model);
     }
 
-    public function all(?int $clientId = null): array
+    public function all(?int $clientId = null, ?string $query = null): array
     {
-        $query = EquipmentModel::query()->with('modules')->orderBy('id');
+        $builder = EquipmentModel::query()->with('modules')->orderBy('id');
 
         if ($clientId !== null) {
-            $query->where('client_id', $clientId);
+            $builder->where('client_id', $clientId);
         }
 
-        return $query
+        $q = $query !== null ? trim($query) : '';
+        if ($q !== '') {
+            $like = '%'.$q.'%';
+            $builder->where(static function ($inner) use ($like): void {
+                $inner->where('name', 'like', $like)
+                    ->orWhere('brand', 'like', $like)
+                    ->orWhere('type', 'like', $like)
+                    ->orWhereHas('modules', static function ($modules) use ($like): void {
+                        $modules->where('name', 'like', $like)
+                            ->orWhere('serial_number', 'like', $like);
+                    });
+            });
+        }
+
+        return $builder
             ->get()
             ->map(fn (EquipmentModel $model): Equipment => $this->toDomain($model))
             ->values()

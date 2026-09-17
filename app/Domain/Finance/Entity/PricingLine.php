@@ -8,18 +8,18 @@ final class PricingLine
 {
     public function __construct(
         private ?int $id,
-        private int $orderItemId,
+        private int $workEntryId,
         private string $amount,
     ) {
-        if ($orderItemId < 1) {
-            throw new DomainException('order_item_id is required.');
+        if ($workEntryId < 1) {
+            throw new DomainException('work_entry_id is required.');
         }
         self::assertAmount($amount);
     }
 
-    public static function create(int $orderItemId, string $amount): self
+    public static function create(int $workEntryId, string $amount): self
     {
-        return new self(null, $orderItemId, self::normalizeAmount($amount));
+        return new self(null, $workEntryId, self::normalizeAmount($amount));
     }
 
     public function id(): ?int
@@ -32,9 +32,9 @@ final class PricingLine
         $this->id = $id;
     }
 
-    public function orderItemId(): int
+    public function workEntryId(): int
     {
-        return $this->orderItemId;
+        return $this->workEntryId;
     }
 
     public function amount(): string

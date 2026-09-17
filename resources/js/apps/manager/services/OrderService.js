@@ -41,11 +41,96 @@ export function allowedTransitions(status) {
         case "waiting_parts":
             return ["in_progress"];
         case "works_completed":
-            return ["ready"];
+            return ["ready", "in_progress"];
         case "ready":
             return ["issued"];
         default:
             return [];
+    }
+}
+
+/**
+ * @typedef {"forward" | "neutral" | "warning" | "danger"} TransitionTone
+ * @typedef {{
+ *   to: string,
+ *   title: string,
+ *   hint: string,
+ *   tone: TransitionTone,
+ *   confirm: string | null,
+ * }} TransitionAction
+ */
+
+/**
+ * Явные менеджерские действия поверх allowedTransitions.
+ * @param {string | null | undefined} fromStatus
+ * @returns {TransitionAction[]}
+ */
+export function transitionActions(fromStatus) {
+    const from = fromStatus || "";
+    return allowedTransitions(from).map((to) => {
+        const meta = transitionActionMeta(from, to);
+        return {
+            to,
+            title: meta.title,
+            hint: `${statusLabel(from)} → ${statusLabel(to)}`,
+            tone: meta.tone,
+            confirm: meta.confirm,
+        };
+    });
+}
+
+/**
+ * @param {string} from
+ * @param {string} to
+ * @returns {{ title: string, tone: TransitionTone, confirm: string | null }}
+ */
+function transitionActionMeta(from, to) {
+    const key = `${from}>${to}`;
+    switch (key) {
+        case "created>cancelled":
+        case "master_assigned>cancelled":
+            return {
+                title: "Отменить заказ",
+                tone: "danger",
+                confirm: "Отменить заказ? Это действие нельзя откатить.",
+            };
+        case "in_progress>waiting_parts":
+            return {
+                title: "Ждать запчасти",
+                tone: "neutral",
+                confirm: null,
+            };
+        case "waiting_parts>in_progress":
+            return {
+                title: "Вернуть в работу",
+                tone: "forward",
+                confirm: null,
+            };
+        case "works_completed>ready":
+            return {
+                title: "Отметить готовым",
+                tone: "forward",
+                confirm: null,
+            };
+        case "works_completed>in_progress":
+            return {
+                title: "Вернуть на доработку",
+                tone: "warning",
+                confirm:
+                    "Вернуть заказ мастеру на доработку? Задание снова станет открытым.",
+            };
+        case "ready>issued":
+            return {
+                title: "Выдать клиенту",
+                tone: "forward",
+                confirm: null,
+            };
+        default:
+            return {
+                title: `Перевести в «${statusLabel(to)}»`,
+                tone: "neutral",
+                confirm: null,
+            };
     }
 }
 

@@ -1,5 +1,11 @@
 <script>
-import { KIND_LABELS, orderService } from "../../services/OrderService.js";
+import {
+    BILLING_LABELS,
+    KIND_LABELS,
+    URGENCY_LABELS,
+    orderService,
+    statusLabel,
+} from "../../services/OrderService.js";
 import { workshopService } from "../../services/WorkshopService.js";
 
 const TABS = [
@@ -15,10 +21,15 @@ export default {
             tab: this.$route.query.tab === "in_work" ? "in_work" : "queue",
             queueItems: [],
             jobItems: [],
+            /** @type {Record<number, object|null>} */
+            ordersById: {},
             loading: false,
             acceptingId: null,
             error: null,
             KIND_LABELS,
+            BILLING_LABELS,
+            URGENCY_LABELS,
+            statusLabel,
         };
     },
     watch: {
@@ -51,22 +62,68 @@ export default {
             try {
                 if (this.tab === "queue") {
                     this.queueItems = await orderService.listAssigned();
+                    this.jobItems = [];
+                    this.ordersById = {};
                 } else {
                     this.jobItems = await workshopService.listMine();
+                    this.queueItems = [];
+                    await this.hydrateJobOrders(this.jobItems);
                 }
             } catch (e) {
                 this.error =
                     e.response?.data?.message || "Не удалось загрузить заказы";
                 this.queueItems = [];
                 this.jobItems = [];
+                this.ordersById = {};
             } finally {
                 this.loading = false;
             }
         },
-        itemSummary(order) {
-            return (order.items || [])
-                .map((item) => KIND_LABELS[item.kind] || item.kind)
-                .join(", ");
+        async hydrateJobOrders(jobs) {
+            const map = {};
+            await Promise.all(
+                jobs.map(async (job) => {
+                    try {
+                        map[job.order_id] = await orderService.get(job.order_id);
+                    } catch {
+                        map[job.order_id] = null;
+                    }
+                }),
+            );
+            this.ordersById = map;
+        },
+        itemsSummary(order) {
+            const rows = order?.items || [];
+            if (rows.length === 0) {
+                return "Без позиций";
+            }
+            return rows
+                .map((row) => {
+                    if (row.kind === "sharpening") {
+                        const title = row.title || "Заточка";
+                        const qty =
+                            row.quantity != null ? ` ×${row.quantity}` : "";
+                        return `${title}${qty}`;
+                    }
+                    const problem = row.problem ? `: ${row.problem}` : "";
+                    return row.equipment_id
+                        ? `Ремонт #${row.equipment_id}${problem}`
+                        : `Ремонт${problem}`;
+                })
+                .join("; ");
+        },
+        kindsSummary(order) {
+            const kinds = [...new Set((order?.items || []).map((i) => i.kind))];
+            return kinds.map((k) => KIND_LABELS[k] || k).join(", ") || "—";
+        },
+        jobWorksCount(job) {
+            return (job.items || []).reduce(
+                (sum, item) => sum + (item.works?.length || 0),
+                0,
+            );
+        },
+        orderForJob(job) {
+            return this.ordersById[job.order_id] || null;
         },
         async accept(order) {
             this.acceptingId = order.id;
@@ -93,19 +150,19 @@ export default {
 </script>
 
 <template>
-    <div class="space-y-4">
-        <h1 class="text-2xl font-jost-bold text-dark-blue-500">Заказы</h1>
+    <div class="app-page">
+        <h1 class="app-page-title">Заказы</h1>
 
-        <div class="flex flex-wrap gap-2">
+        <div class="app-tabs">
             <button
                 v-for="item in tabs"
                 :key="item.id"
                 type="button"
-                class="border px-3 py-1.5 text-sm font-jost-medium"
+                class="app-tab"
                 :class="
                     tab === item.id
-                        ? 'border-pink-500 bg-pink-50 text-pink-600'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-pink-300'
+                        ? 'border-pink-500 bg-pink-50 text-pink-700'
+                        : 'border-slate-300 bg-white text-slate-700 hover:border-pink-400'
                 "
                 @click="selectTab(item.id)"
             >
@@ -117,31 +174,43 @@ export default {
         <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
 
         <template v-if="!loading && tab === 'queue'">
-            <div
-                v-if="queueItems.length === 0"
-                class="border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500"
-            >
-                Очередь пуста.
-            </div>
+            <p v-if="queueItems.length === 0" class="app-card text-sm text-slate-500">
+                Очередь пуста
+            </p>
 
-            <ul
-                v-else
-                class="divide-y divide-slate-100 border border-slate-200 bg-white"
-            >
+            <ul v-else class="space-y-3">
                 <li
                     v-for="order in queueItems"
                     :key="order.id"
-                    class="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                    class="app-card"
                 >
-                    <div class="space-y-1 text-sm">
-                        <div class="font-jost-medium text-dark-blue-500">
+                    <div class="flex items-start justify-between gap-2">
+                        <span class="font-jost-medium text-dark-blue-500">
                             Заказ #{{ order.id }}
-                        </div>
-                        <div class="text-slate-600">{{ itemSummary(order) }}</div>
+                        </span>
+                        <span class="text-xs text-slate-500">
+                            {{ statusLabel(order.status) }}
+                        </span>
                     </div>
+                    <p class="text-sm text-slate-700">
+                        {{ URGENCY_LABELS[order.urgency] || order.urgency }}
+                        ·
+                        {{ BILLING_LABELS[order.billing_type] || order.billing_type }}
+                        · оценка {{ order.estimated_cost }} ₽
+                    </p>
+                    <p class="text-sm text-slate-600">
+                        {{ itemsSummary(order) }}
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        {{ kindsSummary(order) }}
+                        · позиций {{ (order.items || []).length }}
+                        <template v-if="order.needs_delivery">
+                            · доставка
+                        </template>
+                    </p>
                     <button
                         type="button"
-                        class="bg-pink-500 px-4 py-2 text-sm font-jost-medium text-white hover:bg-pink-600 disabled:opacity-60"
+                        class="app-btn-primary mt-1 w-full sm:w-auto"
                         :disabled="acceptingId === order.id"
                         @click="accept(order)"
                     >
@@ -152,28 +221,49 @@ export default {
         </template>
 
         <template v-if="!loading && tab === 'in_work'">
-            <div
-                v-if="jobItems.length === 0"
-                class="border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500"
-            >
-                Нет открытых заданий.
-            </div>
+            <p v-if="jobItems.length === 0" class="app-card text-sm text-slate-500">
+                Нет открытых заданий
+            </p>
 
-            <ul
-                v-else
-                class="divide-y divide-slate-100 border border-slate-200 bg-white"
-            >
+            <ul v-else class="space-y-3">
                 <li
                     v-for="job in jobItems"
                     :key="job.id"
-                    class="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                    class="app-card"
                 >
-                    <div class="text-sm font-jost-medium text-dark-blue-500">
-                        Заказ #{{ job.order_id }} · Job #{{ job.id }}
+                    <div class="flex items-start justify-between gap-2">
+                        <span class="font-jost-medium text-dark-blue-500">
+                            Заказ #{{ job.order_id }}
+                        </span>
+                        <span class="text-xs text-slate-500">
+                            задание #{{ job.id }}
+                        </span>
                     </div>
+                    <template v-if="orderForJob(job)">
+                        <p class="text-sm text-slate-700">
+                            {{ statusLabel(orderForJob(job).status) }}
+                            ·
+                            {{
+                                URGENCY_LABELS[orderForJob(job).urgency] ||
+                                orderForJob(job).urgency
+                            }}
+                            ·
+                            {{
+                                BILLING_LABELS[orderForJob(job).billing_type] ||
+                                orderForJob(job).billing_type
+                            }}
+                        </p>
+                        <p class="text-sm text-slate-600">
+                            {{ itemsSummary(orderForJob(job)) }}
+                        </p>
+                    </template>
+                    <p class="text-xs text-slate-500">
+                        Позиций в задании {{ (job.items || []).length }}
+                        · работ записано {{ jobWorksCount(job) }}
+                    </p>
                     <button
                         type="button"
-                        class="border border-pink-500 px-3 py-1.5 text-sm text-pink-600 hover:bg-pink-50"
+                        class="app-btn-secondary mt-1 w-full sm:w-auto"
                         @click="openJob(job.id)"
                     >
                         Открыть

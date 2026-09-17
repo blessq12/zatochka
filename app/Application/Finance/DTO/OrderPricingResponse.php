@@ -5,7 +5,8 @@ namespace App\Application\Finance\DTO;
 final readonly class OrderPricingResponse
 {
     /**
-     * @param  list<array{id: int|null, order_item_id: int, amount: string}>  $lines
+     * @param  list<array{id: int|null, work_entry_id: int, amount: string}>  $lines
+     * @param  list<array{id: int|null, stock_item_id: int, amount: string}>  $materialLines
      */
     public function __construct(
         public int $id,
@@ -13,6 +14,7 @@ final readonly class OrderPricingResponse
         public string $status,
         public string $total,
         public array $lines,
+        public array $materialLines = [],
     ) {}
 
     /**
@@ -26,6 +28,7 @@ final readonly class OrderPricingResponse
             'status' => $this->status,
             'total' => $this->total,
             'lines' => $this->lines,
+            'material_lines' => $this->materialLines,
         ];
     }
 }

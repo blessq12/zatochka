@@ -50,6 +50,7 @@ export default {
             if (name === "pos.orders") return "Заказы";
             if (name === "pos.job") return "Задание";
             if (name === "pos.equipment") return "Оборудование";
+            if (name === "pos.warehouse") return "Склад";
             if (name.includes("dashboard")) return "Дашборд";
             return "POS";
         });

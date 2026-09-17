@@ -10,7 +10,11 @@ final class DatabaseSeeder extends Seeder
     {
         $this->call([
             ManagerSeeder::class,
+            ActorsSeeder::class,
             SiteContentSeeder::class,
+            WarehouseSeeder::class,
+            EquipmentSeeder::class,
+            DemoOrdersSeeder::class,
         ]);
     }
 }

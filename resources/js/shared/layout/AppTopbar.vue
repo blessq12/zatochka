@@ -57,7 +57,7 @@ export default {
 
 <template>
     <header
-        class="sticky top-0 z-[800] flex h-12 shrink-0 items-center gap-2 border-b border-slate-200/80 bg-white/95 px-3 pt-[env(safe-area-inset-top)] backdrop-blur-sm sm:h-14 sm:gap-3 sm:px-4 lg:px-6"
+        class="sticky top-0 z-[800] flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white px-3 pt-[env(safe-area-inset-top)] sm:h-14 sm:gap-3 sm:px-4 lg:px-6"
     >
         <button
             type="button"
@@ -82,7 +82,7 @@ export default {
         <div ref="menuRoot" class="relative shrink-0">
             <button
                 type="button"
-                class="flex items-center gap-2 border border-slate-200 bg-white px-1.5 py-1 transition hover:border-pink-300 hover:bg-pink-50/60 sm:px-2 sm:py-1.5"
+                class="flex items-center gap-2 border border-slate-300 bg-white px-1.5 py-1 transition hover:border-pink-400 hover:bg-pink-50 sm:px-2 sm:py-1.5"
                 :aria-expanded="menuOpen ? 'true' : 'false'"
                 aria-haspopup="menu"
                 @click="toggleMenu"
@@ -100,13 +100,13 @@ export default {
                     </span>
                     <span
                         v-if="userEmail && userName && userEmail !== userName"
-                        class="block max-w-[11rem] truncate text-xs text-slate-400"
+                        class="block max-w-[11rem] truncate text-xs text-slate-500"
                     >
                         {{ userEmail }}
                     </span>
                 </span>
                 <svg
-                    class="hidden h-4 w-4 text-slate-400 transition md:block"
+                    class="hidden h-4 w-4 text-slate-500 transition md:block"
                     :class="menuOpen ? 'rotate-180' : ''"
                     fill="none"
                     stroke="currentColor"
@@ -124,11 +124,11 @@ export default {
 
             <div
                 v-if="menuOpen"
-                class="absolute right-0 z-50 mt-2 w-[min(16rem,calc(100vw-1.5rem))] border border-slate-200 bg-white py-2 shadow-lg"
+                class="absolute right-0 z-50 mt-2 w-[min(16rem,calc(100vw-1.5rem))] border border-slate-300 bg-white py-2 shadow-lg"
                 role="menu"
             >
                 <div class="border-b border-slate-100 px-4 py-3">
-                    <p class="text-xs font-jost-medium uppercase tracking-wide text-slate-400">
+                    <p class="text-xs font-jost-medium uppercase tracking-wide text-slate-500">
                         Профиль
                     </p>
                     <p class="mt-1 truncate text-sm font-jost-medium text-dark-blue-500">

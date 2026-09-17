@@ -15,7 +15,7 @@ final readonly class UpsertOrderPricingHandler
     ) {}
 
     /**
-     * @param  list<array{order_item_id: int, amount: string|int|float}>  $lines
+     * @param  list<array{work_entry_id: int, amount: string|int|float}>  $lines
      */
     public function handle(int $orderId, array $lines): OrderPricingResponse
     {
@@ -25,7 +25,7 @@ final readonly class UpsertOrderPricingHandler
         $normalized = [];
         foreach ($lines as $row) {
             $normalized[] = [
-                'order_item_id' => (int) $row['order_item_id'],
+                'work_entry_id' => (int) $row['work_entry_id'],
                 'amount' => (string) $row['amount'],
             ];
         }

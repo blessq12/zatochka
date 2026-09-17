@@ -68,8 +68,12 @@ final class EloquentOrderRepository implements OrderRepository
         return $model === null ? null : $this->toDomain($model);
     }
 
-    public function all(?int $clientId = null, ?string $status = null, ?int $masterId = null): array
-    {
+    public function all(
+        ?int $clientId = null,
+        ?string $status = null,
+        ?int $masterId = null,
+        ?int $equipmentId = null,
+    ): array {
         $query = OrderModel::query()->with('items')->orderByDesc('id');
 
         if ($clientId !== null) {
@@ -80,6 +84,11 @@ final class EloquentOrderRepository implements OrderRepository
         }
         if ($masterId !== null) {
             $query->where('master_id', $masterId);
+        }
+        if ($equipmentId !== null) {
+            $query->whereHas('items', static function ($items) use ($equipmentId): void {
+                $items->where('equipment_id', $equipmentId);
+            });
         }
 
         return $query

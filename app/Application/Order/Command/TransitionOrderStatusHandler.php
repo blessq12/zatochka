@@ -7,12 +7,15 @@ use App\Application\Order\DTO\OrderResponse;
 use App\Domain\Order\OrderStatus;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Shared\Domain\DomainException;
+use App\Shared\EventBus\EventBus;
+use App\Shared\IntegrationEvents\OrderReturnedToRework;
 
 final readonly class TransitionOrderStatusHandler
 {
     public function __construct(
         private OrderRepository $orders,
         private OrderResponseAssembler $assembler,
+        private EventBus $events,
     ) {}
 
     public function handle(int $orderId, string $status): ?OrderResponse
@@ -25,8 +28,14 @@ final readonly class TransitionOrderStatusHandler
         $target = OrderStatus::tryFrom($status)
             ?? throw new DomainException('Invalid status.');
 
+        $from = $order->status();
         $order->transitionTo($target);
+        $saved = $this->orders->save($order);
 
-        return $this->assembler->assemble($this->orders->save($order));
+        if ($from === OrderStatus::WorksCompleted && $target === OrderStatus::InProgress) {
+            $this->events->publish(new OrderReturnedToRework($orderId));
+        }
+
+        return $this->assembler->assemble($saved);
     }
 }

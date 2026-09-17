@@ -24,6 +24,12 @@ export const navigationItems = [
         to: { name: "manager.equipment" },
     },
     {
+        name: "manager.warehouse",
+        label: "Склад",
+        icon: "warehouse",
+        to: { name: "manager.warehouse" },
+    },
+    {
         name: "manager.site",
         label: "Контент сайта",
         icon: "site",

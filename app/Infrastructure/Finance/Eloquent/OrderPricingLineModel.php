@@ -11,7 +11,7 @@ final class OrderPricingLineModel extends Model
 
     protected $fillable = [
         'pricing_id',
-        'order_item_id',
+        'work_entry_id',
         'amount',
     ];
 

@@ -18,4 +18,9 @@ final class OrderPricingModel extends Model
     {
         return $this->hasMany(OrderPricingLineModel::class, 'pricing_id')->orderBy('id');
     }
+
+    public function materialLines(): HasMany
+    {
+        return $this->hasMany(OrderPricingMaterialLineModel::class, 'pricing_id')->orderBy('id');
+    }
 }

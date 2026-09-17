@@ -14,6 +14,7 @@ export default {
         return {
             items: [],
             clients: [],
+            masters: [],
             clientId: this.$route.query.client_id || "",
             status: this.$route.query.status || "",
             loading: false,
@@ -35,7 +36,7 @@ export default {
         },
     },
     async mounted() {
-        await this.loadClients();
+        await Promise.all([this.loadClients(), this.loadMasters()]);
         await this.load();
     },
     methods: {
@@ -44,6 +45,13 @@ export default {
                 this.clients = await actorService.list("clients");
             } catch {
                 this.clients = [];
+            }
+        },
+        async loadMasters() {
+            try {
+                this.masters = await actorService.list("masters");
+            } catch {
+                this.masters = [];
             }
         },
         applyFilters() {
@@ -69,12 +77,46 @@ export default {
             }
         },
         clientName(id) {
-            const client = this.clients.find((c) => c.id === id);
+            const client = this.clients.find((c) => Number(c.id) === Number(id));
             return client?.name || client?.email || `#${id}`;
+        },
+        masterName(id) {
+            if (id == null) {
+                return "не назначен";
+            }
+            const master = this.masters.find((m) => Number(m.id) === Number(id));
+            return master?.name || master?.email || `#${id}`;
         },
         kindsSummary(order) {
             const kinds = [...new Set((order.items || []).map((i) => i.kind))];
             return kinds.map((k) => KIND_LABELS[k] || k).join(", ") || "—";
+        },
+        itemsSummary(order) {
+            const rows = order.items || [];
+            if (rows.length === 0) {
+                return "Без позиций";
+            }
+            return rows
+                .map((row) => {
+                    if (row.kind === "sharpening") {
+                        const title = row.title || "Заточка";
+                        const qty = row.quantity != null ? ` ×${row.quantity}` : "";
+                        return `${title}${qty}`;
+                    }
+                    const problem = row.problem ? `: ${row.problem}` : "";
+                    return row.equipment_id
+                        ? `Ремонт #${row.equipment_id}${problem}`
+                        : `Ремонт${problem}`;
+                })
+                .join("; ");
+        },
+        deliveryLabel(order) {
+            if (!order.needs_delivery) {
+                return "Без доставки";
+            }
+            return order.delivery_address
+                ? `Доставка: ${order.delivery_address}`
+                : "Доставка";
         },
         goCreate() {
             this.$router.push({ name: "manager.orders.create" });
@@ -90,24 +132,20 @@ export default {
 </script>
 
 <template>
-    <div class="space-y-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <h1 class="text-2xl font-jost-bold text-dark-blue-500">Заказы</h1>
-            <button
-                type="button"
-                class="bg-pink-500 px-4 py-2 text-sm font-jost-medium text-white hover:bg-pink-600"
-                @click="goCreate"
-            >
+    <div class="app-page">
+        <div class="app-page-header">
+            <h1 class="app-page-title">Заказы</h1>
+            <button type="button" class="app-btn-primary w-full sm:w-auto" @click="goCreate">
                 Создать
             </button>
         </div>
 
-        <div class="flex flex-wrap gap-3">
-            <label class="block min-w-[12rem] flex-1 space-y-1">
+        <div class="app-filters">
+            <label class="block space-y-1">
                 <span class="text-sm text-slate-600">Клиент</span>
                 <select
                     v-model="clientId"
-                    class="w-full border border-slate-300 px-3 py-2"
+                    class="app-field"
                     @change="applyFilters"
                 >
                     <option value="">Все</option>
@@ -120,11 +158,11 @@ export default {
                     </option>
                 </select>
             </label>
-            <label class="block min-w-[12rem] flex-1 space-y-1">
+            <label class="block space-y-1">
                 <span class="text-sm text-slate-600">Статус</span>
                 <select
                     v-model="status"
-                    class="w-full border border-slate-300 px-3 py-2"
+                    class="app-field"
                     @change="applyFilters"
                 >
                     <option value="">Все</option>
@@ -151,52 +189,100 @@ export default {
         <p v-if="loading" class="text-sm text-slate-500">Загрузка…</p>
         <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
 
-        <div v-if="!loading" class="overflow-x-auto border border-slate-200 bg-white">
-            <table class="min-w-full text-left text-sm">
-                <thead class="border-b border-slate-200 bg-slate-50 text-slate-600">
-                    <tr>
-                        <th class="px-4 py-3 font-jost-medium">#</th>
-                        <th class="px-4 py-3 font-jost-medium">Клиент</th>
-                        <th class="px-4 py-3 font-jost-medium">Статус</th>
-                        <th class="px-4 py-3 font-jost-medium">Тип оплаты</th>
-                        <th class="px-4 py-3 font-jost-medium">Срочность</th>
-                        <th class="px-4 py-3 font-jost-medium">Предметы</th>
-                        <th class="px-4 py-3 font-jost-medium" />
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-if="items.length === 0">
-                        <td colspan="7" class="px-4 py-6 text-slate-500">
-                            Пока пусто
-                        </td>
-                    </tr>
-                    <tr
-                        v-for="item in items"
-                        :key="item.id"
-                        class="border-t border-slate-100"
-                    >
-                        <td class="px-4 py-3">{{ item.id }}</td>
-                        <td class="px-4 py-3">{{ clientName(item.client_id) }}</td>
-                        <td class="px-4 py-3">{{ statusLabel(item.status) }}</td>
-                        <td class="px-4 py-3">
-                            {{ BILLING_LABELS[item.billing_type] || item.billing_type }}
-                        </td>
-                        <td class="px-4 py-3">
-                            {{ URGENCY_LABELS[item.urgency] || item.urgency }}
-                        </td>
-                        <td class="px-4 py-3">{{ kindsSummary(item) }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <button
-                                type="button"
-                                class="text-pink-600 hover:underline"
-                                @click="goShow(item)"
-                            >
-                                Открыть
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <template v-if="!loading">
+            <div class="app-card-list">
+                <p v-if="items.length === 0" class="app-card text-slate-500">
+                    Пока пусто
+                </p>
+                <button
+                    v-for="item in items"
+                    :key="item.id"
+                    type="button"
+                    class="app-card w-full text-left"
+                    @click="goShow(item)"
+                >
+                    <div class="flex items-start justify-between gap-2">
+                        <span class="font-jost-medium text-dark-blue-500">
+                            Заказ #{{ item.id }}
+                        </span>
+                        <span class="text-xs text-pink-600">Открыть</span>
+                    </div>
+                    <p class="text-sm text-slate-700">
+                        {{ clientName(item.client_id) }}
+                    </p>
+                    <p class="text-sm text-slate-600">
+                        {{ statusLabel(item.status) }}
+                        ·
+                        {{ URGENCY_LABELS[item.urgency] || item.urgency }}
+                        ·
+                        {{ BILLING_LABELS[item.billing_type] || item.billing_type }}
+                    </p>
+                    <p class="text-sm text-slate-600">
+                        Оценка {{ item.estimated_cost }} ₽
+                        · мастер: {{ masterName(item.master_id) }}
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        {{ itemsSummary(item) }}
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        {{ kindsSummary(item) }}
+                        · позиций {{ (item.items || []).length }}
+                        · {{ deliveryLabel(item) }}
+                    </p>
+                </button>
+            </div>
+
+            <div class="app-table-wrap">
+                <table class="min-w-full text-left text-sm">
+                    <thead class="border-b border-slate-200 bg-slate-50 text-slate-600">
+                        <tr>
+                            <th class="px-4 py-3 font-jost-medium">#</th>
+                            <th class="px-4 py-3 font-jost-medium">Клиент</th>
+                            <th class="px-4 py-3 font-jost-medium">Статус</th>
+                            <th class="px-4 py-3 font-jost-medium">Оплата</th>
+                            <th class="px-4 py-3 font-jost-medium">Срочность</th>
+                            <th class="px-4 py-3 font-jost-medium">Оценка</th>
+                            <th class="px-4 py-3 font-jost-medium">Мастер</th>
+                            <th class="px-4 py-3 font-jost-medium">Состав</th>
+                            <th class="px-4 py-3 font-jost-medium" />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="items.length === 0">
+                            <td colspan="9" class="px-4 py-6 text-slate-500">
+                                Пока пусто
+                            </td>
+                        </tr>
+                        <tr
+                            v-for="item in items"
+                            :key="item.id"
+                            class="border-t border-slate-100"
+                        >
+                            <td class="px-4 py-3">{{ item.id }}</td>
+                            <td class="px-4 py-3">{{ clientName(item.client_id) }}</td>
+                            <td class="px-4 py-3">{{ statusLabel(item.status) }}</td>
+                            <td class="px-4 py-3">
+                                {{ BILLING_LABELS[item.billing_type] || item.billing_type }}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ URGENCY_LABELS[item.urgency] || item.urgency }}
+                            </td>
+                            <td class="px-4 py-3">{{ item.estimated_cost }} ₽</td>
+                            <td class="px-4 py-3">{{ masterName(item.master_id) }}</td>
+                            <td class="px-4 py-3">{{ itemsSummary(item) }}</td>
+                            <td class="px-4 py-3 text-right">
+                                <button
+                                    type="button"
+                                    class="text-pink-600 hover:underline"
+                                    @click="goShow(item)"
+                                >
+                                    Открыть
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </template>
     </div>
 </template>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApplyOrderMaterialsController;
 use App\Http\Controllers\Crm\ActorController;
 use App\Http\Controllers\Crm\EquipmentController;
 use App\Http\Controllers\Finance\OrderPricingController;
@@ -7,6 +8,8 @@ use App\Http\Controllers\Identity\IdentityController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\ProvisionActorController;
 use App\Http\Controllers\SiteContent\SiteContentController;
+use App\Http\Controllers\Warehouse\OrderIssueController;
+use App\Http\Controllers\Warehouse\StockItemController;
 use App\Http\Controllers\Workshop\WorkshopJobController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,20 +37,27 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::match(['put', 'patch'], '/equipments/{id}', [EquipmentController::class, 'update']);
         Route::delete('/equipments/{id}', [EquipmentController::class, 'destroy']);
 
-        Route::get('/orders', [OrderController::class, 'index']);
         Route::post('/orders', [OrderController::class, 'store']);
         Route::put('/orders/{id}/items', [OrderController::class, 'updateItems']);
         Route::post('/orders/{id}/assign-master', [OrderController::class, 'assignMaster']);
         Route::post('/orders/{id}/transition', [OrderController::class, 'transition']);
 
-        Route::get('/workshop/jobs/by-order/{orderId}', [WorkshopJobController::class, 'byOrder']);
-
         Route::get('/finance/pricings/by-order/{orderId}', [OrderPricingController::class, 'byOrder']);
         Route::put('/finance/pricings/by-order/{orderId}', [OrderPricingController::class, 'upsertByOrder']);
+
+        Route::post('/warehouse/items', [StockItemController::class, 'store']);
+        Route::match(['put', 'patch'], '/warehouse/items/{id}', [StockItemController::class, 'update']);
+        Route::post('/warehouse/items/{id}/receive', [StockItemController::class, 'receive']);
+        Route::get('/warehouse/issues/by-order/{orderId}', [OrderIssueController::class, 'byOrder']);
+        Route::put('/orders/{orderId}/materials', ApplyOrderMaterialsController::class);
     });
 
     Route::middleware('actor:managers,masters')->group(function (): void {
         Route::get('/equipments', [EquipmentController::class, 'index']);
+        Route::get('/warehouse/items', [StockItemController::class, 'index']);
+        Route::get('/warehouse/items/{id}', [StockItemController::class, 'show']);
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/workshop/jobs/by-order/{orderId}', [WorkshopJobController::class, 'byOrder']);
     });
 
     Route::middleware('actor:masters')->group(function (): void {

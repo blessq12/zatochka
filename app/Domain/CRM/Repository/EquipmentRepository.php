@@ -13,7 +13,7 @@ interface EquipmentRepository
     /**
      * @return list<Equipment>
      */
-    public function all(?int $clientId = null): array;
+    public function all(?int $clientId = null, ?string $query = null): array;
 
     public function delete(Equipment $equipment): void;
 }

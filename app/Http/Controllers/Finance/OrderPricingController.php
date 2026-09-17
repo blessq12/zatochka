@@ -29,7 +29,7 @@ final class OrderPricingController extends Controller
     {
         $data = $request->validate([
             'lines' => ['required', 'array'],
-            'lines.*.order_item_id' => ['required', 'integer', 'min:1'],
+            'lines.*.work_entry_id' => ['required', 'integer', 'min:1'],
             'lines.*.amount' => ['required', 'numeric', 'min:0'],
         ]);
 

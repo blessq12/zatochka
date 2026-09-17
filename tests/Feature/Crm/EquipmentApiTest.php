@@ -167,6 +167,15 @@ final class EquipmentApiTest extends TestCase
         $this->assertArrayNotHasKey('client_id', $list[0]);
         $this->assertArrayNotHasKey('client_name', $list[0]);
 
+        $this->withToken($masterToken)->getJson('/api/equipments?q=BLK-9')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Фрезер');
+
+        $this->withToken($masterToken)->getJson('/api/equipments?q=неттакого')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
         $this->withToken($masterToken)->postJson('/api/equipments', [
             'client_id' => $clientId,
             'name' => 'X',

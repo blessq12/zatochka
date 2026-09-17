@@ -13,7 +13,16 @@ final readonly class OrderPricingResponseAssembler
         foreach ($pricing->lines() as $line) {
             $lines[] = [
                 'id' => $line->id(),
-                'order_item_id' => $line->orderItemId(),
+                'work_entry_id' => $line->workEntryId(),
+                'amount' => $line->amount(),
+            ];
+        }
+
+        $materialLines = [];
+        foreach ($pricing->materialLines() as $line) {
+            $materialLines[] = [
+                'id' => $line->id(),
+                'stock_item_id' => $line->stockItemId(),
                 'amount' => $line->amount(),
             ];
         }
@@ -24,6 +33,7 @@ final readonly class OrderPricingResponseAssembler
             $pricing->status()->value,
             $pricing->total(),
             $lines,
+            $materialLines,
         );
     }
 }
