@@ -72,6 +72,12 @@ const routes = [
                 meta: { title: "Склад" },
             },
             {
+                path: "finance",
+                name: "manager.finance",
+                component: () => import("../pages/Finance/FinancePage.vue"),
+                meta: { title: "Финансы" },
+            },
+            {
                 path: "orders",
                 name: "manager.orders",
                 component: () => import("../pages/Orders/OrderListPage.vue"),

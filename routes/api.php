@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\ApplyOrderMaterialsController;
+use App\Http\Controllers\Manager\DashboardController;
 use App\Http\Controllers\Crm\ActorController;
 use App\Http\Controllers\Crm\EquipmentController;
+use App\Http\Controllers\Finance\CashEntryController;
+use App\Http\Controllers\Finance\EarningsGoalController;
 use App\Http\Controllers\Finance\OrderPricingController;
 use App\Http\Controllers\Identity\IdentityController;
 use App\Http\Controllers\Order\OrderController;
@@ -21,6 +24,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/identity/me', [IdentityController::class, 'me']);
 
     Route::middleware('actor:managers')->group(function (): void {
+        Route::get('/manager/dashboard', DashboardController::class);
+
         Route::get('/actors/{type}', [ActorController::class, 'index']);
         Route::post('/actors/clients/walk-in', [ActorController::class, 'storeWalkInClient']);
         Route::post('/actors/{type}', [ProvisionActorController::class, '__invoke']);
@@ -44,6 +49,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
         Route::get('/finance/pricings/by-order/{orderId}', [OrderPricingController::class, 'byOrder']);
         Route::put('/finance/pricings/by-order/{orderId}', [OrderPricingController::class, 'upsertByOrder']);
+
+        Route::get('/finance/cash-entries', [CashEntryController::class, 'index']);
+        Route::post('/finance/cash-entries', [CashEntryController::class, 'store']);
+        Route::delete('/finance/cash-entries/{id}', [CashEntryController::class, 'destroy']);
+
+        Route::get('/finance/goals', [EarningsGoalController::class, 'index']);
+        Route::post('/finance/goals', [EarningsGoalController::class, 'store']);
+        Route::post('/finance/goals/{id}/cancel', [EarningsGoalController::class, 'cancel']);
 
         Route::post('/warehouse/items', [StockItemController::class, 'store']);
         Route::match(['put', 'patch'], '/warehouse/items/{id}', [StockItemController::class, 'update']);

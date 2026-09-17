@@ -8,6 +8,7 @@ use App\Domain\Order\OrderStatus;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Shared\Domain\DomainException;
 use App\Shared\EventBus\EventBus;
+use App\Shared\IntegrationEvents\OrderIssued;
 use App\Shared\IntegrationEvents\OrderReturnedToRework;
 
 final readonly class TransitionOrderStatusHandler
@@ -34,6 +35,13 @@ final readonly class TransitionOrderStatusHandler
 
         if ($from === OrderStatus::WorksCompleted && $target === OrderStatus::InProgress) {
             $this->events->publish(new OrderReturnedToRework($orderId));
+        }
+
+        if ($target === OrderStatus::Issued) {
+            $this->events->publish(new OrderIssued(
+                $orderId,
+                $saved->billingType()->value,
+            ));
         }
 
         return $this->assembler->assemble($saved);

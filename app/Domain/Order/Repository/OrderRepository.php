@@ -19,4 +19,10 @@ interface OrderRepository
         ?int $masterId = null,
         ?int $equipmentId = null,
     ): array;
+
+    /**
+     * @param  list<string>  $statuses
+     * @return array<string, int>
+     */
+    public function countByStatuses(array $statuses): array;
 }

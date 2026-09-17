@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Application\Finance\Command\CreateEarningsGoalHandler;
+use App\Application\Finance\Command\RecordManualCashEntryHandler;
 use App\Application\Finance\Command\ReplaceOrderMaterialLinesHandler;
 use App\Application\Finance\Command\UpsertOrderPricingHandler;
 use App\Application\Order\Command\AssignMasterHandler;
@@ -40,6 +42,8 @@ final class DemoOrdersSeeder extends Seeder
         TransitionOrderStatusHandler $transition,
         GetOrderHandler $getOrder,
         GetWorkshopJobHandler $getJob,
+        RecordManualCashEntryHandler $recordCash,
+        CreateEarningsGoalHandler $createGoal,
         IdentityRepository $identities,
         IdentityActorLinkRepository $links,
     ): void {
@@ -183,7 +187,17 @@ final class DemoOrdersSeeder extends Seeder
             ['350.00', '250.00'],
         ));
         $transition->handle($ready['order']->id, 'ready');
-        $this->command?->info("Order #{$ready['order']->id} status=ready");
+        $transition->handle($ready['order']->id, 'issued');
+        $this->command?->info("Order #{$ready['order']->id} status=issued (cash income)");
+
+        $recordCash->handle('expense', '150.00', null, 'Демо-расход: расходники');
+        $createGoal->handle(
+            '10000.00',
+            now()->toDateString(),
+            now()->addMonth()->toDateString(),
+            'Демо: месяц',
+        );
+        $this->command?->info('Finance demo: expense + goal seeded');
     }
 
     /**

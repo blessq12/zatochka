@@ -10,12 +10,18 @@ export default {
     props: {
         tagline: { type: String, default: "" },
         items: { type: Array, default: () => [] },
+        bottomItems: { type: Array, default: null },
         userName: { type: String, default: "" },
         userEmail: { type: String, default: "" },
     },
     emits: ["logout"],
     data() {
         return { mobileOpen: false };
+    },
+    computed: {
+        bottomNavItems() {
+            return this.bottomItems?.length ? this.bottomItems : this.items;
+        },
     },
     watch: {
         $route() {
@@ -66,7 +72,7 @@ export default {
                 </div>
             </main>
 
-            <AppBottomNav :items="items" />
+            <AppBottomNav :items="bottomNavItems" />
         </div>
     </div>
 </template>

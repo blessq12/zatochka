@@ -98,6 +98,29 @@ final class EloquentOrderRepository implements OrderRepository
             ->all();
     }
 
+    public function countByStatuses(array $statuses): array
+    {
+        $result = [];
+        foreach ($statuses as $status) {
+            $result[$status] = 0;
+        }
+        if ($statuses === []) {
+            return $result;
+        }
+
+        $rows = OrderModel::query()
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->whereIn('status', $statuses)
+            ->groupBy('status')
+            ->get();
+
+        foreach ($rows as $row) {
+            $result[(string) $row->status] = (int) $row->aggregate;
+        }
+
+        return $result;
+    }
+
     private function shouldSyncItems(Order $order): bool
     {
         foreach ($order->items() as $item) {

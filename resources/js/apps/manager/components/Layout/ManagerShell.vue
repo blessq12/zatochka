@@ -1,7 +1,7 @@
 <script>
 import AppShell from "@shared/layout/AppShell.vue";
 import { mapStores } from "pinia";
-import { navigationItems } from "../../navigation.js";
+import { bottomNavItems, navigationItems } from "../../navigation.js";
 import { useManagerStore } from "../../stores/managerStore.js";
 
 export default {
@@ -11,6 +11,9 @@ export default {
         ...mapStores(useManagerStore),
         items() {
             return navigationItems;
+        },
+        bottomItems() {
+            return bottomNavItems;
         },
     },
     methods: {
@@ -26,6 +29,7 @@ export default {
     <AppShell
         tagline="Панель менеджера"
         :items="items"
+        :bottom-items="bottomItems"
         :user-name="''"
         :user-email="managerStore.user?.email || ''"
         @logout="logout"
