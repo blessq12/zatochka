@@ -26,7 +26,7 @@ export default {
     <AppShell
         tagline="Панель менеджера"
         :items="items"
-        :user-name="managerStore.user?.name || ''"
+        :user-name="''"
         :user-email="managerStore.user?.email || ''"
         @logout="logout"
     >

@@ -20,7 +20,7 @@ export default {
         const isCheckingAuth = ref(true);
         const loginForm = ref({ email: "", password: "" });
 
-        const userName = computed(() => posStore.user?.email || "");
+        const userName = computed(() => "");
 
         const userEmail = computed(() => posStore.user?.email || "");
 

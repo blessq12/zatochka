@@ -13,8 +13,8 @@
       "__plugin-vue_export-helper-Cnh2aH-G.js"
     ]
   },
-  "_AppShell-A3-U1hde.js": {
-    "file": "assets/AppShell-A3-U1hde.js",
+  "_AppShell-DcdDd7Xh.js": {
+    "file": "assets/AppShell-DcdDd7Xh.js",
     "name": "AppShell",
     "imports": [
       "__plugin-vue_export-helper-Cnh2aH-G.js"
@@ -39,7 +39,7 @@
     ]
   },
   "resources/css/apps.css": {
-    "file": "assets/apps-Bc6MOlde.css",
+    "file": "assets/apps-atS7qugU.css",
     "src": "resources/css/apps.css",
     "isEntry": true,
     "names": [
@@ -47,7 +47,7 @@
     ]
   },
   "resources/js/apps/client/components/ClientApp.vue": {
-    "file": "assets/ClientApp-Bn-iy55u.js",
+    "file": "assets/ClientApp-BPi6T_OX.js",
     "name": "ClientApp",
     "src": "resources/js/apps/client/components/ClientApp.vue",
     "isDynamicEntry": true,
@@ -57,7 +57,7 @@
     ]
   },
   "resources/js/apps/client/main.js": {
-    "file": "assets/main-CVqfcFsF.js",
+    "file": "assets/main-DMi_BCLg.js",
     "name": "main",
     "src": "resources/js/apps/client/main.js",
     "isEntry": true,
@@ -70,19 +70,19 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-Cdr-TWxi.js",
+    "file": "assets/ManagerShell-BRWfqd5Y.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AppShell-A3-U1hde.js",
+      "_AppShell-DcdDd7Xh.js",
       "__plugin-vue_export-helper-Cnh2aH-G.js",
       "resources/js/apps/manager/main.js",
       "_vue-router-BZMaWQjK.js"
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-DzXQQ7le.js",
+    "file": "assets/LoginForm-DZ0OkFGD.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -94,7 +94,7 @@
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-kn9bCrGA.js",
+    "file": "assets/main-9-gXmcz9.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
@@ -141,7 +141,7 @@
     ]
   },
   "resources/js/apps/master/main.js": {
-    "file": "assets/main-BdBayb0c.js",
+    "file": "assets/main-CgBfugax.js",
     "name": "main",
     "src": "resources/js/apps/master/main.js",
     "isEntry": true,
@@ -164,20 +164,20 @@
     ]
   },
   "resources/js/apps/master/pages/PosPage.vue": {
-    "file": "assets/PosPage-1UUzmsLQ.js",
+    "file": "assets/PosPage-C1gMwciC.js",
     "name": "PosPage",
     "src": "resources/js/apps/master/pages/PosPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_AppLoginScreen-D12YDiWe.js",
-      "_AppShell-A3-U1hde.js",
+      "_AppShell-DcdDd7Xh.js",
       "__plugin-vue_export-helper-Cnh2aH-G.js",
       "_vue-router-BZMaWQjK.js",
       "resources/js/apps/master/main.js"
     ]
   },
   "resources/site/css/site.css": {
-    "file": "assets/site-DIi4s3Hr.css",
+    "file": "assets/site-CG_hVAlG.css",
     "src": "resources/site/css/site.css",
     "isEntry": true,
     "names": [

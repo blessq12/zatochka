@@ -82,6 +82,26 @@ export default {
                 <SetPasswordModal v-if="authStore.requiresPasswordSet" />
 
                 <div class="mb-8 sm:mb-12">
+                    <a
+                        href="/"
+                        class="mb-6 inline-flex items-center gap-2 text-dark-gray-500 dark:text-gray-200 hover:text-[#C3006B] dark:hover:text-[#C3006B] font-jost-medium transition-colors duration-300"
+                    >
+                        <svg
+                            class="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                            />
+                        </svg>
+                        На сайт
+                    </a>
                     <div class="flex items-center justify-between mb-4">
                         <h1
                             class="text-3xl sm:text-4xl lg:text-5xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
