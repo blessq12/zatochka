@@ -1,11 +1,11 @@
 import axios from "axios";
-import { vMaska } from "maska/vue";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 import "./bootstrap";
 import App from "./App.vue";
 import router from "./router";
 import { usePosStore } from "./stores/posStore.js";
+import { installPhoneMask } from "@shared/phoneMask.js";
 import themeTogglerService from "@shared/themeTogglerService.js";
 
 themeTogglerService.init();
@@ -40,7 +40,7 @@ axios.interceptors.response.use(
     }
 );
 
-app.directive("maska", vMaska);
+installPhoneMask(app);
 app.use(pinia);
 app.use(router);
 

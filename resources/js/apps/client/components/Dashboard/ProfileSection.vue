@@ -21,10 +21,17 @@ export default {
                     .string()
                     .required("ФИО обязательно для заполнения")
                     .min(2, "ФИО должно содержать минимум 2 символа"),
-                email: yup
+                phone: yup
                     .string()
-                    .email("Неверный формат email")
-                    .nullable(),
+                    .nullable()
+                    .transform((value) => value || null)
+                    .test(
+                        "phone-mask",
+                        "Формат: +7 (XXX) XXX-XX-XX",
+                        (value) =>
+                            value == null ||
+                            /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(value)
+                    ),
                 birth_date: yup.date().nullable(),
                 delivery_address: yup.string().nullable(),
             }),
@@ -75,7 +82,7 @@ export default {
                 await this.schema.validate(
                     {
                         full_name: this.form.full_name,
-                        email: this.form.email,
+                        phone: this.form.phone,
                         birth_date: this.form.birth_date,
                         delivery_address: this.form.delivery_address,
                     },
@@ -84,7 +91,7 @@ export default {
 
                 const result = await this.authStore.updateClient({
                     full_name: this.form.full_name,
-                    email: this.form.email,
+                    phone: this.form.phone,
                     birth_date: this.form.birth_date,
                     delivery_address: this.form.delivery_address,
                 });
@@ -245,16 +252,21 @@ export default {
                         <label
                             class="block text-sm sm:text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
                         >
-                            Телефон <span class="text-red-500">*</span>
+                            Телефон
                         </label>
                         <input
                             v-model="form.phone"
                             type="tel"
-                            readonly
-                            class="w-full px-4 py-3 bg-gray-100/80 border border-white/20 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-700/60 dark:border-gray-700/20 cursor-not-allowed"
+                            class="w-full px-4 py-3 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C3006B]/50 focus:border-[#C3006B]/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
+                            :class="{
+                                'border-red-500': errors.phone,
+                            }"
                         />
-                        <p class="mt-1 text-xs font-jost-regular text-dark-gray-400 dark:text-gray-400">
-                            Телефон нельзя изменить — по нему привязываются заказы
+                        <p
+                            v-if="errors.phone"
+                            class="mt-1 text-sm text-red-500"
+                        >
+                            {{ errors.phone }}
                         </p>
                     </div>
                     <div>
@@ -266,16 +278,11 @@ export default {
                         <input
                             v-model="form.email"
                             type="email"
-                            class="w-full px-4 py-3 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C3006B]/50 focus:border-[#C3006B]/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"
-                            :class="{
-                                'border-red-500': errors.email,
-                            }"
+                            readonly
+                            class="w-full px-4 py-3 bg-gray-100/80 border border-white/20 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-700/60 dark:border-gray-700/20 cursor-not-allowed"
                         />
-                        <p
-                            v-if="errors.email"
-                            class="mt-1 text-sm text-red-500"
-                        >
-                            {{ errors.email }}
+                        <p class="mt-1 text-xs font-jost-regular text-dark-gray-400 dark:text-gray-400">
+                            Email — логин, менять нельзя
                         </p>
                     </div>
                     <div>

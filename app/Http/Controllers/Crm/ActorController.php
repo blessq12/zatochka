@@ -8,6 +8,7 @@ use App\Application\Crm\Query\GetActorHandler;
 use App\Application\Crm\Query\ListActorsHandler;
 use App\Domain\Crm\ActorType;
 use App\Http\Controllers\Controller;
+use App\Shared\Domain\ForbiddenException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -48,14 +49,17 @@ final class ActorController extends Controller
 
     public function update(Request $request, string $type, int $id): JsonResponse
     {
+        $this->assertCanUpdateActor($request, $type, $id);
+
         $data = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:32'],
             'birthday' => ['nullable', 'date'],
+            'delivery_address' => ['nullable', 'string', 'max:255'],
         ]);
 
         $attributes = [];
-        foreach (['name', 'phone', 'birthday'] as $field) {
+        foreach (['name', 'phone', 'birthday', 'delivery_address'] as $field) {
             if ($request->exists($field)) {
                 $attributes[$field] = $data[$field] ?? null;
             }
@@ -81,5 +85,19 @@ final class ActorController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    private function assertCanUpdateActor(Request $request, string $type, int $id): void
+    {
+        $callerType = (string) $request->attributes->get('actor_type');
+        $callerId = (int) $request->attributes->get('actor_id');
+
+        if ($callerType === ActorType::Manager->value) {
+            return;
+        }
+
+        if ($callerType !== $type || $callerId !== $id) {
+            throw new ForbiddenException('Forbidden for this actor.');
+        }
     }
 }

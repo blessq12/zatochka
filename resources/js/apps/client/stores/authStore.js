@@ -2,6 +2,7 @@ import axios from "axios";
 import { defineStore } from "pinia";
 import createLoginRequestDto from "../dto/auth/loginRequestDto.js";
 import createRegisterRequestDto from "../dto/auth/registerRequestDto.js";
+import createUpdateClientRequestDto from "../dto/client/updateClientRequestDto.js";
 
 const TOKEN_KEY = "auth_token";
 const EXPECTED_ACTOR_TYPE = "clients";
@@ -26,14 +27,48 @@ export const useAuthStore = defineStore("auth", {
                 id: payload.id,
                 email: payload.email,
                 actor: payload.actor,
+                full_name: null,
+                phone: null,
+                birth_date: null,
+                delivery_address: null,
             };
             localStorage.setItem(TOKEN_KEY, this.token);
+        },
+
+        mergeActorProfile(actor) {
+            if (!this.user) {
+                return;
+            }
+
+            this.user = {
+                ...this.user,
+                email: actor.email || this.user.email,
+                actor: {
+                    type: actor.type || this.user.actor?.type,
+                    id: actor.id ?? this.user.actor?.id,
+                },
+                full_name: actor.name ?? null,
+                phone: actor.phone ?? null,
+                birth_date: actor.birthday ?? null,
+                delivery_address: actor.delivery_address ?? null,
+            };
         },
 
         assertClientRole(actorType) {
             if (actorType !== EXPECTED_ACTOR_TYPE) {
                 throw new Error("Нет доступа к кабинету клиента");
             }
+        },
+
+        async fetchActorProfile() {
+            const actorId = this.actorId;
+            if (!actorId) {
+                return null;
+            }
+
+            const { data } = await axios.get(`/api/actors/clients/${actorId}`);
+            this.mergeActorProfile(data);
+            return data;
         },
 
         async login(credentials) {
@@ -49,6 +84,7 @@ export const useAuthStore = defineStore("auth", {
 
                 this.assertClientRole(response.data.actor?.type);
                 this.applySession(response.data);
+                await this.fetchActorProfile();
 
                 return { success: true, data: response.data };
             } catch (error) {
@@ -78,6 +114,7 @@ export const useAuthStore = defineStore("auth", {
 
                 this.assertClientRole(response.data.actor?.type);
                 this.applySession(response.data);
+                await this.fetchActorProfile();
 
                 return { success: true, data: response.data };
             } catch (error) {
@@ -112,7 +149,12 @@ export const useAuthStore = defineStore("auth", {
                 id: response.data.id,
                 email: response.data.email,
                 actor: response.data.actor,
+                full_name: this.user?.full_name ?? null,
+                phone: this.user?.phone ?? null,
+                birth_date: this.user?.birth_date ?? null,
+                delivery_address: this.user?.delivery_address ?? null,
             };
+            await this.fetchActorProfile();
             return this.user;
         },
 
@@ -136,8 +178,43 @@ export const useAuthStore = defineStore("auth", {
             }
         },
 
-        async updateClient() {
-            return { success: false, error: "Обновление профиля пока недоступно" };
+        async updateClient(input) {
+            const actorId = this.actorId;
+            if (!actorId) {
+                return { success: false, error: "Профиль не найден" };
+            }
+
+            try {
+                const dto = createUpdateClientRequestDto(input);
+                const payload = {};
+
+                if (Object.prototype.hasOwnProperty.call(dto, "full_name")) {
+                    payload.name = dto.full_name || null;
+                }
+                if (Object.prototype.hasOwnProperty.call(dto, "phone")) {
+                    payload.phone = dto.phone || null;
+                }
+                if (Object.prototype.hasOwnProperty.call(dto, "birth_date")) {
+                    payload.birthday = dto.birth_date || null;
+                }
+                if (Object.prototype.hasOwnProperty.call(dto, "delivery_address")) {
+                    payload.delivery_address = dto.delivery_address || null;
+                }
+
+                const { data } = await axios.patch(
+                    `/api/actors/clients/${actorId}`,
+                    payload
+                );
+                this.mergeActorProfile(data);
+                return { success: true, data };
+            } catch (error) {
+                const message =
+                    error.response?.data?.message ||
+                    (error.response?.data?.errors
+                        ? Object.values(error.response.data.errors).flat().join(" ")
+                        : "Ошибка обновления профиля");
+                return { success: false, error: message };
+            }
         },
 
         async setPassword() {

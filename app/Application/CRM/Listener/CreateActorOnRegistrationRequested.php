@@ -23,6 +23,7 @@ final readonly class CreateActorOnRegistrationRequested
             $event->name,
             $event->phone,
             $event->birthday,
+            $event->deliveryAddress,
         );
 
         $this->events->publish(new ActorCreated(

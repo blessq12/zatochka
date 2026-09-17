@@ -31,6 +31,7 @@ final readonly class RegisterActorWithIdentityHandler
         ?string $name = null,
         ?string $phone = null,
         ?string $birthday = null,
+        ?string $deliveryAddress = null,
     ): IdentityResponse {
         if ($this->identities->findByEmail($email) !== null) {
             throw new DomainException('Email already taken.');
@@ -44,6 +45,7 @@ final readonly class RegisterActorWithIdentityHandler
             $name,
             $phone,
             $birthday,
+            $deliveryAddress,
         ): IdentityResponse {
             $identity = $this->identities->save(
                 Identity::create($email, Hash::make($password))
@@ -55,6 +57,7 @@ final readonly class RegisterActorWithIdentityHandler
                 $name,
                 $phone,
                 $birthday,
+                $deliveryAddress,
             ));
 
             $link = $this->links->findByIdentityId((int) $identity->id());

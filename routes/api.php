@@ -14,11 +14,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::middleware('actor:managers')->group(function (): void {
         Route::get('/actors/{type}', [ActorController::class, 'index']);
         Route::post('/actors/{type}', [IdentityController::class, 'provisionActor']);
-        Route::match(['put', 'patch'], '/actors/{type}/{id}', [ActorController::class, 'update']);
         Route::delete('/actors/{type}/{id}', [ActorController::class, 'destroy']);
     });
 
     Route::middleware('actor:clients,managers,masters')->group(function (): void {
         Route::get('/actors/{type}/{id}', [ActorController::class, 'show']);
+        Route::match(['put', 'patch'], '/actors/{type}/{id}', [ActorController::class, 'update']);
     });
 });

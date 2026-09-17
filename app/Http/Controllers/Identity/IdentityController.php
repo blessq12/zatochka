@@ -33,6 +33,7 @@ final class IdentityController extends Controller
             'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:32'],
             'birthday' => ['nullable', 'date'],
+            'delivery_address' => ['nullable', 'string', 'max:255'],
         ]);
 
         $result = $this->register->handle(
@@ -43,6 +44,7 @@ final class IdentityController extends Controller
             name: $data['name'] ?? null,
             phone: $data['phone'] ?? null,
             birthday: isset($data['birthday']) ? (string) $data['birthday'] : null,
+            deliveryAddress: $data['delivery_address'] ?? null,
         );
 
         return response()->json($result->toArray(), 201);
@@ -56,6 +58,7 @@ final class IdentityController extends Controller
             'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:32'],
             'birthday' => ['nullable', 'date'],
+            'delivery_address' => ['nullable', 'string', 'max:255'],
         ]);
 
         $result = $this->register->handle(
@@ -66,6 +69,7 @@ final class IdentityController extends Controller
             name: $data['name'] ?? null,
             phone: $data['phone'] ?? null,
             birthday: isset($data['birthday']) ? (string) $data['birthday'] : null,
+            deliveryAddress: $data['delivery_address'] ?? null,
         );
 
         $actorType = ActorType::fromRoute($type);

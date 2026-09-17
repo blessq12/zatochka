@@ -362,8 +362,6 @@ export default {
                         </label>
                         <input
                             v-model="form.phone"
-                            v-maska
-                            data-maska="+7 (###) ###-##-##"
                             type="tel"
                             placeholder="+7 (___) ___-__-__"
                             class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-800/60 dark:border-gray-700/20"

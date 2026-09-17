@@ -25,6 +25,7 @@ final class ActorApiTest extends TestCase
             'name' => 'Иван Клиент',
             'phone' => '+79990001122',
             'birthday' => '1990-05-15',
+            'delivery_address' => 'ул. Тестовая, 1',
         ]);
 
         $response->assertCreated()
@@ -34,6 +35,7 @@ final class ActorApiTest extends TestCase
                 'name' => 'Иван Клиент',
                 'phone' => '+79990001122',
                 'birthday' => '1990-05-15',
+                'delivery_address' => 'ул. Тестовая, 1',
             ]);
 
         $client = ClientModel::query()->findOrFail($response->json('id'));
@@ -47,7 +49,45 @@ final class ActorApiTest extends TestCase
             'id' => $client->profile_additional_id,
             'name' => 'Иван Клиент',
             'phone' => '+79990001122',
+            'delivery_address' => 'ул. Тестовая, 1',
         ]);
+    }
+
+    public function test_client_can_update_own_profile(): void
+    {
+        $managerToken = $this->tokenAsManager('mgr@example.com');
+
+        $id = $this->withToken($managerToken)->postJson('/api/actors/clients', [
+            'email' => 'self@example.com',
+            'password' => 'password123',
+            'name' => 'Клиент',
+        ])->assertCreated()->json('id');
+
+        $clientToken = $this->postJson('/api/identity/login', [
+            'email' => 'self@example.com',
+            'password' => 'password123',
+            'expected_actor_type' => 'clients',
+        ])->assertOk()->json('token');
+
+        $this->withToken($clientToken)->patchJson("/api/actors/clients/{$id}", [
+            'name' => 'Клиент Сам',
+            'delivery_address' => 'Адрес 42',
+        ])
+            ->assertOk()
+            ->assertJson([
+                'name' => 'Клиент Сам',
+                'delivery_address' => 'Адрес 42',
+            ]);
+
+        $otherId = $this->withToken($managerToken)->postJson('/api/actors/clients', [
+            'email' => 'other@example.com',
+            'password' => 'password123',
+            'name' => 'Другой',
+        ])->assertCreated()->json('id');
+
+        $this->withToken($clientToken)->patchJson("/api/actors/clients/{$otherId}", [
+            'name' => 'Хак',
+        ])->assertForbidden();
     }
 
     public function test_list_get_update_delete_client_flow(): void

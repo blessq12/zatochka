@@ -19,7 +19,12 @@ final readonly class UpdateActorHandler
     ) {}
 
     /**
-     * @param  array{name?: string|null, phone?: string|null, birthday?: string|null}  $attributes
+     * @param  array{
+     *     name?: string|null,
+     *     phone?: string|null,
+     *     birthday?: string|null,
+     *     delivery_address?: string|null
+     * }  $attributes
      */
     public function handle(ActorType $type, int $id, array $attributes): ?ActorResponse
     {
@@ -39,6 +44,9 @@ final readonly class UpdateActorHandler
 
             $name = array_key_exists('name', $attributes) ? $attributes['name'] : $profile->name();
             $phone = array_key_exists('phone', $attributes) ? $attributes['phone'] : $profile->phone();
+            $deliveryAddress = array_key_exists('delivery_address', $attributes)
+                ? $attributes['delivery_address']
+                : $profile->deliveryAddress();
 
             if (array_key_exists('birthday', $attributes)) {
                 $birthday = $attributes['birthday'] !== null && $attributes['birthday'] !== ''
@@ -48,7 +56,7 @@ final readonly class UpdateActorHandler
                 $birthday = $profile->birthday();
             }
 
-            $profile->changeDetails($name, $phone, $birthday);
+            $profile->changeDetails($name, $phone, $birthday, $deliveryAddress);
             $this->profiles->save($profile);
 
             return $this->assembler->assemble($type, $actor);

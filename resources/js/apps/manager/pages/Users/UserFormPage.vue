@@ -16,6 +16,7 @@ export default {
                 name: "",
                 phone: "",
                 birthday: "",
+                delivery_address: "",
             },
         };
     },
@@ -49,6 +50,7 @@ export default {
                     name: item.name || "",
                     phone: item.phone || "",
                     birthday: item.birthday || "",
+                    delivery_address: item.delivery_address || "",
                 };
             } catch (e) {
                 this.error =
@@ -66,6 +68,7 @@ export default {
                         name: this.form.name || null,
                         phone: this.form.phone || null,
                         birthday: this.form.birthday || null,
+                        delivery_address: this.form.delivery_address || null,
                     });
                 } else {
                     if (!this.form.email || !this.form.password || !this.form.name) {
@@ -78,6 +81,7 @@ export default {
                         name: this.form.name,
                         phone: this.form.phone || null,
                         birthday: this.form.birthday || null,
+                        delivery_address: this.form.delivery_address || null,
                     });
                 }
                 this.$router.push({
@@ -170,7 +174,7 @@ export default {
                 <span class="text-sm text-slate-600">Телефон</span>
                 <input
                     v-model="form.phone"
-                    type="text"
+                    type="tel"
                     class="w-full border border-slate-300 px-3 py-2"
                 />
             </label>
@@ -180,6 +184,15 @@ export default {
                 <input
                     v-model="form.birthday"
                     type="date"
+                    class="w-full border border-slate-300 px-3 py-2"
+                />
+            </label>
+
+            <label class="block space-y-1">
+                <span class="text-sm text-slate-600">Адрес доставки</span>
+                <input
+                    v-model="form.delivery_address"
+                    type="text"
                     class="w-full border border-slate-300 px-3 py-2"
                 />
             </label>

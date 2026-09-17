@@ -27,6 +27,7 @@ final readonly class ActorResponseAssembler
             $profile?->name(),
             $profile?->phone(),
             $profile?->birthday()?->format('Y-m-d'),
+            $profile?->deliveryAddress(),
         );
     }
 }

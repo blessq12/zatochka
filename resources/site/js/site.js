@@ -1,6 +1,6 @@
 import themeTogglerService from "@shared/themeTogglerService.js";
+import { bindTelInputs, installPhoneMask } from "@shared/phoneMask.js";
 import axios from "axios";
-import { vMaska } from "maska/vue";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 import RepairForm from "./components/Forms/RepairForm.vue";
@@ -12,6 +12,7 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 window.axios.defaults.withCredentials = true;
 
 themeTogglerService.init();
+bindTelInputs(document);
 
 function mountIsland(selector, component, props = {}) {
     const el = document.querySelector(selector);
@@ -21,7 +22,7 @@ function mountIsland(selector, component, props = {}) {
 
     const app = createApp(component, props);
     app.use(createPinia());
-    app.directive("maska", vMaska);
+    installPhoneMask(app);
     app.mount(el);
 
     return app;

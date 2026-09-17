@@ -18,6 +18,7 @@ final class EloquentProfileAdditionalRepository implements ProfileAdditionalRepo
         $model->name = $profile->name();
         $model->phone = $profile->phone();
         $model->birthday = $profile->birthday()?->format('Y-m-d');
+        $model->delivery_address = $profile->deliveryAddress();
         $model->save();
 
         if ($profile->id() === null) {
@@ -59,6 +60,7 @@ final class EloquentProfileAdditionalRepository implements ProfileAdditionalRepo
             $model->name !== null ? (string) $model->name : null,
             $model->phone !== null ? (string) $model->phone : null,
             $birthday,
+            $model->delivery_address !== null ? (string) $model->delivery_address : null,
             false,
         );
     }

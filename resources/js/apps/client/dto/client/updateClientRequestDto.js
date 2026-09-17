@@ -3,7 +3,7 @@ export default function createUpdateClientRequestDto(input) {
 
     const fields = [
         "full_name",
-        "email",
+        "phone",
         "birth_date",
         "delivery_address",
     ];

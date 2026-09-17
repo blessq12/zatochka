@@ -12,6 +12,7 @@ final readonly class ActorResponse
         public ?string $name,
         public ?string $phone,
         public ?string $birthday,
+        public ?string $deliveryAddress,
     ) {}
 
     /**
@@ -22,7 +23,8 @@ final readonly class ActorResponse
      *     profile_additional_id: int,
      *     name: string|null,
      *     phone: string|null,
-     *     birthday: string|null
+     *     birthday: string|null,
+     *     delivery_address: string|null
      * }
      */
     public function toArray(): array
@@ -35,6 +37,7 @@ final readonly class ActorResponse
             'name' => $this->name,
             'phone' => $this->phone,
             'birthday' => $this->birthday,
+            'delivery_address' => $this->deliveryAddress,
         ];
     }
 }

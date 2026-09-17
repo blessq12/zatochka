@@ -10,5 +10,6 @@ final readonly class ActorRegistrationRequested
         public ?string $name = null,
         public ?string $phone = null,
         public ?string $birthday = null,
+        public ?string $deliveryAddress = null,
     ) {}
 }
