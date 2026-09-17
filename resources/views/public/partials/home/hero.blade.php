@@ -27,15 +27,17 @@
                     </svg>
                     <div class="text-center space-y-1">
                         <p
-                            class="text-2xl sm:text-3xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] tracking-wide"
+                            class="text-2xl sm:text-3xl font-jost-bold text-[#C20A6C] dark:text-[#C20A6C] tracking-wide uppercase"
                         >
-                            ЗАТОЧКА.ТСК
+                            {{ $company['name'] ?? 'Заточка.ТСК' }}
                         </p>
+                        @if(!empty($company['tagline']))
                         <p
                             class="text-xs sm:text-sm font-jost-regular text-dark-gray-500 dark:text-gray-300 tracking-wide"
                         >
-                            ПОРА ЗАТОЧИТЬ ИНСТРУМЕНТЫ
+                            {{ $company['tagline'] }}
                         </p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -46,16 +48,15 @@
         >
             <!-- Заголовок-бейдж поверх обводки -->
             <h1
-                class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[90%] px-4 sm:px-6 bg-white dark:bg-dark-blue-500/90 font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 text-center head-text"
+                class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[90%] px-4 sm:px-6 bg-white dark:bg-dark-blue-500/90 font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 text-center head-text uppercase"
             >
-                ПРОФЕССИОНАЛЬНАЯ ЗАТОЧКА ИНСТРУМЕНТОВ
+                {{ $company['tagline'] ?? 'Профессиональная заточка инструментов' }}
             </h1>
             <p
                 class="text-sm sm:text-base lg:text-lg font-jost-regular text-dark-gray-500 dark:text-gray-200 text-center"
             >
                 Заточка маникюрных, парикмахерских, грумерских инструментов и
-                ремонт оборудования. Более 5 лет опыта и более 40 000
-                восстановленных инструментов.
+                ремонт оборудования.
             </p>
         </div>
 

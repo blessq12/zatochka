@@ -6,4 +6,5 @@ return [
     App\Infrastructure\SiteContent\Provider\SiteContentServiceProvider::class,
     App\Infrastructure\Crm\Provider\CrmServiceProvider::class,
     App\Infrastructure\Identity\Provider\IdentityServiceProvider::class,
+    App\Infrastructure\Order\Provider\OrderServiceProvider::class,
 ];

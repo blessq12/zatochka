@@ -6,7 +6,8 @@ use App\Application\SiteContent\Query\GetLegalDocumentHandler;
 use App\Application\SiteContent\Query\GetLegalDocumentQuery;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\View;
+use Illuminate\View\View as ViewResponse;
 
 final class PublicSiteController extends Controller
 {
@@ -14,80 +15,80 @@ final class PublicSiteController extends Controller
         private GetLegalDocumentHandler $getLegalDocument,
     ) {}
 
-    public function home(): View
+    public function home(): ViewResponse
     {
         return view('public.pages.home', [
-            'title' => 'Заточка.ТСК — профессиональная заточка инструментов',
+            'title' => $this->brandTitle(),
         ]);
     }
 
-    public function sharpening(): View
+    public function sharpening(): ViewResponse
     {
         return view('public.pages.sharpening', [
-            'title' => 'Заточка инструментов — Заточка.ТСК',
+            'title' => 'Заточка инструментов — '.$this->brandName(),
             'toolTypes' => [],
         ]);
     }
 
-    public function repair(): View
+    public function repair(): ViewResponse
     {
         return view('public.pages.repair', [
-            'title' => 'Ремонт оборудования — Заточка.ТСК',
+            'title' => 'Ремонт оборудования — '.$this->brandName(),
             'equipmentTypes' => [],
         ]);
     }
 
-    public function delivery(): View
+    public function delivery(): ViewResponse
     {
         return view('public.pages.delivery', [
-            'title' => 'Доставка — Заточка.ТСК',
+            'title' => 'Доставка — '.$this->brandName(),
         ]);
     }
 
-    public function contacts(): View
+    public function contacts(): ViewResponse
     {
         return view('public.pages.contacts', [
-            'title' => 'Контакты — Заточка.ТСК',
+            'title' => 'Контакты — '.$this->brandName(),
         ]);
     }
 
-    public function workSchedule(): View
+    public function workSchedule(): ViewResponse
     {
         return view('public.pages.work-schedule', [
-            'title' => 'График работы — Заточка.ТСК',
+            'title' => 'График работы — '.$this->brandName(),
         ]);
     }
 
-    public function prices(): View
+    public function prices(): ViewResponse
     {
         return view('public.pages.prices', [
-            'title' => 'Прайс — Заточка.ТСК',
+            'title' => 'Прайс — '.$this->brandName(),
         ]);
     }
 
-    public function privacyPolicy(): View|Response
+    public function privacyPolicy(): ViewResponse|Response
     {
-        return $this->legal('privacy-policy', 'Политика конфиденциальности — Заточка.ТСК');
+        return $this->legal('privacy-policy', 'Политика конфиденциальности');
     }
 
-    public function userAgreement(): View|Response
+    public function userAgreement(): ViewResponse|Response
     {
-        return $this->legal('user-agreement', 'Пользовательское соглашение — Заточка.ТСК');
+        return $this->legal('user-agreement', 'Пользовательское соглашение');
     }
 
-    public function usageRules(): View|Response
+    public function usageRules(): ViewResponse|Response
     {
-        return $this->legal('usage-rules', 'Правила использования — Заточка.ТСК');
+        return $this->legal('usage-rules', 'Правила использования');
     }
 
     public function notFound(): Response
     {
         return response()->view('public.pages.not-found', [
-            'title' => 'Страница не найдена — Заточка.ТСК',
+            'title' => 'Страница не найдена — '.$this->brandName(),
         ], 404);
     }
 
-    private function legal(string $slug, string $fallbackTitle): View|Response
+    private function legal(string $slug, string $fallbackTitle): ViewResponse|Response
     {
         $document = $this->getLegalDocument->handle(new GetLegalDocumentQuery($slug));
 
@@ -96,8 +97,24 @@ final class PublicSiteController extends Controller
         }
 
         return view('public.pages.legal', [
-            'title' => ($document['title'] ?? $fallbackTitle).' — Заточка.ТСК',
+            'title' => ($document['title'] ?? $fallbackTitle).' — '.$this->brandName(),
             'document' => $document,
         ]);
+    }
+
+    private function brandName(): string
+    {
+        $company = View::shared('company', []);
+
+        return (string) (($company['name'] ?? null) ?: 'Заточка.ТСК');
+    }
+
+    private function brandTitle(): string
+    {
+        $company = View::shared('company', []);
+        $name = (string) (($company['name'] ?? null) ?: 'Заточка.ТСК');
+        $tagline = (string) (($company['tagline'] ?? null) ?: 'профессиональная заточка инструментов');
+
+        return $name.' — '.$tagline;
     }
 }

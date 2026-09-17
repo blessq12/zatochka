@@ -4,8 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Заточка.ТСК' }}</title>
-    <meta name="description" content="@yield('meta_description', 'Профессиональная заточка инструментов в Томске. Заточка.ТСК.')">
+    @php
+        $siteName = (string) (($company['name'] ?? null) ?: 'Заточка.ТСК');
+        $siteTagline = (string) (($company['tagline'] ?? null) ?: 'Профессиональная заточка инструментов');
+    @endphp
+    <title>{{ $title ?? $siteName }}</title>
+    <meta name="description" content="@yield('meta_description', $siteTagline.' — '.$siteName.'.')">
     @stack('head')
     @vite(['resources/site/css/site.css', 'resources/site/js/site.js'])
     @stack('vite')

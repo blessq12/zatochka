@@ -1,5 +1,6 @@
 <script>
 import { actorService } from "../../services/ActorService.js";
+import { equipmentService } from "../../services/EquipmentService.js";
 
 export default {
     name: "UserFormPage",
@@ -9,6 +10,11 @@ export default {
             loading: false,
             saving: false,
             error: null,
+            activeTab: this.$route.query.tab === "equipment" ? "equipment" : "data",
+            equipmentItems: [],
+            equipmentLoading: false,
+            equipmentError: null,
+            equipmentLoaded: false,
             form: {
                 type: this.$route.query.type || this.$route.params.type || "clients",
                 email: "",
@@ -24,18 +30,46 @@ export default {
         isEdit() {
             return !!this.$route.params.id;
         },
+        isClientEdit() {
+            return this.isEdit && this.form.type === "clients";
+        },
         title() {
             return this.isEdit ? "Редактирование пользователя" : "Новый пользователь";
+        },
+        showTabs() {
+            return this.isClientEdit;
+        },
+    },
+    watch: {
+        activeTab(tab) {
+            if (tab === "equipment" && this.isClientEdit && !this.equipmentLoaded) {
+                this.loadEquipment();
+            }
+            if (this.isClientEdit) {
+                const query = { ...this.$route.query };
+                if (tab === "equipment") {
+                    query.tab = "equipment";
+                } else {
+                    delete query.tab;
+                }
+                this.$router.replace({ query });
+            }
         },
     },
     async mounted() {
         if (this.isEdit) {
             await this.load();
+            if (this.isClientEdit && this.activeTab === "equipment") {
+                await this.loadEquipment();
+            }
         }
     },
     methods: {
         typeTitle(type) {
             return actorService.typeLabel(type);
+        },
+        selectTab(tab) {
+            this.activeTab = tab;
         },
         async load() {
             this.loading = true;
@@ -57,6 +91,53 @@ export default {
                     e.response?.data?.message || "Не удалось загрузить";
             } finally {
                 this.loading = false;
+            }
+        },
+        async loadEquipment() {
+            this.equipmentLoading = true;
+            this.equipmentError = null;
+            try {
+                this.equipmentItems = await equipmentService.list(
+                    this.$route.params.id,
+                );
+                this.equipmentLoaded = true;
+            } catch (e) {
+                this.equipmentError =
+                    e.response?.data?.message ||
+                    "Не удалось загрузить оборудование";
+                this.equipmentItems = [];
+            } finally {
+                this.equipmentLoading = false;
+            }
+        },
+        goCreateEquipment() {
+            this.$router.push({
+                name: "manager.equipment.create",
+                query: { client_id: String(this.$route.params.id) },
+            });
+        },
+        goEditEquipment(item) {
+            this.$router.push({
+                name: "manager.equipment.edit",
+                params: { id: String(item.id) },
+            });
+        },
+        goAllEquipment() {
+            this.$router.push({
+                name: "manager.equipment",
+                query: { client_id: String(this.$route.params.id) },
+            });
+        },
+        async removeEquipment(item) {
+            if (!confirm(`Удалить «${item.name}»?`)) {
+                return;
+            }
+            try {
+                await equipmentService.remove(item.id);
+                await this.loadEquipment();
+            } catch (e) {
+                this.equipmentError =
+                    e.response?.data?.message || "Не удалось удалить";
             }
         },
         async submit() {
@@ -109,13 +190,49 @@ export default {
 </script>
 
 <template>
-    <div class="mx-auto max-w-xl space-y-6">
+    <div
+        class="mx-auto space-y-6"
+        :class="showTabs ? 'max-w-2xl' : 'max-w-xl'"
+    >
         <h1 class="text-2xl font-jost-bold text-dark-blue-500">{{ title }}</h1>
 
-        <p v-if="loading" class="text-sm text-slate-500">Загрузка…</p>
-        <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+        <div v-if="showTabs" class="flex flex-wrap gap-2">
+            <button
+                type="button"
+                class="border px-3 py-1.5 text-sm font-jost-medium"
+                :class="
+                    activeTab === 'data'
+                        ? 'border-pink-500 bg-pink-50 text-pink-600'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-pink-300'
+                "
+                @click="selectTab('data')"
+            >
+                Данные
+            </button>
+            <button
+                type="button"
+                class="border px-3 py-1.5 text-sm font-jost-medium"
+                :class="
+                    activeTab === 'equipment'
+                        ? 'border-pink-500 bg-pink-50 text-pink-600'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-pink-300'
+                "
+                @click="selectTab('equipment')"
+            >
+                Оборудование
+            </button>
+        </div>
 
-        <form v-if="!loading" class="space-y-4" @submit.prevent="submit">
+        <p v-if="loading" class="text-sm text-slate-500">Загрузка…</p>
+        <p v-if="error && (!showTabs || activeTab === 'data')" class="text-sm text-red-600">
+            {{ error }}
+        </p>
+
+        <form
+            v-if="!loading && (!showTabs || activeTab === 'data')"
+            class="space-y-4"
+            @submit.prevent="submit"
+        >
             <label class="block space-y-1">
                 <span class="text-sm text-slate-600">Тип</span>
                 <select
@@ -214,5 +331,102 @@ export default {
                 </button>
             </div>
         </form>
+
+        <section
+            v-if="showTabs && activeTab === 'equipment' && !loading"
+            class="space-y-4"
+        >
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-sm text-slate-600">
+                    Оборудование клиента
+                    <span v-if="form.name" class="font-jost-medium text-dark-blue-500">
+                        {{ form.name }}
+                    </span>
+                </p>
+                <div class="flex gap-3">
+                    <button
+                        type="button"
+                        class="text-sm text-pink-600 hover:underline"
+                        @click="goAllEquipment"
+                    >
+                        Весь список
+                    </button>
+                    <button
+                        type="button"
+                        class="bg-pink-500 px-3 py-1.5 text-sm font-jost-medium text-white hover:bg-pink-600"
+                        @click="goCreateEquipment"
+                    >
+                        Добавить
+                    </button>
+                </div>
+            </div>
+
+            <p v-if="equipmentLoading" class="text-sm text-slate-500">
+                Загрузка…
+            </p>
+            <p v-if="equipmentError" class="text-sm text-red-600">
+                {{ equipmentError }}
+            </p>
+
+            <div
+                v-if="!equipmentLoading"
+                class="overflow-x-auto border border-slate-200 bg-white"
+            >
+                <table class="min-w-full text-left text-sm">
+                    <thead class="border-b border-slate-200 bg-slate-50 text-slate-600">
+                        <tr>
+                            <th class="px-4 py-3 font-jost-medium">Название</th>
+                            <th class="px-4 py-3 font-jost-medium">Бренд</th>
+                            <th class="px-4 py-3 font-jost-medium">Тип</th>
+                            <th class="px-4 py-3 font-jost-medium">Модули</th>
+                            <th class="px-4 py-3 font-jost-medium" />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="equipmentItems.length === 0">
+                            <td colspan="5" class="px-4 py-6 text-slate-500">
+                                У клиента пока нет оборудования
+                            </td>
+                        </tr>
+                        <tr
+                            v-for="item in equipmentItems"
+                            :key="item.id"
+                            class="border-t border-slate-100"
+                        >
+                            <td class="px-4 py-3">{{ item.name }}</td>
+                            <td class="px-4 py-3">{{ item.brand }}</td>
+                            <td class="px-4 py-3">{{ item.type }}</td>
+                            <td class="px-4 py-3">
+                                {{ item.modules?.length || 0 }}
+                            </td>
+                            <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                                <button
+                                    type="button"
+                                    class="text-pink-600 hover:underline"
+                                    @click="goEditEquipment(item)"
+                                >
+                                    Изменить
+                                </button>
+                                <button
+                                    type="button"
+                                    class="text-red-600 hover:underline"
+                                    @click="removeEquipment(item)"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button
+                type="button"
+                class="border border-slate-300 px-4 py-2 text-sm text-slate-600"
+                @click="cancel"
+            >
+                К списку пользователей
+            </button>
+        </section>
     </div>
 </template>

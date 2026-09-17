@@ -42,15 +42,17 @@
                             ОСНОВАНО 2020
                         </span>
                         <span
-                            class="text-sm sm:text-base font-jost-bold text-white"
+                            class="text-sm sm:text-base font-jost-bold text-white uppercase"
                         >
-                            ЗАТОЧКА<span data-site-logo-dot class="text-[#003859]">.</span>ТСК
+                            {{ $company['name'] ?? 'Заточка.ТСК' }}
                         </span>
+                        @if(!empty($company['tagline']))
                         <span
                             class="text-[9px] font-jost-regular text-white"
                         >
-                            ПОРА ЗАТОЧИТЬ ИНСТРУМЕНТЫ
+                            {{ $company['tagline'] }}
                         </span>
+                        @endif
                     </div>
                 </a>
 

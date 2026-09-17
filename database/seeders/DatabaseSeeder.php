@@ -10,6 +10,7 @@ final class DatabaseSeeder extends Seeder
     {
         $this->call([
             ManagerSeeder::class,
+            SiteContentSeeder::class,
         ]);
     }
 }

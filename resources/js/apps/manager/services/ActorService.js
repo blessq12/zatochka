@@ -20,8 +20,11 @@ export const actorService = {
         }
     },
 
-    async list(type) {
-        const { data } = await axios.get(`/api/actors/${type}`);
+    async list(type, { q = null, recent = false } = {}) {
+        const params = {};
+        if (q) params.q = q;
+        if (recent) params.recent = 1;
+        const { data } = await axios.get(`/api/actors/${type}`, { params });
         return data.data || [];
     },
 
@@ -32,6 +35,14 @@ export const actorService = {
 
     async create(type, payload) {
         const { data } = await axios.post(`/api/actors/${type}`, payload);
+        return data;
+    },
+
+    async createWalkInClient({ name, phone }) {
+        const { data } = await axios.post("/api/actors/clients/walk-in", {
+            name,
+            phone,
+        });
         return data;
     },
 

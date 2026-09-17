@@ -37,6 +37,51 @@ const routes = [
                 component: () => import("../pages/Users/UserFormPage.vue"),
                 meta: { title: "Редактирование пользователя" },
             },
+            {
+                path: "site",
+                name: "manager.site",
+                component: () => import("../pages/Site/SiteContentPage.vue"),
+                meta: { title: "Контент сайта" },
+            },
+            {
+                path: "equipment",
+                name: "manager.equipment",
+                component: () =>
+                    import("../pages/Equipment/EquipmentListPage.vue"),
+                meta: { title: "Оборудование" },
+            },
+            {
+                path: "equipment/create",
+                name: "manager.equipment.create",
+                component: () =>
+                    import("../pages/Equipment/EquipmentFormPage.vue"),
+                meta: { title: "Новое оборудование" },
+            },
+            {
+                path: "equipment/:id/edit",
+                name: "manager.equipment.edit",
+                component: () =>
+                    import("../pages/Equipment/EquipmentFormPage.vue"),
+                meta: { title: "Редактирование оборудования" },
+            },
+            {
+                path: "orders",
+                name: "manager.orders",
+                component: () => import("../pages/Orders/OrderListPage.vue"),
+                meta: { title: "Заказы" },
+            },
+            {
+                path: "orders/create",
+                name: "manager.orders.create",
+                component: () => import("../pages/Orders/OrderFormPage.vue"),
+                meta: { title: "Новый заказ" },
+            },
+            {
+                path: "orders/:id",
+                name: "manager.orders.show",
+                component: () => import("../pages/Orders/OrderShowPage.vue"),
+                meta: { title: "Заказ" },
+            },
         ],
     },
     {

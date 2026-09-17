@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Crm;
 
+use App\Application\Crm\Command\CreateWalkInClientHandler;
 use App\Application\Crm\Command\DeleteActorHandler;
 use App\Application\Crm\Command\UpdateActorHandler;
 use App\Application\Crm\Query\GetActorHandler;
@@ -20,12 +21,17 @@ final class ActorController extends Controller
         private GetActorHandler $getActor,
         private UpdateActorHandler $updateActor,
         private DeleteActorHandler $deleteActor,
+        private CreateWalkInClientHandler $createWalkInClient,
     ) {}
 
-    public function index(string $type): JsonResponse
+    public function index(Request $request, string $type): JsonResponse
     {
         $actorType = ActorType::fromRoute($type);
-        $actors = $this->listActors->handle($actorType);
+        $query = $request->query('q');
+        $query = is_string($query) ? $query : null;
+        $recent = filter_var($request->query('recent'), FILTER_VALIDATE_BOOLEAN);
+
+        $actors = $this->listActors->handle($actorType, $query, $recent);
 
         return response()->json([
             'data' => array_map(
@@ -33,6 +39,18 @@ final class ActorController extends Controller
                 $actors,
             ),
         ]);
+    }
+
+    public function storeWalkInClient(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:32'],
+        ]);
+
+        $actor = $this->createWalkInClient->handle($data['name'], $data['phone']);
+
+        return response()->json($actor->toArray(), 201);
     }
 
     public function show(string $type, int $id): JsonResponse

@@ -1,6 +1,6 @@
 {
-  "_ActorService-DKeaZqol.js": {
-    "file": "assets/ActorService-DKeaZqol.js",
+  "_ActorService-CI6A56ds.js": {
+    "file": "assets/ActorService-CI6A56ds.js",
     "name": "ActorService",
     "imports": [
       "__plugin-vue_export-helper-Cnh2aH-G.js"
@@ -16,6 +16,20 @@
   "_AppShell-DcdDd7Xh.js": {
     "file": "assets/AppShell-DcdDd7Xh.js",
     "name": "AppShell",
+    "imports": [
+      "__plugin-vue_export-helper-Cnh2aH-G.js"
+    ]
+  },
+  "_EquipmentService-BrRXq-fi.js": {
+    "file": "assets/EquipmentService-BrRXq-fi.js",
+    "name": "EquipmentService",
+    "imports": [
+      "__plugin-vue_export-helper-Cnh2aH-G.js"
+    ]
+  },
+  "_OrderService-BCQI4GKy.js": {
+    "file": "assets/OrderService-BCQI4GKy.js",
+    "name": "OrderService",
     "imports": [
       "__plugin-vue_export-helper-Cnh2aH-G.js"
     ]
@@ -39,7 +53,7 @@
     ]
   },
   "resources/css/apps.css": {
-    "file": "assets/apps-atS7qugU.css",
+    "file": "assets/apps-CObpLwwB.css",
     "src": "resources/css/apps.css",
     "isEntry": true,
     "names": [
@@ -70,7 +84,7 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-BRWfqd5Y.js",
+    "file": "assets/ManagerShell-CXl7XtuI.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
@@ -82,7 +96,7 @@
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-DZ0OkFGD.js",
+    "file": "assets/LoginForm-DKiy4N85.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -94,7 +108,7 @@
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-9-gXmcz9.js",
+    "file": "assets/main-BuvJb7GS.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
@@ -108,7 +122,14 @@
       "resources/js/apps/manager/pages/DashboardPage.vue",
       "resources/js/apps/manager/pages/Users/UsersListPage.vue",
       "resources/js/apps/manager/pages/Users/UserFormPage.vue",
-      "resources/js/apps/manager/pages/Users/UserFormPage.vue"
+      "resources/js/apps/manager/pages/Users/UserFormPage.vue",
+      "resources/js/apps/manager/pages/Site/SiteContentPage.vue",
+      "resources/js/apps/manager/pages/Equipment/EquipmentListPage.vue",
+      "resources/js/apps/manager/pages/Equipment/EquipmentFormPage.vue",
+      "resources/js/apps/manager/pages/Equipment/EquipmentFormPage.vue",
+      "resources/js/apps/manager/pages/Orders/OrderListPage.vue",
+      "resources/js/apps/manager/pages/Orders/OrderFormPage.vue",
+      "resources/js/apps/manager/pages/Orders/OrderShowPage.vue"
     ]
   },
   "resources/js/apps/manager/pages/DashboardPage.vue": {
@@ -120,23 +141,90 @@
       "__plugin-vue_export-helper-Cnh2aH-G.js"
     ]
   },
+  "resources/js/apps/manager/pages/Equipment/EquipmentFormPage.vue": {
+    "file": "assets/EquipmentFormPage-iM6xAysw.js",
+    "name": "EquipmentFormPage",
+    "src": "resources/js/apps/manager/pages/Equipment/EquipmentFormPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_EquipmentService-BrRXq-fi.js",
+      "_ActorService-CI6A56ds.js",
+      "__plugin-vue_export-helper-Cnh2aH-G.js"
+    ]
+  },
+  "resources/js/apps/manager/pages/Equipment/EquipmentListPage.vue": {
+    "file": "assets/EquipmentListPage-WopH6mXy.js",
+    "name": "EquipmentListPage",
+    "src": "resources/js/apps/manager/pages/Equipment/EquipmentListPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_EquipmentService-BrRXq-fi.js",
+      "_ActorService-CI6A56ds.js",
+      "__plugin-vue_export-helper-Cnh2aH-G.js"
+    ]
+  },
+  "resources/js/apps/manager/pages/Orders/OrderFormPage.vue": {
+    "file": "assets/OrderFormPage-CE0JfIzj.js",
+    "name": "OrderFormPage",
+    "src": "resources/js/apps/manager/pages/Orders/OrderFormPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_ActorService-CI6A56ds.js",
+      "_EquipmentService-BrRXq-fi.js",
+      "_OrderService-BCQI4GKy.js",
+      "__plugin-vue_export-helper-Cnh2aH-G.js"
+    ]
+  },
+  "resources/js/apps/manager/pages/Orders/OrderListPage.vue": {
+    "file": "assets/OrderListPage-d3e8TwmI.js",
+    "name": "OrderListPage",
+    "src": "resources/js/apps/manager/pages/Orders/OrderListPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_OrderService-BCQI4GKy.js",
+      "_ActorService-CI6A56ds.js",
+      "__plugin-vue_export-helper-Cnh2aH-G.js"
+    ]
+  },
+  "resources/js/apps/manager/pages/Orders/OrderShowPage.vue": {
+    "file": "assets/OrderShowPage-bTzodE2l.js",
+    "name": "OrderShowPage",
+    "src": "resources/js/apps/manager/pages/Orders/OrderShowPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_OrderService-BCQI4GKy.js",
+      "_ActorService-CI6A56ds.js",
+      "_EquipmentService-BrRXq-fi.js",
+      "__plugin-vue_export-helper-Cnh2aH-G.js"
+    ]
+  },
+  "resources/js/apps/manager/pages/Site/SiteContentPage.vue": {
+    "file": "assets/SiteContentPage-mf9xeduv.js",
+    "name": "SiteContentPage",
+    "src": "resources/js/apps/manager/pages/Site/SiteContentPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "__plugin-vue_export-helper-Cnh2aH-G.js"
+    ]
+  },
   "resources/js/apps/manager/pages/Users/UserFormPage.vue": {
-    "file": "assets/UserFormPage-DPntDFX4.js",
+    "file": "assets/UserFormPage-5TTLyODZ.js",
     "name": "UserFormPage",
     "src": "resources/js/apps/manager/pages/Users/UserFormPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_ActorService-DKeaZqol.js",
+      "_ActorService-CI6A56ds.js",
+      "_EquipmentService-BrRXq-fi.js",
       "__plugin-vue_export-helper-Cnh2aH-G.js"
     ]
   },
   "resources/js/apps/manager/pages/Users/UsersListPage.vue": {
-    "file": "assets/UsersListPage-BYRLKj5R.js",
+    "file": "assets/UsersListPage-D4s4iOkg.js",
     "name": "UsersListPage",
     "src": "resources/js/apps/manager/pages/Users/UsersListPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_ActorService-DKeaZqol.js",
+      "_ActorService-CI6A56ds.js",
       "__plugin-vue_export-helper-Cnh2aH-G.js"
     ]
   },
@@ -177,7 +265,7 @@
     ]
   },
   "resources/site/css/site.css": {
-    "file": "assets/site-CG_hVAlG.css",
+    "file": "assets/site-DEFDzz89.css",
     "src": "resources/site/css/site.css",
     "isEntry": true,
     "names": [
