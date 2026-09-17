@@ -1,1 +1,0 @@
-import{b as e}from"./_plugin-vue_export-helper-BsN3X5A5.js";const n={async list(a={}){const{data:t}=await e.get("/api/v1/equipment",{params:a});return{items:t.data,meta:t.meta}},async get(a){const{data:t}=await e.get(`/api/v1/equipment/${a}`);return t.data},async create(a){const{data:t}=await e.post("/api/v1/equipment",a);return t.data}};export{n as e};

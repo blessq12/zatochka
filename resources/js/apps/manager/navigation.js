@@ -1,11 +1,3 @@
 export const navigationItems = [
-    { name: "manager.clients", label: "Клиенты", to: "/clients" },
-    { name: "manager.orders", label: "Заказы", to: "/orders" },
-    { name: "manager.equipment", label: "Оборудование", to: "/equipment" },
-    { name: "manager.stock", label: "Склад", to: "/stock-items" },
-    { name: "manager.cash-desk", label: "Касса", to: "/cash-desk" },
-    { name: "manager.cash-operations", label: "Операции", to: "/cash-operations" },
-    { name: "manager.users", label: "Сотрудники", to: "/users" },
-    { name: "manager.site", label: "Контент сайта", to: "/site" },
-    { name: "manager.documents", label: "Документы", to: "/documents" },
+    { name: "manager.dashboard", label: "Дашборд", to: "/" },
 ];

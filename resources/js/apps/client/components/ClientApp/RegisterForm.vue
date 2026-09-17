@@ -8,31 +8,20 @@ export default {
     data() {
         return {
             form: {
-                fullName: "",
                 email: "",
-                phone: "",
                 password: "",
                 passwordConfirmation: "",
             },
             errors: {},
             schema: yup.object().shape({
-                fullName: yup
-                    .string()
-                    .required("ФИО обязательно для заполнения")
-                    .min(2, "ФИО должно содержать минимум 2 символа"),
                 email: yup
                     .string()
                     .email("Неверный формат email")
                     .required("Email обязателен для заполнения"),
-                phone: yup
-                    .string()
-                    .required("Телефон обязателен для заполнения")
-                    .min(18, "Номер телефона должен быть 18 символов")
-                    .max(18, "Номер телефона должен быть 18 символов"),
                 password: yup
                     .string()
                     .required("Пароль обязателен для заполнения")
-                    .min(6, "Пароль должен содержать минимум 6 символов"),
+                    .min(8, "Пароль должен содержать минимум 8 символов"),
                 passwordConfirmation: yup
                     .string()
                     .required("Подтверждение пароля обязательно")
@@ -81,7 +70,6 @@ export default {
         </h2>
 
         <form @submit.prevent="handleSubmit" class="space-y-6">
-            <!-- Общая ошибка -->
             <div
                 v-if="errors.general"
                 class="bg-red-50/80 backdrop-blur-lg border border-red-300/50 text-red-700 px-6 py-4 dark:bg-red-900/30 dark:border-red-600/50 dark:text-red-400"
@@ -89,31 +77,6 @@ export default {
                 {{ errors.general }}
             </div>
 
-            <!-- ФИО -->
-            <div>
-                <label
-                    class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-3"
-                >
-                    ФИО
-                </label>
-                <input
-                    v-model="form.fullName"
-                    type="text"
-                    placeholder="Иванов Иван Иванович"
-                    class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-700/60 dark:border-gray-600/20"
-                    :class="{
-                        'border-red-500': errors.fullName,
-                    }"
-                />
-                <p
-                    v-if="errors.fullName"
-                    class="mt-2 text-sm text-red-600 dark:text-red-400"
-                >
-                    {{ errors.fullName }}
-                </p>
-            </div>
-
-            <!-- Email -->
             <div>
                 <label
                     class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-3"
@@ -123,11 +86,9 @@ export default {
                 <input
                     v-model="form.email"
                     type="email"
-                    placeholder="example@mail.ru"
+                    placeholder="you@example.com"
                     class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-700/60 dark:border-gray-600/20"
-                    :class="{
-                        'border-red-500': errors.email,
-                    }"
+                    :class="{ 'border-red-500': errors.email }"
                 />
                 <p
                     v-if="errors.email"
@@ -137,33 +98,6 @@ export default {
                 </p>
             </div>
 
-            <!-- Телефон -->
-            <div>
-                <label
-                    class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-3"
-                >
-                    Телефон
-                </label>
-                <input
-                    v-model="form.phone"
-                    v-maska
-                    data-maska="+7 (###) ###-##-##"
-                    type="tel"
-                    placeholder="+7 (999) 123-45-67"
-                    class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-700/60 dark:border-gray-600/20"
-                    :class="{
-                        'border-red-500': errors.phone,
-                    }"
-                />
-                <p
-                    v-if="errors.phone"
-                    class="mt-2 text-sm text-red-600 dark:text-red-400"
-                >
-                    {{ errors.phone }}
-                </p>
-            </div>
-
-            <!-- Пароль -->
             <div>
                 <label
                     class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-3"
@@ -173,11 +107,9 @@ export default {
                 <input
                     v-model="form.password"
                     type="password"
-                    placeholder="Минимум 6 символов"
+                    placeholder="Минимум 8 символов"
                     class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-700/60 dark:border-gray-600/20"
-                    :class="{
-                        'border-red-500': errors.password,
-                    }"
+                    :class="{ 'border-red-500': errors.password }"
                 />
                 <p
                     v-if="errors.password"
@@ -187,7 +119,6 @@ export default {
                 </p>
             </div>
 
-            <!-- Подтверждение пароля -->
             <div>
                 <label
                     class="block text-base sm:text-lg font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-3"
@@ -199,9 +130,7 @@ export default {
                     type="password"
                     placeholder="Повторите пароль"
                     class="w-full px-6 py-4 bg-white/60 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 text-dark-gray-500 dark:text-gray-200 dark:bg-gray-700/60 dark:border-gray-600/20"
-                    :class="{
-                        'border-red-500': errors.passwordConfirmation,
-                    }"
+                    :class="{ 'border-red-500': errors.passwordConfirmation }"
                 />
                 <p
                     v-if="errors.passwordConfirmation"
@@ -211,7 +140,6 @@ export default {
                 </p>
             </div>
 
-            <!-- Кнопка отправки -->
             <button
                 type="submit"
                 :disabled="authStore.isLoading"
@@ -223,5 +151,3 @@ export default {
         </form>
     </div>
 </template>
-
-<style scoped></style>

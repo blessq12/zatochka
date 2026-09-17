@@ -1,13 +1,13 @@
-// DTO: Login request payload
-// Usage: import createLoginRequestDto from "./loginRequestDto";
-//        const payload = createLoginRequestDto({ phone, password });
+// DTO: Login request payload for Identity API
 
 export default function createLoginRequestDto({
-    phone = "",
+    email = "",
     password = "",
+    expectedActorType = "clients",
 } = {}) {
     return {
-        phone,
+        email,
         password,
+        expected_actor_type: expectedActorType,
     };
 }

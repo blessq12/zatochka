@@ -12,13 +12,12 @@ axios.interceptors.request.use((config) => {
 
     const url = config.url || "";
     const publicPaths = [
-        "/api/auth/login",
-        "/api/auth/register",
-        "/api/bootstrap",
+        "/api/identity/login",
+        "/api/identity/register",
     ];
     const isPublic = publicPaths.some((path) => url.startsWith(path));
 
-    if (url.startsWith("/api/") && !url.startsWith("/api/v1/") && !isPublic) {
+    if (url.startsWith("/api/") && !isPublic) {
         const clientToken = localStorage.getItem("auth_token");
         if (clientToken) {
             config.headers.Authorization = `Bearer ${clientToken}`;

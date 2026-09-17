@@ -2,40 +2,63 @@ import axios from "axios";
 import { defineStore } from "pinia";
 import createLoginRequestDto from "../dto/auth/loginRequestDto.js";
 import createRegisterRequestDto from "../dto/auth/registerRequestDto.js";
-import createUpdateClientRequestDto from "../dto/client/updateClientRequestDto.js";
 import { toastService } from "@shared/toastService.js";
+
+const TOKEN_KEY = "auth_token";
+const EXPECTED_ACTOR_TYPE = "clients";
 
 export const useAuthStore = defineStore("auth", {
     state: () => ({
         user: null,
         token: null,
         isLoading: false,
-        /** true — вошёл по временному паролю, нужно показать модалку установки постоянного */
         requiresPasswordSet: false,
     }),
 
     getters: {
-        isAuthenticated: (state) => !!state.token,
+        isAuthenticated: (state) => !!state.token && !!state.user,
+        actorId: (state) => state.user?.actor?.id ?? null,
     },
 
     actions: {
+        applySession(payload) {
+            this.token = payload.token;
+            this.user = {
+                id: payload.id,
+                email: payload.email,
+                actor: payload.actor,
+            };
+            localStorage.setItem(TOKEN_KEY, this.token);
+        },
+
+        assertClientRole(actorType) {
+            if (actorType !== EXPECTED_ACTOR_TYPE) {
+                throw new Error("Нет доступа к кабинету клиента");
+            }
+        },
+
         async login(credentials) {
             this.isLoading = true;
 
             try {
-                const payload = createLoginRequestDto(credentials);
-                const response = await axios.post("/api/auth/login", payload);
+                const payload = createLoginRequestDto({
+                    email: credentials.email,
+                    password: credentials.password,
+                    expectedActorType: EXPECTED_ACTOR_TYPE,
+                });
+                const response = await axios.post("/api/identity/login", payload);
 
-                this.token = response.data.token;
-                localStorage.setItem("auth_token", this.token);
-
-                await this.fetchProfile();
+                this.assertClientRole(response.data.actor?.type);
+                this.applySession(response.data);
                 toastService.success("Добро пожаловать!");
 
                 return { success: true, data: response.data };
             } catch (error) {
+                await this.logout();
                 const message =
-                    error.response?.data?.message || "Ошибка авторизации";
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Ошибка авторизации";
                 return { success: false, error: message };
             } finally {
                 this.isLoading = false;
@@ -46,20 +69,22 @@ export const useAuthStore = defineStore("auth", {
             this.isLoading = true;
 
             try {
-                const payload = createRegisterRequestDto(userData);
+                const payload = createRegisterRequestDto({
+                    email: userData.email,
+                    password: userData.password,
+                });
                 const response = await axios.post(
-                    "/api/auth/register",
+                    "/api/identity/register",
                     payload
                 );
 
-                this.token = response.data.token;
-                localStorage.setItem("auth_token", this.token);
-
-                await this.fetchProfile();
+                this.assertClientRole(response.data.actor?.type);
+                this.applySession(response.data);
                 toastService.success("Регистрация успешна!");
 
                 return { success: true, data: response.data };
             } catch (error) {
+                await this.logout();
                 const message =
                     error.response?.data?.message || "Ошибка регистрации";
                 return { success: false, error: message };
@@ -69,23 +94,33 @@ export const useAuthStore = defineStore("auth", {
         },
 
         async logout() {
+            try {
+                if (this.token) {
+                    await axios.post("/api/identity/logout");
+                }
+            } catch {
+                // ignore
+            }
+
             this.token = null;
             this.user = null;
             this.requiresPasswordSet = false;
-            localStorage.removeItem("auth_token");
+            localStorage.removeItem(TOKEN_KEY);
         },
 
-        async fetchProfile() {
-            const response = await axios.get("/api/client/profile");
-            this.user = response.data.data;
-            this.requiresPasswordSet =
-                this.user?.requires_password_set === true;
-
+        async fetchMe() {
+            const response = await axios.get("/api/identity/me");
+            this.assertClientRole(response.data.actor?.type);
+            this.user = {
+                id: response.data.id,
+                email: response.data.email,
+                actor: response.data.actor,
+            };
             return this.user;
         },
 
         async checkAuth() {
-            const token = localStorage.getItem("auth_token");
+            const token = localStorage.getItem(TOKEN_KEY);
             if (!token) {
                 return false;
             }
@@ -94,71 +129,24 @@ export const useAuthStore = defineStore("auth", {
             this.isLoading = true;
 
             try {
-                await this.fetchProfile();
+                await this.fetchMe();
                 return true;
             } catch (error) {
-                if (error.response?.status === 401) {
-                    await this.logout();
-                }
-                console.error("Auth check failed:", error);
+                await this.logout();
                 return false;
             } finally {
                 this.isLoading = false;
             }
         },
 
-        async updateClient(formData) {
-            this.isLoading = true;
-
-            try {
-                const payload = createUpdateClientRequestDto(formData);
-
-                const response = await axios.patch(
-                    "/api/client/profile",
-                    payload,
-                    { headers: { Authorization: `Bearer ${this.token}` } }
-                );
-
-                this.user = response.data.data;
-                toastService.success("Профиль обновлён");
-                return { success: true, data: response.data };
-            } catch (error) {
-                const message =
-                    error.response?.data?.message ||
-                    "Ошибка обновления профиля";
-                toastService.error(message);
-                return { success: false, error: message };
-            } finally {
-                this.isLoading = false;
-            }
+        async updateClient() {
+            toastService.error("Обновление профиля пока недоступно");
+            return { success: false, error: "Обновление профиля пока недоступно" };
         },
 
-        async setPassword(newPassword, newPasswordConfirmation) {
-            this.isLoading = true;
-
-            try {
-                const response = await axios.post(
-                    "/api/client/password",
-                    {
-                        password: newPassword,
-                        password_confirmation: newPasswordConfirmation,
-                    },
-                    { headers: { Authorization: `Bearer ${this.token}` } }
-                );
-
-                this.requiresPasswordSet = false;
-                this.user = response.data.data;
-                toastService.success("Пароль успешно установлен");
-                return { success: true, data: response.data };
-            } catch (error) {
-                const message =
-                    error.response?.data?.message ||
-                    "Ошибка установки пароля";
-                toastService.error(message);
-                return { success: false, error: message };
-            } finally {
-                this.isLoading = false;
-            }
+        async setPassword() {
+            toastService.error("Смена пароля пока недоступна");
+            return { success: false, error: "Смена пароля пока недоступна" };
         },
     },
 });

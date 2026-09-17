@@ -23,8 +23,9 @@ axios.interceptors.response.use(
         const status = error.response?.status;
         const url = error.config?.url || "";
         const isManagerApi =
-            url.startsWith("/api/v1/") &&
-            !url.startsWith("/api/v1/auth/manager/login");
+            url.startsWith("/api/") &&
+            !url.startsWith("/api/identity/login") &&
+            !url.startsWith("/api/identity/register");
 
         if (status === 401 && isManagerApi && !isHandlingUnauthorized) {
             isHandlingUnauthorized = true;
@@ -58,5 +59,6 @@ app.use(Toast, {
     rtl: false,
 });
 
-managerStore.restoreSession();
-app.mount("#app");
+managerStore.restoreSession().finally(() => {
+    app.mount("#app");
+});

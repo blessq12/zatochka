@@ -14,10 +14,10 @@ return [
         ],
     ],
 
-        'providers' => [
+    'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Infrastructure\Identity\Model\ManagerAccountModel::class,
+            'model' => App\Infrastructure\Identity\Eloquent\IdentityModel::class,
         ],
     ],
 

@@ -23,7 +23,9 @@ axios.interceptors.response.use(
         const status = error.response?.status;
         const url = error.config?.url || "";
         const isPosApiRequest =
-            url.startsWith("/api/v1/") && !url.startsWith("/api/v1/auth/login");
+            url.startsWith("/api/") &&
+            !url.startsWith("/api/identity/login") &&
+            !url.startsWith("/api/identity/register");
 
         if (status === 401 && isPosApiRequest && !isHandlingPosUnauthorized) {
             isHandlingPosUnauthorized = true;

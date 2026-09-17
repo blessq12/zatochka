@@ -1,10 +1,10 @@
 import axios from "axios";
 import { defineStore } from "pinia";
 import { toastService } from "@shared/toastService.js";
-import { orderService } from "../services/OrderService.js";
 
 const POS_TOKEN_KEY = "pos_token";
 const POS_USER_KEY = "pos_user";
+const EXPECTED_ACTOR_TYPE = "masters";
 
 const persistUser = (user) => {
     if (user) {
@@ -33,12 +33,6 @@ export const usePosStore = defineStore("pos", {
         token: null,
         isLoading: false,
         error: null,
-        ordersCount: {
-            new: 0,
-            in_work: 0,
-            waiting_parts: 0,
-            ready: 0,
-        },
     }),
 
     getters: {
@@ -46,81 +40,96 @@ export const usePosStore = defineStore("pos", {
     },
 
     actions: {
+        applySession(payload) {
+            this.token = payload.token;
+            this.user = {
+                id: payload.id,
+                email: payload.email,
+                actor: payload.actor,
+            };
+            localStorage.setItem(POS_TOKEN_KEY, this.token);
+            persistUser(this.user);
+        },
+
+        assertMasterRole(actorType) {
+            if (actorType !== EXPECTED_ACTOR_TYPE) {
+                throw new Error("Нет доступа к кассе мастера");
+            }
+        },
+
         async login(credentials) {
             this.isLoading = true;
             this.error = null;
 
             try {
-                const response = await axios.post("/api/v1/auth/login", credentials);
-                const { token, master } = response.data;
+                const response = await axios.post("/api/identity/login", {
+                    email: credentials.email,
+                    password: credentials.password,
+                    expected_actor_type: EXPECTED_ACTOR_TYPE,
+                });
 
-                if (!token || !master) {
-                    this.error = "Ошибка авторизации";
-                    return { success: false, error: this.error };
-                }
-
-                this.token = token;
-                this.user = master;
-                localStorage.setItem(POS_TOKEN_KEY, token);
-                persistUser(master);
+                this.assertMasterRole(response.data.actor?.type);
+                this.applySession(response.data);
                 toastService.success("Добро пожаловать!");
-
-                await this.getOrdersCount();
 
                 return { success: true, data: response.data };
             } catch (error) {
+                await this.clearSession();
                 this.error =
-                    error.response?.data?.message || "Ошибка авторизации";
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Ошибка авторизации";
                 return { success: false, error: this.error };
             } finally {
                 this.isLoading = false;
             }
         },
 
-        restoreSession() {
+        async restoreSession() {
             const token = localStorage.getItem(POS_TOKEN_KEY);
             const user = restoreUser();
 
             if (!token || !user) {
-                this.logout();
+                await this.clearSession();
                 return false;
             }
 
             this.token = token;
             this.user = user;
-            this.getOrdersCount();
 
-            return true;
-        },
-
-        async getOrdersCount() {
             try {
-                const counts = await orderService.getOrdersCount();
-                this.ordersCount.new = counts.new || 0;
-                this.ordersCount.in_work = counts.in_work || 0;
-                this.ordersCount.waiting_parts = counts.waiting_parts || 0;
-                this.ordersCount.ready = counts.ready || 0;
-            } catch (error) {
-                console.error("Failed to fetch orders count:", error);
-                this.ordersCount.new = 0;
-                this.ordersCount.in_work = 0;
-                this.ordersCount.waiting_parts = 0;
-                this.ordersCount.ready = 0;
+                const { data } = await axios.get("/api/identity/me");
+                this.assertMasterRole(data.actor?.type);
+                this.user = {
+                    id: data.id,
+                    email: data.email,
+                    actor: data.actor,
+                };
+                persistUser(this.user);
+                return true;
+            } catch {
+                await this.clearSession();
+                return false;
             }
         },
 
-        logout() {
+        async clearSession() {
             this.token = null;
             this.user = null;
             this.error = null;
-            this.ordersCount = {
-                new: 0,
-                in_work: 0,
-                waiting_parts: 0,
-                ready: 0,
-            };
             localStorage.removeItem(POS_TOKEN_KEY);
             persistUser(null);
+        },
+
+        async logout() {
+            try {
+                if (this.token) {
+                    await axios.post("/api/identity/logout");
+                }
+            } catch {
+                // ignore
+            }
+            await this.clearSession();
         },
     },
 });

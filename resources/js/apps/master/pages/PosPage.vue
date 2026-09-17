@@ -20,19 +20,14 @@ export default {
         const isCheckingAuth = ref(true);
         const loginForm = ref({ email: "", password: "" });
 
-        const userName = computed(() => {
-            const user = posStore.user;
-            if (!user) return "";
-            const parts = [user.surname, user.name].filter(Boolean);
-            return parts.length > 0 ? parts.join(" ") : user.name || "";
-        });
+        const userName = computed(() => posStore.user?.email || "");
 
         const userEmail = computed(() => posStore.user?.email || "");
 
-        const checkAuth = () => {
+        const checkAuth = async () => {
             isCheckingAuth.value = true;
             try {
-                posStore.restoreSession();
+                await posStore.restoreSession();
             } finally {
                 isCheckingAuth.value = false;
             }
@@ -41,7 +36,7 @@ export default {
         const submitLogin = async () => {
             const result = await posStore.login(loginForm.value);
             if (result.success) {
-                router.push({ name: "pos.orders.new" });
+                router.push({ name: "pos.dashboard" });
             }
         };
 
@@ -52,9 +47,6 @@ export default {
 
         const pageTitle = computed(() => {
             const name = String(router.currentRoute.value.name || "");
-            if (name.includes("warehouse")) return "Склад";
-            if (name.includes("equipment")) return "Оборудование";
-            if (name.includes("orders")) return "Заказы";
             if (name.includes("dashboard")) return "Дашборд";
             return "POS";
         });

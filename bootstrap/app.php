@@ -19,10 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ConvertDomainException::class,
         ]);
         $middleware->alias([
-            'master' => \App\Http\Middleware\EnsureUserIsMaster::class,
-            'manager' => \App\Http\Middleware\EnsureUserIsManager::class,
-            'staff' => \App\Http\Middleware\EnsureUserIsStaff::class,
-            'client' => \App\Http\Middleware\EnsureUserIsClient::class,
+            'actor' => \App\Http\Middleware\EnsureActorType::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -30,5 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->json([
                 'message' => $exception->getMessage(),
             ], 422);
+        });
+        $exceptions->render(function (\App\Shared\Domain\ForbiddenException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 403);
         });
     })->create();
