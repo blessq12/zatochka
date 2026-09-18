@@ -11,6 +11,8 @@ interface OrderRepository
     public function findById(int $id): ?Order;
 
     /**
+     * @param  list<string>|null  $statusesIn
+     * @param  list<string>|null  $statusesNotIn
      * @return list<Order>
      */
     public function all(
@@ -18,6 +20,8 @@ interface OrderRepository
         ?string $status = null,
         ?int $masterId = null,
         ?int $equipmentId = null,
+        ?array $statusesIn = null,
+        ?array $statusesNotIn = null,
     ): array;
 
     /**

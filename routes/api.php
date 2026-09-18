@@ -40,11 +40,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::delete('/site-content/legal/{slug}', [SiteContentController::class, 'destroyLegal']);
 
         Route::post('/equipments', [EquipmentController::class, 'store']);
-        Route::get('/equipments/{id}', [EquipmentController::class, 'show']);
         Route::match(['put', 'patch'], '/equipments/{id}', [EquipmentController::class, 'update']);
         Route::delete('/equipments/{id}', [EquipmentController::class, 'destroy']);
 
-        Route::post('/orders', [OrderController::class, 'store']);
         Route::put('/orders/{id}/items', [OrderController::class, 'updateItems']);
         Route::post('/orders/{id}/assign-master', [OrderController::class, 'assignMaster']);
         Route::post('/orders/{id}/transition', [OrderController::class, 'transition']);
@@ -75,17 +73,24 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::put('/orders/{orderId}/materials', ApplyOrderMaterialsController::class);
     });
 
-    Route::middleware('actor:managers,masters')->group(function (): void {
+    Route::middleware('actor:masters')->group(function (): void {
+        Route::get('/orders/assigned', [OrderController::class, 'assigned']);
+    });
+
+    Route::middleware('actor:managers,masters,clients')->group(function (): void {
         Route::get('/equipments', [EquipmentController::class, 'index']);
+        Route::get('/equipments/{id}', [EquipmentController::class, 'show']);
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/orders/{id}', [OrderController::class, 'show'])->whereNumber('id');
+    });
+
+    Route::middleware('actor:managers,masters')->group(function (): void {
         Route::get('/warehouse/items', [StockItemController::class, 'index']);
         Route::get('/warehouse/items/{id}', [StockItemController::class, 'show']);
-        Route::get('/orders', [OrderController::class, 'index']);
         Route::get('/workshop/jobs/by-order/{orderId}', [WorkshopJobController::class, 'byOrder']);
     });
 
     Route::middleware('actor:masters')->group(function (): void {
-        Route::get('/orders/assigned', [OrderController::class, 'assigned']);
-
         Route::post('/workshop/jobs/accept', [WorkshopJobController::class, 'accept']);
         Route::get('/workshop/jobs/mine', [WorkshopJobController::class, 'mine']);
         Route::get('/workshop/jobs/{id}', [WorkshopJobController::class, 'show']);
@@ -93,8 +98,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/workshop/jobs/{id}/complete', [WorkshopJobController::class, 'complete']);
     });
 
-    Route::middleware('actor:clients,managers,masters')->group(function (): void {
-        Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::middleware('actor:managers,clients')->group(function (): void {
+        Route::post('/orders', [OrderController::class, 'store']);
     });
 
     Route::middleware('actor:clients')->group(function (): void {

@@ -9,7 +9,9 @@ use App\Application\Order\Command\TransitionOrderStatusHandler;
 use App\Application\Order\Command\UpdateOrderItemsHandler;
 use App\Application\Order\Query\GetOrderHandler;
 use App\Application\Order\Query\ListOrdersHandler;
+use App\Domain\Order\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Shared\Domain\DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -27,7 +29,9 @@ final class OrderController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $asMaster = $request->attributes->get('actor_type') === 'masters';
+        $actorType = (string) $request->attributes->get('actor_type');
+        $asMaster = $actorType === 'masters';
+        $asClient = $actorType === 'clients';
 
         $clientId = $request->query('client_id');
         $clientId = $clientId !== null && $clientId !== '' ? (int) $clientId : null;
@@ -37,8 +41,16 @@ final class OrderController extends Controller
         $masterId = $masterId !== null && $masterId !== '' ? (int) $masterId : null;
         $equipmentId = $request->query('equipment_id');
         $equipmentId = $equipmentId !== null && $equipmentId !== '' ? (int) $equipmentId : null;
+        $statusesIn = null;
+        $statusesNotIn = null;
 
-        if ($asMaster) {
+        if ($asClient) {
+            $clientId = (int) $request->attributes->get('actor_id');
+            $masterId = null;
+            $equipmentId = null;
+            $status = null;
+            [$statusesIn, $statusesNotIn] = $this->clientScopeFilters($request->query('scope'));
+        } elseif ($asMaster) {
             if ($equipmentId === null || $equipmentId < 1) {
                 return response()->json([
                     'message' => 'equipment_id is required.',
@@ -48,7 +60,14 @@ final class OrderController extends Controller
             $masterId = null;
         }
 
-        $items = $this->listOrders->handle($clientId, $status, $masterId, $equipmentId);
+        $items = $this->listOrders->handle(
+            $clientId,
+            $status,
+            $masterId,
+            $equipmentId,
+            $statusesIn,
+            $statusesNotIn,
+        );
 
         return response()->json([
             'data' => array_map(static fn ($item) => $item->toArray(), $items),
@@ -80,16 +99,22 @@ final class OrderController extends Controller
             return response()->json(['message' => 'Not found.'], 404);
         }
 
+        if ($asClientId !== null && $item->status === OrderStatus::Cancelled->value) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
+
         return response()->json($item->toArray());
     }
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'client_id' => ['required', 'integer', 'min:1'],
+        $actorType = (string) $request->attributes->get('actor_type');
+        $asClient = $actorType === 'clients';
+
+        $rules = [
             'billing_type' => ['required', 'string', 'in:paid,warranty'],
             'urgency' => ['nullable', 'string', 'in:normal,urgent'],
-            'estimated_cost' => ['required', 'numeric', 'min:0'],
+            'estimated_cost' => [$asClient ? 'nullable' : 'required', 'numeric', 'min:0'],
             'needs_delivery' => ['required', 'boolean'],
             'delivery_address' => ['nullable', 'string', 'max:255'],
             'items' => ['required', 'array', 'min:1'],
@@ -98,13 +123,23 @@ final class OrderController extends Controller
             'items.*.quantity' => ['nullable', 'integer', 'min:1'],
             'items.*.equipment_id' => ['nullable', 'integer', 'min:1'],
             'items.*.problem' => ['nullable', 'string'],
-        ]);
+        ];
+
+        if (! $asClient) {
+            $rules['client_id'] = ['required', 'integer', 'min:1'];
+        }
+
+        $data = $request->validate($rules);
+
+        $clientId = $asClient
+            ? (int) $request->attributes->get('actor_id')
+            : (int) $data['client_id'];
 
         $item = $this->createOrder->handle(
-            (int) $data['client_id'],
+            $clientId,
             $data['billing_type'],
             $data['urgency'] ?? 'normal',
-            (string) $data['estimated_cost'],
+            isset($data['estimated_cost']) ? (string) $data['estimated_cost'] : '0',
             (bool) $data['needs_delivery'],
             $data['delivery_address'] ?? null,
             $data['items'],
@@ -176,5 +211,19 @@ final class OrderController extends Controller
         );
 
         return response()->json($item->toArray(), 201);
+    }
+
+    /**
+     * @return array{0: list<string>|null, 1: list<string>|null}
+     */
+    private function clientScopeFilters(mixed $scope): array
+    {
+        $scope = is_string($scope) ? $scope : 'active';
+
+        return match ($scope) {
+            'archive' => [[OrderStatus::Issued->value], null],
+            'active' => [null, [OrderStatus::Issued->value, OrderStatus::Cancelled->value]],
+            default => throw new DomainException('scope must be active or archive.'),
+        };
     }
 }

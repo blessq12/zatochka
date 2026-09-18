@@ -1,0 +1,1 @@
+import{b as a}from"./_plugin-vue_export-helper-BMlgpdBR.js";const s={async list(){const{data:t}=await a.get("/api/equipments");return t.data||[]},async get(t){const{data:e}=await a.get(`/api/equipments/${t}`);return e}};export{s as e};

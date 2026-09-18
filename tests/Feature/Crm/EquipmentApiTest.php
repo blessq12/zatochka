@@ -119,7 +119,8 @@ final class EquipmentApiTest extends TestCase
         ])->assertOk()->json('token');
 
         $this->withToken($clientToken)->getJson('/api/equipments')
-            ->assertForbidden();
+            ->assertOk()
+            ->assertJsonPath('data', []);
 
         $this->withToken($clientToken)->postJson('/api/equipments', [
             'client_id' => $clientId,

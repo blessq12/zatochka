@@ -73,6 +73,8 @@ final class EloquentOrderRepository implements OrderRepository
         ?string $status = null,
         ?int $masterId = null,
         ?int $equipmentId = null,
+        ?array $statusesIn = null,
+        ?array $statusesNotIn = null,
     ): array {
         $query = OrderModel::query()->with('items')->orderByDesc('id');
 
@@ -81,6 +83,12 @@ final class EloquentOrderRepository implements OrderRepository
         }
         if ($status !== null && $status !== '') {
             $query->where('status', $status);
+        }
+        if ($statusesIn !== null && $statusesIn !== []) {
+            $query->whereIn('status', $statusesIn);
+        }
+        if ($statusesNotIn !== null && $statusesNotIn !== []) {
+            $query->whereNotIn('status', $statusesNotIn);
         }
         if ($masterId !== null) {
             $query->where('master_id', $masterId);

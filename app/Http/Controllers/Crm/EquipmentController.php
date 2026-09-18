@@ -24,14 +24,20 @@ final class EquipmentController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $actorType = (string) $request->attributes->get('actor_type');
+        $asMaster = $actorType === 'masters';
+        $asClient = $actorType === 'clients';
+
         $clientId = $request->query('client_id');
         $clientId = $clientId !== null && $clientId !== '' ? (int) $clientId : null;
         $q = $request->query('q');
         $q = is_string($q) && trim($q) !== '' ? trim($q) : null;
-        $asMaster = $request->attributes->get('actor_type') === 'masters';
 
         if ($asMaster) {
             $clientId = null;
+        }
+        if ($asClient) {
+            $clientId = (int) $request->attributes->get('actor_id');
         }
 
         $items = $this->listEquipment->handle($clientId, $q);
@@ -44,10 +50,16 @@ final class EquipmentController extends Controller
         ]);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
         $item = $this->getEquipment->handle($id);
         if ($item === null) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
+
+        if ($request->attributes->get('actor_type') === 'clients'
+            && (int) $item->clientId !== (int) $request->attributes->get('actor_id')
+        ) {
             return response()->json(['message' => 'Not found.'], 404);
         }
 

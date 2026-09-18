@@ -14,6 +14,8 @@ final readonly class ListOrdersHandler
     ) {}
 
     /**
+     * @param  list<string>|null  $statusesIn
+     * @param  list<string>|null  $statusesNotIn
      * @return list<OrderResponse>
      */
     public function handle(
@@ -21,10 +23,12 @@ final readonly class ListOrdersHandler
         ?string $status = null,
         ?int $masterId = null,
         ?int $equipmentId = null,
+        ?array $statusesIn = null,
+        ?array $statusesNotIn = null,
     ): array {
         return array_map(
             fn ($order): OrderResponse => $this->assembler->assemble($order),
-            $this->orders->all($clientId, $status, $masterId, $equipmentId),
+            $this->orders->all($clientId, $status, $masterId, $equipmentId, $statusesIn, $statusesNotIn),
         );
     }
 }
