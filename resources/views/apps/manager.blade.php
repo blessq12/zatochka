@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="apps-pwa">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Менеджер — Заточка.ТСК' }}</title>
     @include('apps.partials.pwa-meta', [
@@ -13,7 +14,7 @@
     ])
     @vite(['resources/css/apps.css', 'resources/js/apps/manager/main.js'])
 </head>
-<body class="apps-pwa-root">
+<body>
     <div id="app"></div>
 </body>
 </html>

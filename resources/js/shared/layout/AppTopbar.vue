@@ -57,11 +57,8 @@ export default {
 
 <template>
     <header
-        class="z-[800] shrink-0 border-b border-slate-300 bg-white pt-[env(safe-area-inset-top)]"
+        class="sticky top-0 z-[800] flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white px-3 pt-[env(safe-area-inset-top)] sm:h-14 sm:gap-3 sm:px-4 lg:px-6"
     >
-        <div
-            class="flex h-12 items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-4 lg:px-6"
-        >
         <button
             type="button"
             class="shrink-0 rounded p-2 text-dark-blue-500 hover:bg-slate-100 lg:hidden"
@@ -179,7 +176,6 @@ export default {
                     Выйти
                 </button>
             </div>
-        </div>
         </div>
     </header>
 </template>

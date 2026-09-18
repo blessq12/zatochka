@@ -40,10 +40,8 @@ export default {
 </script>
 
 <template>
-    <div
-        class="apps-shell flex min-h-0 w-full flex-1 overflow-hidden font-jost-regular"
-    >
-        <div class="hidden h-full shrink-0 lg:block">
+    <div class="apps-shell flex min-h-dvh w-full font-jost-regular">
+        <div class="hidden shrink-0 lg:block">
             <AppSidebar :tagline="tagline" :items="items" />
         </div>
 
@@ -54,7 +52,7 @@ export default {
             @close="closeMobile"
         />
 
-        <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div class="flex min-h-dvh min-w-0 flex-1 flex-col">
             <AppTopbar
                 :user-name="userName"
                 :user-email="userEmail"
@@ -67,7 +65,7 @@ export default {
             </AppTopbar>
 
             <main
-                class="min-h-0 min-w-0 w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-3 pt-3 pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:px-5 lg:px-8 lg:py-4"
+                class="min-w-0 w-full flex-1 overflow-auto px-3 pb-[calc(4.25rem+env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6"
             >
                 <div class="mx-auto w-full max-w-[90rem]">
                     <slot />
