@@ -64,9 +64,7 @@ export default {
         <main
             class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain"
         >
-            <div
-                class="container mx-auto px-4 pt-6 pb-4 sm:px-8 sm:py-10 lg:px-16 lg:py-12 xl:px-20"
-            >
+            <div class="container mx-auto px-4 py-4 sm:px-8 lg:px-16 lg:py-6 xl:px-20">
                 <router-view />
             </div>
         </main>

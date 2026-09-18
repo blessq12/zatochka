@@ -85,7 +85,7 @@ export default {
         </header>
 
         <section
-            class="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain py-10 sm:py-14 lg:py-16"
+            class="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain py-4 sm:py-6"
         >
             <div class="mx-auto max-w-2xl px-4 sm:px-8 lg:px-16">
                 <div
