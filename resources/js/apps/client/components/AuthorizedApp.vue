@@ -3,6 +3,8 @@ import { mapStores } from "pinia";
 import { useAuthStore } from "../stores/authStore.js";
 import { useOrderStore } from "../stores/orderStore.js";
 import ActiveOrdersSection from "./Dashboard/ActiveOrdersSection.vue";
+import CreateOrderSection from "./Dashboard/CreateOrderSection.vue";
+import EquipmentSection from "./Dashboard/EquipmentSection.vue";
 import OrdersHistorySection from "./Dashboard/OrdersHistorySection.vue";
 import ProfileSection from "./Dashboard/ProfileSection.vue";
 import SetPasswordModal from "./ClientApp/SetPasswordModal.vue";
@@ -13,6 +15,8 @@ export default {
         ProfileSection,
         ActiveOrdersSection,
         OrdersHistorySection,
+        EquipmentSection,
+        CreateOrderSection,
         SetPasswordModal,
     },
     data() {
@@ -43,6 +47,10 @@ export default {
         async handleLogout() {
             await this.authStore.logout();
             window.location.href = "/";
+        },
+        async onOrderCreated() {
+            await this.orderStore.fetchActiveOrders();
+            this.activeTab = "active";
         },
     },
 };
@@ -121,12 +129,12 @@ export default {
                 </div>
 
                 <div
-                    class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-8 sm:mb-12 bg-white/60 backdrop-blur-md p-2 border border-white/20 dark:bg-gray-800/60 dark:border-gray-700/20"
+                    class="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 mb-8 sm:mb-12 bg-white/60 backdrop-blur-md p-2 border border-white/20 dark:bg-gray-800/60 dark:border-gray-700/20"
                 >
                     <button
                         @click="setActiveTab('profile')"
                         :class="[
-                            'w-full sm:flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
+                            'w-full sm:flex-1 px-4 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
                             activeTab === 'profile'
                                 ? 'bg-[#C3006B] text-white shadow-lg'
                                 : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
@@ -137,7 +145,7 @@ export default {
                     <button
                         @click="setActiveTab('active')"
                         :class="[
-                            'w-full sm:flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
+                            'w-full sm:flex-1 px-4 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
                             activeTab === 'active'
                                 ? 'bg-[#C3006B] text-white shadow-lg'
                                 : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
@@ -148,7 +156,7 @@ export default {
                     <button
                         @click="setActiveTab('history')"
                         :class="[
-                            'w-full sm:flex-1 px-6 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
+                            'w-full sm:flex-1 px-4 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
                             activeTab === 'history'
                                 ? 'bg-[#C3006B] text-white shadow-lg'
                                 : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
@@ -156,16 +164,41 @@ export default {
                     >
                         История заказов
                     </button>
+                    <button
+                        @click="setActiveTab('equipment')"
+                        :class="[
+                            'w-full sm:flex-1 px-4 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
+                            activeTab === 'equipment'
+                                ? 'bg-[#C3006B] text-white shadow-lg'
+                                : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
+                        ]"
+                    >
+                        Оборудование
+                    </button>
+                    <button
+                        @click="setActiveTab('create')"
+                        :class="[
+                            'w-full sm:flex-1 px-4 py-4 font-jost-bold text-base sm:text-lg transition-all duration-300',
+                            activeTab === 'create'
+                                ? 'bg-[#C3006B] text-white shadow-lg'
+                                : 'text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
+                        ]"
+                    >
+                        Новый заказ
+                    </button>
                 </div>
 
                 <div>
                     <ProfileSection v-if="activeTab === 'profile'" />
                     <ActiveOrdersSection v-if="activeTab === 'active'" />
                     <OrdersHistorySection v-if="activeTab === 'history'" />
+                    <EquipmentSection v-if="activeTab === 'equipment'" />
+                    <CreateOrderSection
+                        v-if="activeTab === 'create'"
+                        @created="onOrderCreated"
+                    />
                 </div>
             </div>
         </div>
     </div>
 </template>
-
-<style scoped></style>

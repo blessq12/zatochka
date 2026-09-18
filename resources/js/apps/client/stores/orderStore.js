@@ -15,12 +15,12 @@ export const useOrderStore = defineStore("order", {
     }),
 
     actions: {
-        async fetchActiveOrders(page = 1, perPage = 20) {
+        async fetchActiveOrders() {
             this.isLoadingActive = true;
 
             try {
-                const response = await axios.get("/api/client/orders/active", {
-                    params: { page, per_page: perPage },
+                const response = await axios.get("/api/orders", {
+                    params: { scope: "active" },
                 });
 
                 this.activeOrders = response.data.data || [];
@@ -36,19 +36,20 @@ export const useOrderStore = defineStore("order", {
             }
         },
 
-        async fetchHistoryOrders(page = 1, perPage = 10) {
+        async fetchHistoryOrders() {
             this.isLoadingHistory = true;
 
             try {
-                const response = await axios.get("/api/client/orders/history", {
-                    params: { page, per_page: perPage },
+                const response = await axios.get("/api/orders", {
+                    params: { scope: "archive" },
                 });
 
-                this.historyOrders = response.data.data || [];
+                const rows = response.data.data || [];
+                this.historyOrders = rows;
                 this.historyPagination = {
-                    total: response.data.meta?.total ?? 0,
-                    page: response.data.meta?.page ?? page,
-                    per_page: response.data.meta?.per_page ?? perPage,
+                    total: rows.length,
+                    page: 1,
+                    per_page: rows.length || 10,
                 };
 
                 return { success: true, data: response.data };
@@ -60,6 +61,21 @@ export const useOrderStore = defineStore("order", {
             } finally {
                 this.isLoadingHistory = false;
             }
+        },
+
+        async createOrder(payload) {
+            const { data } = await axios.post("/api/orders", payload);
+            await this.fetchActiveOrders();
+            return data;
+        },
+
+        async submitReview(orderId, { rating, text = null }) {
+            const { data } = await axios.post(`/api/orders/${orderId}/review`, {
+                rating,
+                text,
+            });
+            await this.fetchHistoryOrders();
+            return data;
         },
     },
 });
