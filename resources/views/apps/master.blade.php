@@ -9,7 +9,8 @@
         'manifestUrl' => url('/pwa/master/manifest.webmanifest'),
         'pwaName' => 'Заточка — Мастер',
         'appleTitle' => 'Мастер',
-        'themeColor' => '#003859',
+        'themeColor' => '#ffffff',
+        'statusBarStyle' => 'default',
         'appleTouchIcon' => 'pwa/icons/master/apple-touch-icon.png',
     ])
     @vite(['resources/css/apps.css', 'resources/js/apps/master/main.js'])

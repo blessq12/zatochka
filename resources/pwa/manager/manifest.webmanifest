@@ -7,8 +7,8 @@
   "scope": "/manager/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#003859",
-  "theme_color": "#003859",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "lang": "ru",
   "icons": [
     {
