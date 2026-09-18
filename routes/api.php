@@ -11,6 +11,8 @@ use App\Http\Controllers\Identity\IdentityController;
 use App\Http\Controllers\Order\DocumentTemplateController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Order\OrderDocumentController;
+use App\Http\Controllers\Order\OrderDraftController;
+use App\Http\Controllers\Order\PublicOrderDraftController;
 use App\Http\Controllers\ProvisionActorController;
 use App\Http\Controllers\SiteContent\SiteContentController;
 use App\Http\Controllers\Warehouse\OrderIssueController;
@@ -20,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/identity/register', [IdentityController::class, 'register']);
 Route::post('/identity/login', [IdentityController::class, 'login']);
+
+Route::post('/public/order-drafts', [PublicOrderDraftController::class, 'store']);
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/identity/logout', [IdentityController::class, 'logout']);
@@ -98,11 +102,20 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/workshop/jobs/{id}/complete', [WorkshopJobController::class, 'complete']);
     });
 
-    Route::middleware('actor:managers,clients')->group(function (): void {
+    Route::middleware('actor:managers')->group(function (): void {
         Route::post('/orders', [OrderController::class, 'store']);
+        Route::post('/order-drafts/{id}/promote', [OrderDraftController::class, 'promote'])->whereNumber('id');
+    });
+
+    Route::middleware('actor:managers,clients')->group(function (): void {
+        Route::get('/order-drafts', [OrderDraftController::class, 'index']);
+        Route::get('/order-drafts/{id}', [OrderDraftController::class, 'show'])->whereNumber('id');
+        Route::put('/order-drafts/{id}', [OrderDraftController::class, 'update'])->whereNumber('id');
+        Route::post('/order-drafts/{id}/cancel', [OrderDraftController::class, 'cancel'])->whereNumber('id');
     });
 
     Route::middleware('actor:clients')->group(function (): void {
+        Route::post('/order-drafts', [OrderDraftController::class, 'store']);
         Route::post('/orders/{id}/review', [OrderController::class, 'storeReview']);
     });
 

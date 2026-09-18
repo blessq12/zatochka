@@ -25,7 +25,7 @@ export default {
 
 <template>
     <nav
-        class="fixed inset-x-0 bottom-0 z-[900] border-t border-slate-300 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.1)] lg:hidden"
+        class="fixed inset-x-0 bottom-0 z-[900] border-t border-slate-300 bg-white pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(15,23,42,0.1)] lg:hidden"
         aria-label="Основная навигация"
     >
         <ul

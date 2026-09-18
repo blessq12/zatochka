@@ -91,6 +91,20 @@ const routes = [
                 meta: { title: "Заказы" },
             },
             {
+                path: "order-drafts",
+                name: "manager.order-drafts",
+                component: () =>
+                    import("../pages/Orders/OrderDraftListPage.vue"),
+                meta: { title: "Заявки" },
+            },
+            {
+                path: "order-drafts/:id",
+                name: "manager.order-drafts.show",
+                component: () =>
+                    import("../pages/Orders/OrderDraftPromotePage.vue"),
+                meta: { title: "Заявка" },
+            },
+            {
                 path: "orders/create",
                 name: "manager.orders.create",
                 component: () => import("../pages/Orders/OrderFormPage.vue"),

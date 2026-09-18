@@ -49,7 +49,13 @@ const routes = [
                 path: "orders/create",
                 name: "client.orders.create",
                 component: () => import("../pages/Orders/OrderCreatePage.vue"),
-                meta: { title: "Новый заказ" },
+                meta: { title: "Новая заявка" },
+            },
+            {
+                path: "drafts/:id",
+                name: "client.drafts.show",
+                component: () => import("../pages/Orders/DraftShowPage.vue"),
+                meta: { title: "Заявка" },
             },
             {
                 path: "orders/:id",

@@ -17,12 +17,12 @@ export const useOrderStore = defineStore("order", {
                     formData,
                 });
 
-                const response = await axios.post("/api/public/orders", payload);
+                const response = await axios.post("/api/public/order-drafts", payload);
 
                 return { success: true, data: response.data };
             } catch (error) {
                 const message =
-                    error.response?.data?.message || "Ошибка создания заказа";
+                    error.response?.data?.message || "Ошибка создания заявки";
                 return { success: false, error: message };
             } finally {
                 this.submitOrderLoading = false;

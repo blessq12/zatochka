@@ -7,7 +7,6 @@ use App\Application\Order\DTO\OrderDraftResponse;
 use App\Application\Order\Support\OrderDraftPayloadGuard;
 use App\Domain\Order\OrderDraftSource;
 use App\Domain\Order\Repository\OrderDraftRepository;
-use App\Shared\Domain\DomainException;
 
 final readonly class UpdateOrderDraftHandler
 {

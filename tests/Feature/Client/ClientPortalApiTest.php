@@ -103,38 +103,49 @@ final class ClientPortalApiTest extends TestCase
             ->getJson("/api/equipments/{$foreignEquipmentId}")
             ->assertNotFound();
 
-        $order = $this->withToken($clientToken)->postJson('/api/orders', [
-            'billing_type' => 'paid',
-            'urgency' => 'urgent',
+        $draft = $this->withToken($clientToken)->postJson('/api/order-drafts', [
+            'service_type' => 'repair',
             'needs_delivery' => false,
-            'items' => [
-                ['kind' => 'sharpening', 'title' => 'Нож', 'quantity' => 2],
-                [
-                    'kind' => 'repair',
-                    'equipment_id' => $ownEquipmentId,
-                    'problem' => 'шум',
+            'payload' => [
+                'items' => [
+                    ['kind' => 'sharpening', 'title' => 'Нож', 'quantity' => 2],
+                    [
+                        'kind' => 'repair',
+                        'equipment_id' => $ownEquipmentId,
+                        'problem' => 'шум',
+                    ],
                 ],
             ],
         ])->assertCreated()
             ->assertJson([
                 'client_id' => $clientId,
-                'status' => 'created',
-                'urgency' => 'urgent',
+                'status' => 'pending',
+                'service_type' => 'repair',
             ])
             ->json();
 
-        $this->assertSame($clientId, $order['client_id']);
+        $this->assertSame($clientId, $draft['client_id']);
+
+        $this->withToken($clientToken)->postJson('/api/order-drafts', [
+            'service_type' => 'repair',
+            'needs_delivery' => false,
+            'payload' => [
+                'items' => [
+                    [
+                        'kind' => 'repair',
+                        'equipment_id' => $foreignEquipmentId,
+                    ],
+                ],
+            ],
+        ])->assertStatus(422);
 
         $this->withToken($clientToken)->postJson('/api/orders', [
             'billing_type' => 'paid',
             'needs_delivery' => false,
             'items' => [
-                [
-                    'kind' => 'repair',
-                    'equipment_id' => $foreignEquipmentId,
-                ],
+                ['kind' => 'sharpening', 'title' => 'X', 'quantity' => 1],
             ],
-        ])->assertStatus(422);
+        ])->assertForbidden();
     }
 
     private function createClient(string $managerToken, string $email): int

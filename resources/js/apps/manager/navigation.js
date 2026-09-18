@@ -18,6 +18,12 @@ export const navigationItems = [
         to: { name: "manager.orders" },
     },
     {
+        name: "manager.order-drafts",
+        label: "Заявки",
+        icon: "orders",
+        to: { name: "manager.order-drafts" },
+    },
+    {
         name: "manager.equipment",
         label: "Оборудование",
         icon: "equipment",

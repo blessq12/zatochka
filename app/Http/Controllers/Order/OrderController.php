@@ -108,13 +108,11 @@ final class OrderController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $actorType = (string) $request->attributes->get('actor_type');
-        $asClient = $actorType === 'clients';
-
-        $rules = [
+        $data = $request->validate([
+            'client_id' => ['required', 'integer', 'min:1'],
             'billing_type' => ['required', 'string', 'in:paid,warranty'],
             'urgency' => ['nullable', 'string', 'in:normal,urgent'],
-            'estimated_cost' => [$asClient ? 'nullable' : 'required', 'numeric', 'min:0'],
+            'estimated_cost' => ['required', 'numeric', 'min:0'],
             'needs_delivery' => ['required', 'boolean'],
             'delivery_address' => ['nullable', 'string', 'max:255'],
             'items' => ['required', 'array', 'min:1'],
@@ -123,23 +121,13 @@ final class OrderController extends Controller
             'items.*.quantity' => ['nullable', 'integer', 'min:1'],
             'items.*.equipment_id' => ['nullable', 'integer', 'min:1'],
             'items.*.problem' => ['nullable', 'string'],
-        ];
-
-        if (! $asClient) {
-            $rules['client_id'] = ['required', 'integer', 'min:1'];
-        }
-
-        $data = $request->validate($rules);
-
-        $clientId = $asClient
-            ? (int) $request->attributes->get('actor_id')
-            : (int) $data['client_id'];
+        ]);
 
         $item = $this->createOrder->handle(
-            $clientId,
+            (int) $data['client_id'],
             $data['billing_type'],
             $data['urgency'] ?? 'normal',
-            isset($data['estimated_cost']) ? (string) $data['estimated_cost'] : '0',
+            (string) $data['estimated_cost'],
             (bool) $data['needs_delivery'],
             $data['delivery_address'] ?? null,
             $data['items'],

@@ -9,7 +9,7 @@
         'manifestUrl' => url('/pwa/client/manifest.webmanifest'),
         'pwaName' => 'Заточка — Клиент',
         'appleTitle' => 'Клиент',
-        'themeColor' => '#ffffff',
+        'themeColor' => '#C20A6C',
         'statusBarStyle' => 'default',
         'appleTouchIcon' => 'pwa/icons/client/apple-touch-icon.png',
     ])

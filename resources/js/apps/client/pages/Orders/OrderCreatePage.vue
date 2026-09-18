@@ -1,7 +1,8 @@
 <script>
 import ClientSectionCard from "../../components/Layout/ClientSectionCard.vue";
 import { equipmentService } from "../../services/EquipmentService.js";
-import { KIND_LABELS, orderService } from "../../services/OrderService.js";
+import { KIND_LABELS } from "../../services/OrderService.js";
+import { orderDraftService } from "../../services/OrderDraftService.js";
 
 function emptySharpening() {
     return { kind: "sharpening", title: "", quantity: 1 };
@@ -25,8 +26,6 @@ export default {
             KIND_LABELS,
             fieldClass,
             form: {
-                billing_type: "paid",
-                urgency: "normal",
                 needs_delivery: false,
                 delivery_address: "",
                 items: [emptySharpening()],
@@ -53,6 +52,10 @@ export default {
         removeItem(index) {
             this.form.items.splice(index, 1);
         },
+        detectServiceType(items) {
+            const hasRepair = items.some((item) => item.kind === "repair");
+            return hasRepair ? "repair" : "sharpening";
+        },
         async submit() {
             this.saving = true;
             this.error = null;
@@ -78,39 +81,38 @@ export default {
                     throw new Error("Укажите адрес доставки");
                 }
 
-                const payload = {
-                    billing_type: this.form.billing_type,
-                    urgency: this.form.urgency,
+                const items = this.form.items.map((item) => {
+                    if (item.kind === "sharpening") {
+                        return {
+                            kind: "sharpening",
+                            title: item.title,
+                            quantity: Number(item.quantity),
+                        };
+                    }
+                    return {
+                        kind: "repair",
+                        equipment_id: Number(item.equipment_id),
+                        problem: item.problem || null,
+                    };
+                });
+
+                const draft = await orderDraftService.create({
+                    service_type: this.detectServiceType(items),
                     needs_delivery: this.form.needs_delivery,
                     delivery_address: this.form.needs_delivery
                         ? this.form.delivery_address
                         : null,
-                    items: this.form.items.map((item) => {
-                        if (item.kind === "sharpening") {
-                            return {
-                                kind: "sharpening",
-                                title: item.title,
-                                quantity: Number(item.quantity),
-                            };
-                        }
-                        return {
-                            kind: "repair",
-                            equipment_id: Number(item.equipment_id),
-                            problem: item.problem || null,
-                        };
-                    }),
-                };
-
-                const order = await orderService.create(payload);
+                    payload: { items },
+                });
                 this.$router.replace({
-                    name: "client.orders.show",
-                    params: { id: order.id },
+                    name: "client.drafts.show",
+                    params: { id: draft.id },
                 });
             } catch (e) {
                 this.error =
                     e.response?.data?.message ||
                     e.message ||
-                    "Не удалось создать заказ";
+                    "Не удалось создать черновик";
             } finally {
                 this.saving = false;
             }
@@ -123,40 +125,16 @@ export default {
     <div class="space-y-4">
         <p v-if="error" class="text-base text-red-600">{{ error }}</p>
 
-        <ClientSectionCard title="ПАРАМЕТРЫ">
-            <div class="grid gap-4 sm:grid-cols-2 lg:gap-4">
-                <label class="block">
-                    <span
-                        class="mb-2 block text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
-                    >
-                        Тип оплаты
-                    </span>
-                    <select v-model="form.billing_type" :class="fieldClass">
-                        <option value="paid">Платный</option>
-                        <option value="warranty">Гарантийный</option>
-                    </select>
-                </label>
-                <label class="block">
-                    <span
-                        class="mb-2 block text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
-                    >
-                        Срочность
-                    </span>
-                    <select v-model="form.urgency" :class="fieldClass">
-                        <option value="normal">Обычный</option>
-                        <option value="urgent">Срочный</option>
-                    </select>
-                </label>
-            </div>
+        <ClientSectionCard title="ДОСТАВКА">
             <label
-                class="mt-4 flex items-center gap-2 text-base text-dark-gray-500 dark:text-gray-200 lg:mt-4 lg:text-base"
+                class="flex items-center gap-2 text-base text-dark-gray-500 dark:text-gray-200"
             >
                 <input v-model="form.needs_delivery" type="checkbox" />
                 Нужна доставка
             </label>
-            <label v-if="form.needs_delivery" class="mt-4 block lg:mt-4">
+            <label v-if="form.needs_delivery" class="mt-4 block">
                 <span
-                    class="mb-2 block text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
+                    class="mb-2 block text-base font-jost-medium text-dark-gray-500 dark:text-gray-200"
                 >
                     Адрес доставки
                 </span>
@@ -169,17 +147,17 @@ export default {
         </ClientSectionCard>
 
         <ClientSectionCard title="СОСТАВ">
-            <div class="mb-4 flex flex-row flex-wrap gap-3 lg:mb-4">
+            <div class="mb-4 flex flex-row flex-wrap gap-3">
                 <button
                     type="button"
-                    class="text-base font-jost-medium text-[#C20A6C] hover:underline lg:text-base"
+                    class="text-base font-jost-medium text-[#C20A6C] hover:underline"
                     @click="addSharpening"
                 >
                     + заточка
                 </button>
                 <button
                     type="button"
-                    class="text-base font-jost-medium text-[#C20A6C] hover:underline lg:text-base"
+                    class="text-base font-jost-medium text-[#C20A6C] hover:underline"
                     @click="addRepair"
                 >
                     + ремонт
@@ -189,11 +167,11 @@ export default {
             <div
                 v-for="(item, index) in form.items"
                 :key="index"
-                class="mb-4 space-y-2 border-b border-dark-blue-500/10 pb-3 last:mb-0 last:border-0 last:pb-0 dark:border-white/10 lg:mb-4 lg:space-y-3 lg:border lg:border-white/20 lg:bg-white/60 lg:p-4 lg:backdrop-blur-md lg:last:mb-0 dark:lg:border-gray-700/20 dark:lg:bg-gray-800/60"
+                class="mb-4 space-y-2 border-b border-dark-blue-500/10 pb-3 last:mb-0 last:border-0 last:pb-0 dark:border-white/10"
             >
                 <div class="flex items-center justify-between">
                     <span
-                        class="text-base font-jost-medium text-dark-blue-500 dark:text-dark-blue-300 lg:text-base"
+                        class="text-base font-jost-medium text-dark-blue-500 dark:text-dark-blue-300"
                     >
                         {{ KIND_LABELS[item.kind] }}
                     </span>
@@ -207,7 +185,7 @@ export default {
                 </div>
 
                 <template v-if="item.kind === 'sharpening'">
-                    <div class="grid grid-cols-[1fr_4.5rem] gap-2 lg:grid-cols-[1fr_6rem] lg:gap-3">
+                    <div class="grid grid-cols-[1fr_4.5rem] gap-2">
                         <input
                             v-model="item.title"
                             type="text"
@@ -251,11 +229,11 @@ export default {
 
         <button
             type="button"
-            class="w-full bg-[#C20A6C] px-6 py-3.5 font-jost-bold text-white transition hover:bg-[#a0085a] disabled:opacity-50 lg:w-auto lg:px-8 lg:py-4 lg:text-lg"
+            class="w-full bg-[#C20A6C] px-6 py-3.5 font-jost-bold text-white transition hover:bg-[#a0085a] disabled:opacity-50"
             :disabled="saving"
             @click="submit"
         >
-            {{ saving ? "Создание…" : "Создать заказ" }}
+            {{ saving ? "Отправка…" : "Отправить заявку" }}
         </button>
     </div>
 </template>
