@@ -7,6 +7,7 @@ use App\Domain\Order\Entity\OrderItem;
 use App\Domain\Order\OrderStatus;
 use App\Domain\Order\Urgency;
 use App\Shared\Domain\DomainException;
+use DateTimeImmutable;
 
 final class Order
 {
@@ -24,6 +25,8 @@ final class Order
         private bool $needsDelivery,
         private ?string $deliveryAddress,
         private array $items,
+        private ?DateTimeImmutable $createdAt = null,
+        private ?DateTimeImmutable $issuedAt = null,
     ) {
         if ($items === []) {
             throw new DomainException('Order must have at least one item.');
@@ -112,6 +115,22 @@ final class Order
         return $this->deliveryAddress;
     }
 
+    public function createdAt(): ?DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function issuedAt(): ?DateTimeImmutable
+    {
+        return $this->issuedAt;
+    }
+
+    public function syncTimestamps(?DateTimeImmutable $createdAt, ?DateTimeImmutable $issuedAt): void
+    {
+        $this->createdAt = $createdAt;
+        $this->issuedAt = $issuedAt;
+    }
+
     /**
      * @return list<OrderItem>
      */
@@ -172,6 +191,10 @@ final class Order
         }
 
         $this->status = $target;
+
+        if ($target === OrderStatus::Issued && $this->issuedAt === null) {
+            $this->issuedAt = new DateTimeImmutable('now');
+        }
     }
 
     public function markAcceptedIntoWork(int $masterId): void

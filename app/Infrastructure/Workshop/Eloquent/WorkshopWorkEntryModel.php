@@ -13,6 +13,7 @@ final class WorkshopWorkEntryModel extends Model
         'item_work_id',
         'title',
         'position',
+        'equipment_module_id',
     ];
 
     public function itemWork(): BelongsTo

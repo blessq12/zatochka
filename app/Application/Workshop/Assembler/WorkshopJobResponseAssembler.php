@@ -17,6 +17,7 @@ final readonly class WorkshopJobResponseAssembler
                     'id' => $work->id(),
                     'title' => $work->title(),
                     'position' => $work->position(),
+                    'equipment_module_id' => $work->equipmentModuleId(),
                 ];
             }
 

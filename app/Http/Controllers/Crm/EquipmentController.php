@@ -115,7 +115,7 @@ final class EquipmentController extends Controller
      *     name: string,
      *     brand: string,
      *     type: string,
-     *     modules?: list<array{name: string, serial_number: string}>
+     *     modules?: list<array{id?: int, name: string, serial_number: string}>
      * }
      */
     private function validatedPayload(Request $request, bool $requireClientId): array
@@ -125,6 +125,7 @@ final class EquipmentController extends Controller
             'brand' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', 'max:255'],
             'modules' => ['nullable', 'array'],
+            'modules.*.id' => ['nullable', 'integer', 'min:1'],
             'modules.*.name' => ['required_with:modules', 'string', 'max:255'],
             'modules.*.serial_number' => ['required_with:modules', 'string', 'max:255'],
         ];

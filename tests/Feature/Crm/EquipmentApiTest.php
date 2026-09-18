@@ -90,6 +90,42 @@ final class EquipmentApiTest extends TestCase
             ->assertJsonCount(0, 'modules');
     }
 
+    public function test_update_preserves_module_ids(): void
+    {
+        $token = $this->tokenAsManager('eq-stable@example.com');
+        $clientId = $this->createClient($token, 'client-stable@example.com', 'Клиент');
+
+        $created = $this->withToken($token)->postJson('/api/equipments', [
+            'client_id' => $clientId,
+            'name' => 'Фрезер',
+            'brand' => 'Strong',
+            'type' => 'Аппарат',
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'BLK-1'],
+                ['name' => 'Мотор', 'serial_number' => 'MTR-1'],
+            ],
+        ])->assertCreated()->json();
+
+        $moduleId = (int) $created['modules'][0]['id'];
+
+        $updated = $this->withToken($token)->putJson("/api/equipments/{$created['id']}", [
+            'name' => 'Фрезер',
+            'brand' => 'Strong',
+            'type' => 'Аппарат',
+            'modules' => [
+                ['id' => $moduleId, 'name' => 'Блок питания', 'serial_number' => 'BLK-1'],
+                ['name' => 'Педаль', 'serial_number' => 'PDL-1'],
+            ],
+        ])->assertOk()->json();
+
+        $preserved = collect($updated['modules'])->firstWhere('serial_number', 'BLK-1');
+        $this->assertNotNull($preserved);
+        $this->assertSame($moduleId, (int) $preserved['id']);
+        $this->assertSame('Блок питания', $preserved['name']);
+        $this->assertCount(2, $updated['modules']);
+        $this->assertNull(collect($updated['modules'])->firstWhere('serial_number', 'MTR-1'));
+    }
+
     public function test_duplicate_serial_within_equipment_rejected(): void
     {
         $token = $this->tokenAsManager('eq-dup@example.com');

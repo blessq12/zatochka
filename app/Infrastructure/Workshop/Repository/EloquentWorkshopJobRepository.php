@@ -47,6 +47,7 @@ final class EloquentWorkshopJobRepository implements WorkshopJobRepository
                         'item_work_id' => $itemModel->id,
                         'title' => $work->title(),
                         'position' => $work->position() ?: $index,
+                        'equipment_module_id' => $work->equipmentModuleId(),
                     ]);
                     $workModel->save();
                     $work->assignId((int) $workModel->id);
@@ -98,6 +99,7 @@ final class EloquentWorkshopJobRepository implements WorkshopJobRepository
                         (int) $work->id,
                         (string) $work->title,
                         (int) $work->position,
+                        $work->equipment_module_id !== null ? (int) $work->equipment_module_id : null,
                     ))
                     ->values()
                     ->all();

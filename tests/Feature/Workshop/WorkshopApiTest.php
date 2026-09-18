@@ -114,6 +114,101 @@ final class WorkshopApiTest extends TestCase
         ])->assertOk();
     }
 
+    public function test_accept_rejected_when_repair_equipment_has_no_modules(): void
+    {
+        $managerToken = $this->tokenAsManager('ws-nomod-mgr@example.com');
+        $clientId = $this->createClient($managerToken, 'ws-nomod-client@example.com');
+        $masterId = $this->createMaster($managerToken, 'ws-nomod-master@example.com');
+
+        $equipmentId = (int) $this->withToken($managerToken)->postJson('/api/equipments', [
+            'client_id' => $clientId,
+            'name' => 'Фен',
+            'brand' => 'X',
+            'type' => 'Фен',
+            'modules' => [],
+        ])->assertCreated()->json('id');
+
+        $orderId = $this->withToken($managerToken)->postJson('/api/orders', [
+            'client_id' => $clientId,
+            'billing_type' => 'paid',
+            'urgency' => 'normal',
+            'estimated_cost' => '500',
+            'needs_delivery' => false,
+            'items' => [
+                ['kind' => 'repair', 'equipment_id' => $equipmentId, 'problem' => 'не греет'],
+            ],
+        ])->assertCreated()->json('id');
+
+        $this->withToken($managerToken)->postJson("/api/orders/{$orderId}/assign-master", [
+            'master_id' => $masterId,
+        ])->assertOk();
+
+        $itemIds = array_map(
+            static fn (array $item): int => (int) $item['id'],
+            $this->withToken($managerToken)->getJson("/api/orders/{$orderId}")->json('items'),
+        );
+
+        $masterToken = $this->loginMaster('ws-nomod-master@example.com');
+
+        $this->withToken($masterToken)->postJson('/api/workshop/jobs/accept', [
+            'order_id' => $orderId,
+            'order_item_ids' => $itemIds,
+        ])->assertStatus(422);
+    }
+
+    public function test_repair_work_requires_equipment_module_id(): void
+    {
+        $managerToken = $this->tokenAsManager('ws-mod-mgr@example.com');
+        $clientId = $this->createClient($managerToken, 'ws-mod-client@example.com');
+        $masterId = $this->createMaster($managerToken, 'ws-mod-master@example.com');
+        $equipment = $this->withToken($managerToken)->postJson('/api/equipments', [
+            'client_id' => $clientId,
+            'name' => 'Фрезер',
+            'brand' => 'Strong',
+            'type' => 'Аппарат',
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'BLK-R-1'],
+            ],
+        ])->assertCreated()->json();
+        $moduleId = (int) $equipment['modules'][0]['id'];
+
+        $orderId = $this->withToken($managerToken)->postJson('/api/orders', [
+            'client_id' => $clientId,
+            'billing_type' => 'paid',
+            'urgency' => 'normal',
+            'estimated_cost' => '900',
+            'needs_delivery' => false,
+            'items' => [
+                ['kind' => 'repair', 'equipment_id' => $equipment['id'], 'problem' => 'шум'],
+            ],
+        ])->assertCreated()->json('id');
+
+        $this->withToken($managerToken)->postJson("/api/orders/{$orderId}/assign-master", [
+            'master_id' => $masterId,
+        ])->assertOk();
+
+        $itemId = (int) $this->withToken($managerToken)->getJson("/api/orders/{$orderId}")->json('items.0.id');
+        $masterToken = $this->loginMaster('ws-mod-master@example.com');
+
+        $jobId = (int) $this->withToken($masterToken)->postJson('/api/workshop/jobs/accept', [
+            'order_id' => $orderId,
+            'order_item_ids' => [$itemId],
+        ])->assertCreated()->json('id');
+
+        $this->withToken($masterToken)->putJson("/api/workshop/jobs/{$jobId}/items/{$itemId}", [
+            'works' => [['title' => 'Диагностика']],
+        ])->assertStatus(422);
+
+        $this->withToken($masterToken)->putJson("/api/workshop/jobs/{$jobId}/items/{$itemId}", [
+            'works' => [
+                ['title' => 'Диагностика', 'equipment_module_id' => $moduleId],
+                ['title' => 'Замена подшипника', 'equipment_module_id' => $moduleId],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('items.0.works.0.equipment_module_id', $moduleId)
+            ->assertJsonPath('items.0.works.1.title', 'Замена подшипника');
+    }
+
     private function loginMaster(string $email): string
     {
         return (string) $this->postJson('/api/identity/login', [
@@ -130,7 +225,10 @@ final class WorkshopApiTest extends TestCase
             'name' => 'Фрезер',
             'brand' => 'Strong',
             'type' => 'Аппарат',
-            'modules' => [],
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'BLK-WS-1'],
+                ['name' => 'Мотор', 'serial_number' => 'MTR-WS-1'],
+            ],
         ])->assertCreated()->json('id');
     }
 

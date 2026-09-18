@@ -28,6 +28,8 @@ final readonly class OrderResponse
         public string $status,
         public array $items,
         public ?array $review,
+        public ?string $createdAt,
+        public ?string $issuedAt,
     ) {}
 
     /**
@@ -47,6 +49,8 @@ final readonly class OrderResponse
             'status' => $this->status,
             'items' => $this->items,
             'review' => $this->review,
+            'created_at' => $this->createdAt,
+            'issued_at' => $this->issuedAt,
         ];
     }
 }

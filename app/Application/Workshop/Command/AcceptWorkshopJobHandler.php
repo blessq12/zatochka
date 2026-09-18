@@ -4,6 +4,7 @@ namespace App\Application\Workshop\Command;
 
 use App\Application\Workshop\Assembler\WorkshopJobResponseAssembler;
 use App\Application\Workshop\DTO\WorkshopJobResponse;
+use App\Application\Workshop\Service\RepairModuleGuard;
 use App\Domain\Workshop\Aggregate\WorkshopJob;
 use App\Domain\Workshop\Repository\WorkshopJobRepository;
 use App\Shared\Domain\DomainException;
@@ -16,6 +17,7 @@ final readonly class AcceptWorkshopJobHandler
         private WorkshopJobRepository $jobs,
         private WorkshopJobResponseAssembler $assembler,
         private EventBus $events,
+        private RepairModuleGuard $repairModules,
     ) {}
 
     /**
@@ -26,6 +28,8 @@ final readonly class AcceptWorkshopJobHandler
         if ($this->jobs->findByOrderId($orderId) !== null) {
             throw new DomainException('Workshop job already exists for this order.');
         }
+
+        $this->repairModules->assertRepairItemsHaveModules($orderId, $orderItemIds);
 
         $job = WorkshopJob::accept($orderId, $masterId, $orderItemIds);
         $job = $this->jobs->save($job);

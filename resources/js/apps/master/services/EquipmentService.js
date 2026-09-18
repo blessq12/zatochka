@@ -9,4 +9,9 @@ export const equipmentService = {
         const { data } = await axios.get("/api/equipments", { params });
         return data.data || [];
     },
+
+    async get(id) {
+        const { data } = await axios.get(`/api/equipments/${id}`);
+        return data;
+    },
 };

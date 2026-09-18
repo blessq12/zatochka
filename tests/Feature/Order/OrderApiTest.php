@@ -44,9 +44,12 @@ final class OrderApiTest extends TestCase
                 'needs_delivery' => false,
                 'status' => 'created',
                 'master_id' => null,
+                'issued_at' => null,
             ])
+            ->assertJsonStructure(['created_at'])
             ->json();
 
+        $this->assertNotNull($created['created_at']);
         $this->assertCount(2, $created['items']);
         $orderId = $created['id'];
 
@@ -440,9 +443,14 @@ final class OrderApiTest extends TestCase
             'status' => 'ready',
         ])->assertOk();
 
-        $this->withToken($managerToken)->postJson("/api/orders/{$orderId}/transition", [
+        $issued = $this->withToken($managerToken)->postJson("/api/orders/{$orderId}/transition", [
             'status' => 'issued',
-        ])->assertOk();
+        ])->assertOk()
+            ->assertJson(['status' => 'issued'])
+            ->json();
+
+        $this->assertNotNull($issued['created_at']);
+        $this->assertNotNull($issued['issued_at']);
 
         return (int) $orderId;
     }

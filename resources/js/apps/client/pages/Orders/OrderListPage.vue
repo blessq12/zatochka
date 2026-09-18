@@ -1,4 +1,5 @@
 <script>
+import ClientSectionCard from "../../components/Layout/ClientSectionCard.vue";
 import {
     BILLING_LABELS,
     KIND_LABELS,
@@ -9,6 +10,7 @@ import {
 
 export default {
     name: "ClientOrderListPage",
+    components: { ClientSectionCard },
     data() {
         return {
             scope: "active",
@@ -65,87 +67,93 @@ export default {
 </script>
 
 <template>
-    <div class="app-page">
-        <div class="app-page-header">
-            <h1 class="app-page-title">Заказы</h1>
-            <button
-                type="button"
-                class="app-btn-primary w-full sm:w-auto"
-                @click="$router.push({ name: 'client.orders.create' })"
+    <div class="space-y-6">
+        <ClientSectionCard title="ЗАКАЗЫ">
+            <div
+                class="mb-6 flex flex-col gap-2 border border-white/20 bg-white/60 p-2 backdrop-blur-md dark:border-gray-700/20 dark:bg-gray-800/60 sm:flex-row sm:gap-4"
             >
-                Новый заказ
-            </button>
-        </div>
+                <button
+                    type="button"
+                    class="flex-1 px-4 py-3 font-jost-bold transition-all duration-300"
+                    :class="
+                        scope === 'active'
+                            ? 'bg-[#C3006B] text-white shadow-lg'
+                            : 'text-dark-gray-500 hover:bg-white/80 dark:text-gray-200 dark:hover:bg-gray-700/80'
+                    "
+                    @click="scope = 'active'"
+                >
+                    Активные
+                </button>
+                <button
+                    type="button"
+                    class="flex-1 px-4 py-3 font-jost-bold transition-all duration-300"
+                    :class="
+                        scope === 'archive'
+                            ? 'bg-[#C3006B] text-white shadow-lg'
+                            : 'text-dark-gray-500 hover:bg-white/80 dark:text-gray-200 dark:hover:bg-gray-700/80'
+                    "
+                    @click="scope = 'archive'"
+                >
+                    Архив
+                </button>
+            </div>
 
-        <div class="app-tabs">
-            <button
-                type="button"
-                class="app-tab"
-                :class="
-                    scope === 'active'
-                        ? 'border-pink-500 bg-pink-50 text-pink-700'
-                        : 'border-slate-300 bg-white text-slate-700'
-                "
-                @click="scope = 'active'"
+            <p v-if="loading" class="text-base text-dark-gray-500 dark:text-gray-300">
+                Загрузка…
+            </p>
+            <p v-if="error" class="text-base text-red-600">{{ error }}</p>
+
+            <p
+                v-else-if="!loading && orders.length === 0"
+                class="text-base text-dark-gray-500 dark:text-gray-300"
             >
-                Активные
-            </button>
-            <button
-                type="button"
-                class="app-tab"
-                :class="
-                    scope === 'archive'
-                        ? 'border-pink-500 bg-pink-50 text-pink-700'
-                        : 'border-slate-300 bg-white text-slate-700'
-                "
-                @click="scope = 'archive'"
-            >
-                Архив
-            </button>
-        </div>
+                {{
+                    scope === "active"
+                        ? "Активных заказов нет"
+                        : "В архиве пока пусто"
+                }}
+            </p>
 
-        <p v-if="loading" class="text-base text-slate-500">Загрузка…</p>
-        <p v-if="error" class="text-base text-red-600">{{ error }}</p>
-
-        <p
-            v-else-if="!loading && orders.length === 0"
-            class="text-base text-slate-500"
-        >
-            {{
-                scope === "active"
-                    ? "Активных заказов нет"
-                    : "В архиве пока пусто"
-            }}
-        </p>
-
-        <div v-else class="space-y-3">
-            <button
-                v-for="order in orders"
-                :key="order.id"
-                type="button"
-                class="app-card w-full text-left"
-                @click="open(order)"
-            >
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <p class="font-jost-bold text-dark-blue-500">
-                            Заказ #{{ order.id }}
-                        </p>
-                        <p class="mt-1 text-base text-slate-600">
-                            {{ itemsSummary(order) }}
-                        </p>
+            <div v-else class="space-y-4">
+                <button
+                    v-for="order in orders"
+                    :key="order.id"
+                    type="button"
+                    class="w-full border border-dark-blue-500/20 bg-white/60 p-4 text-left backdrop-blur-md transition hover:border-[#C3006B]/40 dark:border-gray-700/40 dark:bg-gray-800/60"
+                    @click="open(order)"
+                >
+                    <div
+                        class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
+                    >
+                        <div>
+                            <p
+                                class="text-lg font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
+                            >
+                                Заказ #{{ order.id }}
+                            </p>
+                            <p
+                                class="mt-1 text-base text-dark-gray-500 dark:text-gray-300"
+                            >
+                                {{ itemsSummary(order) }}
+                            </p>
+                        </div>
+                        <span
+                            class="shrink-0 font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                        >
+                            {{ statusLabel(order.status) }}
+                        </span>
                     </div>
-                    <span class="shrink-0 text-base text-slate-700">
-                        {{ statusLabel(order.status) }}
-                    </span>
-                </div>
-                <p class="mt-2 text-base text-slate-500">
-                    {{ BILLING_LABELS[order.billing_type] || order.billing_type }}
-                    ·
-                    {{ URGENCY_LABELS[order.urgency] || order.urgency }}
-                    · {{ order.estimated_cost }} ₽
-                </p>
-            </button>
-        </div>
+                    <p class="mt-2 text-sm text-dark-gray-500 dark:text-gray-400">
+                        {{
+                            BILLING_LABELS[order.billing_type] ||
+                            order.billing_type
+                        }}
+                        ·
+                        {{ URGENCY_LABELS[order.urgency] || order.urgency }}
+                        · {{ order.estimated_cost }} ₽
+                    </p>
+                </button>
+            </div>
+        </ClientSectionCard>
     </div>
 </template>

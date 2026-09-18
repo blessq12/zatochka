@@ -6,9 +6,11 @@ import {
     statusLabel,
 } from "../../services/OrderService.js";
 import { workshopService } from "../../services/WorkshopService.js";
+import { equipmentService } from "../../services/EquipmentService.js";
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 
 function emptyWork() {
-    return { title: "" };
+    return { title: "", equipment_module_id: "" };
 }
 
 export default {
@@ -18,6 +20,7 @@ export default {
             job: null,
             order: null,
             drafts: {},
+            equipmentById: {},
             loading: false,
             saving: false,
             completing: false,
@@ -25,6 +28,7 @@ export default {
             KIND_LABELS,
             URGENCY_LABELS,
             statusLabel,
+            formatOrderDate,
         };
     },
     computed: {
@@ -54,6 +58,16 @@ export default {
         },
         draftKey(orderItemId) {
             return Number(orderItemId);
+        },
+        isRepair(orderItemId) {
+            return this.orderItem(orderItemId)?.kind === "repair";
+        },
+        modulesFor(orderItemId) {
+            const equipmentId = this.orderItem(orderItemId)?.equipment_id;
+            if (!equipmentId) {
+                return [];
+            }
+            return this.equipmentById[Number(equipmentId)]?.modules || [];
         },
         declaredQty(orderItemId) {
             const qty = this.orderItem(orderItemId)?.quantity;
@@ -86,11 +100,86 @@ export default {
                         (jobItem.works || []).length > 0
                             ? jobItem.works.map((w) => ({
                                   title: w.title || "",
+                                  equipment_module_id:
+                                      w.equipment_module_id != null
+                                          ? Number(w.equipment_module_id)
+                                          : "",
                               }))
                             : [emptyWork()],
                 };
             }
             this.drafts = drafts;
+        },
+        isWorkBlank(work) {
+            const title = String(work?.title || "").trim();
+            const moduleId = work?.equipment_module_id;
+            const hasModule = moduleId != null && moduleId !== "";
+            return title === "" && !hasModule;
+        },
+        isWorkComplete(orderItemId, work) {
+            const title = String(work?.title || "").trim();
+            if (title === "") {
+                return false;
+            }
+            if (!this.isRepair(orderItemId)) {
+                return true;
+            }
+            const moduleId = work?.equipment_module_id;
+            return moduleId != null && moduleId !== "";
+        },
+        incompleteWorks(orderItemId) {
+            const works = this.drafts[this.draftKey(orderItemId)]?.works || [];
+            return works
+                .filter(
+                    (work) =>
+                        !this.isWorkBlank(work) &&
+                        !this.isWorkComplete(orderItemId, work),
+                )
+                .map((work) => ({
+                    title: work.title || "",
+                    equipment_module_id:
+                        work.equipment_module_id != null &&
+                        work.equipment_module_id !== ""
+                            ? Number(work.equipment_module_id)
+                            : "",
+                }));
+        },
+        restoreIncompleteWorks(orderItemId, incomplete) {
+            if (!incomplete.length) {
+                return;
+            }
+            const key = this.draftKey(orderItemId);
+            const draft = this.drafts[key];
+            if (!draft) {
+                return;
+            }
+            const saved = (draft.works || []).filter(
+                (work) => !this.isWorkBlank(work),
+            );
+            draft.works = [...saved, ...incomplete, emptyWork()];
+        },
+        async loadEquipments() {
+            const ids = [
+                ...new Set(
+                    (this.order?.items || [])
+                        .filter((item) => item.kind === "repair" && item.equipment_id)
+                        .map((item) => Number(item.equipment_id)),
+                ),
+            ];
+            const map = { ...this.equipmentById };
+            await Promise.all(
+                ids.map(async (id) => {
+                    if (map[id]) {
+                        return;
+                    }
+                    try {
+                        map[id] = await equipmentService.get(id);
+                    } catch {
+                        map[id] = { id, modules: [] };
+                    }
+                }),
+            );
+            this.equipmentById = map;
         },
         async load() {
             this.loading = true;
@@ -98,6 +187,7 @@ export default {
             try {
                 this.job = await workshopService.get(this.$route.params.id);
                 this.order = await orderService.get(this.job.order_id);
+                await this.loadEquipments();
                 this.syncDrafts();
             } catch (e) {
                 this.error =
@@ -141,9 +231,26 @@ export default {
             const orderItemId = this.draftKey(jobItem.order_item_id);
             const draft = this.drafts[orderItemId];
             const orderItem = this.orderItem(orderItemId);
+            const isRepair = orderItem?.kind === "repair";
+
             const works = (draft?.works || [])
-                .map((w) => ({ title: String(w.title || "").trim() }))
-                .filter((w) => w.title !== "");
+                .map((w) => {
+                    const title = String(w.title || "").trim();
+                    const row = { title };
+                    if (isRepair && w.equipment_module_id != null && w.equipment_module_id !== "") {
+                        row.equipment_module_id = Number(w.equipment_module_id);
+                    }
+                    return row;
+                })
+                .filter((w) => {
+                    if (w.title === "") {
+                        return false;
+                    }
+                    if (isRepair && !w.equipment_module_id) {
+                        return false;
+                    }
+                    return true;
+                });
 
             const payload = { works };
             if (orderItem?.kind === "sharpening") {
@@ -170,6 +277,8 @@ export default {
                 return;
             }
 
+            const incomplete = this.incompleteWorks(orderItemId);
+
             this.saving = true;
             this.error = null;
             try {
@@ -179,6 +288,7 @@ export default {
                     this.buildPayload(jobItem),
                 );
                 this.syncDrafts();
+                this.restoreIncompleteWorks(orderItemId, incomplete);
             } catch (e) {
                 this.error =
                     e.response?.data?.message || "Не удалось сохранить предмет";
@@ -192,6 +302,14 @@ export default {
             this.error = null;
             try {
                 for (const jobItem of this.jobItems) {
+                    const incomplete = this.incompleteWorks(
+                        jobItem.order_item_id,
+                    );
+                    if (incomplete.length > 0) {
+                        this.error =
+                            "Для ремонта укажите модуль и описание у каждой работы";
+                        return;
+                    }
                     await this.persistItem(jobItem.order_item_id);
                 }
                 this.job = await workshopService.complete(this.job.id);
@@ -252,6 +370,18 @@ export default {
                                         URGENCY_LABELS[order.urgency] ||
                                         order.urgency
                                     }}
+                                </dd>
+                            </div>
+                            <div class="flex justify-between gap-2">
+                                <dt class="text-slate-500">Создан</dt>
+                                <dd class="text-right text-slate-800">
+                                    {{ formatOrderDate(order.created_at) }}
+                                </dd>
+                            </div>
+                            <div class="flex justify-between gap-2">
+                                <dt class="text-slate-500">Выдан</dt>
+                                <dd class="text-right text-slate-800">
+                                    {{ formatOrderDate(order.issued_at) }}
                                 </dd>
                             </div>
                             <div class="flex justify-between gap-2">
@@ -381,6 +511,16 @@ export default {
                                                 .problem
                                         }}
                                     </p>
+                                    <p
+                                        v-if="
+                                            modulesFor(jobItem.order_item_id)
+                                                .length === 0
+                                        "
+                                        class="text-xs text-red-600"
+                                    >
+                                        У оборудования нет модулей — попросите
+                                        менеджера добавить.
+                                    </p>
                                 </template>
                             </div>
 
@@ -445,8 +585,27 @@ export default {
                                     draftKey(jobItem.order_item_id)
                                 ].works"
                                 :key="index"
-                                class="flex gap-2"
+                                class="flex flex-col gap-2 sm:flex-row"
                             >
+                                <select
+                                    v-if="isRepair(jobItem.order_item_id)"
+                                    v-model="work.equipment_module_id"
+                                    class="app-field sm:w-48"
+                                    :disabled="!isOpen"
+                                    @change="onWorkBlur(jobItem.order_item_id)"
+                                >
+                                    <option value="">Модуль…</option>
+                                    <option
+                                        v-for="module in modulesFor(
+                                            jobItem.order_item_id,
+                                        )"
+                                        :key="module.id"
+                                        :value="Number(module.id)"
+                                    >
+                                        {{ module.name }}
+                                        ({{ module.serial_number }})
+                                    </option>
+                                </select>
                                 <input
                                     v-model="work.title"
                                     type="text"

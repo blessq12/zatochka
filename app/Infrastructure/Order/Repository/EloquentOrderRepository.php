@@ -11,6 +11,7 @@ use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\Urgency;
 use App\Infrastructure\Order\Eloquent\OrderItemModel;
 use App\Infrastructure\Order\Eloquent\OrderModel;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentOrderRepository implements OrderRepository
@@ -31,11 +32,17 @@ final class EloquentOrderRepository implements OrderRepository
             $model->needs_delivery = $order->needsDelivery();
             $model->delivery_address = $order->deliveryAddress();
             $model->status = $order->status()->value;
+            $model->issued_at = $order->issuedAt();
             $model->save();
 
             if ($order->id() === null) {
                 $order->assignId((int) $model->id);
             }
+
+            $order->syncTimestamps(
+                $this->toImmutable($model->created_at),
+                $this->toImmutable($model->issued_at),
+            );
 
             if ($this->shouldSyncItems($order)) {
                 OrderItemModel::query()->where('order_id', $model->id)->delete();
@@ -170,6 +177,21 @@ final class EloquentOrderRepository implements OrderRepository
             (bool) $model->needs_delivery,
             $model->delivery_address,
             $items,
+            $this->toImmutable($model->created_at),
+            $this->toImmutable($model->issued_at),
         );
+    }
+
+    private function toImmutable(mixed $value): ?DateTimeImmutable
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof DateTimeImmutable) {
+            return $value;
+        }
+
+        return DateTimeImmutable::createFromInterface($value);
     }
 }

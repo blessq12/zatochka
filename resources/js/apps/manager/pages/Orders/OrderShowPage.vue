@@ -1,6 +1,7 @@
 <script>
-import { documentService } from "../../services/DocumentService.js";
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 import { actorService } from "../../services/ActorService.js";
+import { documentService } from "../../services/DocumentService.js";
 import { equipmentService } from "../../services/EquipmentService.js";
 import { financeService } from "../../services/FinanceService.js";
 import {
@@ -51,6 +52,7 @@ export default {
             documentError: null,
             openingDocument: false,
             statusLabel,
+            formatOrderDate,
             BILLING_LABELS,
             URGENCY_LABELS,
             KIND_LABELS,
@@ -540,6 +542,25 @@ export default {
             const eq = this.equipments.find((e) => e.id === id);
             return eq ? `${eq.name} · ${eq.brand}` : `#${id}`;
         },
+        moduleLabel(orderItemId, moduleId) {
+            if (moduleId == null) {
+                return null;
+            }
+            const item = this.orderItem(orderItemId);
+            if (!item?.equipment_id) {
+                return `#${moduleId}`;
+            }
+            const eq = this.equipments.find(
+                (e) => Number(e.id) === Number(item.equipment_id),
+            );
+            const module = (eq?.modules || []).find(
+                (m) => Number(m.id) === Number(moduleId),
+            );
+            if (!module) {
+                return `#${moduleId}`;
+            }
+            return `${module.name} (${module.serial_number})`;
+        },
         back() {
             this.$router.push({ name: "manager.orders" });
         },
@@ -550,9 +571,7 @@ export default {
 <template>
     <div class="app-page">
         <div class="app-page-header">
-            <h1 class="app-page-title">
-                Заказ #{{ $route.params.id }}
-            </h1>
+            <h1 class="app-page-title">Заказ #{{ $route.params.id }}</h1>
             <button
                 type="button"
                 class="app-btn-ghost w-full sm:w-auto"
@@ -590,6 +609,18 @@ export default {
                                 </dd>
                             </div>
                             <div class="flex justify-between gap-2">
+                                <dt class="text-slate-500">Создан</dt>
+                                <dd class="text-right text-slate-800">
+                                    {{ formatOrderDate(order.created_at) }}
+                                </dd>
+                            </div>
+                            <div class="flex justify-between gap-2">
+                                <dt class="text-slate-500">Выдан</dt>
+                                <dd class="text-right text-slate-800">
+                                    {{ formatOrderDate(order.issued_at) }}
+                                </dd>
+                            </div>
+                            <div class="flex justify-between gap-2">
                                 <dt class="text-slate-500">Ориентир</dt>
                                 <dd class="text-right text-slate-800">
                                     {{ order.estimated_cost }} ₽
@@ -607,7 +638,9 @@ export default {
                                 </dd>
                             </div>
                         </dl>
-                        <p class="border-t border-slate-100 pt-2 text-xs text-slate-500">
+                        <p
+                            class="border-t border-slate-100 pt-2 text-xs text-slate-500"
+                        >
                             {{
                                 BILLING_LABELS[order.billing_type] ||
                                 order.billing_type
@@ -621,10 +654,7 @@ export default {
                         >
                             Доставка: {{ order.delivery_address || "—" }}
                         </p>
-                        <p
-                            v-if="order.review"
-                            class="text-xs text-slate-500"
-                        >
+                        <p v-if="order.review" class="text-xs text-slate-500">
                             Отзыв: {{ order.review.rating }}/5
                             <span v-if="order.review.text">
                                 — {{ order.review.text }}
@@ -639,10 +669,7 @@ export default {
                         <h2 class="text-sm font-jost-bold text-dark-blue-500">
                             Назначить мастера
                         </h2>
-                        <select
-                            v-model="masterId"
-                            class="app-field"
-                        >
+                        <select v-model="masterId" class="app-field">
                             <option value="" disabled>Выберите мастера</option>
                             <option
                                 v-for="master in masters"
@@ -673,10 +700,7 @@ export default {
                         <h2 class="text-sm font-jost-bold text-dark-blue-500">
                             Печать
                         </h2>
-                        <p
-                            v-if="documentError"
-                            class="text-xs text-red-600"
-                        >
+                        <p v-if="documentError" class="text-xs text-red-600">
                             {{ documentError }}
                         </p>
                         <div class="flex flex-col gap-2">
@@ -859,10 +883,7 @@ export default {
                             Укажите цену по каждой работе — без этого нельзя
                             перевести в «Готов».
                         </p>
-                        <p
-                            v-if="!workshopJob"
-                            class="text-sm text-slate-500"
-                        >
+                        <p v-if="!workshopJob" class="text-sm text-slate-500">
                             Workshop job по заказу не найден.
                         </p>
                         <div
@@ -895,9 +916,7 @@ export default {
                                         orderItem(jobItem.order_item_id)
                                             ?.quantity ?? "—"
                                     }}
-                                    <span
-                                        v-if="jobItem.completed_qty != null"
-                                    >
+                                    <span v-if="jobItem.completed_qty != null">
                                         · заточено
                                         {{ jobItem.completed_qty }}
                                     </span>
@@ -912,8 +931,7 @@ export default {
                                     class="text-xs text-slate-600"
                                 >
                                     {{
-                                        orderItem(jobItem.order_item_id)
-                                            .problem
+                                        orderItem(jobItem.order_item_id).problem
                                     }}
                                 </p>
                             </div>
@@ -931,7 +949,24 @@ export default {
                                 class="flex flex-col gap-2 border-t border-slate-100 pt-2 sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div class="min-w-0 text-sm text-slate-700">
-                                    {{ work.title || "Работа" }}
+                                    <div
+                                        v-if="
+                                            moduleLabel(
+                                                jobItem.order_item_id,
+                                                work.equipment_module_id,
+                                            )
+                                        "
+                                        class="text-xs text-slate-500"
+                                    >
+                                        Модуль:
+                                        {{
+                                            moduleLabel(
+                                                jobItem.order_item_id,
+                                                work.equipment_module_id,
+                                            )
+                                        }}
+                                    </div>
+                                    <div>{{ work.title || "Работа" }}</div>
                                 </div>
                                 <label
                                     class="block w-full shrink-0 space-y-1 sm:w-36"

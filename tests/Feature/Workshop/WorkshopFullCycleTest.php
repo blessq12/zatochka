@@ -15,7 +15,18 @@ final class WorkshopFullCycleTest extends TestCase
         $managerToken = $this->tokenAsManager('cycle-mgr@example.com');
         $clientId = $this->createClient($managerToken, 'cycle-client@example.com');
         $masterId = $this->createMaster($managerToken, 'cycle-master@example.com');
-        $equipmentId = $this->createEquipment($managerToken, $clientId);
+        $equipment = $this->withToken($managerToken)->postJson('/api/equipments', [
+            'client_id' => $clientId,
+            'name' => 'Фрезер',
+            'brand' => 'Strong',
+            'type' => 'Аппарат',
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'BLK-CYCLE-1'],
+                ['name' => 'Мотор', 'serial_number' => 'MTR-CYCLE-1'],
+            ],
+        ])->assertCreated()->json();
+        $equipmentId = (int) $equipment['id'];
+        $moduleId = (int) $equipment['modules'][0]['id'];
 
         $orderId = $this->withToken($managerToken)->postJson('/api/orders', [
             'client_id' => $clientId,
@@ -88,8 +99,8 @@ final class WorkshopFullCycleTest extends TestCase
 
         $this->withToken($masterToken)->putJson("/api/workshop/jobs/{$jobId}/items/{$repairId}", [
             'works' => [
-                ['title' => 'Диагностика'],
-                ['title' => 'Замена подшипника'],
+                ['title' => 'Диагностика', 'equipment_module_id' => $moduleId],
+                ['title' => 'Замена подшипника', 'equipment_module_id' => $moduleId],
             ],
         ])->assertOk();
 
@@ -154,17 +165,6 @@ final class WorkshopFullCycleTest extends TestCase
             'password' => 'password123',
             'expected_actor_type' => 'masters',
         ])->assertOk()->json('token');
-    }
-
-    private function createEquipment(string $managerToken, int $clientId): int
-    {
-        return (int) $this->withToken($managerToken)->postJson('/api/equipments', [
-            'client_id' => $clientId,
-            'name' => 'Фрезер',
-            'brand' => 'Strong',
-            'type' => 'Аппарат',
-            'modules' => [],
-        ])->assertCreated()->json('id');
     }
 
     private function createClient(string $managerToken, string $email): int

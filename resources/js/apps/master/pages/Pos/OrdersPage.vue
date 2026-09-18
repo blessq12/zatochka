@@ -7,6 +7,7 @@ import {
     statusLabel,
 } from "../../services/OrderService.js";
 import { workshopService } from "../../services/WorkshopService.js";
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 
 const TABS = [
     { id: "queue", label: "Очередь" },
@@ -30,6 +31,7 @@ export default {
             BILLING_LABELS,
             URGENCY_LABELS,
             statusLabel,
+            formatOrderDate,
         };
     },
     watch: {
@@ -208,6 +210,10 @@ export default {
                             · доставка
                         </template>
                     </p>
+                    <p class="text-xs text-slate-500">
+                        Создан {{ formatOrderDate(order.created_at) }}
+                        · выдан {{ formatOrderDate(order.issued_at) }}
+                    </p>
                     <button
                         type="button"
                         class="app-btn-primary mt-1 w-full sm:w-auto"
@@ -255,6 +261,12 @@ export default {
                         </p>
                         <p class="text-sm text-slate-600">
                             {{ itemsSummary(orderForJob(job)) }}
+                        </p>
+                        <p class="text-xs text-slate-500">
+                            Создан
+                            {{ formatOrderDate(orderForJob(job).created_at) }}
+                            · выдан
+                            {{ formatOrderDate(orderForJob(job).issued_at) }}
                         </p>
                     </template>
                     <p class="text-xs text-slate-500">

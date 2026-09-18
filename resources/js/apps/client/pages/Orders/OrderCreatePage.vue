@@ -1,4 +1,5 @@
 <script>
+import ClientSectionCard from "../../components/Layout/ClientSectionCard.vue";
 import { equipmentService } from "../../services/EquipmentService.js";
 import { KIND_LABELS, orderService } from "../../services/OrderService.js";
 
@@ -10,14 +11,19 @@ function emptyRepair() {
     return { kind: "repair", equipment_id: "", problem: "" };
 }
 
+const fieldClass =
+    "w-full border border-white/20 bg-white/60 px-4 py-3 text-dark-gray-500 backdrop-blur-md outline-none focus:border-[#C3006B] dark:border-gray-700/20 dark:bg-gray-800/60 dark:text-gray-200";
+
 export default {
     name: "ClientOrderCreatePage",
+    components: { ClientSectionCard },
     data() {
         return {
             equipments: [],
             saving: false,
             error: null,
             KIND_LABELS,
+            fieldClass,
             form: {
                 billing_type: "paid",
                 urgency: "normal",
@@ -57,13 +63,18 @@ export default {
                 for (const item of this.form.items) {
                     if (item.kind === "sharpening") {
                         if (!item.title?.trim() || !item.quantity) {
-                            throw new Error("Заполните заточку: название и количество");
+                            throw new Error(
+                                "Заполните заточку: название и количество",
+                            );
                         }
                     } else if (!item.equipment_id) {
                         throw new Error("Выберите оборудование для ремонта");
                     }
                 }
-                if (this.form.needs_delivery && !this.form.delivery_address?.trim()) {
+                if (
+                    this.form.needs_delivery &&
+                    !this.form.delivery_address?.trim()
+                ) {
                     throw new Error("Укажите адрес доставки");
                 }
 
@@ -109,12 +120,16 @@ export default {
 </script>
 
 <template>
-    <div class="app-page">
-        <div class="app-page-header">
-            <h1 class="app-page-title">Новый заказ</h1>
+    <div class="space-y-6">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2
+                class="text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 sm:text-2xl"
+            >
+                Новый заказ
+            </h2>
             <button
                 type="button"
-                class="app-btn-ghost w-full sm:w-auto"
+                class="w-full border border-dark-blue-500/30 px-4 py-3 font-jost-medium text-dark-gray-500 transition hover:bg-white/60 sm:w-auto dark:text-gray-200"
                 @click="$router.push({ name: 'client.orders' })"
             >
                 Отмена
@@ -123,66 +138,74 @@ export default {
 
         <p v-if="error" class="text-base text-red-600">{{ error }}</p>
 
-        <section class="app-panel space-y-3">
-            <h2 class="text-base font-jost-bold text-dark-blue-500">Параметры</h2>
-            <div class="app-grid-2">
-                <label class="block text-base">
-                    Тип оплаты
-                    <select v-model="form.billing_type" class="app-field mt-1">
+        <ClientSectionCard title="ПАРАМЕТРЫ">
+            <div class="grid gap-4 sm:grid-cols-2">
+                <label class="block">
+                    <span
+                        class="mb-2 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                    >
+                        Тип оплаты
+                    </span>
+                    <select v-model="form.billing_type" :class="fieldClass">
                         <option value="paid">Платный</option>
                         <option value="warranty">Гарантийный</option>
                     </select>
                 </label>
-                <label class="block text-base">
-                    Срочность
-                    <select v-model="form.urgency" class="app-field mt-1">
+                <label class="block">
+                    <span
+                        class="mb-2 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                    >
+                        Срочность
+                    </span>
+                    <select v-model="form.urgency" :class="fieldClass">
                         <option value="normal">Обычный</option>
                         <option value="urgent">Срочный</option>
                     </select>
                 </label>
             </div>
-            <label class="flex items-center gap-2 text-base">
+            <label class="mt-4 flex items-center gap-2 text-base text-dark-gray-500 dark:text-gray-200">
                 <input v-model="form.needs_delivery" type="checkbox" />
                 Нужна доставка
             </label>
-            <label v-if="form.needs_delivery" class="block text-base">
-                Адрес доставки
+            <label v-if="form.needs_delivery" class="mt-4 block">
+                <span
+                    class="mb-2 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                >
+                    Адрес доставки
+                </span>
                 <input
                     v-model="form.delivery_address"
                     type="text"
-                    class="app-field mt-1"
+                    :class="fieldClass"
                 />
             </label>
-        </section>
+        </ClientSectionCard>
 
-        <section class="app-panel space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-base font-jost-bold text-dark-blue-500">Состав</h2>
-                <div class="flex gap-3">
-                    <button
-                        type="button"
-                        class="text-base text-pink-600 hover:underline"
-                        @click="addSharpening"
-                    >
-                        + заточка
-                    </button>
-                    <button
-                        type="button"
-                        class="text-base text-pink-600 hover:underline"
-                        @click="addRepair"
-                    >
-                        + ремонт
-                    </button>
-                </div>
+        <ClientSectionCard title="СОСТАВ">
+            <div class="mb-4 flex flex-wrap gap-3">
+                <button
+                    type="button"
+                    class="font-jost-medium text-[#C3006B] hover:underline"
+                    @click="addSharpening"
+                >
+                    + заточка
+                </button>
+                <button
+                    type="button"
+                    class="font-jost-medium text-[#C3006B] hover:underline"
+                    @click="addRepair"
+                >
+                    + ремонт
+                </button>
             </div>
 
             <div
                 v-for="(item, index) in form.items"
                 :key="index"
-                class="space-y-2 border border-slate-200 bg-white p-3"
+                class="mb-4 space-y-3 border border-white/20 bg-white/60 p-4 backdrop-blur-md last:mb-0 dark:border-gray-700/20 dark:bg-gray-800/60"
             >
                 <div class="flex items-center justify-between">
-                    <span class="font-jost-medium">
+                    <span class="font-jost-medium text-dark-blue-500 dark:text-dark-blue-300">
                         {{ KIND_LABELS[item.kind] }}
                     </span>
                     <button
@@ -195,23 +218,23 @@ export default {
                 </div>
 
                 <template v-if="item.kind === 'sharpening'">
-                    <div class="grid gap-2 sm:grid-cols-[1fr_6rem]">
+                    <div class="grid gap-3 sm:grid-cols-[1fr_6rem]">
                         <input
                             v-model="item.title"
                             type="text"
                             placeholder="Название"
-                            class="app-field"
+                            :class="fieldClass"
                         />
                         <input
                             v-model.number="item.quantity"
                             type="number"
                             min="1"
-                            class="app-field"
+                            :class="fieldClass"
                         />
                     </div>
                 </template>
                 <template v-else>
-                    <select v-model="item.equipment_id" class="app-field">
+                    <select v-model="item.equipment_id" :class="fieldClass">
                         <option value="" disabled>Оборудование</option>
                         <option
                             v-for="eq in equipments"
@@ -223,7 +246,7 @@ export default {
                     </select>
                     <p
                         v-if="equipments.length === 0"
-                        class="text-base text-slate-500"
+                        class="text-base text-dark-gray-500 dark:text-gray-400"
                     >
                         Нет оборудования в профиле — ремонт пока недоступен.
                         Обратитесь в мастерскую.
@@ -231,16 +254,16 @@ export default {
                     <textarea
                         v-model="item.problem"
                         rows="2"
-                        class="app-field"
+                        :class="fieldClass"
                         placeholder="Описание проблемы"
                     />
                 </template>
             </div>
-        </section>
+        </ClientSectionCard>
 
         <button
             type="button"
-            class="app-btn-primary w-full sm:w-auto"
+            class="w-full bg-[#C3006B] px-8 py-4 font-jost-bold text-lg text-white shadow-lg transition hover:bg-[#A8005A] disabled:opacity-50 sm:w-auto"
             :disabled="saving"
             @click="submit"
         >

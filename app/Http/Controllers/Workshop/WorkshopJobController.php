@@ -82,10 +82,18 @@ final class WorkshopJobController extends Controller
             'max_qty' => ['nullable', 'integer', 'min:0'],
             'works' => ['required', 'array'],
             'works.*.title' => ['required', 'string', 'max:255'],
+            'works.*.equipment_module_id' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $titles = array_map(
-            static fn (array $work): string => (string) $work['title'],
+        $works = array_map(
+            static function (array $work): array {
+                $row = ['title' => (string) $work['title']];
+                if (array_key_exists('equipment_module_id', $work) && $work['equipment_module_id'] !== null) {
+                    $row['equipment_module_id'] = (int) $work['equipment_module_id'];
+                }
+
+                return $row;
+            },
             $data['works'],
         );
 
@@ -95,7 +103,7 @@ final class WorkshopJobController extends Controller
             $orderItemId,
             $masterId,
             array_key_exists('completed_qty', $data) ? ($data['completed_qty'] !== null ? (int) $data['completed_qty'] : null) : null,
-            $titles,
+            $works,
             array_key_exists('max_qty', $data) ? ($data['max_qty'] !== null ? (int) $data['max_qty'] : null) : null,
         );
 

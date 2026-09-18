@@ -9,7 +9,7 @@ final readonly class WorkshopJobResponse
      *     id: int|null,
      *     order_item_id: int,
      *     completed_qty: int|null,
-     *     works: list<array{id: int|null, title: string, position: int}>
+     *     works: list<array{id: int|null, title: string, position: int, equipment_module_id: int|null}>
      * }>  $items
      */
     public function __construct(

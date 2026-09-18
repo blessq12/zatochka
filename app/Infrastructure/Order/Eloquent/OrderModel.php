@@ -19,11 +19,13 @@ final class OrderModel extends Model
         'needs_delivery',
         'delivery_address',
         'status',
+        'issued_at',
     ];
 
     protected $casts = [
         'needs_delivery' => 'boolean',
         'estimated_cost' => 'decimal:2',
+        'issued_at' => 'datetime',
     ];
 
     public function items(): HasMany

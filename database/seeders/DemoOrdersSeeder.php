@@ -20,6 +20,7 @@ use App\Application\Workshop\Query\GetWorkshopJobHandler;
 use App\Domain\Identity\Link\IdentityActorLinkRepository;
 use App\Domain\Identity\Repository\IdentityRepository;
 use App\Infrastructure\Crm\Eloquent\EquipmentModel;
+use App\Infrastructure\Crm\Eloquent\EquipmentModuleModel;
 use App\Infrastructure\Order\Eloquent\OrderModel;
 use App\Infrastructure\Warehouse\Eloquent\StockItemModel;
 use Illuminate\Database\Seeder;
@@ -118,7 +119,7 @@ final class DemoOrdersSeeder extends Seeder
             $sharpeningOpenId,
             $masterId,
             2,
-            ['Черновая заточка'],
+            [['title' => 'Черновая заточка']],
             4,
         );
         $this->command?->info("Order #{$inProgressOrder->id} status=in_progress job=#{$jobOpen->id}");
@@ -247,17 +248,24 @@ final class DemoOrdersSeeder extends Seeder
             $sharpeningId,
             $masterId,
             $qty,
-            ['Заточка', 'Полировка'],
+            [
+                ['title' => 'Заточка'],
+                ['title' => 'Полировка'],
+            ],
             $qty,
         );
 
         if ($repairId !== null) {
+            $moduleId = $this->firstModuleIdForRepairItem($order, $repairId);
             $updateItemWork->handle(
                 $job->id,
                 $repairId,
                 $masterId,
                 null,
-                ['Диагностика', 'Замена узла'],
+                [
+                    ['title' => 'Диагностика', 'equipment_module_id' => $moduleId],
+                    ['title' => 'Замена узла', 'equipment_module_id' => $moduleId],
+                ],
             );
         }
 
@@ -360,6 +368,31 @@ final class DemoOrdersSeeder extends Seeder
         }
 
         return null;
+    }
+
+    private function firstModuleIdForRepairItem(OrderResponse $order, int $repairItemId): int
+    {
+        foreach ($order->items as $item) {
+            if ((int) $item['id'] !== $repairItemId) {
+                continue;
+            }
+
+            $equipmentId = (int) ($item['equipment_id'] ?? 0);
+            $moduleId = EquipmentModuleModel::query()
+                ->where('equipment_id', $equipmentId)
+                ->orderBy('id')
+                ->value('id');
+
+            if ($moduleId === null) {
+                throw new \RuntimeException(
+                    "Equipment #{$equipmentId} has no modules for repair seed works.",
+                );
+            }
+
+            return (int) $moduleId;
+        }
+
+        throw new \RuntimeException("Repair item #{$repairItemId} not found on order #{$order->id}.");
     }
 
     private function actorId(

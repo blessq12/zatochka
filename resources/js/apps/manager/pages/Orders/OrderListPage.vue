@@ -7,6 +7,7 @@ import {
     KIND_LABELS,
 } from "../../services/OrderService.js";
 import { actorService } from "../../services/ActorService.js";
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 
 export default {
     name: "OrderListPage",
@@ -20,6 +21,7 @@ export default {
             loading: false,
             error: null,
             statusLabel,
+            formatOrderDate,
             BILLING_LABELS,
             URGENCY_LABELS,
             KIND_LABELS,
@@ -222,6 +224,10 @@ export default {
                         · мастер: {{ masterName(item.master_id) }}
                     </p>
                     <p class="text-xs text-slate-500">
+                        Создан {{ formatOrderDate(item.created_at) }}
+                        · выдан {{ formatOrderDate(item.issued_at) }}
+                    </p>
+                    <p class="text-xs text-slate-500">
                         {{ itemsSummary(item) }}
                     </p>
                     <p class="text-xs text-slate-500">
@@ -239,6 +245,8 @@ export default {
                             <th class="px-4 py-3 font-jost-medium">#</th>
                             <th class="px-4 py-3 font-jost-medium">Клиент</th>
                             <th class="px-4 py-3 font-jost-medium">Статус</th>
+                            <th class="px-4 py-3 font-jost-medium">Создан</th>
+                            <th class="px-4 py-3 font-jost-medium">Выдан</th>
                             <th class="px-4 py-3 font-jost-medium">Оплата</th>
                             <th class="px-4 py-3 font-jost-medium">Срочность</th>
                             <th class="px-4 py-3 font-jost-medium">Оценка</th>
@@ -249,7 +257,7 @@ export default {
                     </thead>
                     <tbody>
                         <tr v-if="items.length === 0">
-                            <td colspan="9" class="px-4 py-6 text-slate-500">
+                            <td colspan="11" class="px-4 py-6 text-slate-500">
                                 Пока пусто
                             </td>
                         </tr>
@@ -261,6 +269,12 @@ export default {
                             <td class="px-4 py-3">{{ item.id }}</td>
                             <td class="px-4 py-3">{{ clientName(item.client_id) }}</td>
                             <td class="px-4 py-3">{{ statusLabel(item.status) }}</td>
+                            <td class="px-4 py-3">
+                                {{ formatOrderDate(item.created_at) }}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ formatOrderDate(item.issued_at) }}
+                            </td>
                             <td class="px-4 py-3">
                                 {{ BILLING_LABELS[item.billing_type] || item.billing_type }}
                             </td>

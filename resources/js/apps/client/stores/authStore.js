@@ -12,7 +12,6 @@ export const useAuthStore = defineStore("auth", {
         user: null,
         token: null,
         isLoading: false,
-        requiresPasswordSet: false,
     }),
 
     getters: {
@@ -138,7 +137,6 @@ export const useAuthStore = defineStore("auth", {
 
             this.token = null;
             this.user = null;
-            this.requiresPasswordSet = false;
             localStorage.removeItem(TOKEN_KEY);
         },
 
@@ -215,10 +213,6 @@ export const useAuthStore = defineStore("auth", {
                         : "Ошибка обновления профиля");
                 return { success: false, error: message };
             }
-        },
-
-        async setPassword() {
-            return { success: false, error: "Смена пароля пока недоступна" };
         },
     },
 });

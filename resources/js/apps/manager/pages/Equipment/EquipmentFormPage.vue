@@ -66,6 +66,7 @@ export default {
                     brand: item.brand || "",
                     type: item.type || "",
                     modules: (item.modules || []).map((m) => ({
+                        id: m.id ?? null,
                         name: m.name || "",
                         serial_number: m.serial_number || "",
                     })),
@@ -91,10 +92,16 @@ export default {
                     name: this.form.name,
                     brand: this.form.brand,
                     type: this.form.type,
-                    modules: this.form.modules.map((m) => ({
-                        name: m.name,
-                        serial_number: m.serial_number,
-                    })),
+                    modules: this.form.modules.map((m) => {
+                        const row = {
+                            name: m.name,
+                            serial_number: m.serial_number,
+                        };
+                        if (m.id != null) {
+                            row.id = Number(m.id);
+                        }
+                        return row;
+                    }),
                 };
 
                 if (this.isEdit) {

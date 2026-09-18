@@ -51,6 +51,8 @@ final readonly class OrderResponseAssembler
             $order->status()->value,
             $items,
             $review,
+            $order->createdAt()?->format(DATE_ATOM),
+            $order->issuedAt()?->format(DATE_ATOM),
         );
     }
 }

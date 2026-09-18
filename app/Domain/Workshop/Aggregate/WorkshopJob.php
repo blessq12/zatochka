@@ -93,12 +93,12 @@ final class WorkshopJob
     }
 
     /**
-     * @param  list<string>  $workTitles
+     * @param  list<array{title: string, equipment_module_id?: int|null}>  $works
      */
     public function updateItemWork(
         int $orderItemId,
         ?int $completedQty,
-        array $workTitles,
+        array $works,
         ?int $maxQty = null,
     ): void {
         $this->assertOpen();
@@ -108,11 +108,16 @@ final class WorkshopJob
                 continue;
             }
 
-            $works = [];
-            foreach (array_values($workTitles) as $index => $title) {
-                $works[] = WorkEntry::create((string) $title, $index);
+            $workEntries = [];
+            foreach (array_values($works) as $index => $row) {
+                $moduleId = $row['equipment_module_id'] ?? null;
+                $workEntries[] = WorkEntry::create(
+                    (string) $row['title'],
+                    $index,
+                    $moduleId !== null ? (int) $moduleId : null,
+                );
             }
-            $item->replaceWorks($completedQty, $works, $maxQty);
+            $item->replaceWorks($completedQty, $workEntries, $maxQty);
 
             return;
         }

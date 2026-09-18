@@ -7,6 +7,8 @@ use App\Domain\Crm\Entity\EquipmentModule;
 use App\Domain\Crm\Repository\EquipmentRepository;
 use App\Infrastructure\Crm\Eloquent\EquipmentModel;
 use App\Infrastructure\Crm\Eloquent\EquipmentModuleModel;
+use App\Infrastructure\Workshop\Eloquent\WorkshopWorkEntryModel;
+use App\Shared\Domain\DomainException;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentEquipmentRepository implements EquipmentRepository
@@ -38,9 +40,29 @@ final class EloquentEquipmentRepository implements EquipmentRepository
                 return $equipment;
             }
 
-            EquipmentModuleModel::query()->where('equipment_id', $model->id)->delete();
+            $existing = EquipmentModuleModel::query()
+                ->where('equipment_id', $model->id)
+                ->get()
+                ->keyBy('id');
+
+            $keptIds = [];
 
             foreach ($equipment->modules() as $module) {
+                if ($module->id() !== null) {
+                    /** @var EquipmentModuleModel|null $moduleModel */
+                    $moduleModel = $existing->get($module->id());
+                    if ($moduleModel === null) {
+                        throw new DomainException('Equipment module not found.');
+                    }
+
+                    $moduleModel->name = $module->name();
+                    $moduleModel->serial_number = $module->serialNumber();
+                    $moduleModel->save();
+                    $keptIds[] = (int) $moduleModel->id;
+
+                    continue;
+                }
+
                 $moduleModel = new EquipmentModuleModel([
                     'equipment_id' => $model->id,
                     'name' => $module->name(),
@@ -48,6 +70,17 @@ final class EloquentEquipmentRepository implements EquipmentRepository
                 ]);
                 $moduleModel->save();
                 $module->assignId((int) $moduleModel->id);
+                $keptIds[] = (int) $moduleModel->id;
+            }
+
+            $toDelete = $existing->keys()->diff($keptIds);
+            foreach ($toDelete as $deleteId) {
+                $deleteId = (int) $deleteId;
+                if (WorkshopWorkEntryModel::query()->where('equipment_module_id', $deleteId)->exists()) {
+                    throw new DomainException('Cannot delete equipment module referenced by workshop works.');
+                }
+
+                EquipmentModuleModel::query()->where('id', $deleteId)->delete();
             }
 
             return $equipment;
