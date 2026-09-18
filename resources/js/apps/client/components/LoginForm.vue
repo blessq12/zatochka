@@ -37,7 +37,7 @@ export default {
 </script>
 
 <template>
-    <div class="flex h-full max-h-full w-full flex-col overflow-hidden bg-white dark:bg-dark-blue-500">
+    <div class="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white dark:bg-dark-blue-500">
         <header class="shrink-0 bg-[#C20A6C] pt-[env(safe-area-inset-top)]">
             <div class="container mx-auto">
                 <div

@@ -52,7 +52,7 @@ export default {
 
 <template>
     <div
-        class="client-shell flex h-full max-h-full w-full flex-col overflow-hidden bg-white font-jost-regular dark:bg-dark-blue-500"
+        class="client-shell flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white font-jost-regular dark:bg-dark-blue-500"
     >
         <ClientTopbar
             :title="pageTitle"

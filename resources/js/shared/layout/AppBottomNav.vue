@@ -25,7 +25,8 @@ export default {
 
 <template>
     <nav
-        class="z-[900] hidden shrink-0 border-t border-slate-300 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.1)] max-lg:block"
+        class="z-[900] hidden shrink-0 border-t border-slate-300 bg-white shadow-[0_-4px_16px_rgba(15,23,42,0.1)] max-lg:block"
+        style="padding-bottom: env(safe-area-inset-bottom, 0px)"
         aria-label="Основная навигация"
     >
         <ul

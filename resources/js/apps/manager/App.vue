@@ -5,7 +5,7 @@ export default {
 </script>
 
 <template>
-    <div class="h-full w-full overflow-hidden">
+    <div class="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         <router-view />
     </div>
 </template>

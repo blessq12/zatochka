@@ -1,13 +1,13 @@
 <script>
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { actorService } from "../../services/ActorService.js";
 import {
+    BILLING_LABELS,
+    compositionLabel,
     orderService,
     statusLabel,
-    compositionLabel,
-    BILLING_LABELS,
     URGENCY_LABELS,
 } from "../../services/OrderService.js";
-import { actorService } from "../../services/ActorService.js";
-import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 
 export default {
     name: "OrderListPage",
@@ -79,14 +79,18 @@ export default {
             }
         },
         clientName(id) {
-            const client = this.clients.find((c) => Number(c.id) === Number(id));
+            const client = this.clients.find(
+                (c) => Number(c.id) === Number(id),
+            );
             return client?.name || client?.email || `#${id}`;
         },
         masterName(id) {
             if (id == null) {
                 return "не назначен";
             }
-            const master = this.masters.find((m) => Number(m.id) === Number(id));
+            const master = this.masters.find(
+                (m) => Number(m.id) === Number(id),
+            );
             return master?.name || master?.email || `#${id}`;
         },
         deliveryLabel(order) {
@@ -114,7 +118,11 @@ export default {
     <div class="app-page">
         <div class="app-page-header">
             <h1 class="app-page-title">Заказы</h1>
-            <button type="button" class="app-btn-primary w-full sm:w-auto" @click="goCreate">
+            <button
+                type="button"
+                class="app-btn-primary w-full sm:w-auto"
+                @click="goCreate"
+            >
                 Создать
             </button>
         </div>
@@ -194,15 +202,18 @@ export default {
                         ·
                         {{ URGENCY_LABELS[item.urgency] || item.urgency }}
                         ·
-                        {{ BILLING_LABELS[item.billing_type] || item.billing_type }}
+                        {{
+                            BILLING_LABELS[item.billing_type] ||
+                            item.billing_type
+                        }}
                     </p>
                     <p class="text-sm text-slate-600">
-                        Оценка {{ item.estimated_cost }} ₽
-                        · мастер: {{ masterName(item.master_id) }}
+                        Оценка {{ item.estimated_cost }} · мастер:
+                        {{ masterName(item.master_id) }}
                     </p>
                     <p class="text-xs text-slate-500">
-                        Создан {{ formatOrderDate(item.created_at) }}
-                        · выдан {{ formatOrderDate(item.issued_at) }}
+                        Создан {{ formatOrderDate(item.created_at) }} · выдан
+                        {{ formatOrderDate(item.issued_at) }}
                     </p>
                     <p class="text-xs text-slate-500">
                         {{ compositionLabel(item) }}
@@ -213,24 +224,32 @@ export default {
 
             <div class="app-table-wrap">
                 <table class="min-w-full text-left text-sm">
-                    <thead class="border-b border-slate-200 bg-slate-50 text-slate-600">
+                    <thead
+                        class="border-b border-slate-200 bg-slate-50 text-slate-600"
+                    >
                         <tr>
                             <th class="px-4 py-3 font-jost-medium">#</th>
                             <th class="px-4 py-3 font-jost-medium">Клиент</th>
                             <th class="px-4 py-3 font-jost-medium">Статус</th>
                             <th class="px-4 py-3 font-jost-medium">
-                                <div class="flex flex-col gap-0.5 leading-tight">
+                                <div
+                                    class="flex flex-col gap-0.5 leading-tight"
+                                >
                                     <span>Создан</span>
                                     <span>Выдан</span>
                                 </div>
                             </th>
                             <th class="px-4 py-3 font-jost-medium">
-                                <div class="flex flex-col gap-0.5 leading-tight">
+                                <div
+                                    class="flex flex-col gap-0.5 leading-tight"
+                                >
                                     <span>Тип</span>
                                     <span>Скорость</span>
                                 </div>
                             </th>
-                            <th class="px-4 py-3 font-jost-medium">Оценка</th>
+                            <th class="px-4 py-3 font-jost-medium">
+                                Оценка(₽)
+                            </th>
                             <th class="px-4 py-3 font-jost-medium">Мастер</th>
                             <th class="px-4 py-3 font-jost-medium">Состав</th>
                             <th class="px-4 py-3 font-jost-medium" />
@@ -248,18 +267,28 @@ export default {
                             class="border-t border-slate-100"
                         >
                             <td class="px-4 py-3">{{ item.id }}</td>
-                            <td class="px-4 py-3">{{ clientName(item.client_id) }}</td>
-                            <td class="px-4 py-3">{{ statusLabel(item.status) }}</td>
                             <td class="px-4 py-3">
-                                <div class="flex flex-col gap-0.5 leading-tight">
-                                    <span>{{ formatOrderDate(item.created_at) }}</span>
+                                {{ clientName(item.client_id) }}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ statusLabel(item.status) }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div
+                                    class="flex flex-col gap-0.5 leading-tight"
+                                >
+                                    <span>{{
+                                        formatOrderDate(item.created_at)
+                                    }}</span>
                                     <span class="text-slate-500">
                                         {{ formatOrderDate(item.issued_at) }}
                                     </span>
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex flex-col gap-0.5 leading-tight">
+                                <div
+                                    class="flex flex-col gap-0.5 leading-tight"
+                                >
                                     <span>
                                         {{
                                             BILLING_LABELS[item.billing_type] ||
@@ -274,9 +303,15 @@ export default {
                                     </span>
                                 </div>
                             </td>
-                            <td class="px-4 py-3">{{ item.estimated_cost }} ₽</td>
-                            <td class="px-4 py-3">{{ masterName(item.master_id) }}</td>
-                            <td class="px-4 py-3">{{ compositionLabel(item) }}</td>
+                            <td class="px-4 py-3">
+                                {{ item.estimated_cost }}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ masterName(item.master_id) }}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ compositionLabel(item) }}
+                            </td>
                             <td class="px-4 py-3 text-right">
                                 <button
                                     type="button"

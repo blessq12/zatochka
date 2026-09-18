@@ -84,40 +84,55 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Единый PWA-viewport lock (client / manager / master):
- * — нет document rubber-band / горизонтального pan;
- * — высота = видимый viewport (dvh), без «дыры» снизу на iOS standalone.
+ * Единый PWA-viewport lock (client / manager / master).
+ * iOS standalone: 100dvh часто короче экрана → белая полоса под home indicator.
+ * Чиним через -webkit-fill-available + фон html/body (не оставляем дефолтный белый).
  */
 html.apps-pwa {
-    height: 100%;
     width: 100%;
+    height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
     overflow: hidden;
     overscroll-behavior: none;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    background-color: #ffffff;
 }
 
 @supports (height: 100dvh) {
     html.apps-pwa {
-        height: 100dvh;
-        max-height: 100dvh;
+        min-height: 100dvh;
     }
 }
 
+html.apps-pwa.dark {
+    background-color: #003859;
+}
+
 html.apps-pwa body.apps-pwa-root {
-    height: 100%;
-    max-height: 100%;
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    height: 100%;
+    min-height: 100%;
+    min-height: inherit;
+    margin: 0;
     overflow: hidden;
     overscroll-behavior: none;
     touch-action: manipulation;
+    background-color: inherit;
 }
 
 html.apps-pwa #app {
-    height: 100%;
-    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
     width: 100%;
+    min-height: 0;
+    height: 100%;
     overflow: hidden;
+    background-color: inherit;
 }
 
 /* iOS: инпуты ≥16px, иначе Safari зумит при фокусе (manager/master/client SPA) */

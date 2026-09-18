@@ -24,7 +24,8 @@ export default {
 
 <template>
     <nav
-        class="z-[900] hidden shrink-0 border-t border-[#C20A6C]/25 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md max-lg:block dark:border-white/10 dark:bg-dark-blue-500/95"
+        class="z-[900] hidden shrink-0 border-t border-[#C20A6C]/25 bg-white backdrop-blur-md max-lg:block dark:border-white/10 dark:bg-dark-blue-500"
+        style="padding-bottom: env(safe-area-inset-bottom, 0px)"
         aria-label="Основная навигация"
     >
         <ul

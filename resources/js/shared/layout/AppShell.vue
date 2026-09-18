@@ -41,7 +41,7 @@ export default {
 
 <template>
     <div
-        class="apps-shell flex h-full max-h-full w-full overflow-hidden font-jost-regular"
+        class="apps-shell flex min-h-0 w-full flex-1 overflow-hidden font-jost-regular"
     >
         <div class="hidden h-full shrink-0 lg:block">
             <AppSidebar :tagline="tagline" :items="items" />
@@ -54,7 +54,7 @@ export default {
             @close="closeMobile"
         />
 
-        <div class="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
             <AppTopbar
                 :user-name="userName"
                 :user-email="userEmail"
