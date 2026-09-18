@@ -39,7 +39,7 @@ export default {
     >
         <div class="container mx-auto">
             <div
-                class="flex h-16 items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-12"
+                class="flex h-12 items-center justify-between px-4 sm:h-14 sm:px-8 lg:px-12"
             >
                 <a
                     href="/"
