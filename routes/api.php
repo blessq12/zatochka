@@ -1,55 +1,113 @@
 <?php
 
-use App\Http\Controllers\Api\BootstrapController;
-use App\Http\Controllers\Api\ClientAccountController;
-use App\Http\Controllers\Api\ClientAuthController;
-use App\Http\Controllers\Api\LeadController;
-use App\Http\Controllers\Pos\PosController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\ApplyOrderMaterialsController;
+use App\Http\Controllers\Manager\DashboardController;
+use App\Http\Controllers\Crm\ActorController;
+use App\Http\Controllers\Crm\EquipmentController;
+use App\Http\Controllers\Finance\CashEntryController;
+use App\Http\Controllers\Finance\EarningsGoalController;
+use App\Http\Controllers\Finance\OrderPricingController;
+use App\Http\Controllers\Identity\IdentityController;
+use App\Http\Controllers\Order\DocumentTemplateController;
+use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Order\OrderDocumentController;
+use App\Http\Controllers\ProvisionActorController;
+use App\Http\Controllers\SiteContent\SiteContentController;
+use App\Http\Controllers\Warehouse\OrderIssueController;
+use App\Http\Controllers\Warehouse\StockItemController;
+use App\Http\Controllers\Workshop\WorkshopJobController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('bootstrap', [BootstrapController::class, 'show']);
+Route::post('/identity/register', [IdentityController::class, 'register']);
+Route::post('/identity/login', [IdentityController::class, 'login']);
 
-Route::post('leads', [LeadController::class, 'store']);
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::post('/identity/logout', [IdentityController::class, 'logout']);
+    Route::get('/identity/me', [IdentityController::class, 'me']);
 
-Route::prefix('auth')->group(function (): void {
-    Route::post('register', [ClientAuthController::class, 'register']);
-    Route::post('login', [ClientAuthController::class, 'login']);
-});
+    Route::middleware('actor:managers')->group(function (): void {
+        Route::get('/manager/dashboard', DashboardController::class);
 
-Route::prefix('client')->middleware('auth:sanctum')->group(function (): void {
-    Route::get('profile', [ClientAccountController::class, 'profile']);
-    Route::patch('profile', [ClientAccountController::class, 'updateProfile']);
-    Route::post('password', [ClientAuthController::class, 'setPassword']);
+        Route::get('/actors/{type}', [ActorController::class, 'index']);
+        Route::post('/actors/clients/walk-in', [ActorController::class, 'storeWalkInClient']);
+        Route::post('/actors/{type}', [ProvisionActorController::class, '__invoke']);
+        Route::delete('/actors/{type}/{id}', [ActorController::class, 'destroy']);
 
-    Route::get('orders/active', [ClientAccountController::class, 'activeOrders']);
-    Route::get('orders/history', [ClientAccountController::class, 'orderHistory']);
-    Route::get('orders/{orderId}', [ClientAccountController::class, 'orderDetail']);
-    Route::post('orders/{orderId}/review', [ClientAccountController::class, 'submitReview']);
-});
+        Route::get('/site-content', [SiteContentController::class, 'show']);
+        Route::put('/site-content/{section}', [SiteContentController::class, 'updateSection'])
+            ->whereIn('section', ['company', 'contacts', 'schedule', 'faq', 'delivery', 'prices']);
+        Route::put('/site-content/legal', [SiteContentController::class, 'saveLegal']);
+        Route::delete('/site-content/legal/{slug}', [SiteContentController::class, 'destroyLegal']);
 
-Route::prefix('pos')->group(function (): void {
-    Route::post('login', [PosController::class, 'login']);
+        Route::post('/equipments', [EquipmentController::class, 'store']);
+        Route::match(['put', 'patch'], '/equipments/{id}', [EquipmentController::class, 'update']);
+        Route::delete('/equipments/{id}', [EquipmentController::class, 'destroy']);
 
-    Route::middleware('auth:sanctum')->group(function (): void {
-        Route::get('dashboard', [PosController::class, 'dashboard']);
-        Route::get('orders/counts', [PosController::class, 'counts']);
-        Route::get('orders', [PosController::class, 'index']);
-        Route::get('orders/{orderId}', [PosController::class, 'show']);
-        Route::post('orders/{orderId}/take-to-work', [PosController::class, 'takeToWork']);
-        Route::post('orders/{orderId}/waiting-parts', [PosController::class, 'markWaitingForParts']);
-        Route::post('orders/{orderId}/resume', [PosController::class, 'resume']);
-        Route::post('orders/{orderId}/works', [PosController::class, 'addWork']);
-        Route::delete('orders/{orderId}/works', [PosController::class, 'removeWork']);
-        Route::patch('orders/{orderId}/internal-notes', [PosController::class, 'updateInternalNotes']);
-        Route::post('orders/{orderId}/mark-ready', [PosController::class, 'markReady']);
+        Route::put('/orders/{id}/items', [OrderController::class, 'updateItems']);
+        Route::post('/orders/{id}/assign-master', [OrderController::class, 'assignMaster']);
+        Route::post('/orders/{id}/transition', [OrderController::class, 'transition']);
+        Route::get('/orders/{id}/documents/{type}', OrderDocumentController::class)
+            ->whereIn('type', ['receipt', 'handover_act']);
 
-        Route::get('warehouse/items', [PosController::class, 'searchWarehouseItems']);
-        Route::get('equipment', [PosController::class, 'searchEquipment']);
-        Route::get('equipment/{equipmentId}/orders', [PosController::class, 'equipmentOrderHistory']);
+        Route::get('/order-document-templates', [DocumentTemplateController::class, 'index']);
+        Route::put('/order-document-templates/{type}', [DocumentTemplateController::class, 'update'])
+            ->whereIn('type', ['receipt', 'handover_act']);
+        Route::post('/order-document-templates/{type}/preview', [DocumentTemplateController::class, 'preview'])
+            ->whereIn('type', ['receipt', 'handover_act']);
+
+        Route::get('/finance/pricings/by-order/{orderId}', [OrderPricingController::class, 'byOrder']);
+        Route::put('/finance/pricings/by-order/{orderId}', [OrderPricingController::class, 'upsertByOrder']);
+
+        Route::get('/finance/cash-entries', [CashEntryController::class, 'index']);
+        Route::post('/finance/cash-entries', [CashEntryController::class, 'store']);
+        Route::delete('/finance/cash-entries/{id}', [CashEntryController::class, 'destroy']);
+
+        Route::get('/finance/goals', [EarningsGoalController::class, 'index']);
+        Route::post('/finance/goals', [EarningsGoalController::class, 'store']);
+        Route::post('/finance/goals/{id}/cancel', [EarningsGoalController::class, 'cancel']);
+
+        Route::post('/warehouse/items', [StockItemController::class, 'store']);
+        Route::match(['put', 'patch'], '/warehouse/items/{id}', [StockItemController::class, 'update']);
+        Route::post('/warehouse/items/{id}/receive', [StockItemController::class, 'receive']);
+        Route::get('/warehouse/issues/by-order/{orderId}', [OrderIssueController::class, 'byOrder']);
+        Route::put('/orders/{orderId}/materials', ApplyOrderMaterialsController::class);
+    });
+
+    Route::middleware('actor:masters')->group(function (): void {
+        Route::get('/orders/assigned', [OrderController::class, 'assigned']);
+    });
+
+    Route::middleware('actor:managers,masters,clients')->group(function (): void {
+        Route::get('/equipments', [EquipmentController::class, 'index']);
+        Route::get('/equipments/{id}', [EquipmentController::class, 'show']);
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/orders/{id}', [OrderController::class, 'show'])->whereNumber('id');
+    });
+
+    Route::middleware('actor:managers,masters')->group(function (): void {
+        Route::get('/warehouse/items', [StockItemController::class, 'index']);
+        Route::get('/warehouse/items/{id}', [StockItemController::class, 'show']);
+        Route::get('/workshop/jobs/by-order/{orderId}', [WorkshopJobController::class, 'byOrder']);
+    });
+
+    Route::middleware('actor:masters')->group(function (): void {
+        Route::post('/workshop/jobs/accept', [WorkshopJobController::class, 'accept']);
+        Route::get('/workshop/jobs/mine', [WorkshopJobController::class, 'mine']);
+        Route::get('/workshop/jobs/{id}', [WorkshopJobController::class, 'show']);
+        Route::put('/workshop/jobs/{id}/items/{orderItemId}', [WorkshopJobController::class, 'updateItem']);
+        Route::post('/workshop/jobs/{id}/complete', [WorkshopJobController::class, 'complete']);
+    });
+
+    Route::middleware('actor:managers,clients')->group(function (): void {
+        Route::post('/orders', [OrderController::class, 'store']);
+    });
+
+    Route::middleware('actor:clients')->group(function (): void {
+        Route::post('/orders/{id}/review', [OrderController::class, 'storeReview']);
+    });
+
+    Route::middleware('actor:clients,managers,masters')->group(function (): void {
+        Route::get('/actors/{type}/{id}', [ActorController::class, 'show']);
+        Route::match(['put', 'patch'], '/actors/{type}/{id}', [ActorController::class, 'update']);
     });
 });
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');

@@ -1,0 +1,313 @@
+/* SPA apps styles (client / master / manager). */
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;900&display=swap");
+@import "tailwindcss";
+
+@theme {
+    --font-family-jost: "Jost", "sans-serif";
+
+    /* Фирменные цвета Заточка.ТСК */
+    --color-dark-blue-50: #f0f7ff;
+    --color-dark-blue-100: #e0f2fe;
+    --color-dark-blue-200: #bae6fd;
+    --color-dark-blue-300: #7dd3fc;
+    --color-dark-blue-400: #38bdf8;
+    --color-dark-blue-500: #003859;
+    --color-dark-blue-600: #002c4e;
+    --color-dark-blue-700: #001f3a;
+    --color-dark-blue-800: #001529;
+    --color-dark-blue-900: #001a2e;
+
+    --color-blue-50: #eff6ff;
+    --color-blue-100: #dbeafe;
+    --color-blue-200: #bfdbfe;
+    --color-blue-300: #93c5fd;
+    --color-blue-400: #60a5fa;
+    --color-blue-500: #046490;
+    --color-blue-600: #035a7a;
+    --color-blue-700: #024d66;
+    --color-blue-800: #014052;
+    --color-blue-900: #00333e;
+
+    --color-pink-50: #fdf2f8;
+    --color-pink-100: #fce7f3;
+    --color-pink-200: #fbcfe8;
+    --color-pink-300: #f9a8d4;
+    --color-pink-400: #e879f9;
+    --color-pink-500: #c3006b;
+    --color-pink-600: #a8005a;
+    --color-pink-700: #8e0049;
+    --color-pink-800: #740038;
+    --color-pink-900: #5e0033;
+
+    --color-light-pink-50: #fef7f0;
+    --color-light-pink-100: #fdeee0;
+    --color-light-pink-200: #fbdcc0;
+    --color-light-pink-300: #f8c4a0;
+    --color-light-pink-400: #e991bd;
+    --color-light-pink-500: #d977a6;
+    --color-light-pink-600: #c95d8f;
+    --color-light-pink-700: #b94378;
+    --color-light-pink-800: #a92961;
+    --color-light-pink-900: #990f4a;
+
+    --color-dark-gray-50: #f9fafb;
+    --color-dark-gray-100: #f3f4f6;
+    --color-dark-gray-200: #e5e7eb;
+    --color-dark-gray-300: #d1d5db;
+    --color-dark-gray-400: #9ca3af;
+    --color-dark-gray-500: #3c3c3b;
+    --color-dark-gray-600: #2a2a29;
+    --color-dark-gray-700: #1f1f1e;
+    --color-dark-gray-800: #141413;
+    --color-dark-gray-900: #0a0a09;
+
+    --color-light-gray-50: #f9fafb;
+    --color-light-gray-100: #f3f4f6;
+    --color-light-gray-200: #e5e7eb;
+    --color-light-gray-300: #d1d5db;
+    --color-light-gray-400: #d3d3d3;
+    --color-light-gray-500: #9ca3af;
+    --color-light-gray-600: #6b7280;
+    --color-light-gray-700: #4b5563;
+    --color-light-gray-800: #374151;
+    --color-light-gray-900: #1f2937;
+
+    /* Canvas apps: чуть темнее slate-50, чтобы белые карточки отделялись */
+    --color-apps-canvas: #e8eef3;
+    --color-apps-ink: #1e293b;
+    --color-apps-muted: #475569;
+    --color-apps-faint: #64748b;
+    --color-apps-line: #cbd5e1;
+    --color-apps-line-strong: #94a3b8;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* iOS: инпуты ≥16px, иначе Safari зумит при фокусе (manager/master/client SPA) */
+:where(input):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+:where(select),
+:where(textarea) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Jost Font Classes */
+.font-jost-black {
+    font-family: "Jost", sans-serif;
+    font-weight: 900;
+}
+
+.font-jost-bold {
+    font-family: "Jost", sans-serif;
+    font-weight: 700;
+}
+
+.font-jost-medium {
+    font-family: "Jost", sans-serif;
+    font-weight: 500;
+}
+
+.font-jost-regular {
+    font-family: "Jost", sans-serif;
+    font-weight: 400;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/*
+ * Контраст master/manager: поднимаем слабые slate-* без переписывания всех экранов.
+ * Цель — WCAG AA для вторичного текста (~4.5:1) и читаемые границы карточек.
+ */
+.apps-shell {
+    color: var(--color-apps-ink);
+    background-color: var(--color-apps-canvas);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Минимум 16px: iOS не зумит инпуты; выравниваем manager/master */
+.apps-shell :where(.text-xs),
+.apps-shell :where(.text-sm) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.apps-shell :where(.text-base) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.apps-shell :where(input),
+.apps-shell :where(select),
+.apps-shell :where(textarea) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.apps-shell :where(.text-slate-400) {
+    color: var(--color-apps-faint);
+}
+
+.apps-shell :where(.text-slate-500) {
+    color: var(--color-apps-muted);
+}
+
+.apps-shell :where(.text-slate-600) {
+    color: #334155;
+}
+
+.apps-shell :where(.text-slate-700) {
+    color: #1e293b;
+}
+
+.apps-shell :where(.border-slate-100) {
+    border-color: #e2e8f0;
+}
+
+.apps-shell :where(.border-slate-200),
+.apps-shell :where(.border-slate-200\/80),
+.apps-shell :where(.border-slate-200\/90) {
+    border-color: var(--color-apps-line);
+}
+
+.apps-shell :where(.border-slate-300) {
+    border-color: var(--color-apps-line-strong);
+}
+
+.apps-shell :where(.bg-slate-50) {
+    background-color: #e2e8f0;
+}
+
+.apps-shell :where(.bg-slate-50\/40) {
+    background-color: rgb(226 232 240 / 0.55);
+}
+
+.apps-shell :where(.divide-slate-100 > :not([hidden]) ~ :not([hidden])) {
+    border-color: #e2e8f0;
+}
+
+@layer components {
+    .app-page {
+        @apply w-full space-y-4 sm:space-y-5 lg:space-y-6;
+        color: var(--color-apps-ink);
+    }
+
+    .app-page-header {
+        @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .app-page-title {
+        @apply text-xl text-dark-blue-500 sm:text-2xl;
+        font-family: "Jost", sans-serif;
+        font-weight: 700;
+    }
+
+    .app-btn-primary {
+        @apply inline-flex min-h-11 items-center justify-center bg-pink-500 px-4 py-2.5 text-base text-white hover:bg-pink-600 disabled:opacity-60;
+        font-family: "Jost", sans-serif;
+        font-weight: 500;
+    }
+
+    .app-btn-secondary {
+        @apply inline-flex min-h-11 items-center justify-center border border-pink-600 px-3 py-2.5 text-base text-pink-700 hover:bg-pink-50 disabled:opacity-60;
+        font-family: "Jost", sans-serif;
+        font-weight: 500;
+    }
+
+    .app-btn-ghost {
+        @apply inline-flex min-h-11 items-center justify-center border border-slate-300 px-4 py-2.5 text-base text-slate-700 hover:bg-white;
+    }
+
+    .app-btn-warning {
+        @apply inline-flex min-h-11 items-center justify-center border border-amber-600 bg-amber-50 px-3 py-2.5 text-base text-amber-900 hover:bg-amber-100 disabled:opacity-60;
+        font-family: "Jost", sans-serif;
+        font-weight: 500;
+    }
+
+    .app-btn-danger {
+        @apply inline-flex min-h-11 items-center justify-center border border-red-600 bg-red-50 px-3 py-2.5 text-base text-red-800 hover:bg-red-100 disabled:opacity-60;
+        font-family: "Jost", sans-serif;
+        font-weight: 500;
+    }
+
+    .app-action-btn {
+        @apply flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left;
+    }
+
+    .app-action-btn-title {
+        @apply text-base;
+        font-family: "Jost", sans-serif;
+        font-weight: 500;
+    }
+
+    .app-action-btn-hint {
+        @apply text-base opacity-80;
+    }
+
+    .app-field {
+        @apply w-full border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-800;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .app-field::placeholder {
+        color: var(--color-apps-faint);
+    }
+
+    .app-filters {
+        @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3;
+    }
+
+    .app-tabs {
+        @apply -mx-3 flex gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0;
+    }
+
+    .app-tab {
+        @apply shrink-0 border px-3 py-2 text-base;
+        font-family: "Jost", sans-serif;
+        font-weight: 500;
+    }
+
+    .app-card-list {
+        @apply space-y-3 md:hidden;
+    }
+
+    .app-card {
+        @apply space-y-2 border border-slate-300 bg-white p-4 shadow-sm;
+    }
+
+    .app-table-wrap {
+        @apply hidden overflow-x-auto border border-slate-300 bg-white md:block;
+    }
+
+    .app-table-wrap thead {
+        @apply bg-slate-50 text-slate-700;
+    }
+
+    .app-panel {
+        @apply space-y-3 border border-slate-300 bg-white p-3 shadow-sm sm:space-y-4 sm:p-4;
+    }
+
+    .app-grid-2 {
+        @apply grid grid-cols-1 gap-3 sm:grid-cols-2;
+    }
+
+    .app-grid-3 {
+        @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3;
+    }
+
+    .app-actions {
+        @apply flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center;
+    }
+}
+
+/* apps-bundle-marker */
+.apps-root { --apps-bundle: 1; }

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Domain\OrderFulfillment\Enum\DocumentType;
-use App\Infrastructure\OrderFulfillment\Document\DefaultDocumentTemplateBodies;
-use App\Infrastructure\OrderFulfillment\Persistence\Eloquent\DocumentTemplateModel;
+use App\Domain\Order\Enum\DocumentType;
+use App\Infrastructure\Order\Document\DefaultDocumentTemplateBodies;
+use App\Infrastructure\Order\Eloquent\DocumentTemplateModel;
 use Illuminate\Database\Seeder;
 
 final class DocumentTemplateSeeder extends Seeder

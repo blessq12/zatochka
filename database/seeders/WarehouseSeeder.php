@@ -2,81 +2,38 @@
 
 namespace Database\Seeders;
 
-use App\Application\Warehouse\Command\ReceiveStockCommand;
-use App\Application\Warehouse\CommandHandler\ReceiveStockHandler;
-use App\Domain\Warehouse\Enum\WarehouseItemType;
-use App\Infrastructure\Identity\Persistence\Eloquent\UserModel;
-use App\Infrastructure\Warehouse\Persistence\Eloquent\WarehouseItemModel;
+use App\Application\Warehouse\Command\CreateStockItemHandler;
+use App\Infrastructure\Warehouse\Eloquent\StockItemModel;
 use Illuminate\Database\Seeder;
 
 final class WarehouseSeeder extends Seeder
 {
-    public function run(): void
+    public function run(CreateStockItemHandler $create): void
     {
+        if (StockItemModel::query()->exists()) {
+            $this->command?->info('Warehouse catalog already seeded.');
+
+            return;
+        }
+
         $items = [
-            [
-                'sku' => 'DEMO-001',
-                'name' => 'Подшипник 608ZZ',
-                'type' => WarehouseItemType::SparePart,
-                'quantity' => 0,
-                'unit' => 'шт',
-                'price' => 250,
-                'receive_qty' => '10',
-            ],
-            [
-                'sku' => 'PART-BELT-V',
-                'name' => 'Приводной ремень V-belt',
-                'type' => WarehouseItemType::SparePart,
-                'quantity' => 0,
-                'unit' => 'шт',
-                'price' => 180,
-                'receive_qty' => '8',
-            ],
-            [
-                'sku' => 'CONSUMABLE-OIL',
-                'name' => 'Масло для смазки подшипников',
-                'type' => WarehouseItemType::Consumable,
-                'quantity' => 0,
-                'unit' => 'мл',
-                'price' => 5,
-                'receive_qty' => '500',
-            ],
-            [
-                'sku' => 'CONSUMABLE-ABRASIVE',
-                'name' => 'Абразивная лента для заточки',
-                'type' => WarehouseItemType::Consumable,
-                'quantity' => 0,
-                'unit' => 'м',
-                'price' => 120,
-                'receive_qty' => '20',
-            ],
+            ['category' => 'spare_part', 'name' => 'Подшипник 6202', 'unit' => 'шт', 'qty_on_hand' => '25'],
+            ['category' => 'spare_part', 'name' => 'Ремень приводной', 'unit' => 'шт', 'qty_on_hand' => '12'],
+            ['category' => 'spare_part', 'name' => 'Щётки угольные', 'unit' => 'пар', 'qty_on_hand' => '40'],
+            ['category' => 'consumable', 'name' => 'Абразивная паста', 'unit' => 'кг', 'qty_on_hand' => '8.5'],
+            ['category' => 'consumable', 'name' => 'Шлифовальная лента', 'unit' => 'м', 'qty_on_hand' => '50'],
+            ['category' => 'consumable', 'name' => 'Масло индустриальное', 'unit' => 'л', 'qty_on_hand' => '15'],
         ];
 
-        $manager = UserModel::query()
-            ->where('email', IdentitySeeder::MANAGER_EMAIL)
-            ->firstOrFail();
-
-        $receiveStock = app(ReceiveStockHandler::class);
-
-        foreach ($items as $data) {
-            $receiveQty = $data['receive_qty'];
-            unset($data['receive_qty']);
-
-            $model = WarehouseItemModel::query()->updateOrCreate(
-                ['sku' => $data['sku']],
-                $data,
+        foreach ($items as $row) {
+            $create->handle(
+                $row['category'],
+                $row['name'],
+                $row['unit'],
+                $row['qty_on_hand'],
             );
-
-            if ((float) $model->quantity > 0) {
-                continue;
-            }
-
-            $receiveStock->handle(new ReceiveStockCommand(
-                warehouseItemId: $model->id,
-                quantity: $receiveQty,
-                comment: 'Начальный остаток (сидер)',
-                userId: $manager->id,
-            ));
         }
+
+        $this->command?->info('Warehouse catalog seeded: '.count($items).' items.');
     }
 }
