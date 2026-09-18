@@ -62,7 +62,7 @@ export default {
         />
 
         <main
-            class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0"
+            class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain"
         >
             <div
                 class="container mx-auto px-4 pt-6 pb-4 sm:px-8 sm:py-10 lg:px-16 lg:py-12 xl:px-20"

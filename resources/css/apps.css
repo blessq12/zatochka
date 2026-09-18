@@ -86,10 +86,9 @@
 /*
  * Единый PWA-viewport lock (client / manager / master):
  * — нет document rubber-band / горизонтального pan;
- * — скролл только во внутреннем main (см. AppShell / ClientShell).
+ * — высота = видимый viewport (dvh), без «дыры» снизу на iOS standalone.
  */
-html.apps-pwa,
-html.apps-pwa body.apps-pwa-root {
+html.apps-pwa {
     height: 100%;
     width: 100%;
     overflow: hidden;
@@ -98,12 +97,25 @@ html.apps-pwa body.apps-pwa-root {
     text-size-adjust: 100%;
 }
 
+@supports (height: 100dvh) {
+    html.apps-pwa {
+        height: 100dvh;
+        max-height: 100dvh;
+    }
+}
+
 html.apps-pwa body.apps-pwa-root {
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
     touch-action: manipulation;
 }
 
 html.apps-pwa #app {
     height: 100%;
+    max-height: 100%;
     width: 100%;
     overflow: hidden;
 }

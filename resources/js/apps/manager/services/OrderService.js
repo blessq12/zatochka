@@ -30,6 +30,33 @@ export function statusLabel(status) {
     return STATUS_LABELS[status] || status || "—";
 }
 
+/**
+ * Тип заказа по составу позиций: заточка / ремонт / заточка + ремонт.
+ * @param {{ items?: Array<{ kind?: string }> } | null | undefined} order
+ * @returns {string}
+ */
+export function compositionLabel(order) {
+    const kinds = new Set(
+        (order?.items || [])
+            .map((item) => item?.kind)
+            .filter((kind) => kind === "sharpening" || kind === "repair"),
+    );
+    const hasSharpening = kinds.has("sharpening");
+    const hasRepair = kinds.has("repair");
+
+    if (hasSharpening && hasRepair) {
+        return "Заточка + ремонт";
+    }
+    if (hasRepair) {
+        return "Ремонт";
+    }
+    if (hasSharpening) {
+        return "Заточка";
+    }
+
+    return "—";
+}
+
 export function allowedTransitions(status) {
     switch (status) {
         case "created":

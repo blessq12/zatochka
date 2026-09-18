@@ -67,7 +67,7 @@ export default {
             </AppTopbar>
 
             <main
-                class="min-h-0 min-w-0 w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-3 pb-[calc(4.25rem+env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6"
+                class="min-h-0 min-w-0 w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-3 pt-3 pb-3 sm:px-5 sm:pt-4 sm:pb-4 lg:px-8 lg:pb-8 lg:pt-6"
             >
                 <div class="mx-auto w-full max-w-[90rem]">
                     <slot />

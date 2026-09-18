@@ -2,9 +2,9 @@
 import {
     orderService,
     statusLabel,
+    compositionLabel,
     BILLING_LABELS,
     URGENCY_LABELS,
-    KIND_LABELS,
 } from "../../services/OrderService.js";
 import { actorService } from "../../services/ActorService.js";
 import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
@@ -21,10 +21,10 @@ export default {
             loading: false,
             error: null,
             statusLabel,
+            compositionLabel,
             formatOrderDate,
             BILLING_LABELS,
             URGENCY_LABELS,
-            KIND_LABELS,
         };
     },
     watch: {
@@ -88,29 +88,6 @@ export default {
             }
             const master = this.masters.find((m) => Number(m.id) === Number(id));
             return master?.name || master?.email || `#${id}`;
-        },
-        kindsSummary(order) {
-            const kinds = [...new Set((order.items || []).map((i) => i.kind))];
-            return kinds.map((k) => KIND_LABELS[k] || k).join(", ") || "—";
-        },
-        itemsSummary(order) {
-            const rows = order.items || [];
-            if (rows.length === 0) {
-                return "Без позиций";
-            }
-            return rows
-                .map((row) => {
-                    if (row.kind === "sharpening") {
-                        const title = row.title || "Заточка";
-                        const qty = row.quantity != null ? ` ×${row.quantity}` : "";
-                        return `${title}${qty}`;
-                    }
-                    const problem = row.problem ? `: ${row.problem}` : "";
-                    return row.equipment_id
-                        ? `Ремонт #${row.equipment_id}${problem}`
-                        : `Ремонт${problem}`;
-                })
-                .join("; ");
         },
         deliveryLabel(order) {
             if (!order.needs_delivery) {
@@ -228,11 +205,7 @@ export default {
                         · выдан {{ formatOrderDate(item.issued_at) }}
                     </p>
                     <p class="text-xs text-slate-500">
-                        {{ itemsSummary(item) }}
-                    </p>
-                    <p class="text-xs text-slate-500">
-                        {{ kindsSummary(item) }}
-                        · позиций {{ (item.items || []).length }}
+                        {{ compositionLabel(item) }}
                         · {{ deliveryLabel(item) }}
                     </p>
                 </button>
@@ -245,10 +218,18 @@ export default {
                             <th class="px-4 py-3 font-jost-medium">#</th>
                             <th class="px-4 py-3 font-jost-medium">Клиент</th>
                             <th class="px-4 py-3 font-jost-medium">Статус</th>
-                            <th class="px-4 py-3 font-jost-medium">Создан</th>
-                            <th class="px-4 py-3 font-jost-medium">Выдан</th>
-                            <th class="px-4 py-3 font-jost-medium">Оплата</th>
-                            <th class="px-4 py-3 font-jost-medium">Срочность</th>
+                            <th class="px-4 py-3 font-jost-medium">
+                                <div class="flex flex-col gap-0.5 leading-tight">
+                                    <span>Создан</span>
+                                    <span>Выдан</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-3 font-jost-medium">
+                                <div class="flex flex-col gap-0.5 leading-tight">
+                                    <span>Тип</span>
+                                    <span>Скорость</span>
+                                </div>
+                            </th>
                             <th class="px-4 py-3 font-jost-medium">Оценка</th>
                             <th class="px-4 py-3 font-jost-medium">Мастер</th>
                             <th class="px-4 py-3 font-jost-medium">Состав</th>
@@ -257,7 +238,7 @@ export default {
                     </thead>
                     <tbody>
                         <tr v-if="items.length === 0">
-                            <td colspan="11" class="px-4 py-6 text-slate-500">
+                            <td colspan="9" class="px-4 py-6 text-slate-500">
                                 Пока пусто
                             </td>
                         </tr>
@@ -270,20 +251,32 @@ export default {
                             <td class="px-4 py-3">{{ clientName(item.client_id) }}</td>
                             <td class="px-4 py-3">{{ statusLabel(item.status) }}</td>
                             <td class="px-4 py-3">
-                                {{ formatOrderDate(item.created_at) }}
+                                <div class="flex flex-col gap-0.5 leading-tight">
+                                    <span>{{ formatOrderDate(item.created_at) }}</span>
+                                    <span class="text-slate-500">
+                                        {{ formatOrderDate(item.issued_at) }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-4 py-3">
-                                {{ formatOrderDate(item.issued_at) }}
-                            </td>
-                            <td class="px-4 py-3">
-                                {{ BILLING_LABELS[item.billing_type] || item.billing_type }}
-                            </td>
-                            <td class="px-4 py-3">
-                                {{ URGENCY_LABELS[item.urgency] || item.urgency }}
+                                <div class="flex flex-col gap-0.5 leading-tight">
+                                    <span>
+                                        {{
+                                            BILLING_LABELS[item.billing_type] ||
+                                            item.billing_type
+                                        }}
+                                    </span>
+                                    <span class="text-slate-500">
+                                        {{
+                                            URGENCY_LABELS[item.urgency] ||
+                                            item.urgency
+                                        }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-4 py-3">{{ item.estimated_cost }} ₽</td>
                             <td class="px-4 py-3">{{ masterName(item.master_id) }}</td>
-                            <td class="px-4 py-3">{{ itemsSummary(item) }}</td>
+                            <td class="px-4 py-3">{{ compositionLabel(item) }}</td>
                             <td class="px-4 py-3 text-right">
                                 <button
                                     type="button"

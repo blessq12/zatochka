@@ -4,7 +4,7 @@ import { equipmentService } from "../../services/EquipmentService.js";
 import {
     orderService,
     statusLabel,
-    KIND_LABELS,
+    compositionLabel,
     URGENCY_LABELS,
     BILLING_LABELS,
 } from "../../services/OrderService.js";
@@ -34,7 +34,7 @@ export default {
             ordersError: null,
             ordersLoaded: false,
             statusLabel,
-            KIND_LABELS,
+            compositionLabel,
             URGENCY_LABELS,
             BILLING_LABELS,
             formatOrderDate,
@@ -168,30 +168,6 @@ export default {
             } finally {
                 this.ordersLoading = false;
             }
-        },
-        kindsSummary(order) {
-            const kinds = [...new Set((order.items || []).map((i) => i.kind))];
-            return kinds.map((k) => KIND_LABELS[k] || k).join(", ") || "—";
-        },
-        itemsSummary(order) {
-            const rows = order.items || [];
-            if (rows.length === 0) {
-                return "Без позиций";
-            }
-            return rows
-                .map((row) => {
-                    if (row.kind === "sharpening") {
-                        const title = row.title || "Заточка";
-                        const qty =
-                            row.quantity != null ? ` ×${row.quantity}` : "";
-                        return `${title}${qty}`;
-                    }
-                    const problem = row.problem ? `: ${row.problem}` : "";
-                    return row.equipment_id
-                        ? `Ремонт #${row.equipment_id}${problem}`
-                        : `Ремонт${problem}`;
-                })
-                .join("; ");
         },
         deliveryLabel(order) {
             if (!order.needs_delivery) {
@@ -840,12 +816,7 @@ export default {
                                         }}
                                     </p>
                                     <p class="text-xs text-slate-500">
-                                        {{ itemsSummary(order) }}
-                                    </p>
-                                    <p class="text-xs text-slate-500">
-                                        {{ kindsSummary(order) }}
-                                        · позиций
-                                        {{ (order.items || []).length }}
+                                        {{ compositionLabel(order) }}
                                         · {{ deliveryLabel(order) }}
                                     </p>
                                 </button>
@@ -936,7 +907,7 @@ export default {
                                                 {{ order.estimated_cost }} ₽
                                             </td>
                                             <td class="px-4 py-3">
-                                                {{ itemsSummary(order) }}
+                                                {{ compositionLabel(order) }}
                                             </td>
                                             <td class="px-4 py-3 text-right">
                                                 <button
