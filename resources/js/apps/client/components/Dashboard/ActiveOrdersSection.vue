@@ -3,9 +3,11 @@ import { mapStores } from "pinia";
 import { useOrderStore } from "../../stores/orderStore.js";
 import {
     formatBillingType,
+    formatOrderItems,
     formatOrderStatus,
     formatServiceTypes,
     formatUrgency,
+    serviceTypesFromItems,
 } from "../../utils/serviceTypes.js";
 
 export default {
@@ -15,17 +17,8 @@ export default {
         formatOrderStatus,
         formatBillingType,
         formatUrgency,
-        formatDate(dateString) {
-            if (!dateString) return "";
-            const date = new Date(dateString);
-            return date.toLocaleDateString("ru-RU", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        },
+        formatOrderItems,
+        serviceTypesFromItems,
         formatPrice(price) {
             if (price === null || price === undefined || price === "") {
                 return "—";
@@ -34,9 +27,6 @@ export default {
                 style: "currency",
                 currency: "RUB",
             }).format(price);
-        },
-        commentText(order) {
-            return order.client_comment || order.description || null;
         },
     },
     computed: {
@@ -83,8 +73,8 @@ export default {
                 <p
                     class="text-sm font-jost-regular text-dark-gray-400 dark:text-gray-400 max-w-md mx-auto"
                 >
-                    Если вы оформляли заказ без регистрации, он появится здесь
-                    после привязки менеджером по номеру телефона.
+                    Создайте заказ во вкладке «Новый заказ» или оформите его в
+                    мастерской.
                 </p>
             </div>
 
@@ -101,10 +91,10 @@ export default {
                             <h3
                                 class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                             >
-                                Заказ №{{ order.order_number }}
+                                Заказ №{{ order.id }}
                             </h3>
                             <span
-                                class="inline-flex self-start px-3 py-1 text-sm font-jost-medium rounded-full bg-[#C3006B]/10 text-[#C3006B] dark:bg-[#C20A6C]/20 dark:text-[#E01A7C]"
+                                class="inline-flex self-start px-3 py-1 text-sm font-jost-medium bg-[#C3006B]/10 text-[#C3006B] dark:bg-[#C20A6C]/20 dark:text-[#E01A7C]"
                             >
                                 {{ formatOrderStatus(order.status) }}
                             </span>
@@ -121,7 +111,11 @@ export default {
                                 <span
                                     class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
                                 >
-                                    {{ formatServiceTypes(order.service_types) }}
+                                    {{
+                                        formatServiceTypes(
+                                            serviceTypesFromItems(order.items),
+                                        )
+                                    }}
                                 </span>
                             </div>
                             <div>
@@ -158,8 +152,8 @@ export default {
                                     class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
                                 >
                                     {{
-                                        order.delivery_required
-                                            ? "Нужна"
+                                        order.needs_delivery
+                                            ? order.delivery_address || "Нужна"
                                             : "Не требуется"
                                     }}
                                 </span>
@@ -168,41 +162,12 @@ export default {
                                 <span
                                     class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
                                 >
-                                    Создан:
-                                </span>
-                                <span
-                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                >
-                                    {{ formatDate(order.created_at) }}
-                                </span>
-                            </div>
-                            <div>
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
                                     Стоимость:
                                 </span>
-                                <span
-                                    class="ml-2 font-jost-bold text-[#C3006B]"
-                                >
-                                    {{ formatPrice(order.price) }}
+                                <span class="ml-2 font-jost-bold text-[#C3006B]">
+                                    {{ formatPrice(order.estimated_cost) }}
                                 </span>
                             </div>
-                        </div>
-                        <div
-                            v-if="commentText(order)"
-                            class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
-                        >
-                            <p
-                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                            >
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    Комментарий:
-                                </span>
-                                {{ commentText(order) }}
-                            </p>
                         </div>
                         <div
                             v-if="order.items && order.items.length"
@@ -213,34 +178,11 @@ export default {
                             >
                                 Позиции заказа
                             </p>
-                            <ul class="space-y-2">
-                                <li
-                                    v-for="item in order.items"
-                                    :key="item.id"
-                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1"
-                                >
-                                    <span>
-                                        {{ item.title
-                                        }}<template
-                                            v-if="
-                                                item.tool_type_label &&
-                                                item.tool_type_label !==
-                                                    item.title
-                                            "
-                                        >
-                                            · {{ item.tool_type_label }}
-                                        </template>
-                                        <template v-if="item.quantity != null">
-                                            · {{ item.quantity }} шт.
-                                        </template>
-                                    </span>
-                                    <span
-                                        class="text-dark-gray-400 dark:text-gray-400 shrink-0"
-                                    >
-                                        {{ item.status_label }}
-                                    </span>
-                                </li>
-                            </ul>
+                            <p
+                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
+                            >
+                                {{ formatOrderItems(order.items) }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -248,5 +190,3 @@ export default {
         </div>
     </div>
 </template>
-
-<style scoped></style>

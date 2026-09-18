@@ -3,15 +3,21 @@ import { mapStores } from "pinia";
 import { useOrderStore } from "../../stores/orderStore.js";
 import {
     formatBillingType,
+    formatOrderItems,
     formatOrderStatus,
     formatServiceTypes,
     formatUrgency,
+    serviceTypesFromItems,
 } from "../../utils/serviceTypes.js";
 
 export default {
     name: "OrdersHistorySection",
     data() {
-        return {};
+        return {
+            reviewDrafts: {},
+            reviewErrors: {},
+            savingReviewId: null,
+        };
     },
     computed: {
         ...mapStores(useOrderStore),
@@ -21,13 +27,17 @@ export default {
         isLoading() {
             return this.orderStore.isLoadingHistory;
         },
-        pagination() {
-            return this.orderStore.historyPagination;
-        },
-        totalPages() {
-            const { total, per_page } = this.pagination;
-            if (!per_page) return 1;
-            return Math.max(1, Math.ceil(total / per_page));
+    },
+    watch: {
+        historyOrders: {
+            immediate: true,
+            handler(orders) {
+                for (const order of orders) {
+                    if (!this.reviewDrafts[order.id]) {
+                        this.reviewDrafts[order.id] = { rating: 5, text: "" };
+                    }
+                }
+            },
         },
     },
     methods: {
@@ -35,28 +45,8 @@ export default {
         formatOrderStatus,
         formatBillingType,
         formatUrgency,
-        async changePage(page) {
-            if (page < 1 || page > this.totalPages) {
-                return;
-            }
-
-            await this.orderStore.fetchHistoryOrders(
-                page,
-                this.pagination.per_page
-            );
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        },
-        formatDate(dateString) {
-            if (!dateString) return "";
-            const date = new Date(dateString);
-            return date.toLocaleDateString("ru-RU", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        },
+        formatOrderItems,
+        serviceTypesFromItems,
         formatPrice(price) {
             if (price === null || price === undefined || price === "") {
                 return "—";
@@ -66,8 +56,24 @@ export default {
                 currency: "RUB",
             }).format(price);
         },
-        commentText(order) {
-            return order.client_comment || order.description || null;
+        canReview(order) {
+            return order.status === "issued" && !order.review;
+        },
+        async submitReview(order) {
+            const draft = this.reviewDrafts[order.id] || { rating: 5, text: "" };
+            this.savingReviewId = order.id;
+            this.reviewErrors[order.id] = null;
+            try {
+                await this.orderStore.submitReview(order.id, {
+                    rating: Number(draft.rating),
+                    text: draft.text || null,
+                });
+            } catch (e) {
+                this.reviewErrors[order.id] =
+                    e.response?.data?.message || "Не удалось отправить отзыв";
+            } finally {
+                this.savingReviewId = null;
+            }
         },
     },
 };
@@ -89,7 +95,7 @@ export default {
                     class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C20A6C] mx-auto mb-4"
                 ></div>
                 <p class="text-gray-600 dark:text-gray-400">
-                    Загрузка заказов...
+                    Загрузка истории...
                 </p>
             </div>
 
@@ -100,7 +106,7 @@ export default {
                 <p
                     class="text-dark-gray-500 dark:text-gray-200 font-jost-regular text-base sm:text-lg"
                 >
-                    У вас пока нет завершённых заказов
+                    Выданных заказов пока нет
                 </p>
             </div>
 
@@ -108,209 +114,107 @@ export default {
                 <div
                     v-for="order in historyOrders"
                     :key="order.id"
-                    class="border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 bg-white/60 backdrop-blur-md dark:bg-gray-800/60 hover:shadow-lg transition-all duration-300"
+                    class="border border-dark-blue-500/30 dark:border-dark-gray-200/90 px-6 py-6 bg-white/60 backdrop-blur-md dark:bg-gray-800/60"
                 >
-                    <div class="flex-1">
-                        <div
-                            class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3"
+                    <div
+                        class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3"
+                    >
+                        <h3
+                            class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                         >
-                            <h3
-                                class="text-lg sm:text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
-                            >
-                                Заказ №{{ order.order_number }}
-                            </h3>
-                            <span
-                                class="inline-flex self-start px-3 py-1 text-sm font-jost-medium rounded-full bg-dark-blue-500/10 text-dark-blue-500 dark:bg-dark-blue-300/20 dark:text-dark-blue-300"
-                            >
-                                {{ formatOrderStatus(order.status) }}
+                            Заказ №{{ order.id }}
+                        </h3>
+                        <span
+                            class="inline-flex self-start px-3 py-1 text-sm font-jost-medium bg-[#C3006B]/10 text-[#C3006B]"
+                        >
+                            {{ formatOrderStatus(order.status) }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm sm:text-base">
+                        <div>
+                            <span class="font-jost-medium">Тип:</span>
+                            <span class="ml-2">
+                                {{
+                                    formatServiceTypes(
+                                        serviceTypesFromItems(order.items),
+                                    )
+                                }}
                             </span>
                         </div>
-                        <div
-                            class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm sm:text-base"
-                        >
-                            <div>
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    Тип:
-                                </span>
-                                <span
-                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                >
-                                    {{ formatServiceTypes(order.service_types) }}
-                                </span>
-                            </div>
-                            <div>
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    Вид:
-                                </span>
-                                <span
-                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                >
-                                    {{ formatBillingType(order.billing_type) }}
-                                </span>
-                            </div>
-                            <div>
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    Срочность:
-                                </span>
-                                <span
-                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                >
-                                    {{ formatUrgency(order.urgency) }}
-                                </span>
-                            </div>
-                            <div>
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    Доставка:
-                                </span>
-                                <span
-                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                >
-                                    {{
-                                        order.delivery_required
-                                            ? "Нужна"
-                                            : "Не требуется"
-                                    }}
-                                </span>
-                            </div>
-                            <div>
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    Дата:
-                                </span>
-                                <span
-                                    class="ml-2 font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                                >
-                                    {{ formatDate(order.created_at) }}
-                                </span>
-                            </div>
-                            <div>
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    Стоимость:
-                                </span>
-                                <span
-                                    class="ml-2 font-jost-bold text-[#C3006B]"
-                                >
-                                    {{ formatPrice(order.price) }}
-                                </span>
-                            </div>
+                        <div>
+                            <span class="font-jost-medium">Вид:</span>
+                            <span class="ml-2">
+                                {{ formatBillingType(order.billing_type) }}
+                            </span>
                         </div>
-                        <div
-                            v-if="commentText(order)"
-                            class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
-                        >
-                            <p
-                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                            >
-                                <span
-                                    class="font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                                >
-                                    Комментарий:
-                                </span>
-                                {{ commentText(order) }}
-                            </p>
+                        <div>
+                            <span class="font-jost-medium">Стоимость:</span>
+                            <span class="ml-2 font-jost-bold text-[#C3006B]">
+                                {{ formatPrice(order.estimated_cost) }}
+                            </span>
                         </div>
-
-                        <div
-                            v-if="order.items && order.items.length"
-                            class="mt-3 pt-3 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
-                        >
-                            <p
-                                class="text-sm sm:text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 mb-2"
-                            >
-                                Позиции заказа
-                            </p>
-                            <ul class="space-y-2">
-                                <li
-                                    v-for="item in order.items"
-                                    :key="item.id"
-                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1"
-                                >
-                                    <span>
-                                        {{ item.title
-                                        }}<template
-                                            v-if="
-                                                item.tool_type_label &&
-                                                item.tool_type_label !==
-                                                    item.title
-                                            "
-                                        >
-                                            · {{ item.tool_type_label }}
-                                        </template>
-                                        <template v-if="item.quantity != null">
-                                            · {{ item.quantity }} шт.
-                                        </template>
-                                    </span>
-                                    <span
-                                        class="text-dark-gray-400 dark:text-gray-400 shrink-0"
-                                    >
-                                        {{ item.status_label }}
-                                    </span>
-                                </li>
-                            </ul>
+                        <div>
+                            <span class="font-jost-medium">Состав:</span>
+                            <span class="ml-2">
+                                {{ formatOrderItems(order.items) }}
+                            </span>
                         </div>
-
                     </div>
-                </div>
 
-
-                <div
-                    v-if="totalPages > 1"
-                    class="flex items-center justify-center gap-2 pt-6 mt-6 border-t border-dark-blue-500/20 dark:border-dark-gray-200/20"
-                >
-                    <button
-                        @click="changePage(pagination.page - 1)"
-                        :disabled="pagination.page === 1"
-                        class="px-4 py-2 font-jost-medium text-sm sm:text-base transition-all duration-300 border border-dark-blue-500/30 dark:border-dark-gray-200/90 text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80 disabled:opacity-50 disabled:cursor-not-allowed"
+                    <div
+                        v-if="order.review"
+                        class="mt-4 pt-4 border-t border-dark-blue-500/20"
                     >
-                        Назад
-                    </button>
+                        <p class="font-jost-medium">
+                            Отзыв: {{ order.review.rating }}/5
+                        </p>
+                        <p v-if="order.review.text" class="mt-1 text-sm">
+                            {{ order.review.text }}
+                        </p>
+                    </div>
 
-                    <div class="flex gap-2">
-                        <button
-                            v-for="page in totalPages"
-                            :key="page"
-                            @click="changePage(page)"
-                            :class="[
-                                'px-4 py-2 font-jost-medium text-sm sm:text-base transition-all duration-300 border',
-                                pagination.page === page
-                                    ? 'bg-[#C3006B] text-white border-[#C3006B] shadow-lg'
-                                    : 'border-dark-blue-500/30 dark:border-dark-gray-200/90 text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80',
-                            ]"
+                    <div
+                        v-else-if="canReview(order)"
+                        class="mt-4 pt-4 border-t border-dark-blue-500/20 space-y-3"
+                    >
+                        <p class="font-jost-bold text-[#C3006B]">Оставить отзыв</p>
+                        <p
+                            v-if="reviewErrors[order.id]"
+                            class="text-sm text-red-600"
                         >
-                            {{ page }}
+                            {{ reviewErrors[order.id] }}
+                        </p>
+                        <label class="block text-sm">
+                            Оценка
+                            <select
+                                v-model.number="reviewDrafts[order.id].rating"
+                                class="mt-1 w-full border border-dark-blue-500/30 bg-white px-3 py-2 dark:bg-gray-800"
+                            >
+                                <option v-for="n in 5" :key="n" :value="n">
+                                    {{ n }}
+                                </option>
+                            </select>
+                        </label>
+                        <label class="block text-sm">
+                            Комментарий
+                            <textarea
+                                v-model="reviewDrafts[order.id].text"
+                                rows="3"
+                                class="mt-1 w-full border border-dark-blue-500/30 bg-white px-3 py-2 dark:bg-gray-800"
+                            />
+                        </label>
+                        <button
+                            type="button"
+                            class="bg-[#C3006B] px-5 py-2 font-jost-bold text-white hover:bg-[#A8005A] disabled:opacity-50"
+                            :disabled="savingReviewId === order.id"
+                            @click="submitReview(order)"
+                        >
+                            Отправить
                         </button>
                     </div>
-
-                    <button
-                        @click="changePage(pagination.page + 1)"
-                        :disabled="pagination.page === totalPages"
-                        class="px-4 py-2 font-jost-medium text-sm sm:text-base transition-all duration-300 border border-dark-blue-500/30 dark:border-dark-gray-200/90 text-dark-gray-500 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700/80 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Вперёд
-                    </button>
-                </div>
-
-                <div
-                    v-if="historyOrders.length > 0"
-                    class="text-center pt-4 text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-300"
-                >
-                    Показано {{ historyOrders.length }} из
-                    {{ pagination.total }} заказов
                 </div>
             </div>
         </div>
     </div>
 </template>
-
-<style scoped></style>

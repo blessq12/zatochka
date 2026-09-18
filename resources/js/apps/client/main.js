@@ -29,7 +29,7 @@ axios.interceptors.response.use(
             isHandlingUnauthorized = true;
             await authStore.logout();
             try {
-                await router.push({ name: "client.login" });
+                await router.push({ name: "client.dashboard" });
             } finally {
                 isHandlingUnauthorized = false;
             }
