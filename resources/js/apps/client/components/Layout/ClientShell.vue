@@ -33,9 +33,9 @@ export default {
         <ClientTopbar :title="pageTitle" :items="items" />
 
         <main
-            class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain"
+            class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-[calc(3.5rem+env(safe-area-inset-bottom))] lg:pb-0"
         >
-            <div class="mx-auto w-full max-w-[90rem] px-3 py-3 sm:px-5 lg:px-8 lg:py-4">
+            <div class="mx-auto w-full max-w-[90rem] px-3 pt-3 sm:px-5 lg:px-8 lg:py-4">
                 <router-view />
             </div>
         </main>

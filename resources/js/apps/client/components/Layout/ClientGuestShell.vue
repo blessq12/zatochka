@@ -19,7 +19,7 @@ export default {
         <ClientTopbar :title="pageTitle" :items="[]" />
 
         <main
-            class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain"
+            class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-[env(safe-area-inset-bottom)]"
         >
             <div class="mx-auto w-full max-w-lg px-3 py-3 sm:px-5 lg:py-6">
                 <router-view />
