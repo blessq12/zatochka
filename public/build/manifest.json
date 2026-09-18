@@ -136,7 +136,7 @@
     ]
   },
   "resources/js/apps/client/components/Layout/ClientGuestShell.vue": {
-    "file": "assets/ClientGuestShell-DNrVIHsb.js",
+    "file": "assets/ClientGuestShell-ByiB_1ob.js",
     "name": "ClientGuestShell",
     "src": "resources/js/apps/client/components/Layout/ClientGuestShell.vue",
     "isDynamicEntry": true,
@@ -146,7 +146,7 @@
     ]
   },
   "resources/js/apps/client/components/Layout/ClientShell.vue": {
-    "file": "assets/ClientShell-CJNkbirl.js",
+    "file": "assets/ClientShell-D950xOan.js",
     "name": "ClientShell",
     "src": "resources/js/apps/client/components/Layout/ClientShell.vue",
     "isDynamicEntry": true,
@@ -178,7 +178,7 @@
     ]
   },
   "resources/js/apps/client/main.js": {
-    "file": "assets/main-DeI8AAx9.js",
+    "file": "assets/main-8etmQax3.js",
     "name": "main",
     "src": "resources/js/apps/client/main.js",
     "isEntry": true,

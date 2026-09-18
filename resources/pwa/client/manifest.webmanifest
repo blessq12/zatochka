@@ -7,8 +7,8 @@
     "scope": "/client/",
     "display": "standalone",
     "orientation": "portrait-primary",
-    "background_color": "#003859",
-    "theme_color": "#C20A6C",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
     "lang": "ru",
     "icons": [
         {
