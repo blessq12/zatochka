@@ -2,22 +2,26 @@ export const navigationItems = [
     {
         name: "client.profile",
         label: "Профиль",
+        icon: "users",
         to: { name: "client.profile" },
     },
     {
         name: "client.orders",
         label: "Заказы",
+        icon: "orders",
         to: { name: "client.orders" },
     },
     {
         name: "client.equipment",
         label: "Оборудование",
+        icon: "equipment",
         to: { name: "client.equipment" },
     },
     {
         name: "client.orders.create",
         label: "Новый заказ",
         shortLabel: "Новый",
+        icon: "plus",
         to: { name: "client.orders.create" },
     },
 ];

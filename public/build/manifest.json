@@ -13,18 +13,18 @@
       "__plugin-vue_export-helper-CxNm5pfd.js"
     ]
   },
-  "_AppNavIcon-KuSJ-JmQ.js": {
-    "file": "assets/AppNavIcon-KuSJ-JmQ.js",
+  "_AppNavIcon-5536udv2.js": {
+    "file": "assets/AppNavIcon-5536udv2.js",
     "name": "AppNavIcon",
     "imports": [
       "__plugin-vue_export-helper-CxNm5pfd.js"
     ]
   },
-  "_AppShell-DnvFg8DF.js": {
-    "file": "assets/AppShell-DnvFg8DF.js",
+  "_AppShell-3xHpAdoq.js": {
+    "file": "assets/AppShell-3xHpAdoq.js",
     "name": "AppShell",
     "imports": [
-      "_AppNavIcon-KuSJ-JmQ.js",
+      "_AppNavIcon-5536udv2.js",
       "__plugin-vue_export-helper-CxNm5pfd.js"
     ]
   },
@@ -129,13 +129,14 @@
     ]
   },
   "resources/js/apps/client/components/Layout/ClientShell.vue": {
-    "file": "assets/ClientShell-DzsSGZyM.js",
+    "file": "assets/ClientShell-BSnuO1A_.js",
     "name": "ClientShell",
     "src": "resources/js/apps/client/components/Layout/ClientShell.vue",
     "isDynamicEntry": true,
     "imports": [
       "__plugin-vue_export-helper-CxNm5pfd.js",
-      "_authStore-CcrzYQGO.js"
+      "_authStore-CcrzYQGO.js",
+      "_AppNavIcon-5536udv2.js"
     ]
   },
   "resources/js/apps/client/components/LoginForm.vue": {
@@ -159,7 +160,7 @@
     ]
   },
   "resources/js/apps/client/main.js": {
-    "file": "assets/main-CwI2CCVn.js",
+    "file": "assets/main-z7baPrsO.js",
     "name": "main",
     "src": "resources/js/apps/client/main.js",
     "isEntry": true,
@@ -248,20 +249,20 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-DfsDPxiL.js",
+    "file": "assets/ManagerShell-ywfLwX6G.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AppShell-DnvFg8DF.js",
+      "_AppShell-3xHpAdoq.js",
       "__plugin-vue_export-helper-CxNm5pfd.js",
       "resources/js/apps/manager/main.js",
-      "_AppNavIcon-KuSJ-JmQ.js",
+      "_AppNavIcon-5536udv2.js",
       "_registerPwa-BqBq5tb9.js"
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-hm6OZrID.js",
+    "file": "assets/LoginForm-D0kIYqwQ.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -273,7 +274,7 @@
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-CgHCk7DF.js",
+    "file": "assets/main-DNHGG2Sg.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
@@ -301,12 +302,12 @@
     ]
   },
   "resources/js/apps/manager/pages/DashboardPage.vue": {
-    "file": "assets/DashboardPage-dS4xWvfJ.js",
+    "file": "assets/DashboardPage-DQGwnwrB.js",
     "name": "DashboardPage",
     "src": "resources/js/apps/manager/pages/DashboardPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AppNavIcon-KuSJ-JmQ.js",
+      "_AppNavIcon-5536udv2.js",
       "__plugin-vue_export-helper-CxNm5pfd.js"
     ]
   },
@@ -434,7 +435,7 @@
     ]
   },
   "resources/js/apps/master/main.js": {
-    "file": "assets/main-DyUxxFzC.js",
+    "file": "assets/main-8Ce5TXuC.js",
     "name": "main",
     "src": "resources/js/apps/master/main.js",
     "isEntry": true,
@@ -504,17 +505,17 @@
     ]
   },
   "resources/js/apps/master/pages/PosPage.vue": {
-    "file": "assets/PosPage-Cx5pAJGe.js",
+    "file": "assets/PosPage-D6dR-9zk.js",
     "name": "PosPage",
     "src": "resources/js/apps/master/pages/PosPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_AppLoginScreen-pRxwAZZ3.js",
-      "_AppShell-DnvFg8DF.js",
+      "_AppShell-3xHpAdoq.js",
       "__plugin-vue_export-helper-CxNm5pfd.js",
       "_registerPwa-BqBq5tb9.js",
       "resources/js/apps/master/main.js",
-      "_AppNavIcon-KuSJ-JmQ.js"
+      "_AppNavIcon-5536udv2.js"
     ]
   },
   "resources/site/css/site.css": {

@@ -1,8 +1,10 @@
 <script>
+import AppNavIcon from "@shared/layout/AppNavIcon.vue";
 import { isClientNavActive } from "../../navigation.js";
 
 export default {
     name: "ClientBottomNav",
+    components: { AppNavIcon },
     props: {
         items: {
             type: Array,
@@ -13,8 +15,8 @@ export default {
         isActive(item) {
             return isClientNavActive(item, this.$route);
         },
-        label(item) {
-            return item.shortLabel || item.label;
+        iconName(item) {
+            return item.icon || "dashboard";
         },
     },
 };
@@ -34,12 +36,13 @@ export default {
             <li v-for="item in items" :key="item.name" class="min-w-0">
                 <router-link
                     :to="item.to"
-                    class="relative flex h-full flex-col items-center justify-center px-1 text-center transition-colors"
+                    class="relative flex h-full flex-col items-center justify-center px-1 transition-colors"
                     :class="
                         isActive(item)
                             ? 'text-[#C3006B]'
                             : 'text-dark-gray-500 dark:text-gray-300'
                     "
+                    :aria-label="item.label"
                     :aria-current="isActive(item) ? 'page' : undefined"
                 >
                     <span
@@ -49,11 +52,10 @@ export default {
                         "
                         aria-hidden="true"
                     />
-                    <span
-                        class="max-w-full truncate text-[0.7rem] font-jost-bold leading-tight sm:text-xs"
-                    >
-                        {{ label(item) }}
-                    </span>
+                    <AppNavIcon
+                        :name="iconName(item)"
+                        :active="isActive(item)"
+                    />
                 </router-link>
             </li>
         </ul>
