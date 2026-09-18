@@ -22,4 +22,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-/database/database.sqlite
+
+# Локальные БД — не трекаем, не перезаписываем при deploy/merge
+/database/*.sqlite
+/database/*.sqlite-journal
+/database/*.sqlite-shm
+/database/*.sqlite-wal
