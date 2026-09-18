@@ -142,7 +142,7 @@
     ]
   },
   "resources/css/apps.css": {
-    "file": "assets/apps-B2_2IIdh.css",
+    "file": "assets/apps--Hv1XfFb.css",
     "src": "resources/css/apps.css",
     "isEntry": true,
     "names": [
@@ -160,7 +160,7 @@
     ]
   },
   "resources/js/apps/client/components/Layout/ClientShell.vue": {
-    "file": "assets/ClientShell-Dzqds9o6.js",
+    "file": "assets/ClientShell-cJHH5Akm.js",
     "name": "ClientShell",
     "src": "resources/js/apps/client/components/Layout/ClientShell.vue",
     "isDynamicEntry": true,
@@ -173,7 +173,7 @@
     ]
   },
   "resources/js/apps/client/components/LoginForm.vue": {
-    "file": "assets/LoginForm-C4t-CTzR.js",
+    "file": "assets/LoginForm-BbCcZW95.js",
     "name": "LoginForm",
     "src": "resources/js/apps/client/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -184,7 +184,7 @@
     ]
   },
   "resources/js/apps/client/components/RegisterForm.vue": {
-    "file": "assets/RegisterForm-BteLx_d_.js",
+    "file": "assets/RegisterForm-Cx7QlKr8.js",
     "name": "RegisterForm",
     "src": "resources/js/apps/client/components/RegisterForm.vue",
     "isDynamicEntry": true,
@@ -195,7 +195,7 @@
     ]
   },
   "resources/js/apps/client/main.js": {
-    "file": "assets/main-AarMGle6.js",
+    "file": "assets/main-7ZxpAi-g.js",
     "name": "main",
     "src": "resources/js/apps/client/main.js",
     "isEntry": true,
@@ -288,7 +288,7 @@
     ]
   },
   "resources/js/apps/client/pages/Profile/ProfilePage.vue": {
-    "file": "assets/ProfilePage-B5NX25er.js",
+    "file": "assets/ProfilePage-Cy5Vf-gF.js",
     "name": "ProfilePage",
     "src": "resources/js/apps/client/pages/Profile/ProfilePage.vue",
     "isDynamicEntry": true,
@@ -596,7 +596,7 @@
     ]
   },
   "resources/site/css/site.css": {
-    "file": "assets/site-CWTgdoxv.css",
+    "file": "assets/site-C4e8XI72.css",
     "src": "resources/site/css/site.css",
     "isEntry": true,
     "names": [
