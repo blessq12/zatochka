@@ -6,9 +6,11 @@ import App from "./App.vue";
 import router from "./router";
 import { useManagerStore } from "./stores/managerStore.js";
 import { installPhoneMask } from "@shared/phoneMask.js";
+import { registerPwa } from "@shared/registerPwa.js";
 import themeTogglerService from "@shared/themeTogglerService.js";
 
 themeTogglerService.init();
+registerPwa({ swUrl: "/pwa/manager/sw.js", scope: "/manager/" });
 
 const app = createApp(App);
 const pinia = createPinia();
