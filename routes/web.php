@@ -20,6 +20,14 @@ Route::redirect('/terms-of-service', '/user-agreement');
 
 Route::redirect('/admin/{any?}', '/manager')->where('any', '.*');
 
+Route::get('/pwa/{app}/manifest.webmanifest', [\App\Http\Controllers\PwaAssetController::class, 'manifest'])
+    ->whereIn('app', ['client', 'manager', 'master'])
+    ->name('pwa.manifest');
+
+Route::get('/pwa/{app}/sw.js', [\App\Http\Controllers\PwaAssetController::class, 'serviceWorker'])
+    ->whereIn('app', ['client', 'manager', 'master'])
+    ->name('pwa.sw');
+
 Route::view('/client/{any?}', 'apps.client', ['title' => 'Личный кабинет — Заточка.ТСК'])
     ->where('any', '.*')
     ->name('app.client');

@@ -85,9 +85,9 @@
     "file": "assets/index.esm-v31iMCO2.js",
     "name": "index.esm"
   },
-  "_vue-router-CaDSZbsy.js": {
-    "file": "assets/vue-router-CaDSZbsy.js",
-    "name": "vue-router",
+  "_registerPwa-fBrr3fLT.js": {
+    "file": "assets/registerPwa-fBrr3fLT.js",
+    "name": "registerPwa",
     "imports": [
       "__plugin-vue_export-helper-BMlgpdBR.js"
     ]
@@ -112,13 +112,13 @@
     ]
   },
   "resources/js/apps/client/main.js": {
-    "file": "assets/main-Dzzk7HXx.js",
+    "file": "assets/main-DUzf9ZHL.js",
     "name": "main",
     "src": "resources/js/apps/client/main.js",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-BMlgpdBR.js",
-      "_vue-router-CaDSZbsy.js",
+      "_registerPwa-fBrr3fLT.js",
       "_authStore-obEDaqoa.js"
     ],
     "dynamicImports": [
@@ -126,7 +126,7 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-BQRSExRs.js",
+    "file": "assets/ManagerShell-CIke85Xy.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
@@ -135,11 +135,11 @@
       "__plugin-vue_export-helper-BMlgpdBR.js",
       "resources/js/apps/manager/main.js",
       "_AppNavIcon-F6zSV61Z.js",
-      "_vue-router-CaDSZbsy.js"
+      "_registerPwa-fBrr3fLT.js"
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-C2IwNcES.js",
+    "file": "assets/LoginForm-CmDv9ydK.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -147,17 +147,17 @@
       "_AppLoginScreen-CkwilXEh.js",
       "__plugin-vue_export-helper-BMlgpdBR.js",
       "resources/js/apps/manager/main.js",
-      "_vue-router-CaDSZbsy.js"
+      "_registerPwa-fBrr3fLT.js"
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-BpM8ET6g.js",
+    "file": "assets/main-SimdXWkd.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-BMlgpdBR.js",
-      "_vue-router-CaDSZbsy.js"
+      "_registerPwa-fBrr3fLT.js"
     ],
     "dynamicImports": [
       "resources/js/apps/manager/components/LoginForm.vue",
@@ -310,13 +310,13 @@
     ]
   },
   "resources/js/apps/master/main.js": {
-    "file": "assets/main-bidgFqNZ.js",
+    "file": "assets/main-JcnPPHx7.js",
     "name": "main",
     "src": "resources/js/apps/master/main.js",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-BMlgpdBR.js",
-      "_vue-router-CaDSZbsy.js"
+      "_registerPwa-fBrr3fLT.js"
     ],
     "dynamicImports": [
       "resources/js/apps/master/pages/PosPage.vue",
@@ -376,7 +376,7 @@
     ]
   },
   "resources/js/apps/master/pages/PosPage.vue": {
-    "file": "assets/PosPage-CqdJfiGR.js",
+    "file": "assets/PosPage-B4n-laYT.js",
     "name": "PosPage",
     "src": "resources/js/apps/master/pages/PosPage.vue",
     "isDynamicEntry": true,
@@ -384,7 +384,7 @@
       "_AppLoginScreen-CkwilXEh.js",
       "_AppShell-DK2VEBE-.js",
       "__plugin-vue_export-helper-BMlgpdBR.js",
-      "_vue-router-CaDSZbsy.js",
+      "_registerPwa-fBrr3fLT.js",
       "resources/js/apps/master/main.js",
       "_AppNavIcon-F6zSV61Z.js"
     ]

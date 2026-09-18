@@ -1,0 +1,33 @@
+{
+  "id": "/master/",
+  "name": "Заточка — Мастер",
+  "short_name": "Мастер",
+  "description": "Приложение мастера Заточка.ТСК",
+  "start_url": "/master/",
+  "scope": "/master/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#003859",
+  "theme_color": "#003859",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/pwa/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
