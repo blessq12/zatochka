@@ -4,15 +4,31 @@ import { useAuthStore } from "../stores/authStore.js";
 const routes = [
     {
         path: "/login",
-        name: "client.login",
-        component: () => import("../components/LoginForm.vue"),
-        meta: { guest: true },
+        component: () =>
+            import("../components/Layout/ClientGuestShell.vue"),
+        meta: { guest: true, title: "Вход" },
+        children: [
+            {
+                path: "",
+                name: "client.login",
+                component: () => import("../components/LoginForm.vue"),
+                meta: { guest: true, title: "Вход" },
+            },
+        ],
     },
     {
         path: "/register",
-        name: "client.register",
-        component: () => import("../components/RegisterForm.vue"),
-        meta: { guest: true },
+        component: () =>
+            import("../components/Layout/ClientGuestShell.vue"),
+        meta: { guest: true, title: "Регистрация" },
+        children: [
+            {
+                path: "",
+                name: "client.register",
+                component: () => import("../components/RegisterForm.vue"),
+                meta: { guest: true, title: "Регистрация" },
+            },
+        ],
     },
     {
         path: "/",

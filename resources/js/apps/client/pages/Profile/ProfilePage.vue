@@ -1,6 +1,5 @@
 <script>
 import { mapStores } from "pinia";
-import ClientSectionCard from "../../components/Layout/ClientSectionCard.vue";
 import { useAuthStore } from "../../stores/authStore.js";
 
 const fieldClass =
@@ -8,7 +7,6 @@ const fieldClass =
 
 export default {
     name: "ClientProfilePage",
-    components: { ClientSectionCard },
     data() {
         return {
             form: {
@@ -55,14 +53,17 @@ export default {
                 this.saving = false;
             }
         },
+        async logout() {
+            await this.authStore.logout();
+            this.$router.push({ name: "client.login" });
+        },
     },
 };
 </script>
 
 <template>
-    <div class="space-y-5 lg:space-y-6">
-        <ClientSectionCard title="ДАННЫЕ ПРОФИЛЯ">
-            <p class="mb-4 text-base text-dark-gray-500 dark:text-gray-200 lg:mb-6 lg:text-base">
+    <div>
+            <p class="mb-4 text-base text-dark-gray-500 dark:text-gray-200">
                 Email: {{ authStore.user?.email || "—" }}
             </p>
             <p v-if="error" class="mb-2 text-base text-red-600 lg:mb-4 lg:text-base">
@@ -128,12 +129,27 @@ export default {
 
             <button
                 type="button"
-                class="mt-4 w-full bg-[#C20A6C] px-6 py-3.5 font-jost-bold text-white transition hover:bg-[#a0085a] disabled:opacity-50 lg:mt-8 lg:w-auto lg:px-8 lg:py-3 lg:text-lg"
+                class="mt-4 w-full bg-[#C20A6C] px-6 py-3.5 font-jost-bold text-white disabled:opacity-50"
                 :disabled="saving"
                 @click="save"
             >
                 {{ saving ? "Сохранение…" : "Сохранить" }}
             </button>
-        </ClientSectionCard>
+
+            <div class="mt-8 space-y-3 border-t border-white/10 pt-4">
+                <a
+                    href="/"
+                    class="block w-full py-3 text-center text-base font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                >
+                    На сайт
+                </a>
+                <button
+                    type="button"
+                    class="w-full py-3 text-base font-jost-bold text-[#C20A6C]"
+                    @click="logout"
+                >
+                    Выход
+                </button>
+            </div>
     </div>
 </template>

@@ -1,5 +1,4 @@
 <script>
-import ClientSectionCard from "../../components/Layout/ClientSectionCard.vue";
 import {
     BILLING_LABELS,
     KIND_LABELS,
@@ -10,7 +9,6 @@ import {
 
 export default {
     name: "ClientOrderListPage",
-    components: { ClientSectionCard },
     data() {
         return {
             scope: "active",
@@ -67,91 +65,83 @@ export default {
 </script>
 
 <template>
-    <div class="space-y-5 lg:space-y-6">
-        <ClientSectionCard title="ЗАКАЗЫ">
-            <div
-                class="mb-5 flex flex-row gap-2 border border-white/20 bg-white/60 p-2 backdrop-blur-md dark:border-gray-700/20 dark:bg-gray-800/60 lg:mb-6 lg:gap-4"
+    <div>
+        <div class="mb-3 flex flex-row gap-1 bg-white/60 p-1 dark:bg-gray-800/60">
+            <button
+                type="button"
+                class="flex-1 px-3 py-2.5 text-base font-jost-bold"
+                :class="
+                    scope === 'active'
+                        ? 'bg-[#C20A6C] text-white'
+                        : 'text-dark-gray-500 dark:text-gray-200'
+                "
+                @click="scope = 'active'"
             >
-                <button
-                    type="button"
-                    class="flex-1 px-4 py-3 text-base font-jost-bold transition-all duration-300 lg:px-4 lg:py-3 lg:text-base"
-                    :class="
-                        scope === 'active'
-                            ? 'bg-[#C20A6C] text-white shadow-lg'
-                            : 'text-dark-gray-500 hover:bg-white/80 dark:text-gray-200 dark:hover:bg-gray-700/80'
-                    "
-                    @click="scope = 'active'"
-                >
-                    Активные
-                </button>
-                <button
-                    type="button"
-                    class="flex-1 px-4 py-3 text-base font-jost-bold transition-all duration-300 lg:px-4 lg:py-3 lg:text-base"
-                    :class="
-                        scope === 'archive'
-                            ? 'bg-[#C20A6C] text-white shadow-lg'
-                            : 'text-dark-gray-500 hover:bg-white/80 dark:text-gray-200 dark:hover:bg-gray-700/80'
-                    "
-                    @click="scope = 'archive'"
-                >
-                    Архив
-                </button>
-            </div>
-
-            <p v-if="loading" class="text-base text-dark-gray-500 dark:text-gray-300 lg:text-base">
-                Загрузка…
-            </p>
-            <p v-if="error" class="text-base text-red-600 lg:text-base">{{ error }}</p>
-
-            <p
-                v-else-if="!loading && orders.length === 0"
-                class="text-base text-dark-gray-500 dark:text-gray-300 lg:text-base"
+                Активные
+            </button>
+            <button
+                type="button"
+                class="flex-1 px-3 py-2.5 text-base font-jost-bold"
+                :class="
+                    scope === 'archive'
+                        ? 'bg-[#C20A6C] text-white'
+                        : 'text-dark-gray-500 dark:text-gray-200'
+                "
+                @click="scope = 'archive'"
             >
-                {{
-                    scope === "active"
-                        ? "Активных заказов нет"
-                        : "В архиве пока пусто"
-                }}
-            </p>
+                Архив
+            </button>
+        </div>
 
-            <div v-else class="space-y-3 sm:space-y-4">
-                <button
-                    v-for="order in orders"
-                    :key="order.id"
-                    type="button"
-                    class="w-full border border-dark-blue-500/20 bg-white/60 p-3 text-left backdrop-blur-md transition hover:border-[#C20A6C]/40 dark:border-gray-700/40 dark:bg-gray-800/60 sm:p-4"
-                    @click="open(order)"
-                >
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <p
-                                class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 lg:text-lg"
-                            >
-                                Заказ #{{ order.id }}
-                            </p>
-                            <p
-                                class="mt-1 truncate text-base text-dark-gray-500 dark:text-gray-300 lg:mt-1 lg:text-base"
-                            >
-                                {{ itemsSummary(order) }}
-                            </p>
-                        </div>
-                        <span
-                            class="shrink-0 text-base font-jost-medium text-dark-gray-500 dark:text-gray-200"
-                        >
-                            {{ statusLabel(order.status) }}
-                        </span>
+        <p v-if="loading" class="text-base text-dark-gray-500 dark:text-gray-300">
+            Загрузка…
+        </p>
+        <p v-if="error" class="text-base text-red-600">{{ error }}</p>
+
+        <p
+            v-else-if="!loading && orders.length === 0"
+            class="text-base text-dark-gray-500 dark:text-gray-300"
+        >
+            {{
+                scope === "active"
+                    ? "Активных заказов нет"
+                    : "В архиве пока пусто"
+            }}
+        </p>
+
+        <div v-else class="divide-y divide-white/10">
+            <button
+                v-for="order in orders"
+                :key="order.id"
+                type="button"
+                class="w-full py-3 text-left first:pt-0 last:pb-0"
+                @click="open(order)"
+            >
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <p class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300">
+                            Заказ #{{ order.id }}
+                        </p>
+                        <p class="mt-1 truncate text-base text-dark-gray-500 dark:text-gray-300">
+                            {{ itemsSummary(order) }}
+                        </p>
                     </div>
-                    <p class="mt-1 text-base text-dark-gray-500 dark:text-gray-400 lg:mt-2 lg:text-base">
-                        {{
-                            BILLING_LABELS[order.billing_type] ||
-                            order.billing_type
-                        }}
-                        ·
-                        {{ URGENCY_LABELS[order.urgency] || order.urgency }}
-                        · {{ order.estimated_cost }} ₽
-                    </p>
-                </button>
-            </div>
-        </ClientSectionCard>
+                    <span
+                        class="shrink-0 text-base font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                    >
+                        {{ statusLabel(order.status) }}
+                    </span>
+                </div>
+                <p class="mt-1 text-base text-dark-gray-500 dark:text-gray-400">
+                    {{
+                        BILLING_LABELS[order.billing_type] ||
+                        order.billing_type
+                    }}
+                    ·
+                    {{ URGENCY_LABELS[order.urgency] || order.urgency }}
+                    · {{ order.estimated_cost }} ₽
+                </p>
+            </button>
+        </div>
     </div>
 </template>
