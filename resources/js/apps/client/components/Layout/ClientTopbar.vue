@@ -31,11 +31,11 @@ export default {
 
 <template>
     <header
-        class="sticky top-0 z-[110] bg-[#C20A6C] transition-colors duration-300"
+        class="z-[110] shrink-0 bg-[#C20A6C] pt-[env(safe-area-inset-top)] transition-colors duration-300"
     >
         <div class="container mx-auto">
             <div
-                class="flex h-20 items-center justify-between px-4 py-4 sm:px-8 lg:px-12"
+                class="flex h-16 items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-12"
             >
                 <a
                     href="/"

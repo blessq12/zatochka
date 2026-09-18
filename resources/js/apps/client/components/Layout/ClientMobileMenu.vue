@@ -39,7 +39,7 @@ export default {
         <transition name="client-mobile-menu">
             <div
                 v-if="open"
-                class="fixed inset-x-0 top-20 bottom-0 z-[100] flex flex-col bg-[#003859] lg:hidden"
+                class="fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] bottom-0 z-[100] flex flex-col bg-[#003859] sm:top-[calc(5rem+env(safe-area-inset-top))] lg:hidden"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Меню кабинета"

@@ -83,12 +83,51 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Единый PWA-viewport lock (client / manager / master):
+ * — нет document rubber-band / горизонтального pan;
+ * — скролл только во внутреннем main (см. AppShell / ClientShell).
+ */
+html.apps-pwa,
+html.apps-pwa body.apps-pwa-root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+html.apps-pwa body.apps-pwa-root {
+    touch-action: manipulation;
+}
+
+html.apps-pwa #app {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
 /* iOS: инпуты ≥16px, иначе Safari зумит при фокусе (manager/master/client SPA) */
 :where(input):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
 :where(select),
 :where(textarea) {
     font-size: 1rem;
     line-height: 1.5;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* iOS date/time: нативный контрол шире контейнера без max-width */
+:where(input[type="date"]),
+:where(input[type="datetime-local"]),
+:where(input[type="time"]),
+:where(input[type="month"]),
+:where(input[type="week"]) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
 }
 
 /* Jost Font Classes */
@@ -195,7 +234,7 @@
 }
 
 /*
- * Клиентский кабинет (PWA): минимум 16px, без автозума iOS на инпутах.
+ * Клиентский кабинет: минимум 16px, без автозума iOS на инпутах.
  */
 .client-app-root,
 .client-shell {
@@ -203,7 +242,6 @@
     line-height: 1.5;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    touch-action: manipulation;
 }
 
 .client-app-root :where(.text-xs),

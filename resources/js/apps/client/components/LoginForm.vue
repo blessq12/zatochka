@@ -3,7 +3,7 @@ import { mapStores } from "pinia";
 import { useAuthStore } from "../stores/authStore.js";
 
 const fieldClass =
-    "w-full border border-white/20 bg-white/60 px-4 py-3.5 text-dark-gray-500 shadow-lg outline-none backdrop-blur-md transition-all duration-300 focus:border-[#C20A6C]/50 focus:ring-2 focus:ring-[#C20A6C]/30 dark:border-gray-700/20 dark:bg-gray-800/60 dark:text-gray-200 sm:px-6 sm:py-4";
+    "w-full max-w-full min-w-0 border border-white/20 bg-white/60 px-4 py-3.5 text-dark-gray-500 shadow-lg outline-none backdrop-blur-md transition-all duration-300 focus:border-[#C20A6C]/50 focus:ring-2 focus:ring-[#C20A6C]/30 dark:border-gray-700/20 dark:bg-gray-800/60 dark:text-gray-200 sm:px-6 sm:py-4";
 
 export default {
     name: "ClientLoginForm",
@@ -37,11 +37,11 @@ export default {
 </script>
 
 <template>
-    <div class="min-h-dvh bg-white dark:bg-dark-blue-500">
-        <header class="bg-[#C20A6C]">
+    <div class="flex h-full max-h-full w-full flex-col overflow-hidden bg-white dark:bg-dark-blue-500">
+        <header class="shrink-0 bg-[#C20A6C] pt-[env(safe-area-inset-top)]">
             <div class="container mx-auto">
                 <div
-                    class="flex h-20 items-center justify-between px-4 py-4 sm:px-8 lg:px-12"
+                    class="flex h-16 items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-12"
                 >
                     <a
                         href="/"
@@ -84,7 +84,9 @@ export default {
             </div>
         </header>
 
-        <section class="py-10 sm:py-14 lg:py-16">
+        <section
+            class="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain py-10 sm:py-14 lg:py-16"
+        >
             <div class="mx-auto max-w-2xl px-4 sm:px-8 lg:px-16">
                 <div
                     class="mb-8 flex gap-2 border border-white/20 bg-white/60 p-2 backdrop-blur-md dark:border-gray-700/20 dark:bg-gray-800/60 sm:mb-10 sm:gap-4"

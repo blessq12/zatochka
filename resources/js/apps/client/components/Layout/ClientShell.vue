@@ -52,7 +52,7 @@ export default {
 
 <template>
     <div
-        class="client-shell min-h-dvh w-full bg-white font-jost-regular dark:bg-dark-blue-500"
+        class="client-shell flex h-full max-h-full w-full flex-col overflow-hidden bg-white font-jost-regular dark:bg-dark-blue-500"
     >
         <ClientTopbar
             :title="pageTitle"
@@ -61,15 +61,15 @@ export default {
             @toggle-mobile="toggleMobile"
         />
 
-        <div
-            class="container mx-auto px-4 pt-6 pb-4 sm:px-8 sm:py-10 lg:px-16 lg:py-12 xl:px-20"
+        <main
+            class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0"
         >
-            <main
-                class="min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0"
+            <div
+                class="container mx-auto px-4 pt-6 pb-4 sm:px-8 sm:py-10 lg:px-16 lg:py-12 xl:px-20"
             >
                 <router-view />
-            </main>
-        </div>
+            </div>
+        </main>
 
         <ClientMobileMenu
             :open="mobileOpen"

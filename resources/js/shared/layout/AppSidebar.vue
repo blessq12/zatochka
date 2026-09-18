@@ -26,7 +26,7 @@ export default {
 
 <template>
     <aside
-        class="app-sidebar sticky top-0 flex h-dvh w-60 shrink-0 flex-col bg-pink-500 text-white"
+        class="app-sidebar flex h-full w-60 shrink-0 flex-col bg-pink-500 text-white"
     >
         <div class="border-b border-white/15 px-4 py-4">
             <BrandMark :tagline="tagline" />
