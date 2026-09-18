@@ -67,17 +67,17 @@ export default {
 </script>
 
 <template>
-    <div class="space-y-3 lg:space-y-6">
+    <div class="space-y-5 lg:space-y-6">
         <ClientSectionCard title="ЗАКАЗЫ">
             <div
-                class="mb-3 flex flex-row gap-1 border border-white/20 bg-white/60 p-1 backdrop-blur-md dark:border-gray-700/20 dark:bg-gray-800/60 lg:mb-6 lg:gap-4 lg:p-2"
+                class="mb-5 flex flex-row gap-2 border border-white/20 bg-white/60 p-2 backdrop-blur-md dark:border-gray-700/20 dark:bg-gray-800/60 lg:mb-6 lg:gap-4"
             >
                 <button
                     type="button"
-                    class="flex-1 px-3 py-2 text-sm font-jost-bold transition-all duration-300 lg:px-4 lg:py-3 lg:text-base"
+                    class="flex-1 px-4 py-3 text-base font-jost-bold transition-all duration-300 lg:px-4 lg:py-3 lg:text-base"
                     :class="
                         scope === 'active'
-                            ? 'bg-[#C3006B] text-white shadow-lg'
+                            ? 'bg-[#C20A6C] text-white shadow-lg'
                             : 'text-dark-gray-500 hover:bg-white/80 dark:text-gray-200 dark:hover:bg-gray-700/80'
                     "
                     @click="scope = 'active'"
@@ -86,10 +86,10 @@ export default {
                 </button>
                 <button
                     type="button"
-                    class="flex-1 px-3 py-2 text-sm font-jost-bold transition-all duration-300 lg:px-4 lg:py-3 lg:text-base"
+                    class="flex-1 px-4 py-3 text-base font-jost-bold transition-all duration-300 lg:px-4 lg:py-3 lg:text-base"
                     :class="
                         scope === 'archive'
-                            ? 'bg-[#C3006B] text-white shadow-lg'
+                            ? 'bg-[#C20A6C] text-white shadow-lg'
                             : 'text-dark-gray-500 hover:bg-white/80 dark:text-gray-200 dark:hover:bg-gray-700/80'
                     "
                     @click="scope = 'archive'"
@@ -98,14 +98,14 @@ export default {
                 </button>
             </div>
 
-            <p v-if="loading" class="text-sm text-dark-gray-500 dark:text-gray-300 lg:text-base">
+            <p v-if="loading" class="text-base text-dark-gray-500 dark:text-gray-300 lg:text-base">
                 Загрузка…
             </p>
-            <p v-if="error" class="text-sm text-red-600 lg:text-base">{{ error }}</p>
+            <p v-if="error" class="text-base text-red-600 lg:text-base">{{ error }}</p>
 
             <p
                 v-else-if="!loading && orders.length === 0"
-                class="text-sm text-dark-gray-500 dark:text-gray-300 lg:text-base"
+                class="text-base text-dark-gray-500 dark:text-gray-300 lg:text-base"
             >
                 {{
                     scope === "active"
@@ -114,12 +114,12 @@ export default {
                 }}
             </p>
 
-            <div v-else class="divide-y divide-dark-blue-500/10 dark:divide-white/10 lg:space-y-4 lg:divide-y-0">
+            <div v-else class="space-y-3 sm:space-y-4">
                 <button
                     v-for="order in orders"
                     :key="order.id"
                     type="button"
-                    class="w-full py-3 text-left transition first:pt-0 last:pb-0 hover:bg-white/40 lg:border lg:border-dark-blue-500/20 lg:bg-white/60 lg:p-4 lg:backdrop-blur-md lg:first:pt-4 lg:hover:border-[#C3006B]/40 dark:lg:border-gray-700/40 dark:lg:bg-gray-800/60"
+                    class="w-full border border-dark-blue-500/20 bg-white/60 p-3 text-left backdrop-blur-md transition hover:border-[#C20A6C]/40 dark:border-gray-700/40 dark:bg-gray-800/60 sm:p-4"
                     @click="open(order)"
                 >
                     <div class="flex items-start justify-between gap-2">
@@ -130,18 +130,18 @@ export default {
                                 Заказ #{{ order.id }}
                             </p>
                             <p
-                                class="mt-0.5 truncate text-sm text-dark-gray-500 dark:text-gray-300 lg:mt-1 lg:text-base"
+                                class="mt-1 truncate text-base text-dark-gray-500 dark:text-gray-300 lg:mt-1 lg:text-base"
                             >
                                 {{ itemsSummary(order) }}
                             </p>
                         </div>
                         <span
-                            class="shrink-0 text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                            class="shrink-0 text-base font-jost-medium text-dark-gray-500 dark:text-gray-200"
                         >
                             {{ statusLabel(order.status) }}
                         </span>
                     </div>
-                    <p class="mt-1 text-xs text-dark-gray-500 dark:text-gray-400 lg:mt-2 lg:text-sm">
+                    <p class="mt-1 text-base text-dark-gray-500 dark:text-gray-400 lg:mt-2 lg:text-base">
                         {{
                             BILLING_LABELS[order.billing_type] ||
                             order.billing_type

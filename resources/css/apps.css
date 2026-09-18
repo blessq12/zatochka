@@ -194,6 +194,44 @@
     border-color: #e2e8f0;
 }
 
+/*
+ * Клиентский кабинет (PWA): минимум 16px, без автозума iOS на инпутах.
+ */
+.client-app-root,
+.client-shell {
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
+.client-app-root :where(.text-xs),
+.client-app-root :where(.text-sm),
+.client-shell :where(.text-xs),
+.client-shell :where(.text-sm) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.client-app-root :where(.text-base),
+.client-shell :where(.text-base) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.client-app-root :where(input),
+.client-app-root :where(select),
+.client-app-root :where(textarea),
+.client-app-root :where(button),
+.client-shell :where(input),
+.client-shell :where(select),
+.client-shell :where(textarea),
+.client-shell :where(button) {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
 @layer components {
     .app-page {
         @apply w-full space-y-4 sm:space-y-5 lg:space-y-6;
@@ -260,6 +298,49 @@
 
     .app-field::placeholder {
         color: var(--color-apps-faint);
+    }
+
+    /*
+     * Native date/time: на мобильных WebKit/Chromium intrinsic min-width
+     * шире карточки/колонки — ломает макет. Сжимаем до контейнера.
+     */
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="week"],
+    input[type="time"] {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    input[type="date"]::-webkit-datetime-edit,
+    input[type="datetime-local"]::-webkit-datetime-edit,
+    input[type="month"]::-webkit-datetime-edit,
+    input[type="week"]::-webkit-datetime-edit,
+    input[type="time"]::-webkit-datetime-edit {
+        min-width: 0;
+        width: 100%;
+        padding: 0;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+    input[type="month"]::-webkit-calendar-picker-indicator,
+    input[type="week"]::-webkit-calendar-picker-indicator {
+        margin-inline-start: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    label:has(> input[type="date"]),
+    label:has(> input[type="datetime-local"]),
+    label:has(> input[type="month"]),
+    label:has(> input[type="week"]),
+    label:has(> input[type="time"]) {
+        min-width: 0;
+        max-width: 100%;
     }
 
     .app-filters {

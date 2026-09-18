@@ -3,17 +3,15 @@ import { mapStores } from "pinia";
 import { bottomNavItems, navigationItems } from "../../navigation.js";
 import { useAuthStore } from "../../stores/authStore.js";
 import ClientBottomNav from "./ClientBottomNav.vue";
-import ClientHeader from "./ClientHeader.vue";
 import ClientMobileMenu from "./ClientMobileMenu.vue";
-import ClientNavTabs from "./ClientNavTabs.vue";
+import ClientTopbar from "./ClientTopbar.vue";
 
 export default {
     name: "ClientShell",
     components: {
         ClientBottomNav,
-        ClientHeader,
         ClientMobileMenu,
-        ClientNavTabs,
+        ClientTopbar,
     },
     data() {
         return {
@@ -54,21 +52,20 @@ export default {
 
 <template>
     <div
-        class="client-shell min-h-dvh w-full bg-white/80 font-jost-regular backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
+        class="client-shell min-h-dvh w-full bg-white font-jost-regular dark:bg-dark-blue-500"
     >
+        <ClientTopbar
+            :title="pageTitle"
+            :items="items"
+            @logout="logout"
+            @toggle-mobile="toggleMobile"
+        />
+
         <div
-            class="container mx-auto px-3 pt-3 pb-2 sm:px-8 sm:py-10 lg:px-16 lg:py-12 xl:px-20"
+            class="container mx-auto px-4 pt-6 pb-4 sm:px-8 sm:py-10 lg:px-16 lg:py-12 xl:px-20"
         >
-            <ClientHeader
-                :title="pageTitle"
-                @logout="logout"
-                @toggle-mobile="toggleMobile"
-            />
-
-            <ClientNavTabs :items="items" />
-
             <main
-                class="min-w-0 pb-[calc(3.75rem+env(safe-area-inset-bottom))] lg:pb-0"
+                class="min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0"
             >
                 <router-view />
             </main>

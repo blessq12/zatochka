@@ -4,7 +4,7 @@ import ClientSectionCard from "../../components/Layout/ClientSectionCard.vue";
 import { useAuthStore } from "../../stores/authStore.js";
 
 const fieldClass =
-    "w-full border border-dark-blue-500/20 bg-white/60 px-3 py-2.5 text-dark-gray-500 outline-none focus:border-[#C3006B] dark:border-gray-700/20 dark:bg-gray-800/60 dark:text-gray-200 lg:border-white/20 lg:px-4 lg:py-3 lg:backdrop-blur-md";
+    "w-full border border-white/20 bg-white/60 px-4 py-3.5 text-dark-gray-500 shadow-lg outline-none backdrop-blur-md transition-all duration-300 focus:border-[#C20A6C]/50 focus:ring-2 focus:ring-[#C20A6C]/30 dark:border-gray-700/20 dark:bg-gray-800/60 dark:text-gray-200 sm:px-6 sm:py-4";
 
 export default {
     name: "ClientProfilePage",
@@ -60,25 +60,25 @@ export default {
 </script>
 
 <template>
-    <div class="space-y-3 lg:space-y-6">
+    <div class="space-y-5 lg:space-y-6">
         <ClientSectionCard title="ДАННЫЕ ПРОФИЛЯ">
-            <p class="mb-3 text-sm text-dark-gray-500 dark:text-gray-200 lg:mb-6 lg:text-base">
+            <p class="mb-4 text-base text-dark-gray-500 dark:text-gray-200 lg:mb-6 lg:text-base">
                 Email: {{ authStore.user?.email || "—" }}
             </p>
-            <p v-if="error" class="mb-2 text-sm text-red-600 lg:mb-4 lg:text-base">
+            <p v-if="error" class="mb-2 text-base text-red-600 lg:mb-4 lg:text-base">
                 {{ error }}
             </p>
             <p
                 v-if="success"
-                class="mb-2 text-sm text-green-700 lg:mb-4 lg:text-base"
+                class="mb-2 text-base text-green-700 lg:mb-4 lg:text-base"
             >
                 {{ success }}
             </p>
 
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:gap-6">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6">
                 <label class="block">
                     <span
-                        class="mb-1 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
+                        class="mb-2 block text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
                     >
                         ФИО
                     </span>
@@ -90,7 +90,7 @@ export default {
                 </label>
                 <label class="block">
                     <span
-                        class="mb-1 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
+                        class="mb-2 block text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
                     >
                         Телефон
                     </span>
@@ -102,7 +102,7 @@ export default {
                 </label>
                 <label class="block">
                     <span
-                        class="mb-1 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
+                        class="mb-2 block text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
                     >
                         Дата рождения
                     </span>
@@ -114,7 +114,7 @@ export default {
                 </label>
                 <label class="block sm:col-span-2">
                     <span
-                        class="mb-1 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
+                        class="mb-2 block text-base font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
                     >
                         Адрес доставки
                     </span>
@@ -128,7 +128,7 @@ export default {
 
             <button
                 type="button"
-                class="mt-4 w-full bg-[#C3006B] px-6 py-2.5 font-jost-bold text-white transition hover:bg-[#A8005A] disabled:opacity-50 lg:mt-8 lg:w-auto lg:px-8 lg:py-3 lg:text-lg"
+                class="mt-4 w-full bg-[#C20A6C] px-6 py-3.5 font-jost-bold text-white transition hover:bg-[#a0085a] disabled:opacity-50 lg:mt-8 lg:w-auto lg:px-8 lg:py-3 lg:text-lg"
                 :disabled="saving"
                 @click="save"
             >

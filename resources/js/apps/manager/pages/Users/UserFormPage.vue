@@ -8,6 +8,7 @@ import {
     URGENCY_LABELS,
     BILLING_LABELS,
 } from "../../services/OrderService.js";
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 
 function tabFromQuery(query) {
     if (query.tab === "equipment") return "equipment";
@@ -36,6 +37,7 @@ export default {
             KIND_LABELS,
             URGENCY_LABELS,
             BILLING_LABELS,
+            formatOrderDate,
             form: {
                 type: this.$route.query.type || this.$route.params.type || "clients",
                 email: "",
@@ -822,6 +824,12 @@ export default {
                                             order.billing_type
                                         }}
                                     </p>
+                                    <p class="text-xs text-slate-500">
+                                        Создан
+                                        {{ formatOrderDate(order.created_at) }}
+                                        · выдан
+                                        {{ formatOrderDate(order.issued_at) }}
+                                    </p>
                                     <p class="text-sm text-slate-600">
                                         Оценка {{ order.estimated_cost }} ₽
                                         · мастер
@@ -853,6 +861,12 @@ export default {
                                                 #
                                             </th>
                                             <th class="px-4 py-3 font-jost-medium">
+                                                Создан
+                                            </th>
+                                            <th class="px-4 py-3 font-jost-medium">
+                                                Выдан
+                                            </th>
+                                            <th class="px-4 py-3 font-jost-medium">
                                                 Статус
                                             </th>
                                             <th class="px-4 py-3 font-jost-medium">
@@ -873,7 +887,7 @@ export default {
                                     <tbody>
                                         <tr v-if="orderItems.length === 0">
                                             <td
-                                                colspan="7"
+                                                colspan="9"
                                                 class="px-4 py-6 text-slate-500"
                                             >
                                                 Заказов пока нет
@@ -886,6 +900,20 @@ export default {
                                         >
                                             <td class="px-4 py-3">
                                                 {{ order.id }}
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                {{
+                                                    formatOrderDate(
+                                                        order.created_at
+                                                    )
+                                                }}
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                {{
+                                                    formatOrderDate(
+                                                        order.issued_at
+                                                    )
+                                                }}
                                             </td>
                                             <td class="px-4 py-3">
                                                 {{ statusLabel(order.status) }}
