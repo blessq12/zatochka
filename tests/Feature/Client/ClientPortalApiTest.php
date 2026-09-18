@@ -73,7 +73,9 @@ final class ClientPortalApiTest extends TestCase
             'name' => 'Фрезер',
             'brand' => 'Strong',
             'type' => 'Аппарат',
-            'modules' => [],
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'OWN-1'],
+            ],
         ])->assertCreated()->json('id');
 
         $foreignEquipmentId = $this->withToken($managerToken)->postJson('/api/equipments', [
@@ -81,7 +83,9 @@ final class ClientPortalApiTest extends TestCase
             'name' => 'Чужой',
             'brand' => 'X',
             'type' => 'Y',
-            'modules' => [],
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'FRN-1'],
+            ],
         ])->assertCreated()->json('id');
 
         $clientToken = $this->loginClient('cli-user2@example.com');

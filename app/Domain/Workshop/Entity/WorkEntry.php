@@ -12,10 +12,6 @@ final class WorkEntry
         private int $position = 0,
         private ?int $equipmentModuleId = null,
     ) {
-        if (trim($title) === '') {
-            throw new DomainException('Work title is required.');
-        }
-
         if ($equipmentModuleId !== null && $equipmentModuleId < 1) {
             throw new DomainException('equipment_module_id must be positive.');
         }

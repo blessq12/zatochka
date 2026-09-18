@@ -17,21 +17,31 @@ const pinia = createPinia();
 const authStore = useAuthStore(pinia);
 let isHandlingUnauthorized = false;
 
+const skipUnauthorizedLogout = (url) =>
+    url.includes("/api/identity/login") ||
+    url.includes("/api/identity/register") ||
+    url.includes("/api/identity/me") ||
+    url.includes("/api/identity/logout");
+
 axios.interceptors.response.use(
     (response) => response,
     async (error) => {
         const status = error.response?.status;
         const url = error.config?.url || "";
-        const isClientApi =
-            url.startsWith("/api/") &&
-            !url.startsWith("/api/identity/login") &&
-            !url.startsWith("/api/identity/register");
+        const isClientApi = url.includes("/api/") && !skipUnauthorizedLogout(url);
 
-        if (status === 401 && isClientApi && !isHandlingUnauthorized) {
+        if (
+            status === 401 &&
+            isClientApi &&
+            !isHandlingUnauthorized &&
+            !authStore.isRestoring
+        ) {
             isHandlingUnauthorized = true;
-            await authStore.logout();
+            await authStore.clearSession();
             try {
-                await router.push({ name: "client.login" });
+                if (router.currentRoute.value.name !== "client.login") {
+                    await router.push({ name: "client.login" });
+                }
             } finally {
                 isHandlingUnauthorized = false;
             }
@@ -45,6 +55,6 @@ installPhoneMask(app);
 app.use(pinia);
 app.use(router);
 
-authStore.checkAuth().finally(() => {
+authStore.restoreSession().finally(() => {
     app.mount("#app");
 });

@@ -10,6 +10,7 @@
         'pwaName' => 'Заточка — Менеджер',
         'appleTitle' => 'Менеджер',
         'themeColor' => '#003859',
+        'appleTouchIcon' => 'pwa/icons/manager/apple-touch-icon.png',
     ])
     @vite(['resources/css/apps.css', 'resources/js/apps/manager/main.js'])
 </head>

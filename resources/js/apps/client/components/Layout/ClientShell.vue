@@ -28,6 +28,9 @@ export default {
         bottomItems() {
             return bottomNavItems;
         },
+        pageTitle() {
+            return this.$route.meta.title || "Кабинет";
+        },
     },
     watch: {
         $route() {
@@ -54,9 +57,10 @@ export default {
         class="client-shell min-h-dvh w-full bg-white/80 font-jost-regular backdrop-blur-xl dark:bg-dark-blue-500 dark:backdrop-blur-xl"
     >
         <div
-            class="container mx-auto px-4 py-6 sm:px-8 sm:py-10 lg:px-16 lg:py-12 xl:px-20"
+            class="container mx-auto px-3 pt-3 pb-2 sm:px-8 sm:py-10 lg:px-16 lg:py-12 xl:px-20"
         >
             <ClientHeader
+                :title="pageTitle"
                 @logout="logout"
                 @toggle-mobile="toggleMobile"
             />
@@ -64,7 +68,7 @@ export default {
             <ClientNavTabs :items="items" />
 
             <main
-                class="min-w-0 pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-0"
+                class="min-w-0 pb-[calc(3.75rem+env(safe-area-inset-bottom))] lg:pb-0"
             >
                 <router-view />
             </main>

@@ -1,4 +1,6 @@
 <script>
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { equipmentService } from "../../services/EquipmentService.js";
 import {
     KIND_LABELS,
     URGENCY_LABELS,
@@ -6,8 +8,6 @@ import {
     statusLabel,
 } from "../../services/OrderService.js";
 import { workshopService } from "../../services/WorkshopService.js";
-import { equipmentService } from "../../services/EquipmentService.js";
-import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 
 function emptyWork() {
     return { title: "", equipment_module_id: "" };
@@ -37,6 +37,31 @@ export default {
         },
         jobItems() {
             return this.job?.items || [];
+        },
+        orderEquipments() {
+            const seen = new Set();
+            const result = [];
+            for (const item of this.order?.items || []) {
+                if (item.kind !== "repair" || !item.equipment_id) {
+                    continue;
+                }
+                const id = Number(item.equipment_id);
+                if (seen.has(id)) {
+                    continue;
+                }
+                seen.add(id);
+                const equipment = this.equipmentById[id] || null;
+                const problems = (this.order?.items || [])
+                    .filter(
+                        (row) =>
+                            row.kind === "repair" &&
+                            Number(row.equipment_id) === id &&
+                            row.problem,
+                    )
+                    .map((row) => row.problem);
+                result.push({ id, equipment, problems });
+            }
+            return result;
         },
     },
     async mounted() {
@@ -117,12 +142,8 @@ export default {
             return title === "" && !hasModule;
         },
         isWorkComplete(orderItemId, work) {
-            const title = String(work?.title || "").trim();
-            if (title === "") {
-                return false;
-            }
             if (!this.isRepair(orderItemId)) {
-                return true;
+                return String(work?.title || "").trim() !== "";
             }
             const moduleId = work?.equipment_module_id;
             return moduleId != null && moduleId !== "";
@@ -162,7 +183,10 @@ export default {
             const ids = [
                 ...new Set(
                     (this.order?.items || [])
-                        .filter((item) => item.kind === "repair" && item.equipment_id)
+                        .filter(
+                            (item) =>
+                                item.kind === "repair" && item.equipment_id,
+                        )
                         .map((item) => Number(item.equipment_id)),
                 ),
             ];
@@ -237,19 +261,20 @@ export default {
                 .map((w) => {
                     const title = String(w.title || "").trim();
                     const row = { title };
-                    if (isRepair && w.equipment_module_id != null && w.equipment_module_id !== "") {
+                    if (
+                        isRepair &&
+                        w.equipment_module_id != null &&
+                        w.equipment_module_id !== ""
+                    ) {
                         row.equipment_module_id = Number(w.equipment_module_id);
                     }
                     return row;
                 })
                 .filter((w) => {
-                    if (w.title === "") {
-                        return false;
+                    if (isRepair) {
+                        return Boolean(w.equipment_module_id);
                     }
-                    if (isRepair && !w.equipment_module_id) {
-                        return false;
-                    }
-                    return true;
+                    return w.title !== "";
                 });
 
             const payload = { works };
@@ -307,7 +332,7 @@ export default {
                     );
                     if (incomplete.length > 0) {
                         this.error =
-                            "Для ремонта укажите модуль и описание у каждой работы";
+                            "Для ремонта укажите модуль у каждой работы";
                         return;
                     }
                     await this.persistItem(jobItem.order_item_id);
@@ -317,8 +342,7 @@ export default {
                 this.syncDrafts();
             } catch (e) {
                 this.error =
-                    e.response?.data?.message ||
-                    "Не удалось завершить работы";
+                    e.response?.data?.message || "Не удалось завершить работы";
             } finally {
                 this.completing = false;
             }
@@ -336,9 +360,7 @@ export default {
 <template>
     <div class="app-page">
         <div class="app-page-header">
-            <h1 class="app-page-title">
-                Заказ #{{ order?.id || "…" }}
-            </h1>
+            <h1 class="app-page-title">Заказ #{{ order?.id || "…" }}</h1>
             <button
                 type="button"
                 class="app-btn-ghost w-full sm:w-auto"
@@ -387,9 +409,7 @@ export default {
                             <div class="flex justify-between gap-2">
                                 <dt class="text-slate-500">Задание</dt>
                                 <dd class="text-right text-slate-800">
-                                    {{
-                                        isOpen ? "В работе" : "Завершено"
-                                    }}
+                                    {{ isOpen ? "В работе" : "Завершено" }}
                                 </dd>
                             </div>
                             <div class="flex justify-between gap-2">
@@ -408,6 +428,78 @@ export default {
                     </div>
 
                     <section
+                        v-if="orderEquipments.length > 0"
+                        class="space-y-3 border border-slate-300 bg-white p-3 text-sm shadow-sm lg:p-4"
+                    >
+                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
+                            Оборудование
+                        </h2>
+                        <div
+                            v-for="entry in orderEquipments"
+                            :key="entry.id"
+                            class="space-y-2 border-t border-slate-100 pt-2 first:border-t-0 first:pt-0"
+                        >
+                            <div class="flex items-start justify-between gap-2">
+                                <p class="font-jost-medium text-dark-blue-500">
+                                    {{
+                                        entry.equipment?.name || `№${entry.id}`
+                                    }}
+                                </p>
+                                <span class="shrink-0 text-xs text-slate-500">
+                                    #{{ entry.id }}
+                                </span>
+                            </div>
+                            <dl class="space-y-1.5">
+                                <div class="flex justify-between gap-2">
+                                    <dt class="text-slate-500">Бренд</dt>
+                                    <dd class="text-right text-slate-800">
+                                        {{ entry.equipment?.brand || "—" }}
+                                    </dd>
+                                </div>
+                                <div class="flex justify-between gap-2">
+                                    <dt class="text-slate-500">Тип</dt>
+                                    <dd class="text-right text-slate-800">
+                                        {{ entry.equipment?.type || "—" }}
+                                    </dd>
+                                </div>
+                            </dl>
+                            <div>
+                                <p
+                                    class="text-xs font-jost-medium text-slate-500"
+                                >
+                                    Модули
+                                </p>
+                                <p
+                                    v-if="
+                                        !(entry.equipment?.modules || []).length
+                                    "
+                                    class="mt-1 text-xs text-slate-500"
+                                >
+                                    Модулей нет
+                                </p>
+                                <ul
+                                    v-else
+                                    class="mt-1 space-y-1 text-xs text-slate-700"
+                                >
+                                    <li
+                                        v-for="module in entry.equipment
+                                            .modules"
+                                        :key="module.id || module.serial_number"
+                                    >
+                                        {{ module.name }}
+                                        <span
+                                            v-if="module.serial_number"
+                                            class="text-slate-500"
+                                        >
+                                            · {{ module.serial_number }}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section
                         v-if="isOpen"
                         class="space-y-2 border border-slate-300 bg-white p-3 shadow-sm lg:p-4"
                     >
@@ -420,11 +512,7 @@ export default {
                             :disabled="completing || saving"
                             @click="complete"
                         >
-                            {{
-                                completing
-                                    ? "Завершаю…"
-                                    : "Работы выполнены"
-                            }}
+                            {{ completing ? "Завершаю…" : "Работы выполнены" }}
                         </button>
                     </section>
 
@@ -547,9 +635,8 @@ export default {
                                 </span>
                                 <input
                                     v-model="
-                                        drafts[
-                                            draftKey(jobItem.order_item_id)
-                                        ].completed_qty
+                                        drafts[draftKey(jobItem.order_item_id)]
+                                            .completed_qty
                                     "
                                     type="number"
                                     min="0"
@@ -619,10 +706,7 @@ export default {
                                     type="button"
                                     class="shrink-0 text-sm text-red-600 hover:underline"
                                     @click="
-                                        removeWork(
-                                            jobItem.order_item_id,
-                                            index,
-                                        )
+                                        removeWork(jobItem.order_item_id, index)
                                     "
                                 >
                                     Убрать

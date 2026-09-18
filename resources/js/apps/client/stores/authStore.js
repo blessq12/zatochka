@@ -5,13 +5,37 @@ import createRegisterRequestDto from "../dto/auth/registerRequestDto.js";
 import createUpdateClientRequestDto from "../dto/client/updateClientRequestDto.js";
 
 const TOKEN_KEY = "auth_token";
+const USER_KEY = "auth_user";
 const EXPECTED_ACTOR_TYPE = "clients";
+
+const persistUser = (user) => {
+    if (user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+    } else {
+        localStorage.removeItem(USER_KEY);
+    }
+};
+
+const restoreUser = () => {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) {
+        return null;
+    }
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+};
+
+const isUnauthorized = (error) => error?.response?.status === 401;
 
 export const useAuthStore = defineStore("auth", {
     state: () => ({
         user: null,
         token: null,
         isLoading: false,
+        isRestoring: false,
     }),
 
     getters: {
@@ -26,12 +50,13 @@ export const useAuthStore = defineStore("auth", {
                 id: payload.id,
                 email: payload.email,
                 actor: payload.actor,
-                full_name: null,
-                phone: null,
-                birth_date: null,
-                delivery_address: null,
+                full_name: this.user?.full_name ?? null,
+                phone: this.user?.phone ?? null,
+                birth_date: this.user?.birth_date ?? null,
+                delivery_address: this.user?.delivery_address ?? null,
             };
             localStorage.setItem(TOKEN_KEY, this.token);
+            persistUser(this.user);
         },
 
         mergeActorProfile(actor) {
@@ -51,6 +76,7 @@ export const useAuthStore = defineStore("auth", {
                 birth_date: actor.birthday ?? null,
                 delivery_address: actor.delivery_address ?? null,
             };
+            persistUser(this.user);
         },
 
         assertClientRole(actorType) {
@@ -83,11 +109,15 @@ export const useAuthStore = defineStore("auth", {
 
                 this.assertClientRole(response.data.actor?.type);
                 this.applySession(response.data);
-                await this.fetchActorProfile();
+                try {
+                    await this.fetchActorProfile();
+                } catch {
+                    // профиль подтянем позже; сессия identity уже валидна
+                }
 
                 return { success: true, data: response.data };
             } catch (error) {
-                await this.logout();
+                await this.clearSession();
                 const message =
                     error.response?.data?.message ||
                     error.message ||
@@ -108,22 +138,33 @@ export const useAuthStore = defineStore("auth", {
                 });
                 const response = await axios.post(
                     "/api/identity/register",
-                    payload
+                    payload,
                 );
 
                 this.assertClientRole(response.data.actor?.type);
                 this.applySession(response.data);
-                await this.fetchActorProfile();
+                try {
+                    await this.fetchActorProfile();
+                } catch {
+                    // ignore
+                }
 
                 return { success: true, data: response.data };
             } catch (error) {
-                await this.logout();
+                await this.clearSession();
                 const message =
                     error.response?.data?.message || "Ошибка регистрации";
                 return { success: false, error: message };
             } finally {
                 this.isLoading = false;
             }
+        },
+
+        async clearSession() {
+            this.token = null;
+            this.user = null;
+            localStorage.removeItem(TOKEN_KEY);
+            persistUser(null);
         },
 
         async logout() {
@@ -134,10 +175,7 @@ export const useAuthStore = defineStore("auth", {
             } catch {
                 // ignore
             }
-
-            this.token = null;
-            this.user = null;
-            localStorage.removeItem(TOKEN_KEY);
+            await this.clearSession();
         },
 
         async fetchMe() {
@@ -152,28 +190,54 @@ export const useAuthStore = defineStore("auth", {
                 birth_date: this.user?.birth_date ?? null,
                 delivery_address: this.user?.delivery_address ?? null,
             };
-            await this.fetchActorProfile();
+            persistUser(this.user);
+            try {
+                await this.fetchActorProfile();
+            } catch {
+                // identity валидна — профиль не блокирует сессию
+            }
             return this.user;
         },
 
-        async checkAuth() {
+        /**
+         * Восстановление сессии после reload (как у менеджера).
+         * Токен стираем только при 401 на /me.
+         */
+        async restoreSession() {
             const token = localStorage.getItem(TOKEN_KEY);
+            const cachedUser = restoreUser();
+
             if (!token) {
+                await this.clearSession();
                 return false;
             }
 
+            this.isRestoring = true;
             this.token = token;
+            if (cachedUser) {
+                this.user = cachedUser;
+            }
             this.isLoading = true;
 
             try {
                 await this.fetchMe();
                 return true;
             } catch (error) {
-                await this.logout();
-                return false;
+                if (isUnauthorized(error) || !cachedUser) {
+                    await this.clearSession();
+                    return false;
+                }
+                // сеть/500 при живом кэше — оставляем сессию
+                return true;
             } finally {
                 this.isLoading = false;
+                this.isRestoring = false;
             }
+        },
+
+        /** @deprecated используй restoreSession */
+        async checkAuth() {
+            return this.restoreSession();
         },
 
         async updateClient(input) {
@@ -195,13 +259,15 @@ export const useAuthStore = defineStore("auth", {
                 if (Object.prototype.hasOwnProperty.call(dto, "birth_date")) {
                     payload.birthday = dto.birth_date || null;
                 }
-                if (Object.prototype.hasOwnProperty.call(dto, "delivery_address")) {
+                if (
+                    Object.prototype.hasOwnProperty.call(dto, "delivery_address")
+                ) {
                     payload.delivery_address = dto.delivery_address || null;
                 }
 
                 const { data } = await axios.patch(
                     `/api/actors/clients/${actorId}`,
-                    payload
+                    payload,
                 );
                 this.mergeActorProfile(data);
                 return { success: true, data };
@@ -209,7 +275,9 @@ export const useAuthStore = defineStore("auth", {
                 const message =
                     error.response?.data?.message ||
                     (error.response?.data?.errors
-                        ? Object.values(error.response.data.errors).flat().join(" ")
+                        ? Object.values(error.response.data.errors)
+                              .flat()
+                              .join(" ")
                         : "Ошибка обновления профиля");
                 return { success: false, error: message };
             }

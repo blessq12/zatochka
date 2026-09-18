@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +22,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'actor' => \App\Http\Middleware\EnsureActorType::class,
         ]);
+
+        // API: JSON 401, без route('login') → RouteNotFoundException
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return null;
+            }
+
+            return '/';
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\App\Shared\Domain\DomainException $exception) {

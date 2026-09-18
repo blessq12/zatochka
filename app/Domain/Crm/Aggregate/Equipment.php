@@ -32,6 +32,10 @@ final class Equipment
         string $type,
         array $modules = [],
     ): self {
+        if ($modules === []) {
+            throw new DomainException('Equipment must have at least one module.');
+        }
+
         return new self(null, $clientId, $name, $brand, $type, $modules);
     }
 
@@ -86,6 +90,7 @@ final class Equipment
      */
     public function replaceModules(array $modules): void
     {
+        $this->assertAtLeastOneModule($modules);
         $this->assertUniqueSerials($modules);
         $this->modules = $modules;
     }
@@ -110,6 +115,16 @@ final class Equipment
         }
 
         $this->assertUniqueSerials($modules);
+    }
+
+    /**
+     * @param  list<EquipmentModule>  $modules
+     */
+    private function assertAtLeastOneModule(array $modules): void
+    {
+        if ($modules === []) {
+            throw new DomainException('Equipment must have at least one module.');
+        }
     }
 
     /**

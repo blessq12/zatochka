@@ -3,6 +3,7 @@
 namespace Tests\Feature\Workshop;
 
 use App\Application\Identity\Command\RegisterActorWithIdentityHandler;
+use App\Infrastructure\Crm\Eloquent\EquipmentModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -120,13 +121,13 @@ final class WorkshopApiTest extends TestCase
         $clientId = $this->createClient($managerToken, 'ws-nomod-client@example.com');
         $masterId = $this->createMaster($managerToken, 'ws-nomod-master@example.com');
 
-        $equipmentId = (int) $this->withToken($managerToken)->postJson('/api/equipments', [
+        // Legacy equipment without modules (API create no longer allows this).
+        $equipmentId = (int) EquipmentModel::query()->create([
             'client_id' => $clientId,
             'name' => 'Фен',
             'brand' => 'X',
             'type' => 'Фен',
-            'modules' => [],
-        ])->assertCreated()->json('id');
+        ])->id;
 
         $orderId = $this->withToken($managerToken)->postJson('/api/orders', [
             'client_id' => $clientId,
@@ -198,6 +199,14 @@ final class WorkshopApiTest extends TestCase
         $this->withToken($masterToken)->putJson("/api/workshop/jobs/{$jobId}/items/{$itemId}", [
             'works' => [['title' => 'Диагностика']],
         ])->assertStatus(422);
+
+        $this->withToken($masterToken)->putJson("/api/workshop/jobs/{$jobId}/items/{$itemId}", [
+            'works' => [
+                ['title' => '', 'equipment_module_id' => $moduleId],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('items.0.works.0.equipment_module_id', $moduleId)
+            ->assertJsonPath('items.0.works.0.title', '');
 
         $this->withToken($masterToken)->putJson("/api/workshop/jobs/{$jobId}/items/{$itemId}", [
             'works' => [

@@ -75,7 +75,7 @@ final class EquipmentApiTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_equipment_without_modules_is_allowed(): void
+    public function test_equipment_without_modules_is_rejected(): void
     {
         $token = $this->tokenAsManager('eq-empty@example.com');
         $clientId = $this->createClient($token, 'client-empty@example.com', 'Клиент');
@@ -86,8 +86,30 @@ final class EquipmentApiTest extends TestCase
             'brand' => 'Dyson',
             'type' => 'Фен',
             'modules' => [],
-        ])->assertCreated()
-            ->assertJsonCount(0, 'modules');
+        ])->assertStatus(422);
+    }
+
+    public function test_update_cannot_clear_all_modules(): void
+    {
+        $token = $this->tokenAsManager('eq-clear@example.com');
+        $clientId = $this->createClient($token, 'client-clear@example.com', 'Клиент');
+
+        $id = (int) $this->withToken($token)->postJson('/api/equipments', [
+            'client_id' => $clientId,
+            'name' => 'Фрезер',
+            'brand' => 'Strong',
+            'type' => 'Аппарат',
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'BLK-CLR'],
+            ],
+        ])->assertCreated()->json('id');
+
+        $this->withToken($token)->putJson("/api/equipments/{$id}", [
+            'name' => 'Фрезер',
+            'brand' => 'Strong',
+            'type' => 'Аппарат',
+            'modules' => [],
+        ])->assertStatus(422);
     }
 
     public function test_update_preserves_module_ids(): void

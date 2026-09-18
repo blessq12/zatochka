@@ -26,7 +26,7 @@ export default {
         aria-label="Основная навигация"
     >
         <ul
-            class="mx-auto grid h-14 w-full max-w-lg"
+            class="mx-auto grid h-12 w-full max-w-lg"
             :style="{
                 gridTemplateColumns: `repeat(${Math.max(items.length, 1)}, minmax(0, 1fr))`,
             }"

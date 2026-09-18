@@ -3,6 +3,7 @@ import axios from "axios";
 
 window.axios = axios;
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+window.axios.defaults.headers.common["Accept"] = "application/json";
 window.axios.defaults.withCredentials = true;
 
 axios.interceptors.request.use((config) => {
@@ -17,7 +18,7 @@ axios.interceptors.request.use((config) => {
     ];
     const isPublic = publicPaths.some((path) => url.startsWith(path));
 
-    if (url.startsWith("/api/") && !isPublic) {
+    if (url.includes("/api/") && !isPublic) {
         const clientToken = localStorage.getItem("auth_token");
         if (clientToken) {
             config.headers.Authorization = `Bearer ${clientToken}`;

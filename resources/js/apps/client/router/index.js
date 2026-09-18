@@ -76,16 +76,21 @@ const router = createRouter({
 
 router.beforeEach((to) => {
     const store = useAuthStore();
+    const needsAuth = to.matched.some((record) => record.meta.auth);
+    const isGuestRoute = to.matched.some((record) => record.meta.guest);
 
-    if (to.meta.auth && !store.isAuthenticated) {
-        return { name: "client.login", query: { redirect: to.fullPath } };
+    if (needsAuth && !store.isAuthenticated) {
+        return {
+            name: "client.login",
+            query: { redirect: to.fullPath },
+        };
     }
 
-    if (to.matched.some((r) => r.meta.auth) && !store.isAuthenticated) {
-        return { name: "client.login", query: { redirect: to.fullPath } };
-    }
-
-    if (to.meta.guest && store.isAuthenticated) {
+    if (isGuestRoute && store.isAuthenticated) {
+        const redirect = to.query.redirect;
+        if (typeof redirect === "string" && redirect.startsWith("/")) {
+            return redirect;
+        }
         return { name: "client.orders" };
     }
 

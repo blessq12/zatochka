@@ -355,7 +355,9 @@ final class OrderApiTest extends TestCase
             'name' => 'Фен',
             'brand' => 'Dyson',
             'type' => 'Фен',
-            'modules' => [],
+            'modules' => [
+                ['name' => 'Корпус', 'serial_number' => 'FEN-1'],
+            ],
         ])->assertCreated()->json('id');
 
         $matchingId = (int) $this->withToken($token)->postJson('/api/orders', [
@@ -462,7 +464,9 @@ final class OrderApiTest extends TestCase
             'name' => 'Фрезер',
             'brand' => 'Strong',
             'type' => 'Аппарат',
-            'modules' => [],
+            'modules' => [
+                ['name' => 'Блок', 'serial_number' => 'BLK-ORD-1'],
+            ],
         ])->assertCreated()->json('id');
     }
 

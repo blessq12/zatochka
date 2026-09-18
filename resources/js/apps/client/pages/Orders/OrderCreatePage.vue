@@ -12,7 +12,7 @@ function emptyRepair() {
 }
 
 const fieldClass =
-    "w-full border border-white/20 bg-white/60 px-4 py-3 text-dark-gray-500 backdrop-blur-md outline-none focus:border-[#C3006B] dark:border-gray-700/20 dark:bg-gray-800/60 dark:text-gray-200";
+    "w-full border border-dark-blue-500/20 bg-white/60 px-3 py-2.5 text-dark-gray-500 outline-none focus:border-[#C3006B] dark:border-gray-700/20 dark:bg-gray-800/60 dark:text-gray-200 lg:border-white/20 lg:px-4 lg:py-3 lg:backdrop-blur-md";
 
 export default {
     name: "ClientOrderCreatePage",
@@ -120,29 +120,29 @@ export default {
 </script>
 
 <template>
-    <div class="space-y-6">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="space-y-3 lg:space-y-6">
+        <div class="flex items-center justify-end lg:justify-between">
             <h2
-                class="text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 sm:text-2xl"
+                class="hidden font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 lg:block lg:text-2xl"
             >
                 Новый заказ
             </h2>
             <button
                 type="button"
-                class="w-full border border-dark-blue-500/30 px-4 py-3 font-jost-medium text-dark-gray-500 transition hover:bg-white/60 sm:w-auto dark:text-gray-200"
+                class="text-sm font-jost-medium text-dark-gray-500 hover:text-[#C3006B] dark:text-gray-200 lg:border lg:border-dark-blue-500/30 lg:px-4 lg:py-3 lg:hover:bg-white/60"
                 @click="$router.push({ name: 'client.orders' })"
             >
                 Отмена
             </button>
         </div>
 
-        <p v-if="error" class="text-base text-red-600">{{ error }}</p>
+        <p v-if="error" class="text-sm text-red-600 lg:text-base">{{ error }}</p>
 
         <ClientSectionCard title="ПАРАМЕТРЫ">
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-3 sm:grid-cols-2 lg:gap-4">
                 <label class="block">
                     <span
-                        class="mb-2 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                        class="mb-1 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
                     >
                         Тип оплаты
                     </span>
@@ -153,7 +153,7 @@ export default {
                 </label>
                 <label class="block">
                     <span
-                        class="mb-2 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                        class="mb-1 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
                     >
                         Срочность
                     </span>
@@ -163,13 +163,15 @@ export default {
                     </select>
                 </label>
             </div>
-            <label class="mt-4 flex items-center gap-2 text-base text-dark-gray-500 dark:text-gray-200">
+            <label
+                class="mt-3 flex items-center gap-2 text-sm text-dark-gray-500 dark:text-gray-200 lg:mt-4 lg:text-base"
+            >
                 <input v-model="form.needs_delivery" type="checkbox" />
                 Нужна доставка
             </label>
-            <label v-if="form.needs_delivery" class="mt-4 block">
+            <label v-if="form.needs_delivery" class="mt-3 block lg:mt-4">
                 <span
-                    class="mb-2 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200"
+                    class="mb-1 block text-sm font-jost-medium text-dark-gray-500 dark:text-gray-200 lg:mb-2"
                 >
                     Адрес доставки
                 </span>
@@ -182,17 +184,17 @@ export default {
         </ClientSectionCard>
 
         <ClientSectionCard title="СОСТАВ">
-            <div class="mb-4 flex flex-wrap gap-3">
+            <div class="mb-3 flex flex-row flex-wrap gap-3 lg:mb-4">
                 <button
                     type="button"
-                    class="font-jost-medium text-[#C3006B] hover:underline"
+                    class="text-sm font-jost-medium text-[#C3006B] hover:underline lg:text-base"
                     @click="addSharpening"
                 >
                     + заточка
                 </button>
                 <button
                     type="button"
-                    class="font-jost-medium text-[#C3006B] hover:underline"
+                    class="text-sm font-jost-medium text-[#C3006B] hover:underline lg:text-base"
                     @click="addRepair"
                 >
                     + ремонт
@@ -202,15 +204,17 @@ export default {
             <div
                 v-for="(item, index) in form.items"
                 :key="index"
-                class="mb-4 space-y-3 border border-white/20 bg-white/60 p-4 backdrop-blur-md last:mb-0 dark:border-gray-700/20 dark:bg-gray-800/60"
+                class="mb-3 space-y-2 border-b border-dark-blue-500/10 pb-3 last:mb-0 last:border-0 last:pb-0 dark:border-white/10 lg:mb-4 lg:space-y-3 lg:border lg:border-white/20 lg:bg-white/60 lg:p-4 lg:backdrop-blur-md lg:last:mb-0 dark:lg:border-gray-700/20 dark:lg:bg-gray-800/60"
             >
                 <div class="flex items-center justify-between">
-                    <span class="font-jost-medium text-dark-blue-500 dark:text-dark-blue-300">
+                    <span
+                        class="text-sm font-jost-medium text-dark-blue-500 dark:text-dark-blue-300 lg:text-base"
+                    >
                         {{ KIND_LABELS[item.kind] }}
                     </span>
                     <button
                         type="button"
-                        class="text-base text-red-600 hover:underline"
+                        class="text-sm text-red-600 hover:underline"
                         @click="removeItem(index)"
                     >
                         Убрать
@@ -218,7 +222,7 @@ export default {
                 </div>
 
                 <template v-if="item.kind === 'sharpening'">
-                    <div class="grid gap-3 sm:grid-cols-[1fr_6rem]">
+                    <div class="grid grid-cols-[1fr_4.5rem] gap-2 lg:grid-cols-[1fr_6rem] lg:gap-3">
                         <input
                             v-model="item.title"
                             type="text"
@@ -246,10 +250,9 @@ export default {
                     </select>
                     <p
                         v-if="equipments.length === 0"
-                        class="text-base text-dark-gray-500 dark:text-gray-400"
+                        class="text-sm text-dark-gray-500 dark:text-gray-400"
                     >
                         Нет оборудования в профиле — ремонт пока недоступен.
-                        Обратитесь в мастерскую.
                     </p>
                     <textarea
                         v-model="item.problem"
@@ -263,7 +266,7 @@ export default {
 
         <button
             type="button"
-            class="w-full bg-[#C3006B] px-8 py-4 font-jost-bold text-lg text-white shadow-lg transition hover:bg-[#A8005A] disabled:opacity-50 sm:w-auto"
+            class="w-full bg-[#C3006B] px-6 py-2.5 font-jost-bold text-white transition hover:bg-[#A8005A] disabled:opacity-50 lg:w-auto lg:px-8 lg:py-4 lg:text-lg"
             :disabled="saving"
             @click="submit"
         >

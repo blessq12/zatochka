@@ -81,13 +81,13 @@ final class WorkshopJobController extends Controller
             'completed_qty' => ['nullable', 'integer', 'min:0'],
             'max_qty' => ['nullable', 'integer', 'min:0'],
             'works' => ['required', 'array'],
-            'works.*.title' => ['required', 'string', 'max:255'],
+            'works.*.title' => ['nullable', 'string', 'max:255'],
             'works.*.equipment_module_id' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $works = array_map(
             static function (array $work): array {
-                $row = ['title' => (string) $work['title']];
+                $row = ['title' => (string) ($work['title'] ?? '')];
                 if (array_key_exists('equipment_module_id', $work) && $work['equipment_module_id'] !== null) {
                     $row['equipment_module_id'] = (int) $work['equipment_module_id'];
                 }

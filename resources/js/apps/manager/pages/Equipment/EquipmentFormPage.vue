@@ -15,7 +15,7 @@ export default {
                 name: "",
                 brand: "",
                 type: "",
-                modules: [],
+                modules: [{ name: "", serial_number: "" }],
             },
         };
     },
@@ -83,11 +83,26 @@ export default {
         },
         removeModule(index) {
             this.form.modules.splice(index, 1);
+            if (this.form.modules.length === 0) {
+                this.form.modules.push({ name: "", serial_number: "" });
+            }
         },
         async submit() {
             this.saving = true;
             this.error = null;
             try {
+                if (!this.form.modules.length) {
+                    this.error = "Добавьте хотя бы один модуль";
+                    return;
+                }
+                for (const mod of this.form.modules) {
+                    if (!mod.name?.trim() || !mod.serial_number?.trim()) {
+                        this.error =
+                            "У модуля укажите название и серийный номер";
+                        return;
+                    }
+                }
+
                 const payload = {
                     name: this.form.name,
                     brand: this.form.brand,
@@ -322,9 +337,9 @@ export default {
 
                 <p
                     v-if="form.modules.length === 0"
-                    class="border border-slate-300 bg-white px-3 py-4 text-sm text-slate-500 shadow-sm"
+                    class="border border-red-200 bg-red-50 px-3 py-4 text-sm text-red-700 shadow-sm"
                 >
-                    Модулей пока нет — можно сохранить без них
+                    Нужен хотя бы один модуль
                 </p>
 
                 <div

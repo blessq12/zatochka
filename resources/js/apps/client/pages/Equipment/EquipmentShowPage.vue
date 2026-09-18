@@ -37,27 +37,29 @@ export default {
 </script>
 
 <template>
-    <div class="space-y-6">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="space-y-3 lg:space-y-6">
+        <div class="flex items-center justify-end lg:justify-between">
             <h2
-                class="text-xl font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 sm:text-2xl"
+                class="hidden font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 lg:block lg:text-2xl"
             >
                 {{ item?.name || `Оборудование #${$route.params.id}` }}
             </h2>
             <button
                 type="button"
-                class="w-full border border-dark-blue-500/30 px-4 py-3 font-jost-medium text-dark-gray-500 transition hover:bg-white/60 sm:w-auto dark:text-gray-200"
+                class="text-sm font-jost-medium text-dark-gray-500 hover:text-[#C3006B] dark:text-gray-200 lg:border lg:border-dark-blue-500/30 lg:px-4 lg:py-3 lg:hover:bg-white/60"
                 @click="back"
             >
-                К списку
+                ← К списку
             </button>
         </div>
 
-        <p v-if="loading" class="text-base text-dark-gray-500">Загрузка…</p>
-        <p v-if="error" class="text-base text-red-600">{{ error }}</p>
+        <p v-if="loading" class="text-sm text-dark-gray-500 lg:text-base">
+            Загрузка…
+        </p>
+        <p v-if="error" class="text-sm text-red-600 lg:text-base">{{ error }}</p>
 
         <ClientSectionCard v-if="item && !loading" title="КАРТОЧКА">
-            <dl class="mb-6 space-y-3 text-base">
+            <dl class="mb-3 space-y-2 text-sm lg:mb-6 lg:space-y-3 lg:text-base">
                 <div class="flex justify-between gap-2">
                     <dt class="text-dark-gray-500 dark:text-gray-400">Бренд</dt>
                     <dd class="text-dark-gray-500 dark:text-gray-200">
@@ -73,25 +75,33 @@ export default {
             </dl>
 
             <h3
-                class="mb-3 text-base font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
+                class="mb-2 text-sm font-jost-bold text-dark-blue-500 dark:text-dark-blue-300 lg:mb-3 lg:text-base"
             >
                 Модули
             </h3>
-            <ul v-if="item.modules?.length" class="space-y-3">
+            <ul
+                v-if="item.modules?.length"
+                class="divide-y divide-dark-blue-500/10 dark:divide-white/10 lg:space-y-3 lg:divide-y-0"
+            >
                 <li
                     v-for="module in item.modules"
                     :key="module.id || module.serial_number"
-                    class="border border-white/20 bg-white/60 p-4 backdrop-blur-md dark:border-gray-700/20 dark:bg-gray-800/60"
+                    class="py-2.5 first:pt-0 last:pb-0 lg:border lg:border-white/20 lg:bg-white/60 lg:p-4 lg:backdrop-blur-md dark:lg:border-gray-700/20 dark:lg:bg-gray-800/60"
                 >
-                    <p class="font-jost-medium text-dark-blue-500 dark:text-dark-blue-300">
+                    <p
+                        class="text-sm font-jost-medium text-dark-blue-500 dark:text-dark-blue-300 lg:text-base"
+                    >
                         {{ module.name }}
                     </p>
-                    <p class="mt-1 text-dark-gray-500 dark:text-gray-300">
+                    <p class="mt-0.5 text-sm text-dark-gray-500 dark:text-gray-300">
                         S/N: {{ module.serial_number }}
                     </p>
                 </li>
             </ul>
-            <p v-else class="text-base text-dark-gray-500 dark:text-gray-400">
+            <p
+                v-else
+                class="text-sm text-dark-gray-500 dark:text-gray-400 lg:text-base"
+            >
                 Модулей нет
             </p>
         </ClientSectionCard>

@@ -1,10 +1,14 @@
 <script>
 import { actorService } from "../../services/ActorService.js";
 import { equipmentService } from "../../services/EquipmentService.js";
-import { KIND_LABELS, orderService } from "../../services/OrderService.js";
+import { KIND_LABELS, URGENCY_LABELS, orderService } from "../../services/OrderService.js";
 
 function emptySharpening() {
     return { kind: "sharpening", title: "", quantity: 1 };
+}
+
+function emptyModule() {
+    return { name: "", serial_number: "" };
 }
 
 function emptyRepair(forceNewEquipment = false) {
@@ -17,7 +21,7 @@ function emptyRepair(forceNewEquipment = false) {
             name: "",
             brand: "",
             type: "",
-            modules: [],
+            modules: [emptyModule()],
         },
         creatingEquipment: false,
     };
@@ -39,6 +43,7 @@ export default {
             creatingClient: false,
             error: null,
             KIND_LABELS,
+            URGENCY_LABELS,
             newClient: {
                 name: "",
                 phone: "",
@@ -46,6 +51,7 @@ export default {
             form: {
                 client_id: this.$route.query.client_id || "",
                 billing_type: "paid",
+                urgency: "normal",
                 estimated_cost: "",
                 needs_delivery: false,
                 delivery_address: "",
@@ -201,10 +207,13 @@ export default {
             return this.hasEquipments;
         },
         addModule(item) {
-            item.newEquipment.modules.push({ name: "", serial_number: "" });
+            item.newEquipment.modules.push(emptyModule());
         },
         removeModule(item, index) {
             item.newEquipment.modules.splice(index, 1);
+            if (item.newEquipment.modules.length === 0) {
+                item.newEquipment.modules.push(emptyModule());
+            }
         },
         async createEquipmentForItem(item) {
             if (!this.form.client_id) {
@@ -214,6 +223,10 @@ export default {
             const eq = item.newEquipment;
             if (!eq.name || !eq.brand || !eq.type) {
                 this.error = "Заполните название, бренд и тип";
+                return;
+            }
+            if (!eq.modules.length) {
+                this.error = "Добавьте хотя бы один модуль";
                 return;
             }
             for (const mod of eq.modules) {
@@ -242,7 +255,7 @@ export default {
                     name: "",
                     brand: "",
                     type: "",
-                    modules: [],
+                    modules: [emptyModule()],
                 };
             } catch (e) {
                 this.error =
@@ -333,6 +346,7 @@ export default {
                 const created = await orderService.create({
                     client_id: Number(this.form.client_id),
                     billing_type: this.form.billing_type,
+                    urgency: this.form.urgency,
                     estimated_cost: String(this.form.estimated_cost),
                     needs_delivery: Boolean(this.form.needs_delivery),
                     delivery_address: this.form.needs_delivery
@@ -671,9 +685,9 @@ export default {
                             </div>
                             <p
                                 v-if="item.newEquipment.modules.length === 0"
-                                class="text-xs text-slate-500"
+                                class="text-xs text-red-600"
                             >
-                                Можно без модулей
+                                Нужен хотя бы один модуль
                             </p>
                         </div>
 
@@ -716,6 +730,21 @@ export default {
                 >
                     <option value="paid">Платный</option>
                     <option value="warranty">Гарантийный</option>
+                </select>
+            </label>
+
+            <label class="block space-y-1">
+                <span class="text-sm text-slate-600">Срочность</span>
+                <select
+                    v-model="form.urgency"
+                    class="w-full border border-slate-300 px-3 py-2"
+                >
+                    <option value="normal">
+                        {{ URGENCY_LABELS.normal }}
+                    </option>
+                    <option value="urgent">
+                        {{ URGENCY_LABELS.urgent }}
+                    </option>
                 </select>
             </label>
 

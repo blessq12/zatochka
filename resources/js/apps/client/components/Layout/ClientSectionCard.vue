@@ -11,16 +11,17 @@ export default {
 </script>
 
 <template>
+    <!-- Mobile: плоский контент; desktop (lg+): фирменная секция -->
     <div
-        class="relative border border-dark-blue-500/30 bg-white/80 px-6 pb-6 pt-10 backdrop-blur-xl dark:border-dark-gray-200/90 dark:bg-dark-blue-500 sm:px-10 sm:pb-8 sm:pt-12"
+        class="lg:relative lg:border lg:border-dark-blue-500/30 lg:bg-white/80 lg:px-10 lg:pb-8 lg:pt-12 lg:backdrop-blur-xl dark:lg:border-dark-gray-200/90 dark:lg:bg-dark-blue-500"
     >
         <h2
             v-if="title"
-            class="absolute left-1/2 top-0 max-w-[90%] -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-center text-lg font-jost-bold text-[#C20A6C] dark:bg-dark-blue-500 sm:px-6 sm:text-xl"
+            class="hidden lg:absolute lg:left-1/2 lg:top-0 lg:block lg:max-w-[90%] lg:-translate-x-1/2 lg:-translate-y-1/2 lg:bg-white lg:px-6 lg:text-center lg:text-xl lg:font-jost-bold lg:text-[#C20A6C] dark:lg:bg-dark-blue-500"
         >
             {{ title }}
         </h2>
-        <div class="mt-2">
+        <div class="lg:mt-2">
             <slot />
         </div>
     </div>

@@ -10,6 +10,7 @@
         'pwaName' => 'Заточка — Клиент',
         'appleTitle' => 'Клиент',
         'themeColor' => '#003859',
+        'appleTouchIcon' => 'pwa/icons/client/apple-touch-icon.png',
     ])
     @vite(['resources/css/apps.css', 'resources/js/apps/client/main.js'])
 </head>
