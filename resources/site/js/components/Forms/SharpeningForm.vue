@@ -1,10 +1,13 @@
 <script>
-import axios from "axios";
 import { mapStores } from "pinia";
 import * as yup from "yup";
 import FormContactActions from "../Support/FormContactActions.vue";
-import { useAuthStore } from "@client/stores/authStore.js";
+import { SHARPENING_TOOL_TYPES } from "../../constants/publicFormCatalogs.js";
 import { useOrderStore } from "../../stores/orderStore.js";
+
+function phoneDigitsOk(value) {
+    return String(value || "").replace(/\D/g, "").length >= 11;
+}
 
 export default {
     name: "SharpeningForm",
@@ -20,7 +23,7 @@ export default {
             form: {
                 tools_count: "",
                 tool_type: "",
-                needs_delivery: true,
+                needs_delivery: false,
                 name: "",
                 phone: "",
                 comment: "",
@@ -30,11 +33,14 @@ export default {
                 delivery_conditions_agreement: false,
             },
             errors: {},
-            toolTypes: [],
-            toolTypesLoading: false,
+            successMessage: null,
+            toolTypes: SHARPENING_TOOL_TYPES,
             schema: yup.object().shape({
                 tools_count: yup
                     .number()
+                    .transform((value, original) =>
+                        original === "" || original == null ? undefined : value,
+                    )
                     .required("Количество инструментов обязательно")
                     .min(1, "Минимум 1 инструмент"),
                 tool_type: yup.string().required("Выберите тип инструментов"),
@@ -45,106 +51,56 @@ export default {
                 phone: yup
                     .string()
                     .required("Телефон обязателен")
-                    .min(18, "Номер телефона должен быть 18 символов")
-                    .max(18, "Номер телефона должен быть 18 символов"),
-                delivery_agreement: yup
-                    .boolean()
-                    .oneOf([true], "Необходимо согласие с условиями доставки"),
+                    .test(
+                        "phone-digits",
+                        "Введите полный номер телефона",
+                        phoneDigitsOk,
+                    ),
+                delivery_address: yup.string().when("needs_delivery", {
+                    is: true,
+                    then: (schema) =>
+                        schema.required("Укажите адрес доставки"),
+                    otherwise: (schema) => schema.nullable(),
+                }),
+                delivery_agreement: yup.boolean().when("needs_delivery", {
+                    is: true,
+                    then: (schema) =>
+                        schema.oneOf(
+                            [true],
+                            "Необходимо согласие с условиями доставки",
+                        ),
+                    otherwise: (schema) => schema.strip(),
+                }),
                 privacy_agreement: yup
                     .boolean()
                     .oneOf(
                         [true],
-                        "Необходимо согласие на обработку персональных данных"
+                        "Необходимо согласие на обработку персональных данных",
                     ),
             }),
         };
     },
     computed: {
-        ...mapStores(useOrderStore, useAuthStore),
-    },
-    async mounted() {
-
-        await this.loadToolTypes();
-
-        // Проверяем авторизацию и загружаем данные пользователя
-        if (this.authStore.isAuthenticated && !this.authStore.user) {
-            await this.authStore.checkAuth();
-        }
-
-        // Автозаполняем форму данными пользователя, если он авторизован
-        if (this.authStore.isAuthenticated && this.authStore.user) {
-            this.fillUserData();
-        }
+        ...mapStores(useOrderStore),
     },
     methods: {
-        async loadToolTypes() {
-            this.toolTypesLoading = true;
-            try {
-                const response = await axios.get(
-                    "/api/public/sharpening-tool-types"
-                );
-                this.toolTypes = response.data.data || [];
-            } catch (error) {
-                this.errors.tool_type =
-                    error.response?.data?.message ||
-                    "Не удалось загрузить типы инструментов";
-            } finally {
-                this.toolTypesLoading = false;
-            }
-        },
-        fillUserData() {
-            const user = this.authStore.user;
-            if (!user) return;
-
-            // Заполняем имя
-            if (user.full_name) {
-                this.form.name = user.full_name;
-            }
-
-            // Заполняем телефон (формат +7 (###) ###-##-##)
-            if (user.phone) {
-                // Если телефон уже в нужном формате, используем как есть
-                if (user.phone.match(/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/)) {
-                    this.form.phone = user.phone;
-                } else {
-                    // Убираем все нецифровые символы, кроме +
-                    let cleanPhone = user.phone.replace(/[^\d+]/g, "");
-                    // Если нет +, добавляем +7
-                    if (!cleanPhone.startsWith("+")) {
-                        // Убираем ведущую 7 или 8, добавляем +7
-                        cleanPhone = cleanPhone.replace(/^[78]/, "");
-                        cleanPhone = "+7" + cleanPhone;
-                    } else if (cleanPhone.startsWith("+")) {
-                        // Если есть +, но не 7, заменяем
-                        cleanPhone = cleanPhone.replace(/^\+[^7]/, "+7");
-                    }
-
-                    // Форматируем в +7 (###) ###-##-## (10 цифр после +7)
-                    const digits = cleanPhone
-                        .replace(/\+7/, "")
-                        .replace(/\D/g, "");
-                    if (digits.length === 10) {
-                        const match = digits.match(
-                            /^(\d{3})(\d{3})(\d{2})(\d{2})$/
-                        );
-                        if (match) {
-                            this.form.phone = `+7 (${match[1]}) ${match[2]}-${match[3]}-${match[4]}`;
-                        } else {
-                            this.form.phone = user.phone;
-                        }
-                    } else {
-                        this.form.phone = user.phone;
-                    }
-                }
-            }
-
-            // Заполняем адрес доставки, если указан
-            if (user.delivery_address) {
-                this.form.delivery_address = user.delivery_address;
-            }
+        emptyForm() {
+            return {
+                tools_count: "",
+                tool_type: "",
+                needs_delivery: false,
+                name: "",
+                phone: "",
+                comment: "",
+                delivery_address: "",
+                delivery_agreement: false,
+                privacy_agreement: false,
+                delivery_conditions_agreement: false,
+            };
         },
         async submitForm() {
             this.errors = {};
+            this.successMessage = null;
             try {
                 await this.schema.validate(this.form, {
                     abortEarly: false,
@@ -152,28 +108,13 @@ export default {
 
                 const result = await this.orderStore.createPublicOrder(
                     this.form,
-                    "sharpening"
+                    "sharpening",
                 );
 
                 if (result.success) {
-                    // Сброс формы после успешной отправки
-                    this.form = {
-                        tools_count: "",
-                        tool_type: "",
-                        needs_delivery: true,
-                        name: "",
-                        phone: "",
-                        comment: "",
-                        delivery_address: "",
-                        delivery_agreement: false,
-                        privacy_agreement: false,
-                        delivery_conditions_agreement: false,
-                    };
-
-                    // Повторно заполняем данные пользователя, если он авторизован
-                    if (this.authStore.isAuthenticated && this.authStore.user) {
-                        this.fillUserData();
-                    }
+                    this.form = this.emptyForm();
+                    this.successMessage =
+                        "Заявка отправлена. Мы свяжемся с вами.";
                 } else {
                     this.errors.general = result.error;
                 }
@@ -217,6 +158,12 @@ export default {
                     >
                         {{ errors.general }}
                     </div>
+                    <div
+                        v-if="successMessage"
+                        class="bg-green-50/80 backdrop-blur-lg border border-green-300/50 text-green-800 px-6 py-4 dark:bg-green-900/30 dark:border-green-600/50 dark:text-green-300"
+                    >
+                        {{ successMessage }}
+                    </div>
 
                     <!-- Количество инструментов -->
                     <div>
@@ -257,7 +204,7 @@ export default {
                             :class="{
                                 'border-red-500': errors.tool_type,
                             }"
-                            :disabled="toolTypesLoading || toolTypes.length === 0"
+                            :disabled="toolTypes.length === 0"
                             style="
                                 background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23333%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e');
                                 background-position: right 1rem center;
@@ -265,11 +212,7 @@ export default {
                             "
                         >
                             <option value="" disabled>
-                                {{
-                                    toolTypesLoading
-                                        ? "Загрузка типов..."
-                                        : "Выберите тип инструментов"
-                                }}
+                                Выберите тип инструментов
                             </option>
                             <option
                                 v-for="type in toolTypes"
@@ -394,36 +337,40 @@ export default {
 
                     <!-- Чекбоксы согласий -->
                     <div class="space-y-4 pt-4">
-                        <div class="flex items-start gap-3">
-                            <input
-                                v-model="form.delivery_agreement"
-                                type="checkbox"
-                                id="delivery_agreement"
-                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
-                                :class="{
-                                    'border-red-500': errors.delivery_agreement,
-                                }"
-                            />
-                            <label
-                                for="delivery_agreement"
-                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
-                            >
-                                Я ознакомлен с
-                                <a href="/delivery"
-                                    class="underline text-[#C3006B]"
-                                    @click.stop
+                        <template v-if="form.needs_delivery">
+                            <div class="flex items-start gap-3">
+                                <input
+                                    v-model="form.delivery_agreement"
+                                    type="checkbox"
+                                    id="delivery_agreement"
+                                    class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                    :class="{
+                                        'border-red-500':
+                                            errors.delivery_agreement,
+                                    }"
+                                />
+                                <label
+                                    for="delivery_agreement"
+                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
                                 >
-                                    условиями доставки
-                                </a>
-                                <span class="text-red-500">*</span>
-                            </label>
-                        </div>
-                        <p
-                            v-if="errors.delivery_agreement"
-                            class="text-sm text-red-600 dark:text-red-400 ml-8"
-                        >
-                            {{ errors.delivery_agreement }}
-                        </p>
+                                    Я ознакомлен с
+                                    <a
+                                        href="/delivery"
+                                        class="underline text-[#C3006B]"
+                                        @click.stop
+                                    >
+                                        условиями доставки
+                                    </a>
+                                    <span class="text-red-500">*</span>
+                                </label>
+                            </div>
+                            <p
+                                v-if="errors.delivery_agreement"
+                                class="text-sm text-red-600 dark:text-red-400 ml-8"
+                            >
+                                {{ errors.delivery_agreement }}
+                            </p>
+                        </template>
 
                         <div class="flex items-start gap-3">
                             <input

@@ -21,8 +21,14 @@ export const useOrderStore = defineStore("order", {
 
                 return { success: true, data: response.data };
             } catch (error) {
-                const message =
-                    error.response?.data?.message || "Ошибка создания заявки";
+                const data = error.response?.data;
+                let message = data?.message || "Ошибка создания заявки";
+                if (data?.errors && typeof data.errors === "object") {
+                    const first = Object.values(data.errors).flat()[0];
+                    if (first) {
+                        message = String(first);
+                    }
+                }
                 return { success: false, error: message };
             } finally {
                 this.submitOrderLoading = false;

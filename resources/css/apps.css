@@ -116,6 +116,18 @@ html.apps-pwa body.apps-pwa-root {
     background-color: inherit;
 }
 
+/*
+ * Клиентский PWA: html под status bar красим в цвет верхней панели,
+ * иначе iOS black-translucent показывает белый градиент.
+ */
+html.client-pwa {
+    background-color: #C20A6C;
+}
+
+html.client-pwa body.client-app-root {
+    background-color: #C20A6C;
+}
+
 html.apps-pwa #app {
     display: flex;
     flex-direction: column;

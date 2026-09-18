@@ -35,7 +35,7 @@ export default {
 
 <template>
     <header
-        class="z-[110] shrink-0 bg-[#C20A6C] pt-[env(safe-area-inset-top)]"
+        class="sticky top-0 z-[110] shrink-0 bg-[#C20A6C] pt-[env(safe-area-inset-top,0px)]"
     >
         <div class="container mx-auto">
             <div

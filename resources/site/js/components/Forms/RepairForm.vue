@@ -1,10 +1,13 @@
 <script>
-import axios from "axios";
 import { mapStores } from "pinia";
 import * as yup from "yup";
 import FormContactActions from "../Support/FormContactActions.vue";
+import { EQUIPMENT_TYPES } from "../../constants/publicFormCatalogs.js";
 import { useOrderStore } from "../../stores/orderStore.js";
-import { useAuthStore } from "@client/stores/authStore.js";
+
+function phoneDigitsOk(value) {
+    return String(value || "").replace(/\D/g, "").length >= 11;
+}
 
 export default {
     name: "RepairForm",
@@ -21,8 +24,8 @@ export default {
                 device_name: "",
                 equipment_type: "",
                 problem_description: "",
-                urgency_type: "standard", // radio кнопка - один выбор
-                needs_delivery: true,
+                urgency_type: "standard",
+                needs_delivery: false,
                 name: "",
                 phone: "",
                 comment: "",
@@ -31,8 +34,8 @@ export default {
                 privacy_agreement: false,
             },
             errors: {},
-            equipmentTypes: [],
-            equipmentTypesLoading: false,
+            successMessage: null,
+            equipmentTypes: EQUIPMENT_TYPES,
             schema: yup.object().shape({
                 device_name: yup
                     .string()
@@ -55,97 +58,57 @@ export default {
                 phone: yup
                     .string()
                     .required("Телефон обязателен")
-                    .min(18, "Номер телефона должен быть 18 символов")
-                    .max(18, "Номер телефона должен быть 18 символов"),
-                delivery_agreement: yup
-                    .boolean()
-                    .oneOf([true], "Необходимо согласие с условиями доставки"),
+                    .test(
+                        "phone-digits",
+                        "Введите полный номер телефона",
+                        phoneDigitsOk,
+                    ),
+                delivery_address: yup.string().when("needs_delivery", {
+                    is: true,
+                    then: (schema) =>
+                        schema.required("Укажите адрес доставки"),
+                    otherwise: (schema) => schema.nullable(),
+                }),
+                delivery_agreement: yup.boolean().when("needs_delivery", {
+                    is: true,
+                    then: (schema) =>
+                        schema.oneOf(
+                            [true],
+                            "Необходимо согласие с условиями доставки",
+                        ),
+                    otherwise: (schema) => schema.strip(),
+                }),
                 privacy_agreement: yup
                     .boolean()
-                    .oneOf([true], "Необходимо согласие на обработку персональных данных"),
+                    .oneOf(
+                        [true],
+                        "Необходимо согласие на обработку персональных данных",
+                    ),
             }),
         };
     },
     computed: {
-        ...mapStores(useOrderStore, useAuthStore),
-    },
-    async mounted() {
-
-        await this.loadEquipmentTypes();
-
-        // Проверяем авторизацию и загружаем данные пользователя
-        if (this.authStore.isAuthenticated && !this.authStore.user) {
-            await this.authStore.checkAuth();
-        }
-
-        // Автозаполняем форму данными пользователя, если он авторизован
-        if (this.authStore.isAuthenticated && this.authStore.user) {
-            this.fillUserData();
-        }
+        ...mapStores(useOrderStore),
     },
     methods: {
-        async loadEquipmentTypes() {
-            this.equipmentTypesLoading = true;
-            try {
-                const response = await axios.get("/api/public/equipment-types");
-                this.equipmentTypes = response.data.data || [];
-            } catch (error) {
-                this.errors.equipment_type =
-                    error.response?.data?.message ||
-                    "Не удалось загрузить типы оборудования";
-            } finally {
-                this.equipmentTypesLoading = false;
-            }
-        },
-        fillUserData() {
-            const user = this.authStore.user;
-            if (!user) return;
-            
-            // Заполняем имя
-            if (user.full_name) {
-                this.form.name = user.full_name;
-            }
-            
-            // Заполняем телефон (формат +7 (###) ###-##-##)
-            if (user.phone) {
-                // Если телефон уже в нужном формате, используем как есть
-                if (user.phone.match(/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/)) {
-                    this.form.phone = user.phone;
-                } else {
-                    // Убираем все нецифровые символы, кроме +
-                    let cleanPhone = user.phone.replace(/[^\d+]/g, '');
-                    // Если нет +, добавляем +7
-                    if (!cleanPhone.startsWith('+')) {
-                        // Убираем ведущую 7 или 8, добавляем +7
-                        cleanPhone = cleanPhone.replace(/^[78]/, '');
-                        cleanPhone = '+7' + cleanPhone;
-                    } else if (cleanPhone.startsWith('+')) {
-                        // Если есть +, но не 7, заменяем
-                        cleanPhone = cleanPhone.replace(/^\+[^7]/, '+7');
-                    }
-                    
-                    // Форматируем в +7 (###) ###-##-## (10 цифр после +7)
-                    const digits = cleanPhone.replace(/\+7/, '').replace(/\D/g, '');
-                    if (digits.length === 10) {
-                        const match = digits.match(/^(\d{3})(\d{3})(\d{2})(\d{2})$/);
-                        if (match) {
-                            this.form.phone = `+7 (${match[1]}) ${match[2]}-${match[3]}-${match[4]}`;
-                        } else {
-                            this.form.phone = user.phone;
-                        }
-                    } else {
-                        this.form.phone = user.phone;
-                    }
-                }
-            }
-            
-            // Заполняем адрес доставки, если указан
-            if (user.delivery_address) {
-                this.form.delivery_address = user.delivery_address;
-            }
+        emptyForm() {
+            return {
+                device_name: "",
+                equipment_type: "",
+                problem_description: "",
+                urgency_type: "standard",
+                needs_delivery: false,
+                name: "",
+                phone: "",
+                comment: "",
+                delivery_address: "",
+                delivery_agreement: false,
+                privacy_agreement: false,
+            };
         },
         async submitForm() {
             this.errors = {};
+            this.successMessage = null;
             try {
                 await this.schema.validate(this.form, {
                     abortEarly: false,
@@ -153,29 +116,13 @@ export default {
 
                 const result = await this.orderStore.createPublicOrder(
                     this.form,
-                    "repair"
+                    "repair",
                 );
 
                 if (result.success) {
-                    // Сброс формы после успешной отправки
-                    this.form = {
-                        device_name: "",
-                        equipment_type: "",
-                        problem_description: "",
-                        urgency_type: "standard",
-                        needs_delivery: true,
-                        name: "",
-                        phone: "",
-                        comment: "",
-                        delivery_address: "",
-                        delivery_agreement: false,
-                        privacy_agreement: false,
-                    };
-                    
-                    // Повторно заполняем данные пользователя, если он авторизован
-                    if (this.authStore.isAuthenticated && this.authStore.user) {
-                        this.fillUserData();
-                    }
+                    this.form = this.emptyForm();
+                    this.successMessage =
+                        "Заявка отправлена. Мы свяжемся с вами.";
                 } else {
                     this.errors.general = result.error;
                 }
@@ -215,6 +162,12 @@ export default {
                         class="bg-red-50/80 backdrop-blur-lg border border-red-300/50 text-red-700 px-6 py-4 dark:bg-red-900/30 dark:border-red-600/50 dark:text-red-400"
                     >
                         {{ errors.general }}
+                    </div>
+                    <div
+                        v-if="successMessage"
+                        class="bg-green-50/80 backdrop-blur-lg border border-green-300/50 text-green-800 px-6 py-4 dark:bg-green-900/30 dark:border-green-600/50 dark:text-green-300"
+                    >
+                        {{ successMessage }}
                     </div>
 
                     <!-- Наименование аппарата -->
@@ -457,36 +410,40 @@ export default {
 
                     <!-- Чекбоксы согласий -->
                     <div class="space-y-4 pt-4">
-                        <div class="flex items-start gap-3">
-                            <input
-                                v-model="form.delivery_agreement"
-                                type="checkbox"
-                                id="delivery_agreement"
-                                class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
-                                :class="{
-                                    'border-red-500': errors.delivery_agreement,
-                                }"
-                            />
-                            <label
-                                for="delivery_agreement"
-                                class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
-                            >
-                                Я ознакомлен с
-                                <a href="/delivery"
-                                    class="underline text-[#C3006B]"
-                                    @click.stop
+                        <template v-if="form.needs_delivery">
+                            <div class="flex items-start gap-3">
+                                <input
+                                    v-model="form.delivery_agreement"
+                                    type="checkbox"
+                                    id="delivery_agreement"
+                                    class="w-5 h-5 border-gray-300 text-[#C3006B] focus:ring-[#C3006B] mt-1 flex-shrink-0"
+                                    :class="{
+                                        'border-red-500':
+                                            errors.delivery_agreement,
+                                    }"
+                                />
+                                <label
+                                    for="delivery_agreement"
+                                    class="text-sm sm:text-base font-jost-regular text-dark-gray-500 dark:text-gray-200"
                                 >
-                                    условиями доставки
-                                </a>
-                                <span class="text-red-500">*</span>
-                            </label>
-                        </div>
-                        <p
-                            v-if="errors.delivery_agreement"
-                            class="text-sm text-red-600 dark:text-red-400 ml-8"
-                        >
-                            {{ errors.delivery_agreement }}
-                        </p>
+                                    Я ознакомлен с
+                                    <a
+                                        href="/delivery"
+                                        class="underline text-[#C3006B]"
+                                        @click.stop
+                                    >
+                                        условиями доставки
+                                    </a>
+                                    <span class="text-red-500">*</span>
+                                </label>
+                            </div>
+                            <p
+                                v-if="errors.delivery_agreement"
+                                class="text-sm text-red-600 dark:text-red-400 ml-8"
+                            >
+                                {{ errors.delivery_agreement }}
+                            </p>
+                        </template>
 
                         <div class="flex items-start gap-3">
                             <input
