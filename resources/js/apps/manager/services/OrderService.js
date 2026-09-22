@@ -5,6 +5,7 @@ export const STATUS_LABELS = {
     master_assigned: "Мастер назначен",
     in_progress: "В работе",
     waiting_parts: "Ожидает запчасти",
+    approval: "Согласование",
     works_completed: "Работы выполнены",
     ready: "Готов",
     issued: "Выдан",
@@ -67,6 +68,8 @@ export function allowedTransitions(status) {
             return ["waiting_parts"];
         case "waiting_parts":
             return ["in_progress"];
+        case "approval":
+            return ["in_progress", "issued"];
         case "works_completed":
             return ["ready", "in_progress"];
         case "ready":
@@ -132,6 +135,19 @@ function transitionActionMeta(from, to) {
                 title: "Вернуть в работу",
                 tone: "forward",
                 confirm: null,
+            };
+        case "approval>in_progress":
+            return {
+                title: "Вернуть в работу",
+                tone: "forward",
+                confirm: null,
+            };
+        case "approval>issued":
+            return {
+                title: "Выдать без работ",
+                tone: "warning",
+                confirm:
+                    "Выдать заказ без выполнения работ? Задание мастера будет закрыто.",
             };
         case "works_completed>ready":
             return {
@@ -200,6 +216,21 @@ export const orderService = {
         const { data } = await axios.post(`/api/orders/${id}/transition`, {
             status,
         });
+        return data;
+    },
+
+    async addComment(id, body) {
+        const { data } = await axios.post(`/api/orders/${id}/comments`, {
+            body,
+        });
+        return data;
+    },
+
+    async resolveApproval(id, status, body) {
+        const { data } = await axios.post(
+            `/api/orders/${id}/resolve-approval`,
+            { status, body },
+        );
         return data;
     },
 };

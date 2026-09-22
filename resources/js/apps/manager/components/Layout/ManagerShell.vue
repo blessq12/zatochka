@@ -3,10 +3,11 @@ import AppShell from "@shared/layout/AppShell.vue";
 import { mapStores } from "pinia";
 import { bottomNavItems, navigationItems } from "../../navigation.js";
 import { useManagerStore } from "../../stores/managerStore.js";
+import ManagerGlobalSearch from "./ManagerGlobalSearch.vue";
 
 export default {
     name: "ManagerShell",
-    components: { AppShell },
+    components: { AppShell, ManagerGlobalSearch },
     computed: {
         ...mapStores(useManagerStore),
         items() {
@@ -36,6 +37,9 @@ export default {
     >
         <template #title>
             {{ $route.meta.title || "Менеджер" }}
+        </template>
+        <template #search>
+            <ManagerGlobalSearch />
         </template>
         <router-view />
     </AppShell>

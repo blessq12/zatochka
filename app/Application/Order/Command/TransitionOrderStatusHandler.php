@@ -30,6 +30,11 @@ final readonly class TransitionOrderStatusHandler
             ?? throw new DomainException('Invalid status.');
 
         $from = $order->status();
+
+        if ($from === OrderStatus::Approval) {
+            throw new DomainException('Use resolve approval to leave approval.');
+        }
+
         $order->transitionTo($target);
         $saved = $this->orders->save($order);
 

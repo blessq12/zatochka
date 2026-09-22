@@ -93,6 +93,12 @@ export default {
             );
             return master?.name || master?.email || `#${id}`;
         },
+        actualCostLabel(order) {
+            if (order?.actual_cost == null || order.actual_cost === "") {
+                return "—";
+            }
+            return String(order.actual_cost);
+        },
         deliveryLabel(order) {
             if (!order.needs_delivery) {
                 return "Без доставки";
@@ -159,6 +165,7 @@ export default {
                             'master_assigned',
                             'in_progress',
                             'waiting_parts',
+                            'approval',
                             'works_completed',
                             'ready',
                             'issued',
@@ -208,8 +215,15 @@ export default {
                         }}
                     </p>
                     <p class="text-sm text-slate-600">
-                        Оценка {{ item.estimated_cost }} · мастер:
-                        {{ masterName(item.master_id) }}
+                        Мастер: {{ masterName(item.master_id) }}
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        <span class="block leading-tight">
+                            Ориентир {{ item.estimated_cost }}
+                        </span>
+                        <span class="block leading-tight">
+                            Факт {{ actualCostLabel(item) }}
+                        </span>
                     </p>
                     <p class="text-xs text-slate-500">
                         Создан {{ formatOrderDate(item.created_at) }} · выдан
@@ -248,7 +262,12 @@ export default {
                                 </div>
                             </th>
                             <th class="px-4 py-3 font-jost-medium">
-                                Оценка(₽)
+                                <div
+                                    class="flex flex-col gap-0.5 leading-tight"
+                                >
+                                    <span>Ориентир (₽)</span>
+                                    <span>Факт (₽)</span>
+                                </div>
                             </th>
                             <th class="px-4 py-3 font-jost-medium">Мастер</th>
                             <th class="px-4 py-3 font-jost-medium">Состав</th>
@@ -304,7 +323,14 @@ export default {
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                {{ item.estimated_cost }}
+                                <div
+                                    class="flex flex-col gap-0.5 leading-tight"
+                                >
+                                    <span>{{ item.estimated_cost }}</span>
+                                    <span class="text-slate-500">
+                                        {{ actualCostLabel(item) }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-4 py-3">
                                 {{ masterName(item.master_id) }}

@@ -25,6 +25,12 @@ export default {
             saving: false,
             completing: false,
             error: null,
+            commentBody: "",
+            savingComment: false,
+            commentError: null,
+            approvalBody: "",
+            requestingApproval: false,
+            workTitlePresets: ["заточка", "полировка", "восстановление"],
             KIND_LABELS,
             URGENCY_LABELS,
             statusLabel,
@@ -34,6 +40,15 @@ export default {
     computed: {
         isOpen() {
             return this.job?.status === "open";
+        },
+        canEditWorks() {
+            return this.isOpen && this.order?.status === "in_progress";
+        },
+        canRequestApproval() {
+            return this.order?.status === "in_progress";
+        },
+        isOnApproval() {
+            return this.order?.status === "approval";
         },
         jobItems() {
             return this.job?.items || [];
@@ -205,6 +220,96 @@ export default {
             );
             this.equipmentById = map;
         },
+        commentAuthorLabel(comment) {
+            if (comment?.author_type === "managers") {
+                return `Менеджер #${comment.author_id}`;
+            }
+            if (comment?.author_type === "masters") {
+                return `Мастер #${comment.author_id}`;
+            }
+            return `#${comment?.author_id || "—"}`;
+        },
+        commentKindLabel(kind) {
+            switch (kind) {
+                case "approval_request":
+                    return "На согласование";
+                case "approval_result":
+                    return "Результат согласования";
+                default:
+                    return null;
+            }
+        },
+        commentKindClass(kind) {
+            switch (kind) {
+                case "approval_request":
+                    return "border-amber-200 bg-amber-50/60";
+                case "approval_result":
+                    return "border-emerald-200 bg-emerald-50/60";
+                default:
+                    return "border-slate-100 bg-slate-50/40";
+            }
+        },
+        scrollCommentsToBottom() {
+            this.$nextTick(() => {
+                const el = this.$refs.commentsList;
+                if (el) {
+                    el.scrollTop = el.scrollHeight;
+                }
+            });
+        },
+        async submitComment() {
+            const body = String(this.commentBody || "").trim();
+            if (!this.order?.id || !body) {
+                return;
+            }
+            this.savingComment = true;
+            this.commentError = null;
+            try {
+                this.order = await orderService.addComment(this.order.id, body);
+                this.commentBody = "";
+                this.scrollCommentsToBottom();
+            } catch (e) {
+                this.commentError =
+                    e.response?.data?.message ||
+                    "Не удалось отправить комментарий";
+            } finally {
+                this.savingComment = false;
+            }
+        },
+        async submitApproval() {
+            const body = String(this.approvalBody || "").trim();
+            if (!this.order?.id) {
+                return;
+            }
+            if (!body) {
+                this.error =
+                    "Укажите, что нужно согласовать с клиентом";
+                return;
+            }
+            if (
+                !window.confirm(
+                    "Отправить заказ на согласование менеджеру?",
+                )
+            ) {
+                return;
+            }
+            this.requestingApproval = true;
+            this.error = null;
+            try {
+                this.order = await orderService.requestApproval(
+                    this.order.id,
+                    body,
+                );
+                this.approvalBody = "";
+                this.scrollCommentsToBottom();
+            } catch (e) {
+                this.error =
+                    e.response?.data?.message ||
+                    "Не удалось отправить на согласование";
+            } finally {
+                this.requestingApproval = false;
+            }
+        },
         async load() {
             this.loading = true;
             this.error = null;
@@ -220,10 +325,22 @@ export default {
                 this.order = null;
             } finally {
                 this.loading = false;
+                this.scrollCommentsToBottom();
             }
         },
         addWork(orderItemId) {
             this.drafts[this.draftKey(orderItemId)].works.push(emptyWork());
+        },
+        applyWorkTitle(orderItemId, index, title) {
+            if (!this.canEditWorks) {
+                return;
+            }
+            const draft = this.drafts[this.draftKey(orderItemId)];
+            if (!draft?.works?.[index]) {
+                return;
+            }
+            draft.works[index].title = title;
+            this.persistItem(orderItemId);
         },
         removeWork(orderItemId, index) {
             const works = this.drafts[this.draftKey(orderItemId)].works;
@@ -231,7 +348,7 @@ export default {
             if (works.length === 0) {
                 works.push(emptyWork());
             }
-            if (this.isOpen) {
+            if (this.canEditWorks) {
                 this.persistItem(orderItemId);
             }
         },
@@ -292,7 +409,7 @@ export default {
             return payload;
         },
         async persistItem(orderItemId) {
-            if (!this.isOpen || !this.job) {
+            if (!this.canEditWorks || !this.job) {
                 return;
             }
             const jobItem = this.jobItems.find((item) =>
@@ -428,6 +545,72 @@ export default {
                     </div>
 
                     <section
+                        class="space-y-2 border border-slate-300 bg-white p-3 text-sm shadow-sm lg:p-4"
+                    >
+                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
+                            Комментарии
+                        </h2>
+                        <ul
+                            v-if="(order.comments || []).length"
+                            ref="commentsList"
+                            class="max-h-48 space-y-2 overflow-y-auto"
+                        >
+                            <li
+                                v-for="comment in order.comments"
+                                :key="comment.id"
+                                class="border px-2 py-2"
+                                :class="commentKindClass(comment.kind)"
+                            >
+                                <p class="text-xs text-slate-500">
+                                    {{ commentAuthorLabel(comment) }}
+                                    ·
+                                    {{ formatOrderDate(comment.created_at) }}
+                                </p>
+                                <p
+                                    v-if="commentKindLabel(comment.kind)"
+                                    class="mt-0.5 text-xs font-jost-medium"
+                                    :class="
+                                        comment.kind === 'approval_request'
+                                            ? 'text-amber-800'
+                                            : 'text-emerald-800'
+                                    "
+                                >
+                                    {{ commentKindLabel(comment.kind) }}
+                                </p>
+                                <p
+                                    class="mt-1 whitespace-pre-wrap text-slate-800"
+                                >
+                                    {{ comment.body }}
+                                </p>
+                            </li>
+                        </ul>
+                        <p v-else class="text-xs text-slate-500">
+                            Пока нет комментариев
+                        </p>
+                        <p v-if="commentError" class="text-xs text-red-600">
+                            {{ commentError }}
+                        </p>
+                        <div class="flex gap-2">
+                            <input
+                                v-model="commentBody"
+                                type="text"
+                                class="app-field min-w-0 flex-1"
+                                placeholder="Написать комментарий…"
+                                :disabled="savingComment"
+                                @keydown.enter.prevent="submitComment"
+                            />
+                            <button
+                                type="button"
+                                class="app-btn-secondary !min-h-11 shrink-0 !px-3"
+                                :disabled="savingComment || !commentBody.trim()"
+                                @click="submitComment"
+                            >
+                                {{ savingComment ? "…" : "Отправить" }}
+                            </button>
+                        </div>
+                    </section>
+
+                    <section
                         v-if="orderEquipments.length > 0"
                         class="space-y-3 border border-slate-300 bg-white p-3 text-sm shadow-sm lg:p-4"
                     >
@@ -499,32 +682,67 @@ export default {
                         </div>
                     </section>
 
-                    <section
-                        v-if="isOpen"
-                        class="space-y-2 border border-slate-300 bg-white p-3 shadow-sm lg:p-4"
-                    >
-                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
-                            Действие
-                        </h2>
-                        <button
-                            type="button"
-                            class="app-btn-primary w-full"
-                            :disabled="completing || saving"
-                            @click="complete"
-                        >
-                            {{ completing ? "Завершаю…" : "Работы выполнены" }}
-                        </button>
-                    </section>
-
-                    <p
-                        v-else
-                        class="border border-slate-300 bg-slate-50 px-3 py-3 text-sm text-slate-700 shadow-sm lg:px-4"
-                    >
-                        Работы по этому заказу завершены.
-                    </p>
                 </aside>
 
                 <div class="min-w-0 space-y-3">
+                    <section
+                        v-if="canEditWorks || canRequestApproval || isOnApproval || !isOpen"
+                        class="space-y-1.5 border border-slate-300 bg-white px-2.5 py-2 shadow-sm"
+                    >
+                        <h2 class="text-xs font-jost-bold text-dark-blue-500">
+                            Действия
+                        </h2>
+                        <template v-if="canEditWorks || canRequestApproval">
+                            <textarea
+                                v-if="canRequestApproval"
+                                v-model="approvalBody"
+                                rows="2"
+                                class="app-field !py-1.5 !text-sm"
+                                placeholder="Что согласовать с клиентом…"
+                            />
+                            <div class="flex flex-row flex-wrap gap-1.5">
+                                <button
+                                    v-if="canEditWorks"
+                                    type="button"
+                                    class="app-btn-primary !min-h-8 shrink-0 !px-2.5 !py-1.5 !text-sm"
+                                    :disabled="completing || saving"
+                                    @click="complete"
+                                >
+                                    {{
+                                        completing
+                                            ? "Завершаю…"
+                                            : "Работы выполнены"
+                                    }}
+                                </button>
+                                <button
+                                    v-if="canRequestApproval"
+                                    type="button"
+                                    class="app-btn-secondary !min-h-8 shrink-0 !px-2.5 !py-1.5 !text-sm"
+                                    :disabled="requestingApproval"
+                                    @click="submitApproval"
+                                >
+                                    {{
+                                        requestingApproval
+                                            ? "Отправка…"
+                                            : "На согласование"
+                                    }}
+                                </button>
+                            </div>
+                        </template>
+                        <p
+                            v-else-if="isOnApproval"
+                            class="text-xs text-amber-800"
+                        >
+                            Ждём решение менеджера по согласованию
+                        </p>
+                        <p
+                            v-else
+                            class="text-xs text-slate-700"
+                        >
+                            Работы по этому заказу завершены.
+                        </p>
+                    </section>
+
                     <h2
                         class="text-base font-jost-bold text-dark-blue-500 lg:text-lg"
                     >
@@ -645,7 +863,7 @@ export default {
                                             ?.quantity ?? undefined
                                     "
                                     class="app-field"
-                                    :disabled="!isOpen"
+                                    :disabled="!canEditWorks"
                                     @blur="onQtyBlur(jobItem.order_item_id)"
                                 />
                             </label>
@@ -659,7 +877,7 @@ export default {
                                     Работы
                                 </span>
                                 <button
-                                    v-if="isOpen"
+                                    v-if="canEditWorks"
                                     type="button"
                                     class="text-sm text-pink-700 hover:underline"
                                     @click="addWork(jobItem.order_item_id)"
@@ -672,45 +890,77 @@ export default {
                                     draftKey(jobItem.order_item_id)
                                 ].works"
                                 :key="index"
-                                class="flex flex-col gap-2 sm:flex-row"
+                                class="space-y-1.5"
                             >
-                                <select
-                                    v-if="isRepair(jobItem.order_item_id)"
-                                    v-model="work.equipment_module_id"
-                                    class="app-field sm:w-48"
-                                    :disabled="!isOpen"
-                                    @change="onWorkBlur(jobItem.order_item_id)"
-                                >
-                                    <option value="">Модуль…</option>
-                                    <option
-                                        v-for="module in modulesFor(
-                                            jobItem.order_item_id,
-                                        )"
-                                        :key="module.id"
-                                        :value="Number(module.id)"
+                                <div class="flex flex-col gap-2 sm:flex-row">
+                                    <select
+                                        v-if="isRepair(jobItem.order_item_id)"
+                                        v-model="work.equipment_module_id"
+                                        class="app-field sm:w-48"
+                                        :disabled="!canEditWorks"
+                                        @change="
+                                            onWorkBlur(jobItem.order_item_id)
+                                        "
                                     >
-                                        {{ module.name }}
-                                        ({{ module.serial_number }})
-                                    </option>
-                                </select>
-                                <input
-                                    v-model="work.title"
-                                    type="text"
-                                    placeholder="Что сделано"
-                                    class="app-field flex-1"
-                                    :disabled="!isOpen"
-                                    @blur="onWorkBlur(jobItem.order_item_id)"
-                                />
-                                <button
-                                    v-if="isOpen"
-                                    type="button"
-                                    class="shrink-0 text-sm text-red-600 hover:underline"
-                                    @click="
-                                        removeWork(jobItem.order_item_id, index)
+                                        <option value="">Модуль…</option>
+                                        <option
+                                            v-for="module in modulesFor(
+                                                jobItem.order_item_id,
+                                            )"
+                                            :key="module.id"
+                                            :value="Number(module.id)"
+                                        >
+                                            {{ module.name }}
+                                            ({{ module.serial_number }})
+                                        </option>
+                                    </select>
+                                    <input
+                                        v-model="work.title"
+                                        type="text"
+                                        placeholder="Что сделано"
+                                        class="app-field flex-1"
+                                        :disabled="!canEditWorks"
+                                        @blur="
+                                            onWorkBlur(jobItem.order_item_id)
+                                        "
+                                    />
+                                    <button
+                                        v-if="canEditWorks"
+                                        type="button"
+                                        class="shrink-0 text-sm text-red-600 hover:underline"
+                                        @click="
+                                            removeWork(
+                                                jobItem.order_item_id,
+                                                index,
+                                            )
+                                        "
+                                    >
+                                        Убрать
+                                    </button>
+                                </div>
+                                <div
+                                    v-if="
+                                        canEditWorks &&
+                                        !isRepair(jobItem.order_item_id)
                                     "
+                                    class="flex flex-wrap gap-1"
                                 >
-                                    Убрать
-                                </button>
+                                    <button
+                                        v-for="preset in workTitlePresets"
+                                        :key="preset"
+                                        type="button"
+                                        class="border-0 bg-transparent px-1 py-0.5 text-[11px] leading-tight text-slate-500 underline decoration-slate-300 underline-offset-2 hover:text-slate-800 hover:decoration-slate-500"
+                                        @click="
+                                            applyWorkTitle(
+                                                jobItem.order_item_id,
+                                                index,
+                                                preset,
+                                            )
+                                        "
+                                    >
+                                        {{ preset }}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

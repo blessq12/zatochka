@@ -81,9 +81,17 @@ export default {
         </button>
 
         <div
-            class="min-w-0 flex-1 truncate text-sm font-jost-medium text-dark-blue-500 sm:text-base"
+            class="min-w-0 shrink truncate text-sm font-jost-medium text-dark-blue-500 sm:flex-1 sm:text-base"
+            :class="$slots.search ? 'hidden max-w-[8rem] sm:block' : 'flex-1'"
         >
             <slot name="title" />
+        </div>
+
+        <div
+            v-if="$slots.search"
+            class="min-w-0 flex-1 max-w-xl"
+        >
+            <slot name="search" />
         </div>
 
         <div ref="menuRoot" class="relative shrink-0">

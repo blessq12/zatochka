@@ -62,6 +62,9 @@ export default {
                 <template #title>
                     <slot name="title" />
                 </template>
+                <template #search>
+                    <slot name="search" />
+                </template>
             </AppTopbar>
 
             <main

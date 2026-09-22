@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ApplyOrderMaterialsController;
 use App\Http\Controllers\Manager\DashboardController;
+use App\Http\Controllers\Manager\SearchController;
 use App\Http\Controllers\Crm\ActorController;
 use App\Http\Controllers\Crm\EquipmentController;
 use App\Http\Controllers\Finance\CashEntryController;
@@ -31,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::middleware('actor:managers')->group(function (): void {
         Route::get('/manager/dashboard', DashboardController::class);
+        Route::get('/manager/search', SearchController::class);
 
         Route::get('/actors/{type}', [ActorController::class, 'index']);
         Route::post('/actors/clients/walk-in', [ActorController::class, 'storeWalkInClient']);
@@ -50,6 +52,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::put('/orders/{id}/items', [OrderController::class, 'updateItems']);
         Route::post('/orders/{id}/assign-master', [OrderController::class, 'assignMaster']);
         Route::post('/orders/{id}/transition', [OrderController::class, 'transition']);
+        Route::post('/orders/{id}/resolve-approval', [OrderController::class, 'resolveApproval'])
+            ->whereNumber('id');
         Route::get('/orders/{id}/documents/{type}', OrderDocumentController::class)
             ->whereIn('type', ['receipt', 'handover_act']);
 
@@ -79,6 +83,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::middleware('actor:masters')->group(function (): void {
         Route::get('/orders/assigned', [OrderController::class, 'assigned']);
+        Route::post('/orders/{id}/request-approval', [OrderController::class, 'requestApproval'])
+            ->whereNumber('id');
     });
 
     Route::middleware('actor:managers,masters,clients')->group(function (): void {
@@ -92,6 +98,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/warehouse/items', [StockItemController::class, 'index']);
         Route::get('/warehouse/items/{id}', [StockItemController::class, 'show']);
         Route::get('/workshop/jobs/by-order/{orderId}', [WorkshopJobController::class, 'byOrder']);
+        Route::post('/orders/{id}/comments', [OrderController::class, 'storeComment'])->whereNumber('id');
     });
 
     Route::middleware('actor:masters')->group(function (): void {

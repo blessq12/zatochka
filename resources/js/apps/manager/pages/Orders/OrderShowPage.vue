@@ -51,6 +51,10 @@ export default {
             error: null,
             documentError: null,
             openingDocument: false,
+            commentBody: "",
+            savingComment: false,
+            commentError: null,
+            resolveBody: "",
             statusLabel,
             formatOrderDate,
             BILLING_LABELS,
@@ -141,6 +145,9 @@ export default {
                 !this.pricingComplete
             );
         },
+        isOnApproval() {
+            return this.order?.status === "approval";
+        },
     },
     async mounted() {
         await Promise.all([this.loadMasters(), this.load()]);
@@ -151,6 +158,62 @@ export default {
                 this.masters = await actorService.list("masters");
             } catch {
                 this.masters = [];
+            }
+        },
+        commentAuthorLabel(comment) {
+            if (comment?.author_type === "managers") {
+                return `Менеджер #${comment.author_id}`;
+            }
+            if (comment?.author_type === "masters") {
+                return `Мастер #${comment.author_id}`;
+            }
+            return `#${comment?.author_id || "—"}`;
+        },
+        commentKindLabel(kind) {
+            switch (kind) {
+                case "approval_request":
+                    return "На согласование";
+                case "approval_result":
+                    return "Результат согласования";
+                default:
+                    return null;
+            }
+        },
+        commentKindClass(kind) {
+            switch (kind) {
+                case "approval_request":
+                    return "border-amber-200 bg-amber-50/60";
+                case "approval_result":
+                    return "border-emerald-200 bg-emerald-50/60";
+                default:
+                    return "border-slate-100 bg-slate-50/40";
+            }
+        },
+        scrollCommentsToBottom() {
+            this.$nextTick(() => {
+                const el = this.$refs.commentsList;
+                if (el) {
+                    el.scrollTop = el.scrollHeight;
+                }
+            });
+        },
+        async submitComment() {
+            const body = String(this.commentBody || "").trim();
+            if (!this.order?.id || !body) {
+                return;
+            }
+            this.savingComment = true;
+            this.commentError = null;
+            try {
+                this.order = await orderService.addComment(this.order.id, body);
+                this.commentBody = "";
+                this.scrollCommentsToBottom();
+            } catch (e) {
+                this.commentError =
+                    e.response?.data?.message ||
+                    "Не удалось отправить комментарий";
+            } finally {
+                this.savingComment = false;
             }
         },
         async loadClient(clientId) {
@@ -306,6 +369,7 @@ export default {
                 this.order = null;
             } finally {
                 this.loading = false;
+                this.scrollCommentsToBottom();
             }
         },
         syncEditItems() {
@@ -511,24 +575,54 @@ export default {
             }
         },
         actionButtonClass(action) {
+            const compact =
+                "!min-h-8 !w-auto shrink-0 !px-2.5 !py-1.5 !text-sm";
             switch (action.tone) {
                 case "forward":
-                    return "app-btn-primary app-action-btn";
+                    return `app-btn-primary ${compact}`;
                 case "warning":
-                    return "app-btn-warning app-action-btn";
+                    return `app-btn-warning ${compact}`;
                 case "danger":
-                    return "app-btn-danger app-action-btn";
+                    return `app-btn-danger ${compact}`;
                 case "neutral":
-                    return "app-btn-secondary app-action-btn";
+                    return `app-btn-secondary ${compact}`;
                 default: {
                     const _exhaustive = action.tone;
                     void _exhaustive;
-                    return "app-btn-secondary app-action-btn";
+                    return `app-btn-secondary ${compact}`;
                 }
             }
         },
         async runTransitionAction(action) {
             if (action.confirm && !window.confirm(action.confirm)) {
+                return;
+            }
+            if (this.isOnApproval) {
+                const body = String(this.resolveBody || "").trim();
+                if (!body) {
+                    this.error =
+                        "Укажите результат согласования перед сменой статуса";
+                    return;
+                }
+                this.saving = true;
+                this.error = null;
+                try {
+                    this.order = await orderService.resolveApproval(
+                        this.order.id,
+                        action.to,
+                        body,
+                    );
+                    this.resolveBody = "";
+                    this.syncEditItems();
+                    await this.loadWorkshopAndPricing();
+                    this.scrollCommentsToBottom();
+                } catch (e) {
+                    this.error =
+                        e.response?.data?.message ||
+                        "Не удалось завершить согласование";
+                } finally {
+                    this.saving = false;
+                }
                 return;
             }
             await this.transition(action.to);
@@ -603,6 +697,12 @@ export default {
                                 </dd>
                             </div>
                             <div class="flex justify-between gap-2">
+                                <dt class="text-slate-500">Телефон</dt>
+                                <dd class="text-right text-slate-800">
+                                    {{ client?.phone || "—" }}
+                                </dd>
+                            </div>
+                            <div class="flex justify-between gap-2">
                                 <dt class="text-slate-500">Мастер</dt>
                                 <dd class="text-right text-slate-800">
                                     {{ masterName(order.master_id) }}
@@ -661,6 +761,72 @@ export default {
                             </span>
                         </p>
                     </div>
+
+                    <section
+                        class="space-y-2 border border-slate-200 bg-white p-3 lg:p-4"
+                    >
+                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
+                            Комментарии
+                        </h2>
+                        <ul
+                            v-if="(order.comments || []).length"
+                            ref="commentsList"
+                            class="max-h-48 space-y-2 overflow-y-auto text-sm"
+                        >
+                            <li
+                                v-for="comment in order.comments"
+                                :key="comment.id"
+                                class="border px-2 py-2"
+                                :class="commentKindClass(comment.kind)"
+                            >
+                                <p class="text-xs text-slate-500">
+                                    {{ commentAuthorLabel(comment) }}
+                                    ·
+                                    {{ formatOrderDate(comment.created_at) }}
+                                </p>
+                                <p
+                                    v-if="commentKindLabel(comment.kind)"
+                                    class="mt-0.5 text-xs font-jost-medium"
+                                    :class="
+                                        comment.kind === 'approval_request'
+                                            ? 'text-amber-800'
+                                            : 'text-emerald-800'
+                                    "
+                                >
+                                    {{ commentKindLabel(comment.kind) }}
+                                </p>
+                                <p
+                                    class="mt-1 whitespace-pre-wrap text-slate-800"
+                                >
+                                    {{ comment.body }}
+                                </p>
+                            </li>
+                        </ul>
+                        <p v-else class="text-xs text-slate-500">
+                            Пока нет комментариев
+                        </p>
+                        <p v-if="commentError" class="text-xs text-red-600">
+                            {{ commentError }}
+                        </p>
+                        <div class="flex gap-2">
+                            <input
+                                v-model="commentBody"
+                                type="text"
+                                class="app-field min-w-0 flex-1"
+                                placeholder="Написать комментарий…"
+                                :disabled="savingComment"
+                                @keydown.enter.prevent="submitComment"
+                            />
+                            <button
+                                type="button"
+                                class="app-btn-secondary !min-h-11 shrink-0 !px-3"
+                                :disabled="savingComment || !commentBody.trim()"
+                                @click="submitComment"
+                            >
+                                {{ savingComment ? "…" : "Отправить" }}
+                            </button>
+                        </div>
+                    </section>
 
                     <section
                         v-if="canAssignMaster"
@@ -735,12 +901,15 @@ export default {
                         </div>
                     </section>
 
+                </aside>
+
+                <div class="min-w-0 space-y-4">
                     <section
                         v-if="nextActions.length || readyBlockedByPricing"
-                        class="space-y-2 border border-slate-300 bg-white p-3 shadow-sm lg:p-4"
+                        class="space-y-1.5 border border-slate-300 bg-white px-2.5 py-2 shadow-sm"
                     >
-                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
-                            Переходы
+                        <h2 class="text-xs font-jost-bold text-dark-blue-500">
+                            Действия
                         </h2>
                         <p
                             v-if="readyBlockedByPricing"
@@ -749,27 +918,28 @@ export default {
                             Чтобы отметить готовым, сначала укажите цены по всем
                             работам.
                         </p>
-                        <div class="flex flex-col gap-2">
+                        <textarea
+                            v-if="isOnApproval"
+                            v-model="resolveBody"
+                            rows="2"
+                            class="app-field !py-1.5 !text-sm"
+                            placeholder="Результат согласования с клиентом…"
+                        />
+                        <div class="flex flex-row flex-wrap gap-1.5">
                             <button
                                 v-for="action in nextActions"
                                 :key="action.to"
                                 type="button"
                                 :class="actionButtonClass(action)"
                                 :disabled="saving"
+                                :title="action.hint"
                                 @click="runTransitionAction(action)"
                             >
-                                <span class="app-action-btn-title">
-                                    {{ action.title }}
-                                </span>
-                                <span class="app-action-btn-hint">
-                                    {{ action.hint }}
-                                </span>
+                                {{ action.title }}
                             </button>
                         </div>
                     </section>
-                </aside>
 
-                <div class="min-w-0 space-y-4">
                     <section v-if="canEditItems" class="space-y-3">
                         <div
                             class="flex flex-wrap items-center justify-between gap-2"

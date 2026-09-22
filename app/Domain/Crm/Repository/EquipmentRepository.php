@@ -15,5 +15,10 @@ interface EquipmentRepository
      */
     public function all(?int $clientId = null, ?string $query = null): array;
 
+    /**
+     * @return list<Equipment>
+     */
+    public function search(string $query, int $limit = 10): array;
+
     public function delete(Equipment $equipment): void;
 }

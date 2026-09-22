@@ -109,19 +109,47 @@ final class EloquentEquipmentRepository implements EquipmentRepository
 
         $q = $query !== null ? trim($query) : '';
         if ($q !== '') {
-            $like = '%'.$q.'%';
+            $like = '%'.mb_strtolower($q, 'UTF-8').'%';
             $builder->where(static function ($inner) use ($like): void {
-                $inner->where('name', 'like', $like)
-                    ->orWhere('brand', 'like', $like)
-                    ->orWhere('type', 'like', $like)
+                $inner->whereRaw('LOWER(name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(brand) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(type) LIKE ?', [$like])
                     ->orWhereHas('modules', static function ($modules) use ($like): void {
-                        $modules->where('name', 'like', $like)
-                            ->orWhere('serial_number', 'like', $like);
+                        $modules->whereRaw('LOWER(name) LIKE ?', [$like])
+                            ->orWhereRaw('LOWER(serial_number) LIKE ?', [$like]);
                     });
             });
         }
 
         return $builder
+            ->get()
+            ->map(fn (EquipmentModel $model): Equipment => $this->toDomain($model))
+            ->values()
+            ->all();
+    }
+
+    public function search(string $query, int $limit = 10): array
+    {
+        $q = trim($query);
+        if ($q === '' || $limit < 1) {
+            return [];
+        }
+
+        $like = '%'.mb_strtolower($q, 'UTF-8').'%';
+
+        return EquipmentModel::query()
+            ->with('modules')
+            ->where(static function ($inner) use ($like): void {
+                $inner->whereRaw('LOWER(name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(brand) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(type) LIKE ?', [$like])
+                    ->orWhereHas('modules', static function ($modules) use ($like): void {
+                        $modules->whereRaw('LOWER(name) LIKE ?', [$like])
+                            ->orWhereRaw('LOWER(serial_number) LIKE ?', [$like]);
+                    });
+            })
+            ->orderBy('id')
+            ->limit($limit)
             ->get()
             ->map(fn (EquipmentModel $model): Equipment => $this->toDomain($model))
             ->values()

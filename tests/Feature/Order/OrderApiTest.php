@@ -335,6 +335,11 @@ final class OrderApiTest extends TestCase
         $ids = array_map(static fn (array $row): int => (int) $row['id'], $list);
         $this->assertContains($firstId, $ids);
         $this->assertContains($secondId, $ids);
+        foreach ($list as $row) {
+            $this->assertArrayHasKey('estimated_cost', $row);
+            $this->assertArrayHasKey('actual_cost', $row);
+            $this->assertNull($row['actual_cost']);
+        }
 
         $statuses = [];
         foreach ($list as $row) {

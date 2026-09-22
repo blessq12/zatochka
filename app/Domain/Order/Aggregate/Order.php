@@ -176,8 +176,16 @@ final class Order
             throw new DomainException('This status is set by integration events.');
         }
 
+        if ($target === OrderStatus::Approval) {
+            throw new DomainException('Use request approval to move to approval.');
+        }
+
         if ($target === OrderStatus::InProgress
-            && ! in_array($this->status, [OrderStatus::WaitingParts, OrderStatus::WorksCompleted], true)
+            && ! in_array($this->status, [
+                OrderStatus::WaitingParts,
+                OrderStatus::WorksCompleted,
+                OrderStatus::Approval,
+            ], true)
         ) {
             throw new DomainException('Cannot set in_progress from this status via transition.');
         }
@@ -195,6 +203,18 @@ final class Order
         if ($target === OrderStatus::Issued && $this->issuedAt === null) {
             $this->issuedAt = new DateTimeImmutable('now');
         }
+    }
+
+    public function requestApproval(int $masterId): void
+    {
+        if ($this->status !== OrderStatus::InProgress) {
+            throw new DomainException('Approval can be requested only from in_progress.');
+        }
+        if ($this->masterId !== $masterId) {
+            throw new DomainException('Order is assigned to another master.');
+        }
+
+        $this->status = OrderStatus::Approval;
     }
 
     public function markAcceptedIntoWork(int $masterId): void

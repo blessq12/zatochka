@@ -18,6 +18,7 @@ final readonly class GetOrderHandler
         int $id,
         ?int $asClientId = null,
         ?int $asMasterId = null,
+        bool $includeComments = false,
     ): ?OrderResponse {
         $order = $this->orders->findById($id);
         if ($order === null) {
@@ -32,6 +33,6 @@ final readonly class GetOrderHandler
             throw new ForbiddenException('Forbidden.');
         }
 
-        return $this->assembler->assemble($order);
+        return $this->assembler->assemble($order, $includeComments);
     }
 }

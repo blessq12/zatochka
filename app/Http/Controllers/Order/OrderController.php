@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Order;
 
 use App\Application\Order\Command\AssignMasterHandler;
+use App\Application\Order\Command\AddOrderCommentHandler;
 use App\Application\Order\Command\CreateOrderHandler;
 use App\Application\Order\Command\CreateOrderReviewHandler;
+use App\Application\Order\Command\RequestOrderApprovalHandler;
+use App\Application\Order\Command\ResolveOrderApprovalHandler;
 use App\Application\Order\Command\TransitionOrderStatusHandler;
 use App\Application\Order\Command\UpdateOrderItemsHandler;
 use App\Application\Order\Query\GetOrderHandler;
@@ -25,6 +28,9 @@ final class OrderController extends Controller
         private AssignMasterHandler $assignMaster,
         private TransitionOrderStatusHandler $transitionStatus,
         private CreateOrderReviewHandler $createReview,
+        private AddOrderCommentHandler $addComment,
+        private RequestOrderApprovalHandler $requestApproval,
+        private ResolveOrderApprovalHandler $resolveApproval,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -93,8 +99,9 @@ final class OrderController extends Controller
         $asMasterId = $actorType === 'masters'
             ? (int) $request->attributes->get('actor_id')
             : null;
+        $includeComments = in_array($actorType, ['managers', 'masters'], true);
 
-        $item = $this->getOrder->handle($id, $asClientId, $asMasterId);
+        $item = $this->getOrder->handle($id, $asClientId, $asMasterId, $includeComments);
         if ($item === null) {
             return response()->json(['message' => 'Not found.'], 404);
         }
@@ -199,6 +206,54 @@ final class OrderController extends Controller
         );
 
         return response()->json($item->toArray(), 201);
+    }
+
+    public function storeComment(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'body' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $item = $this->addComment->handle(
+            $id,
+            (string) $request->attributes->get('actor_type'),
+            (int) $request->attributes->get('actor_id'),
+            $data['body'],
+        );
+
+        return response()->json($item->toArray(), 201);
+    }
+
+    public function requestApproval(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'body' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $item = $this->requestApproval->handle(
+            $id,
+            (int) $request->attributes->get('actor_id'),
+            $data['body'],
+        );
+
+        return response()->json($item->toArray());
+    }
+
+    public function resolveApproval(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'status' => ['required', 'string', 'in:in_progress,issued'],
+            'body' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $item = $this->resolveApproval->handle(
+            $id,
+            (int) $request->attributes->get('actor_id'),
+            $data['status'],
+            $data['body'],
+        );
+
+        return response()->json($item->toArray());
     }
 
     /**

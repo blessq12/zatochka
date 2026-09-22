@@ -7,12 +7,14 @@ use App\Application\Order\Listener\MarkOrderWorksCompletedOnWorkshopComplete;
 use App\Application\Order\Port\DocumentTemplateRendererInterface;
 use App\Application\Order\Port\PdfRendererInterface;
 use App\Domain\Order\Repository\DocumentTemplateRepository;
+use App\Domain\Order\Repository\OrderCommentRepository;
 use App\Domain\Order\Repository\OrderDraftRepository;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\Repository\OrderReviewRepository;
 use App\Infrastructure\Order\Document\DocumentTemplateRenderer;
 use App\Infrastructure\Order\Pdf\DomPdfRenderer;
 use App\Infrastructure\Order\Repository\EloquentDocumentTemplateRepository;
+use App\Infrastructure\Order\Repository\EloquentOrderCommentRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderDraftRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderReviewRepository;
@@ -28,6 +30,7 @@ final class OrderServiceProvider extends ContextServiceProvider
         return [
             OrderRepository::class => EloquentOrderRepository::class,
             OrderDraftRepository::class => EloquentOrderDraftRepository::class,
+            OrderCommentRepository::class => EloquentOrderCommentRepository::class,
             OrderReviewRepository::class => EloquentOrderReviewRepository::class,
             DocumentTemplateRepository::class => EloquentDocumentTemplateRepository::class,
             DocumentTemplateRendererInterface::class => DocumentTemplateRenderer::class,
