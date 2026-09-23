@@ -5,6 +5,8 @@ import {
     BILLING_LABELS,
     compositionLabel,
     orderService,
+    STATUS_ORDER,
+    statusColorClass,
     statusLabel,
     URGENCY_LABELS,
 } from "../../services/OrderService.js";
@@ -21,6 +23,8 @@ export default {
             loading: false,
             error: null,
             statusLabel,
+            statusColorClass,
+            STATUS_ORDER,
             compositionLabel,
             formatOrderDate,
             BILLING_LABELS,
@@ -159,21 +163,7 @@ export default {
                     @change="applyFilters"
                 >
                     <option value="">Все</option>
-                    <option
-                        v-for="s in [
-                            'created',
-                            'master_assigned',
-                            'in_progress',
-                            'waiting_parts',
-                            'approval',
-                            'works_completed',
-                            'ready',
-                            'issued',
-                            'cancelled',
-                        ]"
-                        :key="s"
-                        :value="s"
-                    >
+                    <option v-for="s in STATUS_ORDER" :key="s" :value="s">
                         {{ statusLabel(s) }}
                     </option>
                 </select>
@@ -184,6 +174,25 @@ export default {
         <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
 
         <template v-if="!loading">
+            <div
+                class="mb-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] leading-tight text-slate-600"
+                role="note"
+                aria-label="Легенда статусов"
+            >
+                <span
+                    v-for="s in STATUS_ORDER"
+                    :key="s"
+                    class="inline-flex items-center gap-1"
+                >
+                    <span
+                        class="inline-block h-2 w-2 shrink-0 rounded-full"
+                        :class="statusColorClass(s)"
+                        aria-hidden="true"
+                    />
+                    {{ statusLabel(s) }}
+                </span>
+            </div>
+
             <div class="app-card-list">
                 <p v-if="items.length === 0" class="app-card text-slate-500">
                     Пока пусто
@@ -196,7 +205,15 @@ export default {
                     @click="goShow(item)"
                 >
                     <div class="flex items-start justify-between gap-2">
-                        <span class="font-jost-medium text-dark-blue-500">
+                        <span
+                            class="inline-flex items-center gap-2 font-jost-medium text-dark-blue-500"
+                        >
+                            <span
+                                class="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                                :class="statusColorClass(item.status)"
+                                :title="statusLabel(item.status)"
+                                :aria-label="statusLabel(item.status)"
+                            />
                             Заказ #{{ item.id }}
                         </span>
                         <span class="text-xs text-pink-600">Открыть</span>
@@ -205,8 +222,6 @@ export default {
                         {{ clientName(item.client_id) }}
                     </p>
                     <p class="text-sm text-slate-600">
-                        {{ statusLabel(item.status) }}
-                        ·
                         {{ URGENCY_LABELS[item.urgency] || item.urgency }}
                         ·
                         {{
@@ -290,7 +305,12 @@ export default {
                                 {{ clientName(item.client_id) }}
                             </td>
                             <td class="px-4 py-3">
-                                {{ statusLabel(item.status) }}
+                                <span
+                                    class="inline-block h-3 w-3 rounded-full"
+                                    :class="statusColorClass(item.status)"
+                                    :title="statusLabel(item.status)"
+                                    :aria-label="statusLabel(item.status)"
+                                />
                             </td>
                             <td class="px-4 py-3">
                                 <div

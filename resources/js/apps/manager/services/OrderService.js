@@ -12,6 +12,21 @@ export const STATUS_LABELS = {
     cancelled: "Отменён",
 };
 
+/** Tailwind-классы заливки кружка статуса в листинге. */
+export const STATUS_COLORS = {
+    created: "bg-slate-400",
+    master_assigned: "bg-sky-500",
+    in_progress: "bg-amber-500",
+    waiting_parts: "bg-orange-600",
+    approval: "bg-rose-500",
+    works_completed: "bg-teal-500",
+    ready: "bg-emerald-500",
+    issued: "bg-green-700",
+    cancelled: "bg-red-500",
+};
+
+export const STATUS_ORDER = Object.keys(STATUS_LABELS);
+
 export const BILLING_LABELS = {
     paid: "Платный",
     warranty: "Гарантийный",
@@ -29,6 +44,10 @@ export const KIND_LABELS = {
 
 export function statusLabel(status) {
     return STATUS_LABELS[status] || status || "—";
+}
+
+export function statusColorClass(status) {
+    return STATUS_COLORS[status] || "bg-slate-300";
 }
 
 /**
