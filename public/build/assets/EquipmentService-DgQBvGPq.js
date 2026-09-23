@@ -1,1 +1,0 @@
-import{b as e}from"./_plugin-vue_export-helper-Dn83IKZ_.js";const n={async list({q:t=null}={}){const a={};t&&(a.q=t);const{data:s}=await e.get("/api/equipments",{params:a});return s.data||[]},async get(t){const{data:a}=await e.get(`/api/equipments/${t}`);return a}};export{n as e};

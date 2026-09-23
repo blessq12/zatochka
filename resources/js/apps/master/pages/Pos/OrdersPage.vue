@@ -1,4 +1,6 @@
 <script>
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { equipmentService } from "../../services/EquipmentService.js";
 import {
     BILLING_LABELS,
     KIND_LABELS,
@@ -7,7 +9,6 @@ import {
     statusLabel,
 } from "../../services/OrderService.js";
 import { workshopService } from "../../services/WorkshopService.js";
-import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 
 const TABS = [
     { id: "queue", label: "Очередь" },
@@ -24,6 +25,8 @@ export default {
             jobItems: [],
             /** @type {Record<number, object|null>} */
             ordersById: {},
+            /** @type {Record<number, object>} */
+            equipmentById: {},
             loading: false,
             acceptingId: null,
             error: null,
@@ -66,10 +69,14 @@ export default {
                     this.queueItems = await orderService.listAssigned();
                     this.jobItems = [];
                     this.ordersById = {};
+                    await this.hydrateEquipments(this.queueItems);
                 } else {
                     this.jobItems = await workshopService.listMine();
                     this.queueItems = [];
                     await this.hydrateJobOrders(this.jobItems);
+                    await this.hydrateEquipments(
+                        Object.values(this.ordersById).filter(Boolean),
+                    );
                 }
             } catch (e) {
                 this.error =
@@ -77,6 +84,7 @@ export default {
                 this.queueItems = [];
                 this.jobItems = [];
                 this.ordersById = {};
+                this.equipmentById = {};
             } finally {
                 this.loading = false;
             }
@@ -93,6 +101,81 @@ export default {
                 }),
             );
             this.ordersById = map;
+        },
+        async hydrateEquipments(orders) {
+            const ids = [
+                ...new Set(
+                    (orders || [])
+                        .flatMap((order) => order?.items || [])
+                        .filter(
+                            (item) =>
+                                item.kind === "repair" && item.equipment_id,
+                        )
+                        .map((item) => Number(item.equipment_id)),
+                ),
+            ];
+            const map = { ...this.equipmentById };
+            await Promise.all(
+                ids.map(async (id) => {
+                    if (map[id]) {
+                        return;
+                    }
+                    try {
+                        map[id] = await equipmentService.get(id);
+                    } catch {
+                        map[id] = {
+                            id,
+                            name: null,
+                            brand: null,
+                            type: null,
+                            modules: [],
+                        };
+                    }
+                }),
+            );
+            this.equipmentById = map;
+        },
+        repairEquipments(order) {
+            const ids = [
+                ...new Set(
+                    (order?.items || [])
+                        .filter(
+                            (item) =>
+                                item.kind === "repair" && item.equipment_id,
+                        )
+                        .map((item) => Number(item.equipment_id)),
+                ),
+            ];
+            return ids.map((id) => {
+                const equipment = this.equipmentById[id] || null;
+                const problems = (order?.items || [])
+                    .filter(
+                        (row) =>
+                            row.kind === "repair"
+                            && Number(row.equipment_id) === id
+                            && row.problem,
+                    )
+                    .map((row) => row.problem);
+                return { id, equipment, problems };
+            });
+        },
+        equipmentTitle(entry) {
+            return entry.equipment?.name || `Оборудование #${entry.id}`;
+        },
+        equipmentMeta(entry) {
+            const parts = [entry.equipment?.brand, entry.equipment?.type].filter(
+                Boolean,
+            );
+            return parts.length ? parts.join(" · ") : null;
+        },
+        modulesLabel(equipment) {
+            const modules = equipment?.modules || [];
+            if (modules.length === 0) {
+                return "Модулей нет";
+            }
+            return modules
+                .map((m) => `${m.name} (${m.serial_number})`)
+                .join(", ");
         },
         itemsSummary(order) {
             const rows = order?.items || [];
@@ -203,6 +286,38 @@ export default {
                     <p class="text-sm text-slate-600">
                         {{ itemsSummary(order) }}
                     </p>
+                    <div
+                        v-if="repairEquipments(order).length"
+                        class="space-y-2 border-t border-slate-100 pt-2"
+                    >
+                        <div
+                            v-for="entry in repairEquipments(order)"
+                            :key="entry.id"
+                            class="text-sm"
+                        >
+                            <p class="font-jost-medium text-dark-blue-500">
+                                {{ equipmentTitle(entry) }}
+                                <span class="text-xs font-normal text-slate-500">
+                                    #{{ entry.id }}
+                                </span>
+                            </p>
+                            <p
+                                v-if="equipmentMeta(entry)"
+                                class="text-slate-700"
+                            >
+                                {{ equipmentMeta(entry) }}
+                            </p>
+                            <p class="text-xs text-slate-500">
+                                Модули: {{ modulesLabel(entry.equipment) }}
+                            </p>
+                            <p
+                                v-if="entry.problems.length"
+                                class="text-xs text-slate-600"
+                            >
+                                Проблема: {{ entry.problems.join("; ") }}
+                            </p>
+                        </div>
+                    </div>
                     <p class="text-xs text-slate-500">
                         {{ kindsSummary(order) }}
                         · позиций {{ (order.items || []).length }}
@@ -262,6 +377,43 @@ export default {
                         <p class="text-sm text-slate-600">
                             {{ itemsSummary(orderForJob(job)) }}
                         </p>
+                        <div
+                            v-if="repairEquipments(orderForJob(job)).length"
+                            class="space-y-2 border-t border-slate-100 pt-2"
+                        >
+                            <div
+                                v-for="entry in repairEquipments(
+                                    orderForJob(job),
+                                )"
+                                :key="entry.id"
+                                class="text-sm"
+                            >
+                                <p class="font-jost-medium text-dark-blue-500">
+                                    {{ equipmentTitle(entry) }}
+                                    <span
+                                        class="text-xs font-normal text-slate-500"
+                                    >
+                                        #{{ entry.id }}
+                                    </span>
+                                </p>
+                                <p
+                                    v-if="equipmentMeta(entry)"
+                                    class="text-slate-700"
+                                >
+                                    {{ equipmentMeta(entry) }}
+                                </p>
+                                <p class="text-xs text-slate-500">
+                                    Модули:
+                                    {{ modulesLabel(entry.equipment) }}
+                                </p>
+                                <p
+                                    v-if="entry.problems.length"
+                                    class="text-xs text-slate-600"
+                                >
+                                    Проблема: {{ entry.problems.join("; ") }}
+                                </p>
+                            </div>
+                        </div>
                         <p class="text-xs text-slate-500">
                             Создан
                             {{ formatOrderDate(orderForJob(job).created_at) }}

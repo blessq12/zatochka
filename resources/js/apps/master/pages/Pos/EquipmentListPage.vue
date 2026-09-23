@@ -1,4 +1,5 @@
 <script>
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 import { equipmentService } from "../../services/EquipmentService.js";
 import {
     BILLING_LABELS,
@@ -22,9 +23,10 @@ export default {
             orders: [],
             ordersLoading: false,
             ordersError: null,
-            /** @type {Record<number, {loading: boolean, works: string[], problem: string|null, error: string|null}>} */
+            /** @type {Record<number, {loading: boolean, works: {title: string, moduleLabel: string|null}[], problem: string|null, error: string|null}>} */
             detailsByOrder: {},
             statusLabel,
+            formatOrderDate,
             KIND_LABELS,
             BILLING_LABELS,
             URGENCY_LABELS,
@@ -83,6 +85,18 @@ export default {
             return modules
                 .map((m) => `${m.name} (${m.serial_number})`)
                 .join(", ");
+        },
+        moduleLabel(moduleId) {
+            if (moduleId == null || moduleId === "") {
+                return null;
+            }
+            const id = Number(moduleId);
+            const modules = this.selected?.modules || [];
+            const found = modules.find((m) => Number(m.id) === id);
+            if (!found) {
+                return `Модуль #${id}`;
+            }
+            return `${found.name} (${found.serial_number})`;
         },
         async selectEquipment(item) {
             this.selectedId = item.id;
@@ -144,22 +158,30 @@ export default {
                     }
                 }
                 const repairItemIds = repairItems.map((row) => Number(row.id));
-                const titles = [];
+                const works = [];
                 for (const jobItem of job?.items || []) {
                     if (!repairItemIds.includes(Number(jobItem.order_item_id))) {
                         continue;
                     }
                     for (const work of jobItem.works || []) {
-                        if (work.title) {
-                            titles.push(work.title);
+                        const title = (work.title || "").trim();
+                        const moduleLabel = this.moduleLabel(
+                            work.equipment_module_id,
+                        );
+                        if (!title && !moduleLabel) {
+                            continue;
                         }
+                        works.push({
+                            title: title || "Без названия",
+                            moduleLabel,
+                        });
                     }
                 }
                 this.detailsByOrder = {
                     ...this.detailsByOrder,
                     [orderId]: {
                         loading: false,
-                        works: titles,
+                        works,
                         problem,
                         error: null,
                     },
@@ -355,6 +377,12 @@ export default {
                                         order.billing_type
                                     }}
                                 </p>
+                                <p class="text-sm text-slate-600">
+                                    Создан
+                                    {{ formatOrderDate(order.created_at) }}
+                                    · выдан
+                                    {{ formatOrderDate(order.issued_at) }}
+                                </p>
                                 <p
                                     v-if="detailsByOrder[order.id]?.problem"
                                     class="text-sm text-slate-600"
@@ -388,12 +416,18 @@ export default {
                                         class="mt-1 list-disc space-y-0.5 pl-5 text-sm text-slate-700"
                                     >
                                         <li
-                                            v-for="(title, idx) in detailsByOrder[
+                                            v-for="(work, idx) in detailsByOrder[
                                                 order.id
                                             ].works"
                                             :key="idx"
                                         >
-                                            {{ title }}
+                                            {{ work.title }}
+                                            <span
+                                                v-if="work.moduleLabel"
+                                                class="text-slate-500"
+                                            >
+                                                · {{ work.moduleLabel }}
+                                            </span>
                                         </li>
                                     </ul>
                                     <p
