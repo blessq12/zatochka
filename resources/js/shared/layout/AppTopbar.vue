@@ -18,6 +18,9 @@ export default {
         };
     },
     computed: {
+        hasSearch() {
+            return Boolean(this.$slots.search);
+        },
         displayName() {
             return String(this.userName || this.userEmail || "Профиль").trim();
         },
@@ -27,6 +30,12 @@ export default {
             if (parts.length === 0) return "?";
             if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
             return (parts[0][0] + parts[1][0]).toUpperCase();
+        },
+        headerGridClass() {
+            if (this.hasSearch) {
+                return "grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_minmax(12rem,36rem)_minmax(0,1fr)]";
+            }
+            return "grid-cols-[minmax(0,1fr)_auto]";
         },
     },
     mounted() {
@@ -57,44 +66,51 @@ export default {
 
 <template>
     <header
-        class="sticky top-0 z-[800] flex h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white px-3 pt-[env(safe-area-inset-top)] sm:h-14 sm:gap-3 sm:px-4 lg:px-6"
+        class="sticky top-0 z-[800] grid h-12 shrink-0 items-center gap-2 border-b border-slate-300 bg-white px-3 pt-[env(safe-area-inset-top)] sm:h-14 sm:gap-3 sm:px-4 lg:px-6"
+        :class="headerGridClass"
     >
-        <button
-            type="button"
-            class="shrink-0 rounded p-2 text-dark-blue-500 hover:bg-slate-100 lg:hidden"
-            aria-label="Открыть меню"
-            @click="$emit('toggle-mobile')"
-        >
-            <svg
-                class="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        <div class="flex min-w-0 items-center gap-2 justify-self-start">
+            <button
+                type="button"
+                class="shrink-0 rounded p-2 text-dark-blue-500 hover:bg-slate-100 lg:hidden"
+                aria-label="Открыть меню"
+                @click="$emit('toggle-mobile')"
             >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                />
-            </svg>
-        </button>
+                <svg
+                    class="h-6 w-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"
+                    />
+                </svg>
+            </button>
 
-        <div
-            class="min-w-0 shrink truncate text-sm font-jost-medium text-dark-blue-500 sm:flex-1 sm:text-base"
-            :class="$slots.search ? 'hidden max-w-[8rem] sm:block' : 'flex-1'"
-        >
-            <slot name="title" />
+            <div
+                class="min-w-0 truncate text-sm font-jost-medium text-dark-blue-500 sm:text-base"
+                :class="
+                    hasSearch
+                        ? 'hidden max-w-[12rem] lg:block xl:max-w-[16rem]'
+                        : 'max-w-full'
+                "
+            >
+                <slot name="title" />
+            </div>
         </div>
 
         <div
-            v-if="$slots.search"
-            class="min-w-0 flex-1 max-w-xl"
+            v-if="hasSearch"
+            class="min-w-0 w-full justify-self-stretch"
         >
             <slot name="search" />
         </div>
 
-        <div ref="menuRoot" class="relative shrink-0">
+        <div ref="menuRoot" class="relative shrink-0 justify-self-end">
             <button
                 type="button"
                 class="flex items-center gap-2 bg-white px-1.5 py-1 sm:px-2 sm:py-1.5"

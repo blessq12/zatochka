@@ -210,6 +210,46 @@ export default {
         orderForJob(job) {
             return this.ordersById[job.order_id] || null;
         },
+        latestCommentByKind(order, kind) {
+            const matched = (order?.comments || []).filter(
+                (comment) => comment.kind === kind,
+            );
+            return matched.length ? matched[matched.length - 1] : null;
+        },
+        approvalState(order) {
+            if (!order) {
+                return null;
+            }
+            if (order.status === "approval") {
+                const request = this.latestCommentByKind(
+                    order,
+                    "approval_request",
+                );
+                return {
+                    kind: "pending",
+                    label: "На согласовании",
+                    body: request?.body || null,
+                };
+            }
+            const result = this.latestCommentByKind(order, "approval_result");
+            if (result) {
+                return {
+                    kind: "resolved",
+                    label: "Согласовано",
+                    body: result.body || null,
+                };
+            }
+            return null;
+        },
+        approvalStateClass(state) {
+            if (state?.kind === "pending") {
+                return "border-rose-200 bg-rose-50 text-rose-800";
+            }
+            if (state?.kind === "resolved") {
+                return "border-emerald-200 bg-emerald-50 text-emerald-800";
+            }
+            return "border-slate-200 bg-slate-50 text-slate-700";
+        },
         async accept(order) {
             this.acceptingId = order.id;
             this.error = null;
@@ -374,6 +414,25 @@ export default {
                                 orderForJob(job).billing_type
                             }}
                         </p>
+                        <div
+                            v-if="approvalState(orderForJob(job))"
+                            class="border px-2.5 py-2 text-sm"
+                            :class="
+                                approvalStateClass(
+                                    approvalState(orderForJob(job)),
+                                )
+                            "
+                        >
+                            <p class="font-jost-medium">
+                                {{ approvalState(orderForJob(job)).label }}
+                            </p>
+                            <p
+                                v-if="approvalState(orderForJob(job)).body"
+                                class="mt-0.5 whitespace-pre-wrap text-xs opacity-90"
+                            >
+                                {{ approvalState(orderForJob(job)).body }}
+                            </p>
+                        </div>
                         <p class="text-sm text-slate-600">
                             {{ itemsSummary(orderForJob(job)) }}
                         </p>

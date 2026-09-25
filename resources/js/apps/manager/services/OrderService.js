@@ -12,17 +12,17 @@ export const STATUS_LABELS = {
     cancelled: "Отменён",
 };
 
-/** Tailwind-классы заливки кружка статуса в листинге. */
-export const STATUS_COLORS = {
-    created: "bg-slate-400",
-    master_assigned: "bg-sky-500",
-    in_progress: "bg-amber-500",
-    waiting_parts: "bg-orange-600",
-    approval: "bg-rose-500",
-    works_completed: "bg-teal-500",
-    ready: "bg-emerald-500",
-    issued: "bg-green-700",
-    cancelled: "bg-red-500",
+/** Hex-цвета статусов (легенда + левый бордюр строки). */
+export const STATUS_COLOR_HEX = {
+    created: "#94a3b8",
+    master_assigned: "#0ea5e9",
+    in_progress: "#f59e0b",
+    waiting_parts: "#ea580c",
+    approval: "#f43f5e",
+    works_completed: "#14b8a6",
+    ready: "#10b981",
+    issued: "#15803d",
+    cancelled: "#ef4444",
 };
 
 export const STATUS_ORDER = Object.keys(STATUS_LABELS);
@@ -46,8 +46,22 @@ export function statusLabel(status) {
     return STATUS_LABELS[status] || status || "—";
 }
 
-export function statusColorClass(status) {
-    return STATUS_COLORS[status] || "bg-slate-300";
+export function statusColorHex(status) {
+    return STATUS_COLOR_HEX[status] || "#cbd5e1";
+}
+
+export function statusBorderStyle(status) {
+    return {
+        borderLeftWidth: "8px",
+        borderLeftStyle: "solid",
+        borderLeftColor: statusColorHex(status),
+    };
+}
+
+export function statusDotStyle(status) {
+    return {
+        backgroundColor: statusColorHex(status),
+    };
 }
 
 /**

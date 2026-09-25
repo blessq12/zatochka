@@ -148,6 +148,31 @@ export default {
         isOnApproval() {
             return this.order?.status === "approval";
         },
+        orderEquipments() {
+            const ids = [
+                ...new Set(
+                    (this.order?.items || [])
+                        .filter(
+                            (item) =>
+                                item.kind === "repair" && item.equipment_id,
+                        )
+                        .map((item) => Number(item.equipment_id)),
+                ),
+            ];
+            return ids.map((id) => {
+                const equipment =
+                    this.equipments.find((e) => Number(e.id) === id) || null;
+                const problems = (this.order?.items || [])
+                    .filter(
+                        (row) =>
+                            row.kind === "repair"
+                            && Number(row.equipment_id) === id
+                            && row.problem,
+                    )
+                    .map((row) => row.problem);
+                return { id, equipment, problems };
+            });
+        },
     },
     async mounted() {
         await Promise.all([this.loadMasters(), this.load()]);
@@ -636,6 +661,25 @@ export default {
             const eq = this.equipments.find((e) => e.id === id);
             return eq ? `${eq.name} · ${eq.brand}` : `#${id}`;
         },
+        orderEquipmentTitle(entry) {
+            return entry.equipment?.name || `Оборудование #${entry.id}`;
+        },
+        orderEquipmentMeta(entry) {
+            const parts = [
+                entry.equipment?.brand,
+                entry.equipment?.type,
+            ].filter(Boolean);
+            return parts.length ? parts.join(" · ") : null;
+        },
+        modulesListLabel(equipment) {
+            const modules = equipment?.modules || [];
+            if (modules.length === 0) {
+                return "Модулей нет";
+            }
+            return modules
+                .map((m) => `${m.name} (${m.serial_number})`)
+                .join(", ");
+        },
         moduleLabel(orderItemId, moduleId) {
             if (moduleId == null) {
                 return null;
@@ -761,6 +805,43 @@ export default {
                             </span>
                         </p>
                     </div>
+
+                    <section
+                        v-if="orderEquipments.length"
+                        class="space-y-2 border border-slate-200 bg-white p-3 lg:p-4"
+                    >
+                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
+                            Оборудование
+                        </h2>
+                        <div
+                            v-for="entry in orderEquipments"
+                            :key="entry.id"
+                            class="border-t border-slate-100 pt-2 first:border-t-0 first:pt-0"
+                        >
+                            <p class="text-sm font-jost-medium text-dark-blue-500">
+                                {{ orderEquipmentTitle(entry) }}
+                                <span class="text-xs font-normal text-slate-500">
+                                    #{{ entry.id }}
+                                </span>
+                            </p>
+                            <p
+                                v-if="orderEquipmentMeta(entry)"
+                                class="text-xs text-slate-700"
+                            >
+                                {{ orderEquipmentMeta(entry) }}
+                            </p>
+                            <p class="mt-0.5 text-xs text-slate-500">
+                                Модули:
+                                {{ modulesListLabel(entry.equipment) }}
+                            </p>
+                            <p
+                                v-if="entry.problems.length"
+                                class="mt-0.5 text-xs text-slate-600"
+                            >
+                                Проблема: {{ entry.problems.join("; ") }}
+                            </p>
+                        </div>
+                    </section>
 
                     <section
                         class="space-y-2 border border-slate-200 bg-white p-3 lg:p-4"

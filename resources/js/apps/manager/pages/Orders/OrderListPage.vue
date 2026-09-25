@@ -6,7 +6,8 @@ import {
     compositionLabel,
     orderService,
     STATUS_ORDER,
-    statusColorClass,
+    statusBorderStyle,
+    statusDotStyle,
     statusLabel,
     URGENCY_LABELS,
 } from "../../services/OrderService.js";
@@ -23,7 +24,8 @@ export default {
             loading: false,
             error: null,
             statusLabel,
-            statusColorClass,
+            statusBorderStyle,
+            statusDotStyle,
             STATUS_ORDER,
             compositionLabel,
             formatOrderDate,
@@ -82,11 +84,16 @@ export default {
                 this.loading = false;
             }
         },
+        findClient(id) {
+            return this.clients.find((c) => Number(c.id) === Number(id)) || null;
+        },
         clientName(id) {
-            const client = this.clients.find(
-                (c) => Number(c.id) === Number(id),
-            );
+            const client = this.findClient(id);
             return client?.name || client?.email || `#${id}`;
+        },
+        clientPhone(id) {
+            const client = this.findClient(id);
+            return client?.phone || null;
         },
         masterName(id) {
             if (id == null) {
@@ -175,18 +182,18 @@ export default {
 
         <template v-if="!loading">
             <div
-                class="mb-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] leading-tight text-slate-600"
+                class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 shadow-sm"
                 role="note"
                 aria-label="Легенда статусов"
             >
                 <span
                     v-for="s in STATUS_ORDER"
                     :key="s"
-                    class="inline-flex items-center gap-1"
+                    class="inline-flex items-center gap-1.5"
                 >
                     <span
-                        class="inline-block h-2 w-2 shrink-0 rounded-full"
-                        :class="statusColorClass(s)"
+                        class="inline-block h-3 w-3 shrink-0 rounded-full"
+                        :style="statusDotStyle(s)"
                         aria-hidden="true"
                     />
                     {{ statusLabel(s) }}
@@ -202,24 +209,25 @@ export default {
                     :key="item.id"
                     type="button"
                     class="app-card w-full text-left"
+                    :style="statusBorderStyle(item.status)"
+                    :title="statusLabel(item.status)"
+                    :aria-label="`Заказ #${item.id}, ${statusLabel(item.status)}`"
                     @click="goShow(item)"
                 >
                     <div class="flex items-start justify-between gap-2">
-                        <span
-                            class="inline-flex items-center gap-2 font-jost-medium text-dark-blue-500"
-                        >
-                            <span
-                                class="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                                :class="statusColorClass(item.status)"
-                                :title="statusLabel(item.status)"
-                                :aria-label="statusLabel(item.status)"
-                            />
+                        <span class="font-jost-medium text-dark-blue-500">
                             Заказ #{{ item.id }}
                         </span>
                         <span class="text-xs text-pink-600">Открыть</span>
                     </div>
                     <p class="text-sm text-slate-700">
                         {{ clientName(item.client_id) }}
+                    </p>
+                    <p
+                        v-if="clientPhone(item.client_id)"
+                        class="text-xs text-slate-500"
+                    >
+                        {{ clientPhone(item.client_id) }}
                     </p>
                     <p class="text-sm text-slate-600">
                         {{ URGENCY_LABELS[item.urgency] || item.urgency }}
@@ -259,7 +267,6 @@ export default {
                         <tr>
                             <th class="px-4 py-3 font-jost-medium">#</th>
                             <th class="px-4 py-3 font-jost-medium">Клиент</th>
-                            <th class="px-4 py-3 font-jost-medium">Статус</th>
                             <th class="px-4 py-3 font-jost-medium">
                                 <div
                                     class="flex flex-col gap-0.5 leading-tight"
@@ -291,7 +298,7 @@ export default {
                     </thead>
                     <tbody>
                         <tr v-if="items.length === 0">
-                            <td colspan="9" class="px-4 py-6 text-slate-500">
+                            <td colspan="8" class="px-4 py-6 text-slate-500">
                                 Пока пусто
                             </td>
                         </tr>
@@ -299,18 +306,20 @@ export default {
                             v-for="item in items"
                             :key="item.id"
                             class="border-t border-slate-100"
+                            :style="statusBorderStyle(item.status)"
+                            :title="statusLabel(item.status)"
                         >
                             <td class="px-4 py-3">{{ item.id }}</td>
                             <td class="px-4 py-3">
-                                {{ clientName(item.client_id) }}
-                            </td>
-                            <td class="px-4 py-3">
-                                <span
-                                    class="inline-block h-3 w-3 rounded-full"
-                                    :class="statusColorClass(item.status)"
-                                    :title="statusLabel(item.status)"
-                                    :aria-label="statusLabel(item.status)"
-                                />
+                                <div class="flex flex-col gap-0.5 leading-tight">
+                                    <span>{{ clientName(item.client_id) }}</span>
+                                    <span
+                                        v-if="clientPhone(item.client_id)"
+                                        class="text-slate-500"
+                                    >
+                                        {{ clientPhone(item.client_id) }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-4 py-3">
                                 <div
