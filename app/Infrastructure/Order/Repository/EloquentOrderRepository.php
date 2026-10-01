@@ -26,6 +26,7 @@ final class EloquentOrderRepository implements OrderRepository
 
             $model->client_id = $order->clientId();
             $model->master_id = $order->masterId();
+            $model->number = $order->number();
             $model->billing_type = $order->billingType()->value;
             $model->urgency = $order->urgency()->value;
             $model->estimated_cost = $order->estimatedCost();
@@ -179,6 +180,9 @@ final class EloquentOrderRepository implements OrderRepository
             $items,
             $this->toImmutable($model->created_at),
             $this->toImmutable($model->issued_at),
+            $model->number !== null && $model->number !== ''
+                ? (string) $model->number
+                : null,
         );
     }
 

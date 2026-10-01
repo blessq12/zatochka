@@ -363,8 +363,20 @@ html.apps-pwa #app {
 
     .app-field {
         @apply w-full border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-800;
+        border-radius: 0;
         font-size: 1rem;
         line-height: 1.5;
+        min-height: 2.75rem;
+    }
+
+    select.app-field {
+        border-radius: 0;
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%2364748b' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");
+        background-position: right 0.75rem center;
+        background-repeat: no-repeat;
+        padding-right: 2.25rem;
     }
 
     .app-field::placeholder {

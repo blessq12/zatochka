@@ -1,5 +1,6 @@
 <script>
 import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { orderDisplayLabel } from "../../../../shared/orderDisplayLabel.js";
 import { equipmentService } from "../../services/EquipmentService.js";
 import {
     BILLING_LABELS,
@@ -35,6 +36,7 @@ export default {
             URGENCY_LABELS,
             statusLabel,
             formatOrderDate,
+            orderDisplayLabel,
         };
     },
     watch: {
@@ -311,7 +313,7 @@ export default {
                 >
                     <div class="flex items-start justify-between gap-2">
                         <span class="font-jost-medium text-dark-blue-500">
-                            Заказ #{{ order.id }}
+                            Заказ {{ orderDisplayLabel(order) }}
                         </span>
                         <span class="text-xs text-slate-500">
                             {{ statusLabel(order.status) }}
@@ -390,11 +392,20 @@ export default {
                 <li
                     v-for="job in jobItems"
                     :key="job.id"
-                    class="app-card"
+                    class="app-card cursor-pointer"
+                    role="button"
+                    tabindex="0"
+                    @click="openJob(job.id)"
+                    @keydown.enter.prevent="openJob(job.id)"
                 >
                     <div class="flex items-start justify-between gap-2">
                         <span class="font-jost-medium text-dark-blue-500">
-                            Заказ #{{ job.order_id }}
+                            Заказ
+                            {{
+                                orderDisplayLabel(
+                                    orderForJob(job) || { id: job.order_id },
+                                )
+                            }}
                         </span>
                         <span class="text-xs text-slate-500">
                             задание #{{ job.id }}
@@ -484,13 +495,6 @@ export default {
                         Позиций в задании {{ (job.items || []).length }}
                         · работ записано {{ jobWorksCount(job) }}
                     </p>
-                    <button
-                        type="button"
-                        class="app-btn-secondary mt-1 w-full sm:w-auto"
-                        @click="openJob(job.id)"
-                    >
-                        Открыть
-                    </button>
                 </li>
             </ul>
         </template>

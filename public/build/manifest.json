@@ -91,8 +91,8 @@
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
   },
-  "_OrderService-BjhikOTT.js": {
-    "file": "assets/OrderService-BjhikOTT.js",
+  "_OrderService-B_T46NHh.js": {
+    "file": "assets/OrderService-B_T46NHh.js",
     "name": "OrderService",
     "imports": [
       "__plugin-vue_export-helper-Dn83IKZ_.js"
@@ -127,6 +127,10 @@
     "file": "assets/formatOrderDate-CDrkV5mH.js",
     "name": "formatOrderDate"
   },
+  "_orderDisplayLabel-CkvDBEjb.js": {
+    "file": "assets/orderDisplayLabel-CkvDBEjb.js",
+    "name": "orderDisplayLabel"
+  },
   "_registerPwa-uEDw4PLi.js": {
     "file": "assets/registerPwa-uEDw4PLi.js",
     "name": "registerPwa",
@@ -135,7 +139,7 @@
     ]
   },
   "resources/css/apps.css": {
-    "file": "assets/apps-qzZeo8Gr.css",
+    "file": "assets/apps-BdjH4ChU.css",
     "src": "resources/css/apps.css",
     "isEntry": true,
     "names": [
@@ -153,7 +157,7 @@
     ]
   },
   "resources/js/apps/client/components/Layout/ClientShell.vue": {
-    "file": "assets/ClientShell-BAtYmD_x.js",
+    "file": "assets/ClientShell-B0Pv8H2K.js",
     "name": "ClientShell",
     "src": "resources/js/apps/client/components/Layout/ClientShell.vue",
     "isDynamicEntry": true,
@@ -166,7 +170,7 @@
     ]
   },
   "resources/js/apps/client/components/LoginForm.vue": {
-    "file": "assets/LoginForm-CRuUaJxB.js",
+    "file": "assets/LoginForm-5mN9gkUm.js",
     "name": "LoginForm",
     "src": "resources/js/apps/client/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -177,7 +181,7 @@
     ]
   },
   "resources/js/apps/client/components/RegisterForm.vue": {
-    "file": "assets/RegisterForm-DzSWCBba.js",
+    "file": "assets/RegisterForm-B9kDveh1.js",
     "name": "RegisterForm",
     "src": "resources/js/apps/client/components/RegisterForm.vue",
     "isDynamicEntry": true,
@@ -188,7 +192,7 @@
     ]
   },
   "resources/js/apps/client/main.js": {
-    "file": "assets/main-Md6TpHAF.js",
+    "file": "assets/main-CCwj9qsy.js",
     "name": "main",
     "src": "resources/js/apps/client/main.js",
     "isEntry": true,
@@ -259,13 +263,14 @@
     ]
   },
   "resources/js/apps/client/pages/Orders/OrderListPage.vue": {
-    "file": "assets/OrderListPage-BZSCBl4X.js",
+    "file": "assets/OrderListPage-Da1SetHx.js",
     "name": "OrderListPage",
     "src": "resources/js/apps/client/pages/Orders/OrderListPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_OrderService-CBBjkFNv.js",
       "_OrderDraftService-BTHNn08p.js",
+      "_orderDisplayLabel-CkvDBEjb.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
   },
@@ -281,7 +286,7 @@
     ]
   },
   "resources/js/apps/client/pages/Profile/ProfilePage.vue": {
-    "file": "assets/ProfilePage-bYdrNafW.js",
+    "file": "assets/ProfilePage-zx1TKr7g.js",
     "name": "ProfilePage",
     "src": "resources/js/apps/client/pages/Profile/ProfilePage.vue",
     "isDynamicEntry": true,
@@ -292,7 +297,7 @@
     ]
   },
   "resources/js/apps/manager/components/Layout/ManagerShell.vue": {
-    "file": "assets/ManagerShell-eqNWouo4.js",
+    "file": "assets/ManagerShell-DeBmyOxo.js",
     "name": "ManagerShell",
     "src": "resources/js/apps/manager/components/Layout/ManagerShell.vue",
     "isDynamicEntry": true,
@@ -305,7 +310,7 @@
     ]
   },
   "resources/js/apps/manager/components/LoginForm.vue": {
-    "file": "assets/LoginForm-DoZgYk_J.js",
+    "file": "assets/LoginForm-BLGtJx3h.js",
     "name": "LoginForm",
     "src": "resources/js/apps/manager/components/LoginForm.vue",
     "isDynamicEntry": true,
@@ -317,7 +322,7 @@
     ]
   },
   "resources/js/apps/manager/main.js": {
-    "file": "assets/main-DGKC7GOz.js",
+    "file": "assets/main-6_O4wRMg.js",
     "name": "main",
     "src": "resources/js/apps/manager/main.js",
     "isEntry": true,
@@ -378,7 +383,7 @@
     ]
   },
   "resources/js/apps/manager/pages/Equipment/EquipmentListPage.vue": {
-    "file": "assets/EquipmentListPage-NL1w5WSp.js",
+    "file": "assets/EquipmentListPage-Z3wyfV-C.js",
     "name": "EquipmentListPage",
     "src": "resources/js/apps/manager/pages/Equipment/EquipmentListPage.vue",
     "isDynamicEntry": true,
@@ -410,54 +415,56 @@
     ]
   },
   "resources/js/apps/manager/pages/Orders/OrderDraftPromotePage.vue": {
-    "file": "assets/OrderDraftPromotePage-DF_jJWWy.js",
+    "file": "assets/OrderDraftPromotePage-CclP6KMb.js",
     "name": "OrderDraftPromotePage",
     "src": "resources/js/apps/manager/pages/Orders/OrderDraftPromotePage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_ActorService-CWUSM6O-.js",
       "_EquipmentService-VZD2gdj1.js",
-      "_OrderService-BjhikOTT.js",
+      "_OrderService-B_T46NHh.js",
       "_OrderDraftService-DBsGPx1v.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
   },
   "resources/js/apps/manager/pages/Orders/OrderFormPage.vue": {
-    "file": "assets/OrderFormPage-CJ9jSLFB.js",
+    "file": "assets/OrderFormPage-DZVaLLou.js",
     "name": "OrderFormPage",
     "src": "resources/js/apps/manager/pages/Orders/OrderFormPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_ActorService-CWUSM6O-.js",
       "_EquipmentService-VZD2gdj1.js",
-      "_OrderService-BjhikOTT.js",
+      "_OrderService-B_T46NHh.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
   },
   "resources/js/apps/manager/pages/Orders/OrderListPage.vue": {
-    "file": "assets/OrderListPage-DUN8rECE.js",
+    "file": "assets/OrderListPage-BT1fbIOv.js",
     "name": "OrderListPage",
     "src": "resources/js/apps/manager/pages/Orders/OrderListPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_formatOrderDate-CDrkV5mH.js",
+      "_orderDisplayLabel-CkvDBEjb.js",
       "_ActorService-CWUSM6O-.js",
-      "_OrderService-BjhikOTT.js",
+      "_OrderService-B_T46NHh.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
   },
   "resources/js/apps/manager/pages/Orders/OrderShowPage.vue": {
-    "file": "assets/OrderShowPage-CT2qqv6-.js",
+    "file": "assets/OrderShowPage-ByLw3Eny.js",
     "name": "OrderShowPage",
     "src": "resources/js/apps/manager/pages/Orders/OrderShowPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_formatOrderDate-CDrkV5mH.js",
+      "_orderDisplayLabel-CkvDBEjb.js",
       "_ActorService-CWUSM6O-.js",
       "_DocumentService-C5VkPBif.js",
       "_EquipmentService-VZD2gdj1.js",
       "_FinanceService-Dbr6Koe3.js",
-      "_OrderService-BjhikOTT.js",
+      "_OrderService-B_T46NHh.js",
       "_WarehouseService-suZNuxGN.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
@@ -472,20 +479,21 @@
     ]
   },
   "resources/js/apps/manager/pages/Users/UserFormPage.vue": {
-    "file": "assets/UserFormPage-xRIv1E9O.js",
+    "file": "assets/UserFormPage-CYvKyiJR.js",
     "name": "UserFormPage",
     "src": "resources/js/apps/manager/pages/Users/UserFormPage.vue",
     "isDynamicEntry": true,
     "imports": [
+      "_formatOrderDate-CDrkV5mH.js",
+      "_orderDisplayLabel-CkvDBEjb.js",
       "_ActorService-CWUSM6O-.js",
       "_EquipmentService-VZD2gdj1.js",
-      "_OrderService-BjhikOTT.js",
-      "_formatOrderDate-CDrkV5mH.js",
+      "_OrderService-B_T46NHh.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
   },
   "resources/js/apps/manager/pages/Users/UsersListPage.vue": {
-    "file": "assets/UsersListPage-BikBSWp5.js",
+    "file": "assets/UsersListPage-i50_AO_S.js",
     "name": "UsersListPage",
     "src": "resources/js/apps/manager/pages/Users/UsersListPage.vue",
     "isDynamicEntry": true,
@@ -505,7 +513,7 @@
     ]
   },
   "resources/js/apps/master/main.js": {
-    "file": "assets/main-TiTcRuC2.js",
+    "file": "assets/main-YPHCQUcy.js",
     "name": "main",
     "src": "resources/js/apps/master/main.js",
     "isEntry": true,
@@ -532,34 +540,37 @@
     ]
   },
   "resources/js/apps/master/pages/Pos/EquipmentListPage.vue": {
-    "file": "assets/EquipmentListPage-a0xWKrFa.js",
+    "file": "assets/EquipmentListPage-CvE1n2Ht.js",
     "name": "EquipmentListPage",
     "src": "resources/js/apps/master/pages/Pos/EquipmentListPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_formatOrderDate-CDrkV5mH.js",
+      "_orderDisplayLabel-CkvDBEjb.js",
       "_WorkshopService-CP2sTKBb.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
   },
   "resources/js/apps/master/pages/Pos/JobPage.vue": {
-    "file": "assets/JobPage-CozDSDDv.js",
+    "file": "assets/JobPage-QEIiypGI.js",
     "name": "JobPage",
     "src": "resources/js/apps/master/pages/Pos/JobPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_formatOrderDate-CDrkV5mH.js",
+      "_orderDisplayLabel-CkvDBEjb.js",
       "_WorkshopService-CP2sTKBb.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
   },
   "resources/js/apps/master/pages/Pos/OrdersPage.vue": {
-    "file": "assets/OrdersPage-nWjm1dE3.js",
+    "file": "assets/OrdersPage-R2EgwBa5.js",
     "name": "OrdersPage",
     "src": "resources/js/apps/master/pages/Pos/OrdersPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "_formatOrderDate-CDrkV5mH.js",
+      "_orderDisplayLabel-CkvDBEjb.js",
       "_WorkshopService-CP2sTKBb.js",
       "__plugin-vue_export-helper-Dn83IKZ_.js"
     ]
@@ -574,7 +585,7 @@
     ]
   },
   "resources/js/apps/master/pages/PosPage.vue": {
-    "file": "assets/PosPage-BO7mULO6.js",
+    "file": "assets/PosPage-DSZitwqy.js",
     "name": "PosPage",
     "src": "resources/js/apps/master/pages/PosPage.vue",
     "isDynamicEntry": true,
@@ -588,7 +599,7 @@
     ]
   },
   "resources/site/css/site.css": {
-    "file": "assets/site-CF48y1mZ.css",
+    "file": "assets/site-DFM1ITYP.css",
     "src": "resources/site/css/site.css",
     "isEntry": true,
     "names": [

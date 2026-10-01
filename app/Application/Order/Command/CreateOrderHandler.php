@@ -10,6 +10,7 @@ use App\Domain\Order\Aggregate\Order;
 use App\Domain\Order\BillingType;
 use App\Domain\Order\OrderItemKind;
 use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Order\Service\OrderNumberGenerator;
 use App\Domain\Order\Urgency;
 use App\Shared\Domain\DomainException;
 
@@ -18,6 +19,7 @@ final readonly class CreateOrderHandler
     public function __construct(
         private OrderRepository $orders,
         private EquipmentRepository $equipments,
+        private OrderNumberGenerator $orderNumbers,
         private OrderResponseAssembler $assembler,
     ) {}
 
@@ -50,6 +52,7 @@ final readonly class CreateOrderHandler
             $deliveryAddress,
             $mappedItems,
         );
+        $order->assignNumber($this->orderNumbers->next());
 
         return $this->assembler->assemble($this->orders->save($order));
     }

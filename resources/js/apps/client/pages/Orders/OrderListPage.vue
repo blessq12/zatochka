@@ -10,6 +10,7 @@ import {
     draftStatusLabel,
     orderDraftService,
 } from "../../services/OrderDraftService.js";
+import { orderDisplayLabel } from "../../../../shared/orderDisplayLabel.js";
 
 export default {
     name: "ClientOrderListPage",
@@ -25,6 +26,7 @@ export default {
             BILLING_LABELS,
             URGENCY_LABELS,
             KIND_LABELS,
+            orderDisplayLabel,
         };
     },
     watch: {
@@ -205,7 +207,7 @@ export default {
                             <p
                                 class="font-jost-bold text-dark-blue-500 dark:text-dark-blue-300"
                             >
-                                Заказ #{{ order.id }}
+                                Заказ {{ orderDisplayLabel(order) }}
                             </p>
                             <p
                                 class="mt-1 truncate text-base text-dark-gray-500 dark:text-gray-300"

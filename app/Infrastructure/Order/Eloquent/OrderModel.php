@@ -13,6 +13,7 @@ final class OrderModel extends Model
     protected $fillable = [
         'client_id',
         'master_id',
+        'number',
         'billing_type',
         'urgency',
         'estimated_cost',

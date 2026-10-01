@@ -1,14 +1,18 @@
 <script>
+import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { orderDisplayLabel } from "../../../../shared/orderDisplayLabel.js";
 import { actorService } from "../../services/ActorService.js";
 import { equipmentService } from "../../services/EquipmentService.js";
 import {
-    orderService,
-    statusLabel,
-    compositionLabel,
-    URGENCY_LABELS,
     BILLING_LABELS,
+    compositionLabel,
+    orderService,
+    STATUS_ORDER,
+    statusBorderStyle,
+    statusDotStyle,
+    statusLabel,
+    URGENCY_LABELS,
 } from "../../services/OrderService.js";
-import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
 
 function tabFromQuery(query) {
     if (query.tab === "equipment") return "equipment";
@@ -30,14 +34,19 @@ export default {
             equipmentError: null,
             equipmentLoaded: false,
             orderItems: [],
+            masters: [],
             ordersLoading: false,
             ordersError: null,
             ordersLoaded: false,
             statusLabel,
+            statusBorderStyle,
+            statusDotStyle,
+            STATUS_ORDER,
             compositionLabel,
             URGENCY_LABELS,
             BILLING_LABELS,
             formatOrderDate,
+            orderDisplayLabel,
             form: {
                 type: this.$route.query.type || this.$route.params.type || "clients",
                 email: "",
@@ -98,11 +107,37 @@ export default {
         if (this.isEdit) {
             await this.load();
             if (this.isClientEdit) {
-                await Promise.all([this.loadEquipment(), this.loadOrders()]);
+                await Promise.all([
+                    this.loadMasters(),
+                    this.loadEquipment(),
+                    this.loadOrders(),
+                ]);
             }
         }
     },
     methods: {
+        async loadMasters() {
+            try {
+                this.masters = await actorService.list("masters");
+            } catch {
+                this.masters = [];
+            }
+        },
+        masterName(id) {
+            if (id == null) {
+                return "не назначен";
+            }
+            const master = this.masters.find(
+                (m) => Number(m.id) === Number(id),
+            );
+            return master?.name || master?.email || `#${id}`;
+        },
+        actualCostLabel(order) {
+            if (order?.actual_cost == null || order.actual_cost === "") {
+                return "—";
+            }
+            return String(order.actual_cost);
+        },
         typeTitle(type) {
             return actorService.typeLabel(type);
         },
@@ -625,7 +660,13 @@ export default {
                                 <div
                                     v-for="item in equipmentItems"
                                     :key="item.id"
-                                    class="app-card"
+                                    class="app-card cursor-pointer"
+                                    role="button"
+                                    tabindex="0"
+                                    @click="goEditEquipment(item)"
+                                    @keydown.enter.prevent="
+                                        goEditEquipment(item)
+                                    "
                                 >
                                     <div
                                         class="flex items-start justify-between gap-2"
@@ -649,15 +690,8 @@ export default {
                                     <div class="app-actions pt-1">
                                         <button
                                             type="button"
-                                            class="app-btn-secondary"
-                                            @click="goEditEquipment(item)"
-                                        >
-                                            Изменить
-                                        </button>
-                                        <button
-                                            type="button"
                                             class="app-btn-danger"
-                                            @click="removeEquipment(item)"
+                                            @click.stop="removeEquipment(item)"
                                         >
                                             Удалить
                                         </button>
@@ -683,10 +717,14 @@ export default {
                                             <th class="px-4 py-3 font-jost-medium">
                                                 Тип
                                             </th>
-                                            <th class="px-4 py-3 font-jost-medium">
+                                            <th
+                                                class="px-4 py-3 font-jost-medium"
+                                            >
                                                 Модули
                                             </th>
-                                            <th class="px-4 py-3 font-jost-medium" />
+                                            <th
+                                                class="px-4 py-3 font-jost-medium"
+                                            />
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -701,7 +739,8 @@ export default {
                                         <tr
                                             v-for="item in equipmentItems"
                                             :key="item.id"
-                                            class="border-t border-slate-100"
+                                            class="cursor-pointer border-t border-slate-100 hover:bg-slate-50"
+                                            @click="goEditEquipment(item)"
                                         >
                                             <td class="px-4 py-3">
                                                 {{ item.id }}
@@ -719,19 +758,14 @@ export default {
                                                 {{ modulesSummary(item) }}
                                             </td>
                                             <td
-                                                class="space-x-2 whitespace-nowrap px-4 py-3 text-right"
+                                                class="whitespace-nowrap px-4 py-3 text-right"
                                             >
                                                 <button
                                                     type="button"
-                                                    class="text-pink-700 hover:underline"
-                                                    @click="goEditEquipment(item)"
-                                                >
-                                                    Изменить
-                                                </button>
-                                                <button
-                                                    type="button"
                                                     class="text-red-700 hover:underline"
-                                                    @click="removeEquipment(item)"
+                                                    @click.stop="
+                                                        removeEquipment(item)
+                                                    "
                                                 >
                                                     Удалить
                                                 </button>
@@ -761,6 +795,25 @@ export default {
                         </p>
 
                         <template v-if="!ordersLoading">
+                            <div
+                                class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 shadow-sm"
+                                role="note"
+                                aria-label="Легенда статусов"
+                            >
+                                <span
+                                    v-for="s in STATUS_ORDER"
+                                    :key="s"
+                                    class="inline-flex items-center gap-1.5"
+                                >
+                                    <span
+                                        class="inline-block h-3 w-3 shrink-0 rounded-full"
+                                        :style="statusDotStyle(s)"
+                                        aria-hidden="true"
+                                    />
+                                    {{ statusLabel(s) }}
+                                </span>
+                            </div>
+
                             <div class="app-card-list">
                                 <p
                                     v-if="orderItems.length === 0"
@@ -773,46 +826,50 @@ export default {
                                     :key="order.id"
                                     type="button"
                                     class="app-card w-full text-left"
+                                    :style="statusBorderStyle(order.status)"
+                                    :title="statusLabel(order.status)"
+                                    :aria-label="`Заказ ${orderDisplayLabel(order)}, ${statusLabel(order.status)}`"
                                     @click="goShowOrder(order)"
                                 >
-                                    <div
-                                        class="flex items-start justify-between gap-2"
+                                    <span
+                                        class="font-jost-medium text-dark-blue-500"
                                     >
-                                        <span
-                                            class="font-jost-medium text-dark-blue-500"
-                                        >
-                                            Заказ #{{ order.id }}
-                                        </span>
-                                        <span class="text-xs text-pink-700"
-                                            >Открыть</span
-                                        >
-                                    </div>
-                                    <p class="text-sm text-slate-700">
-                                        {{ statusLabel(order.status) }}
-                                        ·
+                                        Заказ {{ orderDisplayLabel(order) }}
+                                    </span>
+                                    <p class="text-sm text-slate-600">
                                         {{
                                             URGENCY_LABELS[order.urgency] ||
                                             order.urgency
                                         }}
                                         ·
                                         {{
-                                            BILLING_LABELS[order.billing_type] ||
-                                            order.billing_type
+                                            BILLING_LABELS[
+                                                order.billing_type
+                                            ] || order.billing_type
                                         }}
+                                    </p>
+                                    <p class="text-sm text-slate-600">
+                                        Мастер:
+                                        {{ masterName(order.master_id) }}
+                                    </p>
+                                    <p class="text-xs text-slate-500">
+                                        <span class="block leading-tight">
+                                            Ориентир
+                                            {{ order.estimated_cost }}
+                                        </span>
+                                        <span class="block leading-tight">
+                                            Факт
+                                            {{ actualCostLabel(order) }}
+                                        </span>
                                     </p>
                                     <p class="text-xs text-slate-500">
                                         Создан
-                                        {{ formatOrderDate(order.created_at) }}
-                                        · выдан
-                                        {{ formatOrderDate(order.issued_at) }}
-                                    </p>
-                                    <p class="text-sm text-slate-600">
-                                        Оценка {{ order.estimated_cost }} ₽
-                                        · мастер
                                         {{
-                                            order.master_id
-                                                ? `#${order.master_id}`
-                                                : "не назначен"
+                                            formatOrderDate(order.created_at)
+                                        }}
+                                        · выдан
+                                        {{
+                                            formatOrderDate(order.issued_at)
                                         }}
                                     </p>
                                     <p class="text-xs text-slate-500">
@@ -825,40 +882,60 @@ export default {
                             <div class="app-table-wrap">
                                 <table class="min-w-full text-left text-sm">
                                     <thead
-                                        class="border-b border-slate-200 bg-slate-50 text-slate-700"
+                                        class="border-b border-slate-200 bg-slate-50 text-slate-600"
                                     >
                                         <tr>
-                                            <th class="px-4 py-3 font-jost-medium">
+                                            <th
+                                                class="px-4 py-3 font-jost-medium"
+                                            >
                                                 #
                                             </th>
-                                            <th class="px-4 py-3 font-jost-medium">
-                                                Создан
+                                            <th
+                                                class="px-4 py-3 font-jost-medium"
+                                            >
+                                                <div
+                                                    class="flex flex-col gap-0.5 leading-tight"
+                                                >
+                                                    <span>Создан</span>
+                                                    <span>Выдан</span>
+                                                </div>
                                             </th>
-                                            <th class="px-4 py-3 font-jost-medium">
-                                                Выдан
+                                            <th
+                                                class="px-4 py-3 font-jost-medium"
+                                            >
+                                                <div
+                                                    class="flex flex-col gap-0.5 leading-tight"
+                                                >
+                                                    <span>Тип</span>
+                                                    <span>Скорость</span>
+                                                </div>
                                             </th>
-                                            <th class="px-4 py-3 font-jost-medium">
-                                                Статус
+                                            <th
+                                                class="px-4 py-3 font-jost-medium"
+                                            >
+                                                <div
+                                                    class="flex flex-col gap-0.5 leading-tight"
+                                                >
+                                                    <span>Ориентир (₽)</span>
+                                                    <span>Факт (₽)</span>
+                                                </div>
                                             </th>
-                                            <th class="px-4 py-3 font-jost-medium">
-                                                Оплата
+                                            <th
+                                                class="px-4 py-3 font-jost-medium"
+                                            >
+                                                Мастер
                                             </th>
-                                            <th class="px-4 py-3 font-jost-medium">
-                                                Срочность
-                                            </th>
-                                            <th class="px-4 py-3 font-jost-medium">
-                                                Оценка
-                                            </th>
-                                            <th class="px-4 py-3 font-jost-medium">
+                                            <th
+                                                class="px-4 py-3 font-jost-medium"
+                                            >
                                                 Состав
                                             </th>
-                                            <th class="px-4 py-3 font-jost-medium" />
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-if="orderItems.length === 0">
                                             <td
-                                                colspan="9"
+                                                colspan="6"
                                                 class="px-4 py-6 text-slate-500"
                                             >
                                                 Заказов пока нет
@@ -867,56 +944,85 @@ export default {
                                         <tr
                                             v-for="order in orderItems"
                                             :key="order.id"
-                                            class="border-t border-slate-100"
+                                            class="cursor-pointer border-t border-slate-100 hover:bg-slate-50"
+                                            :style="
+                                                statusBorderStyle(order.status)
+                                            "
+                                            :title="statusLabel(order.status)"
+                                            @click="goShowOrder(order)"
                                         >
                                             <td class="px-4 py-3">
-                                                {{ order.id }}
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                {{
-                                                    formatOrderDate(
-                                                        order.created_at
-                                                    )
-                                                }}
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                {{
-                                                    formatOrderDate(
-                                                        order.issued_at
-                                                    )
-                                                }}
+                                                {{ orderDisplayLabel(order) }}
                                             </td>
                                             <td class="px-4 py-3">
-                                                {{ statusLabel(order.status) }}
+                                                <div
+                                                    class="flex flex-col gap-0.5 leading-tight"
+                                                >
+                                                    <span>{{
+                                                        formatOrderDate(
+                                                            order.created_at,
+                                                        )
+                                                    }}</span>
+                                                    <span
+                                                        class="text-slate-500"
+                                                    >
+                                                        {{
+                                                            formatOrderDate(
+                                                                order.issued_at,
+                                                            )
+                                                        }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div
+                                                    class="flex flex-col gap-0.5 leading-tight"
+                                                >
+                                                    <span>
+                                                        {{
+                                                            BILLING_LABELS[
+                                                                order
+                                                                    .billing_type
+                                                            ] ||
+                                                            order.billing_type
+                                                        }}
+                                                    </span>
+                                                    <span
+                                                        class="text-slate-500"
+                                                    >
+                                                        {{
+                                                            URGENCY_LABELS[
+                                                                order.urgency
+                                                            ] || order.urgency
+                                                        }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div
+                                                    class="flex flex-col gap-0.5 leading-tight"
+                                                >
+                                                    <span>{{
+                                                        order.estimated_cost
+                                                    }}</span>
+                                                    <span
+                                                        class="text-slate-500"
+                                                    >
+                                                        {{
+                                                            actualCostLabel(
+                                                                order,
+                                                            )
+                                                        }}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td class="px-4 py-3">
                                                 {{
-                                                    BILLING_LABELS[
-                                                        order.billing_type
-                                                    ] || order.billing_type
+                                                    masterName(order.master_id)
                                                 }}
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                {{
-                                                    URGENCY_LABELS[
-                                                        order.urgency
-                                                    ] || order.urgency
-                                                }}
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                {{ order.estimated_cost }} ₽
                                             </td>
                                             <td class="px-4 py-3">
                                                 {{ compositionLabel(order) }}
-                                            </td>
-                                            <td class="px-4 py-3 text-right">
-                                                <button
-                                                    type="button"
-                                                    class="text-pink-700 hover:underline"
-                                                    @click="goShowOrder(order)"
-                                                >
-                                                    Открыть
-                                                </button>
                                             </td>
                                         </tr>
                                     </tbody>

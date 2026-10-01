@@ -1,5 +1,6 @@
 <script>
 import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { orderDisplayLabel } from "../../../../shared/orderDisplayLabel.js";
 import { equipmentService } from "../../services/EquipmentService.js";
 import {
     KIND_LABELS,
@@ -35,6 +36,7 @@ export default {
             URGENCY_LABELS,
             statusLabel,
             formatOrderDate,
+            orderDisplayLabel,
         };
     },
     computed: {
@@ -477,7 +479,9 @@ export default {
 <template>
     <div class="app-page">
         <div class="app-page-header">
-            <h1 class="app-page-title">Заказ #{{ order?.id || "…" }}</h1>
+            <h1 class="app-page-title">
+                Заказ {{ orderDisplayLabel(order) }}
+            </h1>
             <button
                 type="button"
                 class="app-btn-ghost w-full sm:w-auto"

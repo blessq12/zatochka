@@ -11,6 +11,7 @@ use App\Domain\Order\Repository\OrderCommentRepository;
 use App\Domain\Order\Repository\OrderDraftRepository;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\Repository\OrderReviewRepository;
+use App\Domain\Order\Service\OrderNumberGenerator;
 use App\Infrastructure\Order\Document\DocumentTemplateRenderer;
 use App\Infrastructure\Order\Pdf\DomPdfRenderer;
 use App\Infrastructure\Order\Repository\EloquentDocumentTemplateRepository;
@@ -18,6 +19,7 @@ use App\Infrastructure\Order\Repository\EloquentOrderCommentRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderDraftRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderReviewRepository;
+use App\Infrastructure\Order\Service\EloquentOrderNumberGenerator;
 use App\Providers\ContextServiceProvider;
 use App\Shared\EventBus\EventBus;
 use App\Shared\IntegrationEvents\OrderAcceptedIntoWork;
@@ -29,6 +31,7 @@ final class OrderServiceProvider extends ContextServiceProvider
     {
         return [
             OrderRepository::class => EloquentOrderRepository::class,
+            OrderNumberGenerator::class => EloquentOrderNumberGenerator::class,
             OrderDraftRepository::class => EloquentOrderDraftRepository::class,
             OrderCommentRepository::class => EloquentOrderCommentRepository::class,
             OrderReviewRepository::class => EloquentOrderReviewRepository::class,

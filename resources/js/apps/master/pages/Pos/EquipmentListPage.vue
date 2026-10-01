@@ -1,5 +1,6 @@
 <script>
 import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { orderDisplayLabel } from "../../../../shared/orderDisplayLabel.js";
 import { equipmentService } from "../../services/EquipmentService.js";
 import {
     BILLING_LABELS,
@@ -27,6 +28,7 @@ export default {
             detailsByOrder: {},
             statusLabel,
             formatOrderDate,
+            orderDisplayLabel,
             KIND_LABELS,
             BILLING_LABELS,
             URGENCY_LABELS,
@@ -360,7 +362,7 @@ export default {
                                     <span
                                         class="font-jost-medium text-dark-blue-500"
                                     >
-                                        Заказ #{{ order.id }}
+                                        Заказ {{ orderDisplayLabel(order) }}
                                     </span>
                                     <span class="text-xs text-slate-500">
                                         {{ statusLabel(order.status) }}

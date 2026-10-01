@@ -52,7 +52,7 @@ export function statusColorHex(status) {
 
 export function statusBorderStyle(status) {
     return {
-        borderLeftWidth: "8px",
+        borderLeftWidth: "14px",
         borderLeftStyle: "solid",
         borderLeftColor: statusColorHex(status),
     };

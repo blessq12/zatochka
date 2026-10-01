@@ -46,10 +46,11 @@ final class OrderApiTest extends TestCase
                 'master_id' => null,
                 'issued_at' => null,
             ])
-            ->assertJsonStructure(['created_at'])
+            ->assertJsonStructure(['created_at', 'number'])
             ->json();
 
         $this->assertNotNull($created['created_at']);
+        $this->assertMatchesRegularExpression('/^ORD-\d{2}-\d+$/', (string) $created['number']);
         $this->assertCount(2, $created['items']);
         $orderId = $created['id'];
 

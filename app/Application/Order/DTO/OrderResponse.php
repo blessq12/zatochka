@@ -26,6 +26,7 @@ final readonly class OrderResponse
      */
     public function __construct(
         public int $id,
+        public ?string $number,
         public int $clientId,
         public ?int $masterId,
         public string $billingType,
@@ -49,6 +50,7 @@ final readonly class OrderResponse
     {
         $data = [
             'id' => $this->id,
+            'number' => $this->number,
             'client_id' => $this->clientId,
             'master_id' => $this->masterId,
             'billing_type' => $this->billingType,

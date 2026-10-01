@@ -102,7 +102,7 @@ final class OrderDocumentReadModelBuilder
         }
 
         return new OrderDocumentData(
-            orderNumber: (string) $order->id(),
+            orderNumber: $order->number() ?? ('#'.$order->id()),
             orderDate: $orderDate,
             serviceTypeLabel: $this->serviceTypeLabel($kinds),
             urgency: $order->urgency() === Urgency::Urgent ? 'Срочный' : null,

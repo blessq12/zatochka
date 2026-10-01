@@ -67,6 +67,7 @@ final readonly class OrderResponseAssembler
 
         return new OrderResponse(
             (int) $order->id(),
+            $order->number(),
             $order->clientId(),
             $order->masterId(),
             $order->billingType()->value,

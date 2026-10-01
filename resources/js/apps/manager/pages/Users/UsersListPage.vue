@@ -108,7 +108,15 @@ export default {
                 <p v-if="items.length === 0" class="app-card text-slate-500">
                     Нет {{ typeLabel.toLowerCase() }}
                 </p>
-                <div v-for="item in items" :key="item.id" class="app-card">
+                <div
+                    v-for="item in items"
+                    :key="item.id"
+                    class="app-card cursor-pointer"
+                    role="button"
+                    tabindex="0"
+                    @click="goEdit(item)"
+                    @keydown.enter.prevent="goEdit(item)"
+                >
                     <div class="flex items-start justify-between gap-2">
                         <div class="font-jost-medium text-dark-blue-500">
                             {{ item.name || "—" }}
@@ -128,15 +136,8 @@ export default {
                     <div class="app-actions pt-1">
                         <button
                             type="button"
-                            class="app-btn-secondary"
-                            @click="goEdit(item)"
-                        >
-                            Изменить
-                        </button>
-                        <button
-                            type="button"
                             class="app-btn-ghost text-red-600"
-                            @click="remove(item)"
+                            @click.stop="remove(item)"
                         >
                             Удалить
                         </button>
@@ -166,7 +167,8 @@ export default {
                         <tr
                             v-for="item in items"
                             :key="item.id"
-                            class="border-b border-slate-100"
+                            class="cursor-pointer border-b border-slate-100 hover:bg-slate-50"
+                            @click="goEdit(item)"
                         >
                             <td class="px-4 py-3">{{ item.id }}</td>
                             <td class="px-4 py-3">{{ item.name || "—" }}</td>
@@ -179,15 +181,8 @@ export default {
                             <td class="px-4 py-3 text-right whitespace-nowrap">
                                 <button
                                     type="button"
-                                    class="mr-3 text-pink-500 hover:underline"
-                                    @click="goEdit(item)"
-                                >
-                                    Изменить
-                                </button>
-                                <button
-                                    type="button"
                                     class="text-slate-500 hover:text-red-600 hover:underline"
-                                    @click="remove(item)"
+                                    @click.stop="remove(item)"
                                 >
                                     Удалить
                                 </button>

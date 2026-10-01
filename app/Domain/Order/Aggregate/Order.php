@@ -27,6 +27,7 @@ final class Order
         private array $items,
         private ?DateTimeImmutable $createdAt = null,
         private ?DateTimeImmutable $issuedAt = null,
+        private ?string $number = null,
     ) {
         if ($items === []) {
             throw new DomainException('Order must have at least one item.');
@@ -73,6 +74,23 @@ final class Order
     public function assignId(int $id): void
     {
         $this->id = $id;
+    }
+
+    public function number(): ?string
+    {
+        return $this->number;
+    }
+
+    public function assignNumber(string $number): void
+    {
+        $normalized = trim($number);
+        if ($normalized === '') {
+            throw new DomainException('Order number cannot be empty.');
+        }
+        if ($this->number !== null) {
+            throw new DomainException('Order number is already assigned.');
+        }
+        $this->number = $normalized;
     }
 
     public function clientId(): int

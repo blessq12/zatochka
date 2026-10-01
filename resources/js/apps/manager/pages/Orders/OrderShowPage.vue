@@ -1,5 +1,6 @@
 <script>
 import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { orderDisplayLabel } from "../../../../shared/orderDisplayLabel.js";
 import { actorService } from "../../services/ActorService.js";
 import { documentService } from "../../services/DocumentService.js";
 import { equipmentService } from "../../services/EquipmentService.js";
@@ -57,6 +58,7 @@ export default {
             resolveBody: "",
             statusLabel,
             formatOrderDate,
+            orderDisplayLabel,
             BILLING_LABELS,
             URGENCY_LABELS,
             KIND_LABELS,
@@ -601,7 +603,7 @@ export default {
         },
         actionButtonClass(action) {
             const compact =
-                "!min-h-8 !w-auto shrink-0 !px-2.5 !py-1.5 !text-sm";
+                "!min-h-11 !w-auto shrink-0 !px-2.5 !py-2.5 !text-base !rounded-none";
             switch (action.tone) {
                 case "forward":
                     return `app-btn-primary ${compact}`;
@@ -709,7 +711,14 @@ export default {
 <template>
     <div class="app-page">
         <div class="app-page-header">
-            <h1 class="app-page-title">Заказ #{{ $route.params.id }}</h1>
+            <h1 class="app-page-title">
+                Заказ
+                {{
+                    order
+                        ? orderDisplayLabel(order)
+                        : `#${$route.params.id}`
+                }}
+            </h1>
             <button
                 type="button"
                 class="app-btn-ghost w-full sm:w-auto"
@@ -910,37 +919,6 @@ export default {
                     </section>
 
                     <section
-                        v-if="canAssignMaster"
-                        class="space-y-2 border border-slate-200 bg-white p-3 lg:p-4"
-                    >
-                        <h2 class="text-sm font-jost-bold text-dark-blue-500">
-                            Назначить мастера
-                        </h2>
-                        <select v-model="masterId" class="app-field">
-                            <option value="" disabled>Выберите мастера</option>
-                            <option
-                                v-for="master in masters"
-                                :key="master.id"
-                                :value="String(master.id)"
-                            >
-                                {{
-                                    master.name ||
-                                    master.email ||
-                                    `#${master.id}`
-                                }}
-                            </option>
-                        </select>
-                        <button
-                            type="button"
-                            class="app-btn-primary w-full"
-                            :disabled="saving"
-                            @click="assignMaster"
-                        >
-                            Назначить
-                        </button>
-                    </section>
-
-                    <section
                         v-if="canPrintReceipt || canPrintHandoverAct"
                         class="space-y-2 border border-slate-200 bg-white p-3 lg:p-4"
                     >
@@ -986,7 +964,11 @@ export default {
 
                 <div class="min-w-0 space-y-4">
                     <section
-                        v-if="nextActions.length || readyBlockedByPricing"
+                        v-if="
+                            nextActions.length ||
+                            readyBlockedByPricing ||
+                            canAssignMaster
+                        "
                         class="space-y-1.5 border border-slate-300 bg-white px-2.5 py-2 shadow-sm"
                     >
                         <h2 class="text-xs font-jost-bold text-dark-blue-500">
@@ -1006,18 +988,67 @@ export default {
                             class="app-field !py-1.5 !text-sm"
                             placeholder="Результат согласования с клиентом…"
                         />
-                        <div class="flex flex-row flex-wrap gap-1.5">
-                            <button
-                                v-for="action in nextActions"
-                                :key="action.to"
-                                type="button"
-                                :class="actionButtonClass(action)"
-                                :disabled="saving"
-                                :title="action.hint"
-                                @click="runTransitionAction(action)"
+                        <div class="flex flex-row flex-wrap items-stretch gap-3">
+                            <div
+                                v-if="canAssignMaster"
+                                class="flex flex-row flex-wrap items-stretch gap-1.5"
+                                role="group"
+                                aria-label="Назначение мастера"
                             >
-                                {{ action.title }}
-                            </button>
+                                <select
+                                    v-model="masterId"
+                                    class="app-field !w-auto min-w-[12rem] max-w-xs shrink-0 !rounded-none"
+                                    :disabled="saving"
+                                    aria-label="Мастер"
+                                >
+                                    <option value="" disabled>
+                                        Выберите мастера
+                                    </option>
+                                    <option
+                                        v-for="master in masters"
+                                        :key="master.id"
+                                        :value="String(master.id)"
+                                    >
+                                        {{
+                                            master.name ||
+                                            master.email ||
+                                            `#${master.id}`
+                                        }}
+                                    </option>
+                                </select>
+                                <button
+                                    type="button"
+                                    class="app-btn-primary !w-auto shrink-0 !rounded-none"
+                                    :disabled="saving"
+                                    title="Назначить мастера на заказ"
+                                    @click="assignMaster"
+                                >
+                                    Назначить
+                                </button>
+                            </div>
+                            <div
+                                v-if="nextActions.length"
+                                class="flex flex-row flex-wrap items-stretch gap-1.5"
+                                :class="
+                                    canAssignMaster
+                                        ? 'border-l border-slate-300 pl-3'
+                                        : ''
+                                "
+                                role="group"
+                                aria-label="Статус заказа"
+                            >
+                                <button
+                                    v-for="action in nextActions"
+                                    :key="action.to"
+                                    type="button"
+                                    :class="actionButtonClass(action)"
+                                    :disabled="saving"
+                                    :title="action.hint"
+                                    @click="runTransitionAction(action)"
+                                >
+                                    {{ action.title }}
+                                </button>
+                            </div>
                         </div>
                     </section>
 

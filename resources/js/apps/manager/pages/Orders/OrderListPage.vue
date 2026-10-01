@@ -1,5 +1,6 @@
 <script>
 import { formatOrderDate } from "../../../../shared/formatOrderDate.js";
+import { orderDisplayLabel } from "../../../../shared/orderDisplayLabel.js";
 import { actorService } from "../../services/ActorService.js";
 import {
     BILLING_LABELS,
@@ -29,6 +30,7 @@ export default {
             STATUS_ORDER,
             compositionLabel,
             formatOrderDate,
+            orderDisplayLabel,
             BILLING_LABELS,
             URGENCY_LABELS,
         };
@@ -211,15 +213,12 @@ export default {
                     class="app-card w-full text-left"
                     :style="statusBorderStyle(item.status)"
                     :title="statusLabel(item.status)"
-                    :aria-label="`Заказ #${item.id}, ${statusLabel(item.status)}`"
+                    :aria-label="`Заказ ${orderDisplayLabel(item)}, ${statusLabel(item.status)}`"
                     @click="goShow(item)"
                 >
-                    <div class="flex items-start justify-between gap-2">
-                        <span class="font-jost-medium text-dark-blue-500">
-                            Заказ #{{ item.id }}
-                        </span>
-                        <span class="text-xs text-pink-600">Открыть</span>
-                    </div>
+                    <span class="font-jost-medium text-dark-blue-500">
+                        Заказ {{ orderDisplayLabel(item) }}
+                    </span>
                     <p class="text-sm text-slate-700">
                         {{ clientName(item.client_id) }}
                     </p>
@@ -293,23 +292,25 @@ export default {
                             </th>
                             <th class="px-4 py-3 font-jost-medium">Мастер</th>
                             <th class="px-4 py-3 font-jost-medium">Состав</th>
-                            <th class="px-4 py-3 font-jost-medium" />
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="items.length === 0">
-                            <td colspan="8" class="px-4 py-6 text-slate-500">
+                            <td colspan="7" class="px-4 py-6 text-slate-500">
                                 Пока пусто
                             </td>
                         </tr>
                         <tr
                             v-for="item in items"
                             :key="item.id"
-                            class="border-t border-slate-100"
+                            class="cursor-pointer border-t border-slate-100 hover:bg-slate-50"
                             :style="statusBorderStyle(item.status)"
                             :title="statusLabel(item.status)"
+                            @click="goShow(item)"
                         >
-                            <td class="px-4 py-3">{{ item.id }}</td>
+                            <td class="px-4 py-3">
+                                {{ orderDisplayLabel(item) }}
+                            </td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-col gap-0.5 leading-tight">
                                     <span>{{ clientName(item.client_id) }}</span>
@@ -366,15 +367,6 @@ export default {
                             </td>
                             <td class="px-4 py-3">
                                 {{ compositionLabel(item) }}
-                            </td>
-                            <td class="px-4 py-3 text-right">
-                                <button
-                                    type="button"
-                                    class="text-pink-600 hover:underline"
-                                    @click="goShow(item)"
-                                >
-                                    Открыть
-                                </button>
                             </td>
                         </tr>
                     </tbody>
